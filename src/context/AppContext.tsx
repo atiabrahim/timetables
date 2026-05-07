@@ -58,6 +58,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>([]);
 
   useEffect(() => {
+    // البيانات المستخرجة من ملف scheduler_backup_2026-05-04.json
     const initialData = {
       "employees": [
         { "firstName": "الزين,", "lastName": "إبراهيم", "category": "Full-time", "observation": "aSc Import", "id": "1" },
@@ -69,7 +70,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         { "firstName": "بوطبيلة,", "lastName": "حبيبة", "category": "Full-time", "observation": "aSc Import", "id": "7" },
         { "firstName": "تريكي,", "lastName": "عبد القادر", "category": "Full-time", "observation": "aSc Import", "id": "8" },
         { "firstName": "حريز,", "lastName": "شعبان", "category": "Full-time", "observation": "aSc Import", "id": "9" },
-        { "firstName": "حكيم,", "lastName": "رضواني", "category": "Full-time", "observation": "aSc Import", "id": "10" }
+        { "firstName": "حكيم,", "lastName": "رضواني", "category": "Full-time", "observation": "aSc Import", "id": "10" },
+        { "firstName": "سعداني,", "lastName": "فتحي", "category": "Full-time", "observation": "aSc Import", "id": "11" },
+        { "firstName": "سعيدة,", "lastName": "كير", "category": "Full-time", "observation": "aSc Import", "id": "12" },
+        { "firstName": "سليمة,", "lastName": "حثروبي", "category": "Full-time", "observation": "aSc Import", "id": "13" },
+        { "firstName": "صحراوي,", "lastName": "زهيرة", "category": "Full-time", "observation": "aSc Import", "id": "14" },
+        { "firstName": "طليبة,", "lastName": "جميلة", "category": "Full-time", "observation": "aSc Import", "id": "15" },
+        { "firstName": "علال,", "lastName": "معتز", "category": "Full-time", "observation": "aSc Import", "id": "16" },
+        { "firstName": "عمري,", "lastName": "عبد الباسط", "category": "Full-time", "observation": "aSc Import", "id": "17" },
+        { "firstName": "قاسمي,", "lastName": "فوزية", "category": "Full-time", "observation": "aSc Import", "id": "18" },
+        { "firstName": "قزي,", "lastName": "عبد السلام", "category": "Full-time", "observation": "aSc Import", "id": "19" }
       ],
       "periodConfigs": [
         { "day": 0, "period": "Morning", "isActive": true },
@@ -77,14 +87,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         { "day": 1, "period": "Morning", "isActive": true },
         { "day": 1, "period": "Afternoon", "isActive": true },
         { "day": 2, "period": "Morning", "isActive": true },
+        { "day": 2, "period": "Afternoon", "isActive": true },
         { "day": 3, "period": "Morning", "isActive": true },
         { "day": 3, "period": "Afternoon", "isActive": true },
-        { "day": 4, "period": "Morning", "isActive": true }
+        { "day": 4, "period": "Morning", "isActive": true },
+        { "day": 4, "period": "Afternoon", "isActive": true }
       ],
       "departments": ["مصلحة التكوين", "مصلحة التمهين", "مصلحة المالية"],
       "assignments": [
-        { "id": "a1", "employeeId": "1", "day": 0, "period": "Morning", "subject": "Mathematics", "department": "مصلحة التكوين" },
-        { "id": "a2", "employeeId": "2", "day": 1, "period": "Afternoon", "subject": "Physics", "department": "مصلحة التمهين" }
+        { "id": "a1", "employeeId": "1", "day": 0, "period": "Morning", "subject": "تسيير", "department": "مصلحة التكوين" },
+        { "id": "a2", "employeeId": "2", "day": 1, "period": "Afternoon", "subject": "إعلام آلي", "department": "مصلحة التمهين" },
+        { "id": "a3", "employeeId": "3", "day": 2, "period": "Morning", "subject": "محاسبة", "department": "مصلحة المالية" }
       ]
     };
     setEmployees(initialData.employees);
