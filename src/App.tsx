@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Timetable from "./pages/Timetable";
 import Employees from "./pages/Employees";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,12 @@ const App = () => (
             <Route path="/employees" element={
               <ProtectedRoute roles={["Admin"]}>
                 <Employees />
+              </ProtectedRoute>
+            } />
+
+            <Route path="/settings" element={
+              <ProtectedRoute roles={["Admin"]}>
+                <Settings />
               </ProtectedRoute>
             } />
 

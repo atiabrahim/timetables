@@ -15,6 +15,13 @@ interface Assignment {
   day: number;
   period: string;
   subject: string;
+  department: string;
+}
+
+interface PeriodConfig {
+  day: number;
+  period: string;
+  isActive: boolean;
 }
 
 interface User {
@@ -28,11 +35,14 @@ interface AppContextType {
   user: User | null;
   login: (username: string, role: User["role"]) => void;
   logout: () => void;
-  data: any;
   employees: Employee[];
   setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
   assignments: Assignment[];
   setAssignments: React.Dispatch<React.SetStateAction<Assignment[]>>;
+  departments: string[];
+  setDepartments: React.Dispatch<React.SetStateAction<string[]>>;
+  periodConfigs: PeriodConfig[];
+  setPeriodConfigs: React.Dispatch<React.SetStateAction<PeriodConfig[]>>;
   t: any;
   isRTL: boolean;
 }
@@ -44,10 +54,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [user, setUser] = useState<User | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [data, setData] = useState<any>(null);
+  const [departments, setDepartments] = useState<string[]>([]);
+  const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>([]);
 
   useEffect(() => {
-    // Initial data load from the provided JSON structure
     const initialData = {
       "employees": [
         { "firstName": "الزين,", "lastName": "إبراهيم", "category": "Full-time", "observation": "aSc Import", "id": "1" },
@@ -59,16 +69,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         { "firstName": "بوطبيلة,", "lastName": "حبيبة", "category": "Full-time", "observation": "aSc Import", "id": "7" },
         { "firstName": "تريكي,", "lastName": "عبد القادر", "category": "Full-time", "observation": "aSc Import", "id": "8" },
         { "firstName": "حريز,", "lastName": "شعبان", "category": "Full-time", "observation": "aSc Import", "id": "9" },
-        { "firstName": "حكيم,", "lastName": "رضواني", "category": "Full-time", "observation": "aSc Import", "id": "10" },
-        { "firstName": "سعداني,", "lastName": "فتحي", "category": "Full-time", "observation": "aSc Import", "id": "11" },
-        { "firstName": "سعيدة,", "lastName": "كير", "category": "Full-time", "observation": "aSc Import", "id": "12" },
-        { "firstName": "سليمة,", "lastName": "حثروبي", "category": "Full-time", "observation": "aSc Import", "id": "13" },
-        { "firstName": "صحراوي,", "lastName": "زهيرة", "category": "Full-time", "observation": "aSc Import", "id": "14" },
-        { "firstName": "طليبة,", "lastName": "جميلة", "category": "Full-time", "observation": "aSc Import", "id": "15" },
-        { "firstName": "علال,", "lastName": "معتز", "category": "Full-time", "observation": "aSc Import", "id": "16" },
-        { "firstName": "عمري,", "lastName": "عبد الباسط", "category": "Full-time", "observation": "aSc Import", "id": "17" },
-        { "firstName": "قاسمي,", "lastName": "فوزية", "category": "Full-time", "observation": "aSc Import", "id": "18" },
-        { "firstName": "قزي,", "lastName": "عبد السلام", "category": "Full-time", "observation": "aSc Import", "id": "19" }
+        { "firstName": "حكيم,", "lastName": "رضواني", "category": "Full-time", "observation": "aSc Import", "id": "10" }
       ],
       "periodConfigs": [
         { "day": 0, "period": "Morning", "isActive": true },
@@ -80,10 +81,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         { "day": 3, "period": "Afternoon", "isActive": true },
         { "day": 4, "period": "Morning", "isActive": true }
       ],
-      "departments": ["مصلحة التكوين", "مصلحة التمهين", "مصلحة المالية"]
+      "departments": ["مصلحة التكوين", "مصلحة التمهين", "مصلحة المالية"],
+      "assignments": [
+        { "id": "a1", "employeeId": "1", "day": 0, "period": "Morning", "subject": "Mathematics", "department": "مصلحة التكوين" },
+        { "id": "a2", "employeeId": "2", "day": 1, "period": "Afternoon", "subject": "Physics", "department": "مصلحة التمهين" }
+      ]
     };
-    setData(initialData);
     setEmployees(initialData.employees);
+    setPeriodConfigs(initialData.periodConfigs);
+    setDepartments(initialData.departments);
+    setAssignments(initialData.assignments);
   }, []);
 
   const login = (username: string, role: User["role"]) => {
@@ -100,7 +107,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider value={{ 
       language, setLanguage, user, login, logout, 
-      data, employees, setEmployees, assignments, setAssignments,
+      employees, setEmployees, assignments, setAssignments,
+      departments, setDepartments, periodConfigs, setPeriodConfigs,
       t, isRTL 
     }}>
       <div dir={isRTL ? "rtl" : "ltr"} className={isRTL ? "font-arabic" : ""}>
