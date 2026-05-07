@@ -38,6 +38,27 @@ export const exportToXml = (data: any, fileName: string) => {
   });
   xmlString += '  </Departments>\n';
 
+  // Rooms
+  xmlString += '  <Rooms>\n';
+  data.rooms.forEach((room: string) => {
+    xmlString += `    <Room name="${room}" />\n`;
+  });
+  xmlString += '  </Rooms>\n';
+
+  // Classes
+  xmlString += '  <Classes>\n';
+  data.classes.forEach((cls: any) => {
+    xmlString += `    <Class id="${cls.id}" name="${cls.name}" />\n`;
+  });
+  xmlString += '  </Classes>\n';
+
+  // Subjects
+  xmlString += '  <Subjects>\n';
+  data.subjects.forEach((sub: any) => {
+    xmlString += `    <Subject id="${sub.id}" name="${sub.name}" />\n`;
+  });
+  xmlString += '  </Subjects>\n';
+
   // PeriodConfigs
   xmlString += '  <PeriodConfigs>\n';
   data.periodConfigs.forEach((config: any) => {
@@ -48,7 +69,7 @@ export const exportToXml = (data: any, fileName: string) => {
   // Assignments
   xmlString += '  <Assignments>\n';
   data.assignments.forEach((asgn: any) => {
-    xmlString += `    <Assignment id="${asgn.id}" employeeId="${asgn.employeeId}" day="${asgn.day}" period="${asgn.period}" subject="${asgn.subject}" department="${asgn.department}" />\n`;
+    xmlString += `    <Assignment id="${asgn.id}" employeeId="${asgn.employeeId}" day="${asgn.day}" period="${asgn.period}" subjectId="${asgn.subjectId}" classId="${asgn.classId}" department="${asgn.department}" room="${asgn.room || ''}" />\n`;
   });
   xmlString += '  </Assignments>\n';
 
@@ -82,6 +103,20 @@ export const parseXml = (xmlText: string) => {
     getAttr(el, "name")
   );
 
+  const rooms = Array.from(xmlDoc.getElementsByTagName("Room")).map(el => 
+    getAttr(el, "name")
+  );
+
+  const classes = Array.from(xmlDoc.getElementsByTagName("Class")).map(el => ({
+    id: getAttr(el, "id"),
+    name: getAttr(el, "name")
+  }));
+
+  const subjects = Array.from(xmlDoc.getElementsByTagName("Subject")).map(el => ({
+    id: getAttr(el, "id"),
+    name: getAttr(el, "name")
+  }));
+
   const periodConfigs = Array.from(xmlDoc.getElementsByTagName("PeriodConfig")).map(el => ({
     day: parseInt(getAttr(el, "day") || "0"),
     period: getAttr(el, "period"),
@@ -93,9 +128,11 @@ export const parseXml = (xmlText: string) => {
     employeeId: getAttr(el, "employeeId"),
     day: parseInt(getAttr(el, "day") || "0"),
     period: getAttr(el, "period"),
-    subject: getAttr(el, "subject"),
-    department: getAttr(el, "department")
+    subjectId: getAttr(el, "subjectId"),
+    classId: getAttr(el, "classId"),
+    department: getAttr(el, "department"),
+    room: getAttr(el, "room")
   }));
 
-  return { employees, departments, periodConfigs, assignments };
+  return { employees, departments, rooms, classes, subjects, periodConfigs, assignments };
 };

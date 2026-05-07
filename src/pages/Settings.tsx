@@ -1,26 +1,48 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, BookOpen, Users2, MapPin, Database } from "lucide-react";
-import { showSuccess } from "../utils/toast";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Plus, Trash2, Download, Upload, Database, MapPin, AlertTriangle, Users2, BookOpen } from "lucide-react";
+import { showSuccess, showError } from "../utils/toast";
+import { exportToXml, parseXml } from "../lib/export-utils";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Settings = () => {
   const { 
-    t, departments, setDepartments, rooms, setRooms, 
-    classes, setClasses, subjects, setSubjects, isRTL 
+    t, 
+    departments, setDepartments, 
+    rooms, setRooms,
+    classes, setClasses,
+    subjects, setSubjects,
+    periodConfigs, setPeriodConfigs, 
+    employees, setEmployees, 
+    assignments, setAssignments,
+    isRTL 
   } = useApp();
   
   const [newDept, setNewDept] = useState("");
   const [newRoom, setNewRoom] = useState("");
   const [newClass, setNewClass] = useState("");
   const [newSubject, setNewSubject] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const addItem = (val: string, setVal: any, list: any[], setList: any[], msg: string) => {
-    if (val && !list.find(i => (i.name || i) === val)) {
+    if (val && !list.find(i => (typeof i === 'string' ? i === val : i.name === val))) {
       const newItem = typeof list[0] === 'object' ? { id: Math.random().toString(36).substr(2, 9), name: val } : val;
       setList([...list, newItem]);
       setVal("");
@@ -28,9 +50,68 @@ const Settings = () => {
     }
   };
 
+  const handleClearAll = () => {
+    setEmployees([]);
+    setAssignments([]);
+    setDepartments([]);
+    setRooms([]);
+    setClasses([]);
+    setSubjects([]);
+    localStorage.removeItem("academic_scheduler_v2_data");
+    showSuccess(isRTL ? "تم مسح كافة البيانات بنجاح" : "All data cleared successfully");
+    window.location.reload();
+  };
+
+  const handleExportXml = () => {
+    const data = { employees, departments, rooms, classes, subjects, periodConfigs, assignments };
+    exportToXml(data, `scheduler_full_backup_${new Date().toISOString().split('T')[0]}`);
+    showSuccess(isRTL ? "تم تصدير كافة البيانات بنجاح" : "All data exported successfully");
+  };
+
+  const handleImportXml = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string;
+        const data = parseXml(text);
+        
+        // تحديث كافة الحالات
+        setEmployees(data.employees);
+        setDepartments(data.departments);
+        setRooms(data.rooms);
+        setClasses(data.classes);
+        setSubjects(data.subjects);
+        setPeriodConfigs(data.periodConfigs);
+        setAssignments(data.assignments);
+        
+        showSuccess(isRTL ? "تم استيراد كافة المعلومات بنجاح" : "All information imported successfully");
+      } catch (err) {
+        showError(isRTL ? "فشل استيراد الملف. تأكد من صيغة XML" : "Failed to import file. Check XML format");
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-emerald-900">{t.settings}</h2>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h2 className="text-2xl font-bold text-emerald-900">{t.settings}</h2>
+        
+        <div className="flex gap-3 w-full md:w-auto">
+          <input type="file" ref={fileInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
+          <Button variant="outline" className="flex-1 md:flex-none border-emerald-200 text-emerald-700 rounded-xl" onClick={() => fileInputRef.current?.click()}>
+            <Upload size={18} className={isRTL ? "ml-2" : "mr-2"} />
+            {isRTL ? "استيراد XML" : "Import XML"}
+          </Button>
+          <Button className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-100" onClick={handleExportXml}>
+            <Download size={18} className={isRTL ? "ml-2" : "mr-2"} />
+            {isRTL ? "تصدير XML" : "Export XML"}
+          </Button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Classes */}
@@ -121,6 +202,44 @@ const Settings = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Danger Zone */}
+      <Card className="border-red-100 bg-red-50/30">
+        <CardHeader>
+          <CardTitle className="text-red-800 flex items-center gap-2">
+            <AlertTriangle size={20} />
+            {isRTL ? "منطقة الخطر" : "Danger Zone"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-red-600">
+              {isRTL ? "سيؤدي هذا الإجراء إلى حذف كافة المعلومات بشكل نهائي." : "This action will permanently delete all information."}
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="rounded-xl">
+                  {isRTL ? "مسح كافة البيانات" : "Clear All Data"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="border-red-100">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{isRTL ? "هل أنت متأكد تماماً؟" : "Are you absolutely sure?"}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {isRTL ? "لا يمكن التراجع عن هذا الإجراء. سيتم حذف كل شيء." : "This action cannot be undone. Everything will be deleted."}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearAll} className="bg-red-600 hover:bg-red-700 rounded-xl">
+                    {isRTL ? "نعم، امسح الكل" : "Yes, Clear All"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
