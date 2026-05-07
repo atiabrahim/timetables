@@ -14,7 +14,7 @@ import {
   Edit2, 
   FileText,
   BadgeCheck,
-  Users
+  Briefcase
 } from "lucide-react";
 import { 
   DropdownMenu, 
@@ -31,7 +31,6 @@ import {
   DialogFooter
 } from "@/components/ui/dialog";
 import { showSuccess } from "../utils/toast";
-import { cn } from "@/lib/utils";
 
 const Employees = () => {
   const { employees, setEmployees, isRTL, t } = useApp();

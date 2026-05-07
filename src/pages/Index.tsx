@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useApp } from "../context/AppContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Users, 
   BookOpen, 
@@ -14,7 +14,6 @@ import {
   AlertCircle
 } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
-import { cn } from "@/lib/utils";
 
 const Index = () => {
   const { employees, classes, subjects, assignments, isRTL, t } = useApp();
