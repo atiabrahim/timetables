@@ -7,6 +7,7 @@ import { AppProvider } from "./context/AppContext";
 import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import Employees from "./pages/Employees";
+import Schedule from "./pages/Schedule";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -22,6 +23,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Layout><Index /></Layout>} />
             <Route path="/employees" element={<Layout><Employees /></Layout>} />
+            <Route path="/schedule" element={<Layout><Schedule /></Layout>} />
             <Route path="/settings" element={<Layout><Settings /></Layout>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
