@@ -3,7 +3,7 @@ import { useApp } from "../context/AppContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileDown, Printer, Plus, Trash2, Filter, User as UserIcon, Building, Clock, Eye, EyeOff } from "lucide-react";
+import { FileDown, Printer, Plus, Trash2, Filter, User as UserIcon, Building, Clock } from "lucide-react";
 import { exportToPdf } from "../lib/export-utils";
 import AssignmentDialog from "../components/AssignmentDialog";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,7 +13,6 @@ const Timetable = () => {
   const { t, isRTL, periodConfigs, assignments, setAssignments, employees, user, departments } = useApp();
   const [selectedCell, setSelectedCell] = useState<{ day: number, period: string } | null>(null);
   const [editingAssignment, setEditingAssignment] = useState<any>(null);
-  const [isPrintMode, setIsPrintMode] = useState(false);
   
   const [deptFilter, setDeptFilter] = useState<string>("all");
   const [empFilter, setEmpFilter] = useState<string>("all");
@@ -28,14 +27,29 @@ const Timetable = () => {
     return filtered;
   }, [assignments, deptFilter, empFilter]);
 
-  const handlePrint = () => {
-    window.print();
+  const handleExport = () => {
+    const headers = [isRTL ? "اليوم" : "Day", ...periods.map(p => t[p.toLowerCase()])];
+    const body = days.map((day: string, dayIdx: number) => {
+      return [
+        day,
+        ...periods.map(p => {
+          const assignment = filteredAssignments.find(a => 
+            a.day === dayIdx && a.period.toLowerCase() === p.toLowerCase()
+          );
+          if (assignment) {
+            const emp = employees.find(e => e.id === assignment.employeeId);
+            return `${emp?.firstName} ${emp?.lastName}\n(${assignment.subject})`;
+          }
+          return "-";
+        })
+      ];
+    });
+    exportToPdf(headers, body, t.timetable);
   };
 
   return (
-    <div className={cn("space-y-6", isPrintMode && "print-container")}>
-      {/* Header - Hidden in Print */}
-      <div className={cn("flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 print:hidden")}>
+    <div className="space-y-6">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div className="flex items-center gap-3">
           <div className="bg-emerald-600 p-2 rounded-lg text-white">
             <Clock size={24} />
@@ -70,20 +84,11 @@ const Timetable = () => {
           </div>
 
           <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className={cn("border-emerald-200 h-10 rounded-xl", isPrintMode ? "bg-emerald-100 text-emerald-800" : "text-emerald-700")}
-              onClick={() => setIsPrintMode(!isPrintMode)}
-            >
-              {isPrintMode ? <EyeOff size={18} className={isRTL ? "ml-2" : "mr-2"} /> : <Eye size={18} className={isRTL ? "ml-2" : "mr-2"} />}
-              {isPrintMode ? (isRTL ? "إلغاء المعاينة" : "Exit Preview") : (isRTL ? "معاينة الطباعة" : "Print Preview")}
+            <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 h-10 rounded-xl" onClick={handleExport}>
+              <FileDown size={18} className={isRTL ? "ml-2" : "mr-2"} />
+              {t.exportPdf}
             </Button>
-            <Button 
-              size="sm" 
-              className="bg-emerald-600 hover:bg-emerald-700 h-10 rounded-xl shadow-lg shadow-emerald-100"
-              onClick={handlePrint}
-            >
+            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 h-10 rounded-xl shadow-lg shadow-emerald-100">
               <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
               {isRTL ? "طباعة" : "Print"}
             </Button>
@@ -91,27 +96,17 @@ const Timetable = () => {
         </div>
       </div>
 
-      {/* Print Header - Only visible in Print */}
-      <div className="hidden print:block text-center mb-8 border-b-2 border-emerald-900 pb-4">
-        <h1 className="text-3xl font-bold text-emerald-900">{t.title}</h1>
-        <p className="text-emerald-600 mt-2">{t.timetable} - {new Date().toLocaleDateString(isRTL ? 'ar-EG' : 'en-US')}</p>
-        {deptFilter !== "all" && <p className="font-bold mt-1">{isRTL ? "المصلحة:" : "Department:"} {deptFilter}</p>}
-      </div>
-
-      <Card className={cn(
-        "border-none shadow-2xl overflow-hidden glass-card rounded-3xl",
-        isPrintMode && "shadow-none border border-gray-200 rounded-none"
-      )}>
+      <Card className="border-none shadow-2xl overflow-hidden glass-card rounded-3xl">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-emerald-600 text-white print:bg-gray-100 print:text-black">
-                  <th className="p-6 text-start border-b border-emerald-500 w-40 text-lg font-bold print:p-4 print:border-gray-300">
+                <tr className="bg-emerald-600 text-white">
+                  <th className="p-6 text-start border-b border-emerald-500 w-40 text-lg font-bold">
                     {isRTL ? "اليوم" : "Day"}
                   </th>
                   {periods.map(p => (
-                    <th key={p} className="p-6 text-center border-b border-emerald-500 text-lg font-bold print:p-4 print:border-gray-300">
+                    <th key={p} className="p-6 text-center border-b border-emerald-500 text-lg font-bold">
                       {t[p.toLowerCase() as keyof typeof t]}
                     </th>
                   ))}
@@ -119,10 +114,11 @@ const Timetable = () => {
               </thead>
               <tbody>
                 {days.map((day: string, dayIdx: number) => (
-                  <tr key={day} className="hover:bg-emerald-50/50 transition-colors group print:hover:bg-transparent">
-                    <td className="p-6 font-bold text-emerald-900 border-b border-emerald-100 bg-emerald-50/30 text-center print:p-4 print:border-gray-300 print:bg-transparent">
+                  <tr key={day} className="hover:bg-emerald-50/50 transition-colors group">
+                    <td className="p-6 font-bold text-emerald-900 border-b border-emerald-100 bg-emerald-50/30 text-center">
                       <div className="flex flex-col items-center">
                         <span className="text-lg">{day}</span>
+                        <span className="text-[10px] text-emerald-400 font-normal uppercase tracking-widest mt-1">Weekday</span>
                       </div>
                     </td>
                     {periods.map(p => {
@@ -131,12 +127,15 @@ const Timetable = () => {
                       const employee = employees.find(e => e.id === assignment?.employeeId);
                       
                       const isOwnSchedule = user?.role === "Teacher" && employee?.firstName.includes(user.username);
+
+                      // إذا كانت الفترة غير نشطة في الإعدادات، ولكن يوجد تعيين مستورد، سنعرضه على أي حال
+                      // أو إذا لم تكن هناك إعدادات للفترة، سنعتبرها نشطة افتراضياً
                       const isActive = config ? config.isActive : true;
 
                       if (!isActive && !assignment) {
                         return (
-                          <td key={p} className="p-6 border-b border-emerald-100 bg-gray-50/40 print:border-gray-300">
-                            <div className="flex items-center justify-center opacity-20 print:hidden">
+                          <td key={p} className="p-6 border-b border-emerald-100 bg-gray-50/40">
+                            <div className="flex items-center justify-center opacity-20">
                               <div className="w-full h-px bg-emerald-200 rotate-12" />
                             </div>
                           </td>
@@ -146,66 +145,77 @@ const Timetable = () => {
                       return (
                         <td 
                           key={p} 
-                          className="p-4 border-b border-emerald-100 text-center cursor-pointer relative min-w-[250px] print:border-gray-300 print:p-2"
+                          className="p-4 border-b border-emerald-100 text-center cursor-pointer relative min-w-[250px]"
                           onClick={() => {
-                            if (user?.role === "Admin" && !isPrintMode) {
+                            if (user?.role === "Admin") {
                               if (assignment) setEditingAssignment(assignment);
                               else setSelectedCell({ day: dayIdx, period: p });
                             }
                           }}
                         >
-                          {assignment ? (
-                            <div className={cn(
-                              "p-5 rounded-2xl border shadow-sm transition-all text-start relative overflow-hidden group/card print:shadow-none print:border-gray-400 print:p-3",
-                              isOwnSchedule 
-                                ? "bg-emerald-600 text-white border-emerald-700 shadow-emerald-200 print:bg-transparent print:text-black" 
-                                : "bg-white border-emerald-100 hover:border-emerald-300 hover:shadow-md print:bg-transparent"
-                            )}>
-                              <div className="flex justify-between items-start mb-3">
-                                <span className={cn(
-                                  "text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full",
-                                  isOwnSchedule ? "bg-emerald-500 text-white print:bg-gray-100 print:text-black" : "bg-emerald-50 text-emerald-600 print:bg-gray-100 print:text-black"
-                                )}>
-                                  {assignment.subject}
-                                </span>
-                                {user?.role === "Admin" && !isPrintMode && (
-                                  <button 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setAssignments(assignments.filter(a => a.id !== assignment.id));
-                                    }}
-                                    className={cn(
-                                      "opacity-0 group-hover/card:opacity-100 transition-opacity print:hidden",
-                                      isOwnSchedule ? "text-emerald-200 hover:text-white" : "text-red-300 hover:text-red-500"
-                                    )}
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
+                          <AnimatePresence mode="wait">
+                            {assignment ? (
+                              <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className={cn(
+                                  "p-5 rounded-2xl border shadow-sm transition-all text-start relative overflow-hidden group/card",
+                                  isOwnSchedule 
+                                    ? "bg-emerald-600 text-white border-emerald-700 shadow-emerald-200" 
+                                    : "bg-white border-emerald-100 hover:border-emerald-300 hover:shadow-md"
+                                )}
+                              >
+                                <div className="flex justify-between items-start mb-3">
+                                  <span className={cn(
+                                    "text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full",
+                                    isOwnSchedule ? "bg-emerald-500 text-white" : "bg-emerald-50 text-emerald-600"
+                                  )}>
+                                    {assignment.subject}
+                                  </span>
+                                  {user?.role === "Admin" && (
+                                    <button 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setAssignments(assignments.filter(a => a.id !== assignment.id));
+                                      }}
+                                      className={cn(
+                                        "opacity-0 group-hover/card:opacity-100 transition-opacity",
+                                        isOwnSchedule ? "text-emerald-200 hover:text-white" : "text-red-300 hover:text-red-500"
+                                      )}
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  )}
+                                </div>
+                                
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <UserIcon size={14} className={isOwnSchedule ? "text-emerald-200" : "text-emerald-400"} />
+                                    <p className={cn("text-base font-bold", isOwnSchedule ? "text-white" : "text-emerald-900")}>
+                                      {employee?.firstName} {employee?.lastName}
+                                    </p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Building size={14} className={isOwnSchedule ? "text-emerald-200" : "text-emerald-400"} />
+                                    <p className={cn("text-xs", isOwnSchedule ? "text-emerald-100" : "text-emerald-500")}>
+                                      {assignment.department}
+                                    </p>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            ) : (
+                              <div className="h-24 flex items-center justify-center border-2 border-dashed border-emerald-100 rounded-2xl hover:border-emerald-300 transition-all hover:bg-emerald-50/30 group/empty">
+                                {user?.role === "Admin" && (
+                                  <div className="flex flex-col items-center gap-2">
+                                    <Plus className="text-emerald-200 group-hover/empty:text-emerald-500 transition-colors" size={28} />
+                                    <span className="text-xs text-emerald-300 group-hover/empty:text-emerald-500 font-medium">
+                                      {isRTL ? "تعيين" : "Assign"}
+                                    </span>
+                                  </div>
                                 )}
                               </div>
-                              
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <UserIcon size={14} className={isOwnSchedule ? "text-emerald-200 print:text-black" : "text-emerald-400 print:text-black"} />
-                                  <p className={cn("text-base font-bold", isOwnSchedule ? "text-white print:text-black" : "text-emerald-900 print:text-black")}>
-                                    {employee?.firstName} {employee?.lastName}
-                                  </p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Building size={14} className={isOwnSchedule ? "text-emerald-200 print:text-black" : "text-emerald-400 print:text-black"} />
-                                  <p className={cn("text-xs", isOwnSchedule ? "text-emerald-100 print:text-black" : "text-emerald-500 print:text-black")}>
-                                    {assignment.department} {assignment.room && `• ${assignment.room}`}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="h-24 flex items-center justify-center border-2 border-dashed border-emerald-100 rounded-2xl print:hidden">
-                              {user?.role === "Admin" && !isPrintMode && (
-                                <Plus className="text-emerald-200" size={28} />
-                              )}
-                            </div>
-                          )}
+                            )}
+                          </AnimatePresence>
                         </td>
                       );
                     })}
@@ -216,12 +226,6 @@ const Timetable = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Print Footer - Only visible in Print */}
-      <div className="hidden print:flex justify-between mt-12 text-sm text-gray-500 border-t pt-4">
-        <p>{isRTL ? "توقيع المدير" : "Director's Signature"}</p>
-        <p>{isRTL ? "ختم المؤسسة" : "Institution Stamp"}</p>
-      </div>
 
       {(selectedCell || editingAssignment) && (
         <AssignmentDialog 
