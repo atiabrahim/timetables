@@ -33,7 +33,9 @@ const Timetable = () => {
       return [
         day,
         ...periods.map(p => {
-          const assignment = filteredAssignments.find(a => a.day === dayIdx && a.period === p);
+          const assignment = filteredAssignments.find(a => 
+            a.day === dayIdx && a.period.toLowerCase() === p.toLowerCase()
+          );
           if (assignment) {
             const emp = employees.find(e => e.id === assignment.employeeId);
             return `${emp?.firstName} ${emp?.lastName}\n(${assignment.subject})`;
@@ -120,13 +122,17 @@ const Timetable = () => {
                       </div>
                     </td>
                     {periods.map(p => {
-                      const config = periodConfigs.find(c => c.day === dayIdx && c.period === p);
-                      const assignment = filteredAssignments.find(a => a.day === dayIdx && a.period === p);
+                      const config = periodConfigs.find(c => c.day === dayIdx && c.period.toLowerCase() === p.toLowerCase());
+                      const assignment = filteredAssignments.find(a => a.day === dayIdx && a.period.toLowerCase() === p.toLowerCase());
                       const employee = employees.find(e => e.id === assignment?.employeeId);
                       
                       const isOwnSchedule = user?.role === "Teacher" && employee?.firstName.includes(user.username);
 
-                      if (!config?.isActive) {
+                      // إذا كانت الفترة غير نشطة في الإعدادات، ولكن يوجد تعيين مستورد، سنعرضه على أي حال
+                      // أو إذا لم تكن هناك إعدادات للفترة، سنعتبرها نشطة افتراضياً
+                      const isActive = config ? config.isActive : true;
+
+                      if (!isActive && !assignment) {
                         return (
                           <td key={p} className="p-6 border-b border-emerald-100 bg-gray-50/40">
                             <div className="flex items-center justify-center opacity-20">

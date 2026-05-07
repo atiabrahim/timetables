@@ -68,31 +68,33 @@ export const parseXml = (xmlText: string) => {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(xmlText, "application/xml");
   
+  const getAttr = (el: Element, attr: string) => el.getAttribute(attr) || "";
+
   const employees = Array.from(xmlDoc.getElementsByTagName("Employee")).map(el => ({
-    id: el.getAttribute("id") || "",
-    firstName: el.getAttribute("firstName") || "",
-    lastName: el.getAttribute("lastName") || "",
-    category: el.getAttribute("category") || "",
-    observation: el.getAttribute("observation") || ""
+    id: getAttr(el, "id"),
+    firstName: getAttr(el, "firstName"),
+    lastName: getAttr(el, "lastName"),
+    category: getAttr(el, "category"),
+    observation: getAttr(el, "observation")
   }));
 
   const departments = Array.from(xmlDoc.getElementsByTagName("Department")).map(el => 
-    el.getAttribute("name") || ""
+    getAttr(el, "name")
   );
 
   const periodConfigs = Array.from(xmlDoc.getElementsByTagName("PeriodConfig")).map(el => ({
-    day: parseInt(el.getAttribute("day") || "0"),
-    period: el.getAttribute("period") || "",
-    isActive: el.getAttribute("isActive") === "true"
+    day: parseInt(getAttr(el, "day") || "0"),
+    period: getAttr(el, "period"),
+    isActive: getAttr(el, "isActive").toLowerCase() === "true"
   }));
 
   const assignments = Array.from(xmlDoc.getElementsByTagName("Assignment")).map(el => ({
-    id: el.getAttribute("id") || "",
-    employeeId: el.getAttribute("employeeId") || "",
-    day: parseInt(el.getAttribute("day") || "0"),
-    period: el.getAttribute("period") || "",
-    subject: el.getAttribute("subject") || "",
-    department: el.getAttribute("department") || ""
+    id: getAttr(el, "id"),
+    employeeId: getAttr(el, "employeeId"),
+    day: parseInt(getAttr(el, "day") || "0"),
+    period: getAttr(el, "period"),
+    subject: getAttr(el, "subject"),
+    department: getAttr(el, "department")
   }));
 
   return { employees, departments, periodConfigs, assignments };
