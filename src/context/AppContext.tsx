@@ -52,62 +52,70 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const STORAGE_KEY = "academic_scheduler_data";
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>("ar");
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    const saved = localStorage.getItem("scheduler_user");
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
   const [rooms, setRooms] = useState<string[]>([]);
   const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>([]);
 
+  // تحميل البيانات عند بدء التشغيل
   useEffect(() => {
-    const initialData = {
-      "employees": [
-        { "firstName": "الزين,", "lastName": "إبراهيم", "category": "Full-time", "observation": "aSc Import", "id": "1" },
-        { "firstName": "اللبي,", "lastName": "عماد", "category": "Full-time", "observation": "aSc Import", "id": "2" },
-        { "firstName": "بدة,", "lastName": "الهاشمي", "category": "Full-time", "observation": "aSc Import", "id": "3" },
-        { "firstName": "بريبش,", "lastName": "العايش", "category": "Full-time", "observation": "aSc Import", "id": "4" },
-        { "firstName": "بوخزنة,", "lastName": "ربيع", "category": "Full-time", "observation": "aSc Import", "id": "5" },
-        { "firstName": "بوزيان,", "lastName": "حدة", "category": "Full-time", "observation": "aSc Import", "id": "6" },
-        { "firstName": "بوطبيلة,", "lastName": "حبيبة", "category": "Full-time", "observation": "aSc Import", "id": "7" },
-        { "firstName": "تريكي,", "lastName": "عبد القادر", "category": "Full-time", "observation": "aSc Import", "id": "8" },
-        { "firstName": "حريز,", "lastName": "شعبان", "category": "Full-time", "observation": "aSc Import", "id": "9" },
-        { "firstName": "حكيم,", "lastName": "رضواني", "category": "Full-time", "observation": "aSc Import", "id": "10" }
-      ],
-      "periodConfigs": [
-        { "day": 0, "period": "Morning", "isActive": true },
-        { "day": 0, "period": "Afternoon", "isActive": true },
-        { "day": 1, "period": "Morning", "isActive": true },
-        { "day": 1, "period": "Afternoon", "isActive": true },
-        { "day": 2, "period": "Morning", "isActive": true },
-        { "day": 2, "period": "Afternoon", "isActive": true },
-        { "day": 3, "period": "Morning", "isActive": true },
-        { "day": 3, "period": "Afternoon", "isActive": true },
-        { "day": 4, "period": "Morning", "isActive": true },
-        { "day": 4, "period": "Afternoon", "isActive": true }
-      ],
-      "departments": ["مصلحة التكوين", "مصلحة التمهين", "مصلحة المالية"],
-      "rooms": ["قاعة 01", "قاعة 02", "مخبر الإعلام الآلي", "المدرج الكبير"],
-      "assignments": [
-        { "id": "a1", "employeeId": "1", "day": 0, "period": "Morning", "subject": "تسيير", "department": "مصلحة التكوين", "room": "قاعة 01" },
-        { "id": "a2", "employeeId": "2", "day": 1, "period": "Afternoon", "subject": "إعلام آلي", "department": "مصلحة التمهين", "room": "مخبر الإعلام الآلي" },
-        { "id": "a3", "employeeId": "3", "day": 2, "period": "Morning", "subject": "محاسبة", "department": "مصلحة المالية", "room": "قاعة 02" }
-      ]
-    };
-    setEmployees(initialData.employees);
-    setPeriodConfigs(initialData.periodConfigs);
-    setDepartments(initialData.departments);
-    setRooms(initialData.rooms);
-    setAssignments(initialData.assignments);
+    const savedData = localStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      const parsed = JSON.parse(savedData);
+      setEmployees(parsed.employees || []);
+      setAssignments(parsed.assignments || []);
+      setDepartments(parsed.departments || []);
+      setRooms(parsed.rooms || []);
+      setPeriodConfigs(parsed.periodConfigs || []);
+    } else {
+      // بيانات افتراضية إذا لم يوجد شيء محفوظ
+      const initialData = {
+        employees: [
+          { id: "1", firstName: "الزين,", lastName: "إبراهيم", category: "Full-time", observation: "aSc Import" },
+          { id: "2", firstName: "اللبي,", lastName: "عماد", category: "Full-time", observation: "aSc Import" }
+        ],
+        departments: ["مصلحة التكوين", "مصلحة التمهين", "مصلحة المالية"],
+        rooms: ["قاعة 01", "قاعة 02", "مخبر الإعلام الآلي"],
+        periodConfigs: Array.from({ length: 5 }).flatMap((_, day) => [
+          { day, period: "Morning", isActive: true },
+          { day, period: "Afternoon", isActive: true }
+        ]),
+        assignments: []
+      };
+      setEmployees(initialData.employees);
+      setDepartments(initialData.departments);
+      setRooms(initialData.rooms);
+      setPeriodConfigs(initialData.periodConfigs);
+    }
   }, []);
 
+  // حفظ البيانات عند أي تغيير
+  useEffect(() => {
+    if (employees.length > 0 || departments.length > 0) {
+      const dataToSave = { employees, assignments, departments, rooms, periodConfigs };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+    }
+  }, [employees, assignments, departments, rooms, periodConfigs]);
+
   const login = (username: string, role: User["role"]) => {
-    setUser({ username, role });
+    const newUser = { username, role };
+    setUser(newUser);
+    localStorage.setItem("scheduler_user", JSON.stringify(newUser));
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem("scheduler_user");
   };
 
   const t = translations[language];
