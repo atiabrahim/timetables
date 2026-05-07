@@ -1,0 +1,262 @@
+{
+  "employees": [
+    {
+      "firstName": "الزين,",
+      "lastName": "إبراهيم",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "1"
+    },
+    {
+      "firstName": "اللبي,",
+      "lastName": "عماد",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "2"
+    },
+    {
+      "firstName": "بدة,",
+      "lastName": "الهاشمي",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "3"
+    },
+    {
+      "firstName": "بريبش,",
+      "lastName": "العايش",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "4"
+    },
+    {
+      "firstName": "بوخزنة,",
+      "lastName": "ربيع",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "5"
+    },
+    {
+      "firstName": "بوزيان,",
+      "lastName": "حدة",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "6"
+    },
+    {
+      "firstName": "بوطبيلة,",
+      "lastName": "حبيبة",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "7"
+    },
+    {
+      "firstName": "تريكي,",
+      "lastName": "عبد القادر",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "8"
+    },
+    {
+      "firstName": "حريز,",
+      "lastName": "شعبان",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "9"
+    },
+    {
+      "firstName": "حكيم,",
+      "lastName": "رضواني",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "10"
+    },
+    {
+      "firstName": "سعداني,",
+      "lastName": "فتحي",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "11"
+    },
+    {
+      "firstName": "سعيدة,",
+      "lastName": "كير",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "12"
+    },
+    {
+      "firstName": "سليمة,",
+      "lastName": "حثروبي",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "13"
+    },
+    {
+      "firstName": "صحراوي,",
+      "lastName": "زهيرة",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "14"
+    },
+    {
+      "firstName": "طليبة,",
+      "lastName": "جميلة",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "15"
+    },
+    {
+      "firstName": "علال,",
+      "lastName": "معتز",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "16"
+    },
+    {
+      "firstName": "عمري,",
+      "lastName": "عبد الباسط",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "17"
+    },
+    {
+      "firstName": "قاسمي,",
+      "lastName": "فوزية",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "18"
+    },
+    {
+      "firstName": "قزي,",
+      "lastName": "عبد السلام",
+      "category": "Full-time",
+      "observation": "aSc Import",
+      "id": "19"
+    }
+  ],
+  "assignments": [],
+  "periodConfigs": [
+    {
+      "day": 0,
+      "period": "Morning",
+      "isActive": true
+    },
+    {
+      "day": 0,
+      "period": "Afternoon",
+      "isActive": true
+    },
+    {
+      "day": 0,
+      "period": "Evening",
+      "isActive": false
+    },
+    {
+      "day": 1,
+      "period": "Morning",
+      "isActive": true
+    },
+    {
+      "day": 1,
+      "period": "Afternoon",
+      "isActive": true
+    },
+    {
+      "day": 1,
+      "period": "Evening",
+      "isActive": false
+    },
+    {
+      "day": 2,
+      "period": "Morning",
+      "isActive": true
+    },
+    {
+      "day": 2,
+      "period": "Afternoon",
+      "isActive": false
+    },
+    {
+      "day": 2,
+      "period": "Evening",
+      "isActive": false
+    },
+    {
+      "day": 3,
+      "period": "Morning",
+      "isActive": true
+    },
+    {
+      "day": 3,
+      "period": "Afternoon",
+      "isActive": true
+    },
+    {
+      "day": 3,
+      "period": "Evening",
+      "isActive": false
+    },
+    {
+      "day": 4,
+      "period": "Morning",
+      "isActive": true
+    },
+    {
+      "day": 4,
+      "period": "Afternoon",
+      "isActive": false
+    },
+    {
+      "day": 4,
+      "period": "Evening",
+      "isActive": false
+    },
+    {
+      "day": 5,
+      "period": "Morning",
+      "isActive": false
+    },
+    {
+      "day": 5,
+      "period": "Afternoon",
+      "isActive": false
+    },
+    {
+      "day": 5,
+      "period": "Evening",
+      "isActive": false
+    },
+    {
+      "day": 6,
+      "period": "Morning",
+      "isActive": false
+    },
+    {
+      "day": 6,
+      "period": "Afternoon",
+      "isActive": false
+    },
+    {
+      "day": 6,
+      "period": "Evening",
+      "isActive": false
+    }
+  ],
+  "supervisors": [
+    "رئيس مصلحة التكوين",
+    "رئيس مصلحة التمهين",
+    "رئيس مصلحة المالية"
+  ],
+  "departments": [
+    "مصلحة التكوين",
+    "مصلحة التمهين",
+    "مصلحة المالية"
+  ],
+  "reportStyles": {
+    "fontFamily": "'Cairo', sans-serif",
+    "headerSize": 16,
+    "titleSize": 24,
+    "tableSize": 14,
+    "footerSize": 16
+  }
+}
