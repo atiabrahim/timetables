@@ -1,284 +1,126 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Download, Upload, Database, MapPin, AlertTriangle } from "lucide-react";
-import { showSuccess, showError } from "../utils/toast";
-import { exportToXml, parseXml } from "../lib/export-utils";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Plus, Trash2, BookOpen, Users2, MapPin, Database } from "lucide-react";
+import { showSuccess } from "../utils/toast";
 
 const Settings = () => {
   const { 
-    t, 
-    departments, 
-    setDepartments, 
-    rooms,
-    setRooms,
-    periodConfigs, 
-    setPeriodConfigs, 
-    employees, 
-    setEmployees, 
-    assignments, 
-    setAssignments,
-    isRTL 
+    t, departments, setDepartments, rooms, setRooms, 
+    classes, setClasses, subjects, setSubjects, isRTL 
   } = useApp();
   
   const [newDept, setNewDept] = useState("");
   const [newRoom, setNewRoom] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [newClass, setNewClass] = useState("");
+  const [newSubject, setNewSubject] = useState("");
 
-  const addDept = () => {
-    if (newDept && !departments.includes(newDept)) {
-      setDepartments([...departments, newDept]);
-      setNewDept("");
-      showSuccess(isRTL ? "تمت إضافة المصلحة" : "Department added");
+  const addItem = (val: string, setVal: any, list: any[], setList: any[], msg: string) => {
+    if (val && !list.find(i => (i.name || i) === val)) {
+      const newItem = typeof list[0] === 'object' ? { id: Math.random().toString(36).substr(2, 9), name: val } : val;
+      setList([...list, newItem]);
+      setVal("");
+      showSuccess(msg);
     }
-  };
-
-  const addRoom = () => {
-    if (newRoom && !rooms.includes(newRoom)) {
-      setRooms([...rooms, newRoom]);
-      setNewRoom("");
-      showSuccess(isRTL ? "تمت إضافة القاعة" : "Room added");
-    }
-  };
-
-  const removeDept = (dept: string) => {
-    setDepartments(departments.filter(d => d !== dept));
-  };
-
-  const removeRoom = (room: string) => {
-    setRooms(rooms.filter(r => r !== room));
-  };
-
-  const togglePeriod = (day: number, period: string) => {
-    setPeriodConfigs(periodConfigs.map(c => 
-      (c.day === day && c.period === period) ? { ...c, isActive: !c.isActive } : c
-    ));
-  };
-
-  const handleClearAll = () => {
-    setEmployees([]);
-    setAssignments([]);
-    setDepartments([]);
-    setRooms([]);
-    localStorage.removeItem("academic_scheduler_data");
-    showSuccess(isRTL ? "تم مسح كافة البيانات بنجاح" : "All data cleared successfully");
-    window.location.reload();
-  };
-
-  const handleExportXml = () => {
-    const data = { employees, departments, rooms, periodConfigs, assignments };
-    exportToXml(data, `scheduler_backup_${new Date().toISOString().split('T')[0]}`);
-    showSuccess(isRTL ? "تم تصدير البيانات بنجاح" : "Data exported successfully");
-  };
-
-  const handleImportXml = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const text = e.target?.result as string;
-        const data = parseXml(text);
-        
-        setEmployees(data.employees);
-        setDepartments(data.departments);
-        if (data.rooms) setRooms(data.rooms);
-        setPeriodConfigs(data.periodConfigs);
-        setAssignments(data.assignments);
-        
-        showSuccess(isRTL ? "تم استيراد البيانات بنجاح" : "Data imported successfully");
-      } catch (err) {
-        showError(isRTL ? "فشل استيراد الملف. تأكد من صيغة XML" : "Failed to import file. Check XML format");
-      }
-    };
-    reader.readAsText(file);
   };
 
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-emerald-900">{t.settings}</h2>
-        
-        <div className="flex gap-3">
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            onChange={handleImportXml} 
-            accept=".xml" 
-            className="hidden" 
-          />
-          <Button 
-            variant="outline" 
-            className="border-emerald-200 text-emerald-700 rounded-xl"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Upload size={18} className={isRTL ? "ml-2" : "mr-2"} />
-            {isRTL ? "استيراد XML" : "Import XML"}
-          </Button>
-          <Button 
-            className="bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-100"
-            onClick={handleExportXml}
-          >
-            <Download size={18} className={isRTL ? "ml-2" : "mr-2"} />
-            {isRTL ? "تصدير XML" : "Export XML"}
-          </Button>
-        </div>
-      </div>
+      <h2 className="text-2xl font-bold text-emerald-900">{t.settings}</h2>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Departments Management */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Classes */}
         <Card className="border-none shadow-lg glass-card">
           <CardHeader className="flex flex-row items-center gap-2">
-            <Database className="text-emerald-600" size={20} />
-            <CardTitle className="text-emerald-800">{t.stats.departments}</CardTitle>
+            <Users2 className="text-emerald-600" size={20} />
+            <CardTitle className="text-sm">{isRTL ? "الأفواج التربوية" : "Classes"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
-              <Input 
-                value={newDept} 
-                onChange={(e) => setNewDept(e.target.value)} 
-                placeholder={isRTL ? "مصلحة جديدة" : "New Dept"}
-                className="border-emerald-100 focus:ring-emerald-500"
-              />
-              <Button onClick={addDept} className="bg-emerald-600 hover:bg-emerald-700">
-                <Plus size={18} />
-              </Button>
+              <Input value={newClass} onChange={(e) => setNewClass(e.target.value)} placeholder="..." className="h-9 text-xs" />
+              <Button size="sm" onClick={() => addItem(newClass, setNewClass, classes, setClasses, "Class added")}><Plus size={16} /></Button>
             </div>
-            <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2">
-              {departments.map(dept => (
-                <div key={dept} className="flex items-center justify-between p-3 bg-white/50 border border-emerald-50 rounded-xl">
-                  <span className="font-medium text-emerald-900 text-sm">{dept}</span>
-                  <Button variant="ghost" size="icon" onClick={() => removeDept(dept)} className="text-red-400 hover:text-red-600">
-                    <Trash2 size={16} />
-                  </Button>
+            <div className="space-y-1 max-h-40 overflow-y-auto">
+              {classes.map(c => (
+                <div key={c.id} className="flex items-center justify-between p-2 bg-white/50 rounded-lg text-xs">
+                  <span>{c.name}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400" onClick={() => setClasses(classes.filter(i => i.id !== c.id))}><Trash2 size={14} /></Button>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Rooms Management */}
+        {/* Subjects */}
+        <Card className="border-none shadow-lg glass-card">
+          <CardHeader className="flex flex-row items-center gap-2">
+            <BookOpen className="text-emerald-600" size={20} />
+            <CardTitle className="text-sm">{isRTL ? "المواد الدراسية" : "Subjects"}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="..." className="h-9 text-xs" />
+              <Button size="sm" onClick={() => addItem(newSubject, setNewSubject, subjects, setSubjects, "Subject added")}><Plus size={16} /></Button>
+            </div>
+            <div className="space-y-1 max-h-40 overflow-y-auto">
+              {subjects.map(s => (
+                <div key={s.id} className="flex items-center justify-between p-2 bg-white/50 rounded-lg text-xs">
+                  <span>{s.name}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400" onClick={() => setSubjects(subjects.filter(i => i.id !== s.id))}><Trash2 size={14} /></Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Rooms */}
         <Card className="border-none shadow-lg glass-card">
           <CardHeader className="flex flex-row items-center gap-2">
             <MapPin className="text-emerald-600" size={20} />
-            <CardTitle className="text-emerald-800">{isRTL ? "القاعات" : "Rooms"}</CardTitle>
+            <CardTitle className="text-sm">{isRTL ? "القاعات" : "Rooms"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
-              <Input 
-                value={newRoom} 
-                onChange={(e) => setNewRoom(e.target.value)} 
-                placeholder={isRTL ? "قاعة جديدة" : "New Room"}
-                className="border-emerald-100 focus:ring-emerald-500"
-              />
-              <Button onClick={addRoom} className="bg-emerald-600 hover:bg-emerald-700">
-                <Plus size={18} />
-              </Button>
+              <Input value={newRoom} onChange={(e) => setNewRoom(e.target.value)} placeholder="..." className="h-9 text-xs" />
+              <Button size="sm" onClick={() => addItem(newRoom, setNewRoom, rooms, setRooms, "Room added")}><Plus size={16} /></Button>
             </div>
-            <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2">
-              {rooms.map(room => (
-                <div key={room} className="flex items-center justify-between p-3 bg-white/50 border border-emerald-50 rounded-xl">
-                  <span className="font-medium text-emerald-900 text-sm">{room}</span>
-                  <Button variant="ghost" size="icon" onClick={() => removeRoom(room)} className="text-red-400 hover:text-red-600">
-                    <Trash2 size={16} />
-                  </Button>
+            <div className="space-y-1 max-h-40 overflow-y-auto">
+              {rooms.map(r => (
+                <div key={r} className="flex items-center justify-between p-2 bg-white/50 rounded-lg text-xs">
+                  <span>{r}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400" onClick={() => setRooms(rooms.filter(i => i !== r))}><Trash2 size={14} /></Button>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Period Configuration */}
+        {/* Departments */}
         <Card className="border-none shadow-lg glass-card">
           <CardHeader className="flex flex-row items-center gap-2">
             <Database className="text-emerald-600" size={20} />
-            <CardTitle className="text-emerald-800">{isRTL ? "الفترات" : "Periods"}</CardTitle>
+            <CardTitle className="text-sm">{t.stats.departments}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4 max-h-[350px] overflow-y-auto pr-2">
-              {t.days.map((day: string, idx: number) => (
-                <div key={day} className="space-y-2 p-2 bg-white/30 rounded-xl border border-emerald-50/50">
-                  <h4 className="font-bold text-emerald-700 text-xs">{day}</h4>
-                  <div className="flex gap-4">
-                    {["Morning", "Afternoon"].map(p => {
-                      const config = periodConfigs.find(c => c.day === idx && c.period === p);
-                      return (
-                        <div key={p} className="flex items-center space-x-2 rtl:space-x-reverse">
-                          <Switch 
-                            id={`${idx}-${p}`} 
-                            checked={config?.isActive} 
-                            onCheckedChange={() => togglePeriod(idx, p)}
-                            className="scale-75 data-[state=checked]:bg-emerald-600"
-                          />
-                          <Label htmlFor={`${idx}-${p}`} className="text-[10px] font-medium text-emerald-800">
-                            {t[p.toLowerCase() as keyof typeof t]}
-                          </Label>
-                        </div>
-                      );
-                    })}
-                  </div>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="..." className="h-9 text-xs" />
+              <Button size="sm" onClick={() => addItem(newDept, setNewDept, departments, setDepartments, "Dept added")}><Plus size={16} /></Button>
+            </div>
+            <div className="space-y-1 max-h-40 overflow-y-auto">
+              {departments.map(d => (
+                <div key={d} className="flex items-center justify-between p-2 bg-white/50 rounded-lg text-xs">
+                  <span>{d}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400" onClick={() => setDepartments(departments.filter(i => i !== d))}><Trash2 size={14} /></Button>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Danger Zone */}
-      <Card className="border-red-100 bg-red-50/30">
-        <CardHeader>
-          <CardTitle className="text-red-800 flex items-center gap-2">
-            <AlertTriangle size={20} />
-            {isRTL ? "منطقة الخطر" : "Danger Zone"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-red-600">
-              {isRTL ? "سيؤدي هذا الإجراء إلى حذف كافة الموظفين والتعيينات والإعدادات بشكل نهائي." : "This action will permanently delete all employees, assignments, and settings."}
-            </p>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="rounded-xl">
-                  {isRTL ? "مسح كافة البيانات" : "Clear All Data"}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="border-red-100">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{isRTL ? "هل أنت متأكد تماماً؟" : "Are you absolutely sure?"}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {isRTL ? "لا يمكن التراجع عن هذا الإجراء. سيتم حذف كل شيء من ذاكرة المتصفح." : "This action cannot be undone. Everything will be deleted from your browser storage."}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleClearAll} className="bg-red-600 hover:bg-red-700 rounded-xl">
-                    {isRTL ? "نعم، امسح الكل" : "Yes, Clear All"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };

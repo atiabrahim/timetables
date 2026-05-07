@@ -14,7 +14,8 @@ interface Assignment {
   employeeId: string;
   day: number;
   period: string;
-  subject: string;
+  subjectId: string;
+  classId: string;
   department: string;
   room?: string;
 }
@@ -23,6 +24,16 @@ interface PeriodConfig {
   day: number;
   period: string;
   isActive: boolean;
+}
+
+interface AcademicClass {
+  id: string;
+  name: string;
+}
+
+interface Subject {
+  id: string;
+  name: string;
 }
 
 interface User {
@@ -44,6 +55,10 @@ interface AppContextType {
   setDepartments: React.Dispatch<React.SetStateAction<string[]>>;
   rooms: string[];
   setRooms: React.Dispatch<React.SetStateAction<string[]>>;
+  classes: AcademicClass[];
+  setClasses: React.Dispatch<React.SetStateAction<AcademicClass[]>>;
+  subjects: Subject[];
+  setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
   periodConfigs: PeriodConfig[];
   setPeriodConfigs: React.Dispatch<React.SetStateAction<PeriodConfig[]>>;
   t: any;
@@ -52,7 +67,7 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEY = "academic_scheduler_data";
+const STORAGE_KEY = "academic_scheduler_v2_data";
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>("ar");
@@ -65,9 +80,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
   const [rooms, setRooms] = useState<string[]>([]);
+  const [classes, setClasses] = useState<AcademicClass[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>([]);
 
-  // تحميل البيانات عند بدء التشغيل
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
@@ -76,16 +92,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setAssignments(parsed.assignments || []);
       setDepartments(parsed.departments || []);
       setRooms(parsed.rooms || []);
+      setClasses(parsed.classes || []);
+      setSubjects(parsed.subjects || []);
       setPeriodConfigs(parsed.periodConfigs || []);
     } else {
-      // بيانات افتراضية إذا لم يوجد شيء محفوظ
       const initialData = {
         employees: [
           { id: "1", firstName: "الزين,", lastName: "إبراهيم", category: "Full-time", observation: "aSc Import" },
           { id: "2", firstName: "اللبي,", lastName: "عماد", category: "Full-time", observation: "aSc Import" }
         ],
-        departments: ["مصلحة التكوين", "مصلحة التمهين", "مصلحة المالية"],
-        rooms: ["قاعة 01", "قاعة 02", "مخبر الإعلام الآلي"],
+        departments: ["مصلحة التكوين", "مصلحة التمهين"],
+        rooms: ["قاعة 01", "قاعة 02", "مخبر 01"],
+        classes: [
+          { id: "c1", name: "السنة الأولى - فوج 1" },
+          { id: "c2", name: "السنة الثانية - فوج 1" }
+        ],
+        subjects: [
+          { id: "s1", name: "الرياضيات" },
+          { id: "s2", name: "الفيزياء" },
+          { id: "s3", name: "الإعلام الآلي" }
+        ],
         periodConfigs: Array.from({ length: 5 }).flatMap((_, day) => [
           { day, period: "Morning", isActive: true },
           { day, period: "Afternoon", isActive: true }
@@ -95,17 +121,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setEmployees(initialData.employees);
       setDepartments(initialData.departments);
       setRooms(initialData.rooms);
+      setClasses(initialData.classes);
+      setSubjects(initialData.subjects);
       setPeriodConfigs(initialData.periodConfigs);
     }
   }, []);
 
-  // حفظ البيانات عند أي تغيير
   useEffect(() => {
     if (employees.length > 0 || departments.length > 0) {
-      const dataToSave = { employees, assignments, departments, rooms, periodConfigs };
+      const dataToSave = { employees, assignments, departments, rooms, classes, subjects, periodConfigs };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     }
-  }, [employees, assignments, departments, rooms, periodConfigs]);
+  }, [employees, assignments, departments, rooms, classes, subjects, periodConfigs]);
 
   const login = (username: string, role: User["role"]) => {
     const newUser = { username, role };
@@ -125,7 +152,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider value={{ 
       language, setLanguage, user, login, logout, 
       employees, setEmployees, assignments, setAssignments,
-      departments, setDepartments, rooms, setRooms, periodConfigs, setPeriodConfigs,
+      departments, setDepartments, rooms, setRooms,
+      classes, setClasses, subjects, setSubjects,
+      periodConfigs, setPeriodConfigs,
       t, isRTL 
     }}>
       <div dir={isRTL ? "rtl" : "ltr"} className={isRTL ? "font-arabic" : ""}>
