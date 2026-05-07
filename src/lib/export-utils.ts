@@ -75,7 +75,7 @@ export const parseXml = (xmlText: string) => {
 
   const rooms = Array.from(xmlDoc.getElementsByTagName("Room")).map(el => 
     getAttr(el, "name")
-  });
+  );
 
   const classes = Array.from(xmlDoc.getElementsByTagName("Class")).map(el => ({
     id: getAttr(el, "id"),
