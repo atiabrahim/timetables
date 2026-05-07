@@ -61,6 +61,7 @@ interface AppContextType {
   setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
   periodConfigs: PeriodConfig[];
   setPeriodConfigs: React.Dispatch<React.SetStateAction<PeriodConfig[]>>;
+  importData: (data: any) => void;
   t: any;
   isRTL: boolean;
 }
@@ -128,11 +129,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   useEffect(() => {
-    if (employees.length > 0 || departments.length > 0) {
-      const dataToSave = { employees, assignments, departments, rooms, classes, subjects, periodConfigs };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-    }
+    const dataToSave = { employees, assignments, departments, rooms, classes, subjects, periodConfigs };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
   }, [employees, assignments, departments, rooms, classes, subjects, periodConfigs]);
+
+  const importData = (data: any) => {
+    setEmployees(data.employees || []);
+    setAssignments(data.assignments || []);
+    setDepartments(data.departments || []);
+    setRooms(data.rooms || []);
+    setClasses(data.classes || []);
+    setSubjects(data.subjects || []);
+    setPeriodConfigs(data.periodConfigs || []);
+    
+    // حفظ فوري لضمان عدم الضياع عند التحديث
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  };
 
   const login = (username: string, role: User["role"]) => {
     const newUser = { username, role };
@@ -155,6 +167,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       departments, setDepartments, rooms, setRooms,
       classes, setClasses, subjects, setSubjects,
       periodConfigs, setPeriodConfigs,
+      importData,
       t, isRTL 
     }}>
       <div dir={isRTL ? "rtl" : "ltr"} className={isRTL ? "font-arabic" : ""}>

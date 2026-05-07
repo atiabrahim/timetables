@@ -5,8 +5,6 @@ import { useApp } from "../context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Plus, Trash2, Download, Upload, Database, MapPin, AlertTriangle, Users2, BookOpen } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { exportToXml, parseXml } from "../lib/export-utils";
@@ -29,9 +27,8 @@ const Settings = () => {
     rooms, setRooms,
     classes, setClasses,
     subjects, setSubjects,
-    periodConfigs, setPeriodConfigs, 
-    employees, setEmployees, 
-    assignments, setAssignments,
+    employees, assignments,
+    importData,
     isRTL 
   } = useApp();
   
@@ -51,20 +48,33 @@ const Settings = () => {
   };
 
   const handleClearAll = () => {
-    setEmployees([]);
-    setAssignments([]);
-    setDepartments([]);
-    setRooms([]);
-    setClasses([]);
-    setSubjects([]);
-    localStorage.removeItem("academic_scheduler_v2_data");
+    importData({
+      employees: [],
+      assignments: [],
+      departments: [],
+      rooms: [],
+      classes: [],
+      subjects: [],
+      periodConfigs: []
+    });
     showSuccess(isRTL ? "تم مسح كافة البيانات بنجاح" : "All data cleared successfully");
     window.location.reload();
   };
 
   const handleExportXml = () => {
-    const data = { employees, departments, rooms, classes, subjects, periodConfigs, assignments };
-    exportToXml(data, `scheduler_full_backup_${new Date().toISOString().split('T')[0]}`);
+    const data = { 
+      employees, 
+      departments, 
+      rooms, 
+      classes, 
+      subjects, 
+      assignments,
+      periodConfigs: Array.from({ length: 5 }).flatMap((_, day) => [
+        { day, period: "Morning", isActive: true },
+        { day, period: "Afternoon", isActive: true }
+      ])
+    };
+    exportToXml(data, `scheduler_backup_${new Date().toISOString().split('T')[0]}`);
     showSuccess(isRTL ? "تم تصدير كافة البيانات بنجاح" : "All data exported successfully");
   };
 
@@ -78,16 +88,17 @@ const Settings = () => {
         const text = e.target?.result as string;
         const data = parseXml(text);
         
-        // تحديث كافة الحالات
-        setEmployees(data.employees);
-        setDepartments(data.departments);
-        setRooms(data.rooms);
-        setClasses(data.classes);
-        setSubjects(data.subjects);
-        setPeriodConfigs(data.periodConfigs);
-        setAssignments(data.assignments);
-        
+        // فحص بسيط للتأكد من أن الملف يحتوي على بيانات
+        if (data.employees.length === 0 && data.assignments.length === 0 && data.classes.length === 0) {
+          showError(isRTL ? "الملف فارغ أو بصيغة غير صحيحة" : "File is empty or invalid format");
+          return;
+        }
+
+        importData(data);
         showSuccess(isRTL ? "تم استيراد كافة المعلومات بنجاح" : "All information imported successfully");
+        
+        // إعادة تحميل الصفحة لضمان تحديث كافة المكونات التي تعتمد على السياق
+        setTimeout(() => window.location.reload(), 1000);
       } catch (err) {
         showError(isRTL ? "فشل استيراد الملف. تأكد من صيغة XML" : "Failed to import file. Check XML format");
       }
