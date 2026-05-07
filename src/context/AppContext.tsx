@@ -61,7 +61,6 @@ interface AppContextType {
   setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
   periodConfigs: PeriodConfig[];
   setPeriodConfigs: React.Dispatch<React.SetStateAction<PeriodConfig[]>>;
-  importAllData: (data: any) => void;
   t: any;
   isRTL: boolean;
 }
@@ -84,9 +83,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [classes, setClasses] = useState<AcademicClass[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>([]);
-  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load initial data
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
@@ -99,46 +96,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setSubjects(parsed.subjects || []);
       setPeriodConfigs(parsed.periodConfigs || []);
     } else {
-      // Default data if empty
-      setDepartments(["مصلحة التكوين", "مصلحة التمهين"]);
-      setRooms(["قاعة 01", "قاعة 02"]);
-      setPeriodConfigs(Array.from({ length: 5 }).flatMap((_, day) => [
-        { day, period: "Morning", isActive: true },
-        { day, period: "Afternoon", isActive: true }
-      ]));
+      const initialData = {
+        employees: [
+          { id: "1", firstName: "الزين,", lastName: "إبراهيم", category: "Full-time", observation: "aSc Import" },
+          { id: "2", firstName: "اللبي,", lastName: "عماد", category: "Full-time", observation: "aSc Import" }
+        ],
+        departments: ["مصلحة التكوين", "مصلحة التمهين"],
+        rooms: ["قاعة 01", "قاعة 02", "مخبر 01"],
+        classes: [
+          { id: "c1", name: "السنة الأولى - فوج 1" },
+          { id: "c2", name: "السنة الثانية - فوج 1" }
+        ],
+        subjects: [
+          { id: "s1", name: "الرياضيات" },
+          { id: "s2", name: "الفيزياء" },
+          { id: "s3", name: "الإعلام الآلي" }
+        ],
+        periodConfigs: Array.from({ length: 5 }).flatMap((_, day) => [
+          { day, period: "Morning", isActive: true },
+          { day, period: "Afternoon", isActive: true }
+        ]),
+        assignments: []
+      };
+      setEmployees(initialData.employees);
+      setDepartments(initialData.departments);
+      setRooms(initialData.rooms);
+      setClasses(initialData.classes);
+      setSubjects(initialData.subjects);
+      setPeriodConfigs(initialData.periodConfigs);
     }
-    setIsInitialized(true);
   }, []);
 
-  // Save data whenever it changes
   useEffect(() => {
-    if (isInitialized) {
+    if (employees.length > 0 || departments.length > 0) {
       const dataToSave = { employees, assignments, departments, rooms, classes, subjects, periodConfigs };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     }
-  }, [employees, assignments, departments, rooms, classes, subjects, periodConfigs, isInitialized]);
-
-  const importAllData = (data: any) => {
-    setEmployees(data.employees || []);
-    setAssignments(data.assignments || []);
-    setDepartments(data.departments || []);
-    setRooms(data.rooms || []);
-    setClasses(data.classes || []);
-    setSubjects(data.subjects || []);
-    setPeriodConfigs(data.periodConfigs || []);
-    
-    // Force immediate save to localStorage
-    const dataToSave = { 
-      employees: data.employees || [], 
-      assignments: data.assignments || [], 
-      departments: data.departments || [], 
-      rooms: data.rooms || [], 
-      classes: data.classes || [], 
-      subjects: data.subjects || [], 
-      periodConfigs: data.periodConfigs || [] 
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  };
+  }, [employees, assignments, departments, rooms, classes, subjects, periodConfigs]);
 
   const login = (username: string, role: User["role"]) => {
     const newUser = { username, role };
@@ -161,7 +155,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       departments, setDepartments, rooms, setRooms,
       classes, setClasses, subjects, setSubjects,
       periodConfigs, setPeriodConfigs,
-      importAllData,
       t, isRTL 
     }}>
       <div dir={isRTL ? "rtl" : "ltr"} className={isRTL ? "font-arabic" : ""}>
