@@ -7,9 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Download, Upload, Database, MapPin } from "lucide-react";
+import { Plus, Trash2, Download, Upload, Database, MapPin, AlertTriangle } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { exportToXml, parseXml } from "../lib/export-utils";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Settings = () => {
   const { 
@@ -59,6 +70,16 @@ const Settings = () => {
     setPeriodConfigs(periodConfigs.map(c => 
       (c.day === day && c.period === period) ? { ...c, isActive: !c.isActive } : c
     ));
+  };
+
+  const handleClearAll = () => {
+    setEmployees([]);
+    setAssignments([]);
+    setDepartments([]);
+    setRooms([]);
+    localStorage.removeItem("academic_scheduler_data");
+    showSuccess(isRTL ? "تم مسح كافة البيانات بنجاح" : "All data cleared successfully");
+    window.location.reload();
   };
 
   const handleExportXml = () => {
@@ -220,6 +241,44 @@ const Settings = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Danger Zone */}
+      <Card className="border-red-100 bg-red-50/30">
+        <CardHeader>
+          <CardTitle className="text-red-800 flex items-center gap-2">
+            <AlertTriangle size={20} />
+            {isRTL ? "منطقة الخطر" : "Danger Zone"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-red-600">
+              {isRTL ? "سيؤدي هذا الإجراء إلى حذف كافة الموظفين والتعيينات والإعدادات بشكل نهائي." : "This action will permanently delete all employees, assignments, and settings."}
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="rounded-xl">
+                  {isRTL ? "مسح كافة البيانات" : "Clear All Data"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="border-red-100">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{isRTL ? "هل أنت متأكد تماماً؟" : "Are you absolutely sure?"}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {isRTL ? "لا يمكن التراجع عن هذا الإجراء. سيتم حذف كل شيء من ذاكرة المتصفح." : "This action cannot be undone. Everything will be deleted from your browser storage."}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearAll} className="bg-red-600 hover:bg-red-700 rounded-xl">
+                    {isRTL ? "نعم، امسح الكل" : "Yes, Clear All"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
