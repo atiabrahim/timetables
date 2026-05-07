@@ -12,7 +12,7 @@ import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { Label } from "./ui/label";
 import { Alert, AlertDescription } from "./ui/alert";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, MapPin } from "lucide-react";
 import { showError } from "../utils/toast";
 
 interface AssignmentDialogProps {
@@ -26,44 +26,60 @@ interface AssignmentDialogProps {
 const AssignmentDialog: React.FC<AssignmentDialogProps> = ({ 
   isOpen, onClose, day, period, existingAssignment 
 }) => {
-  const { t, employees, departments, assignments, setAssignments } = useApp();
+  const { t, employees, departments, rooms, assignments, setAssignments, isRTL } = useApp();
   const [employeeId, setEmployeeId] = useState(existingAssignment?.employeeId || "");
   const [subject, setSubject] = useState(existingAssignment?.subject || "");
   const [department, setDepartment] = useState(existingAssignment?.department || departments[0]);
+  const [room, setRoom] = useState(existingAssignment?.room || rooms[0]);
   const [conflict, setConflict] = useState<string | null>(null);
 
   useEffect(() => {
-    if (employeeId) {
-      const isBusy = assignments.find(a => 
+    if (employeeId || room) {
+      // التحقق من تعارض الموظف
+      const empConflict = assignments.find(a => 
         a.employeeId === employeeId && 
         a.day === day && 
-        a.period === period && 
+        a.period.toLowerCase() === period.toLowerCase() && 
         a.id !== existingAssignment?.id
       );
       
-      if (isBusy) {
+      // التحقق من تعارض القاعة
+      const roomConflict = assignments.find(a => 
+        a.room === room && 
+        a.day === day && 
+        a.period.toLowerCase() === period.toLowerCase() && 
+        a.id !== existingAssignment?.id
+      );
+
+      if (empConflict) {
         const emp = employees.find(e => e.id === employeeId);
-        setConflict(`${emp?.firstName} ${emp?.lastName} is already assigned to ${isBusy.subject} during this period.`);
+        setConflict(isRTL 
+          ? `${emp?.firstName} ${emp?.lastName} لديه تعيين بالفعل في هذا الوقت.` 
+          : `${emp?.firstName} ${emp?.lastName} is already assigned during this period.`);
+      } else if (roomConflict) {
+        setConflict(isRTL 
+          ? `القاعة ${room} محجوزة بالفعل في هذا الوقت.` 
+          : `Room ${room} is already booked during this period.`);
       } else {
         setConflict(null);
       }
     }
-  }, [employeeId, day, period, assignments, existingAssignment, employees]);
+  }, [employeeId, room, day, period, assignments, existingAssignment, employees, isRTL]);
 
   const handleSave = () => {
     if (!employeeId || !subject) {
-      showError("Please fill in all required fields");
+      showError(isRTL ? "يرجى ملء جميع الحقول المطلوبة" : "Please fill in all required fields");
       return;
     }
     if (conflict) {
-      showError("Conflict detected. Please resolve before saving.");
+      showError(isRTL ? "يوجد تعارض، يرجى الحل قبل الحفظ" : "Conflict detected. Please resolve before saving.");
       return;
     }
 
     if (existingAssignment) {
       setAssignments(assignments.map(a => 
         a.id === existingAssignment.id 
-          ? { ...a, employeeId, subject, department } 
+          ? { ...a, employeeId, subject, department, room } 
           : a
       ));
     } else {
@@ -73,7 +89,8 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
         day,
         period,
         subject,
-        department
+        department,
+        room
       };
       setAssignments([...assignments, newAssignment]);
     }
@@ -101,7 +118,7 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
             <Label className="text-emerald-700 font-semibold">{t.employees}</Label>
             <Select value={employeeId} onValueChange={setEmployeeId}>
               <SelectTrigger className="border-emerald-100 focus:ring-emerald-500">
-                <SelectValue placeholder="Select Employee" />
+                <SelectValue placeholder={isRTL ? "اختر الموظف" : "Select Employee"} />
               </SelectTrigger>
               <SelectContent>
                 {employees.map(emp => (
@@ -114,7 +131,7 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
           </div>
           
           <div className="grid gap-2">
-            <Label className="text-emerald-700 font-semibold">Subject / Activity</Label>
+            <Label className="text-emerald-700 font-semibold">{isRTL ? "المادة / النشاط" : "Subject / Activity"}</Label>
             <Input 
               value={subject} 
               onChange={(e) => setSubject(e.target.value)} 
@@ -122,19 +139,34 @@ const AssignmentDialog: React.FC<AssignmentDialogProps> = ({
               className="border-emerald-100 focus:ring-emerald-500"
             />
           </div>
-          
-          <div className="grid gap-2">
-            <Label className="text-emerald-700 font-semibold">{t.stats.departments}</Label>
-            <Select value={department} onValueChange={setDepartment}>
-              <SelectTrigger className="border-emerald-100 focus:ring-emerald-500">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {departments.map(dept => (
-                  <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label className="text-emerald-700 font-semibold">{t.stats.departments}</Label>
+              <Select value={department} onValueChange={setDepartment}>
+                <SelectTrigger className="border-emerald-100">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {departments.map(dept => (
+                    <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label className="text-emerald-700 font-semibold">{isRTL ? "القاعة" : "Room"}</Label>
+              <Select value={room} onValueChange={setRoom}>
+                <SelectTrigger className="border-emerald-100">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {rooms.map(r => (
+                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
         
