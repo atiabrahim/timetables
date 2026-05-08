@@ -13,7 +13,10 @@ import {
   Clock, 
   CheckCircle2,
   AlertCircle,
-  ShieldAlert
+  ShieldAlert,
+  PlusCircle,
+  FileText,
+  Settings as SettingsIcon
 } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { cn } from "@/lib/utils";
@@ -23,41 +26,19 @@ const Index = () => {
   const navigate = useNavigate();
 
   const stats = [
-    { 
-      label: isRTL ? "الموظفون" : "Employees", 
-      value: employees.length, 
-      icon: Users, 
-      color: "bg-blue-500", 
-      shadow: "shadow-blue-100",
-      path: "/employees"
-    },
-    { 
-      label: isRTL ? "الأفواج" : "Classes", 
-      value: classes.length, 
-      icon: Home, 
-      color: "bg-emerald-500", 
-      shadow: "shadow-emerald-100",
-      path: "/classes"
-    },
-    { 
-      label: isRTL ? "المواد" : "Subjects", 
-      value: subjects.length, 
-      icon: BookOpen, 
-      color: "bg-amber-500", 
-      shadow: "shadow-amber-100",
-      path: "/subjects"
-    },
-    { 
-      label: isRTL ? "الحصص" : "Lessons", 
-      value: assignments.length, 
-      icon: Calendar, 
-      color: "bg-purple-500", 
-      shadow: "shadow-purple-100",
-      path: "/schedule"
-    },
+    { label: isRTL ? "الموظفون" : "Employees", value: employees.length, icon: Users, color: "bg-blue-500", path: "/employees" },
+    { label: isRTL ? "الأفواج" : "Classes", value: classes.length, icon: Home, color: "bg-emerald-500", path: "/classes" },
+    { label: isRTL ? "المواد" : "Subjects", value: subjects.length, icon: BookOpen, color: "bg-amber-500", path: "/subjects" },
+    { label: isRTL ? "الحصص" : "Lessons", value: assignments.length, icon: Calendar, color: "bg-purple-500", path: "/schedule" },
   ];
 
-  // Conflict Detection Logic
+  const quickActions = [
+    { label: isRTL ? "إضافة موظف" : "Add Employee", icon: PlusCircle, path: "/employees", color: "text-blue-600 bg-blue-50" },
+    { label: isRTL ? "تعديل الجدول" : "Edit Schedule", icon: Calendar, path: "/schedule", color: "text-purple-600 bg-purple-50" },
+    { label: isRTL ? "إعدادات النظام" : "Settings", icon: SettingsIcon, path: "/settings", color: "text-emerald-600 bg-emerald-50" },
+    { label: isRTL ? "تقارير" : "Reports", icon: FileText, path: "/schedule", color: "text-amber-600 bg-amber-50" },
+  ];
+
   const conflicts = useMemo(() => {
     const roomConflicts: any[] = [];
     const teacherConflicts: any[] = [];
@@ -70,20 +51,15 @@ const Index = () => {
     }, {});
 
     Object.values(grouped).forEach((periodAssignments: any) => {
-      // Room conflicts
       const roomMap: any = {};
-      periodAssignments.forEach((a: any) => {
-        if (a.room) {
-          if (roomMap[a.room]) roomConflicts.push({ room: a.room, day: a.day, period: a.period });
-          roomMap[a.room] = true;
-        }
-      });
-
-      // Teacher conflicts
       const teacherMap: any = {};
       periodAssignments.forEach((a: any) => {
+        if (a.room) {
+          if (roomMap[a.room]) roomConflicts.push(a);
+          roomMap[a.room] = true;
+        }
         if (a.employeeId) {
-          if (teacherMap[a.employeeId]) teacherConflicts.push({ teacher: a.employeeId, day: a.day, period: a.period });
+          if (teacherMap[a.employeeId]) teacherConflicts.push(a);
           teacherMap[a.employeeId] = true;
         }
       });
@@ -119,20 +95,13 @@ const Index = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
-          <Card 
-            key={idx} 
-            onClick={() => navigate(stat.path)}
-            className="border-none shadow-xl shadow-emerald-100/20 hover:translate-y-[-4px] transition-all duration-300 rounded-3xl overflow-hidden group bg-white cursor-pointer active:scale-95"
-          >
+          <Card key={idx} onClick={() => navigate(stat.path)} className="border-none shadow-xl shadow-emerald-100/20 hover:translate-y-[-4px] transition-all duration-300 rounded-3xl overflow-hidden group bg-white cursor-pointer">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
-                <div className={cn("p-3 rounded-2xl text-white", stat.color, stat.shadow)}>
+                <div className={cn("p-3 rounded-2xl text-white shadow-lg", stat.color)}>
                   <stat.icon size={24} />
                 </div>
-                <div className="flex items-center text-emerald-500 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded-lg">
-                  <ArrowUpRight size={12} className={isRTL ? "ml-1" : "mr-1"} />
-                  {isRTL ? "عرض الكل" : "VIEW ALL"}
-                </div>
+                <ArrowUpRight size={20} className="text-emerald-200 group-hover:text-emerald-500 transition-colors" />
               </div>
               <div className="mt-5">
                 <p className="text-emerald-600/60 text-xs font-bold uppercase tracking-widest">{stat.label}</p>
@@ -144,39 +113,51 @@ const Index = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Chart */}
-        <Card className="lg:col-span-2 border-none shadow-xl shadow-emerald-100/20 rounded-3xl p-6 bg-white">
-          <div className="flex items-center justify-between mb-8">
-            <div>
+        <div className="lg:col-span-2 space-y-8">
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {quickActions.map((action, idx) => (
+              <button 
+                key={idx} 
+                onClick={() => navigate(action.path)}
+                className="flex flex-col items-center gap-3 p-4 bg-white rounded-3xl border border-emerald-50 hover:border-emerald-200 hover:shadow-lg transition-all group"
+              >
+                <div className={cn("p-3 rounded-2xl transition-transform group-hover:scale-110", action.color)}>
+                  <action.icon size={24} />
+                </div>
+                <span className="text-xs font-bold text-emerald-900">{action.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Main Chart */}
+          <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-3xl p-6 bg-white">
+            <div className="flex items-center justify-between mb-8">
               <h3 className="font-bold text-emerald-950 text-xl">{isRTL ? "توزيع الحصص الأسبوعي" : "Weekly Lesson Distribution"}</h3>
-              <p className="text-xs text-emerald-600/60 mt-1">{isRTL ? "عدد الحصص لكل فوج تربوي" : "Number of lessons per academic class"}</p>
+              <div className="flex items-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span className="text-[10px] text-emerald-700 font-bold uppercase">{isRTL ? "مباشر" : "Live"}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 bg-emerald-50 px-3 py-1 rounded-full">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[10px] text-emerald-700 font-bold uppercase">{isRTL ? "مباشر" : "Live"}</span>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData}>
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#064e3b', fontSize: 11, fontWeight: 600}} />
+                  <YAxis hide />
+                  <Tooltip cursor={{fill: '#f0fdf4'}} contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)'}} />
+                  <Bar dataKey="count" radius={[10, 10, 10, 10]} barSize={40}>
+                    {chartData.map((_entry, index) => (
+                      <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#10b981' : '#34d399'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          </div>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#064e3b', fontSize: 11, fontWeight: 600}} />
-                <YAxis hide />
-                <Tooltip 
-                  cursor={{fill: '#f0fdf4'}}
-                  contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)', padding: '12px'}}
-                />
-                <Bar dataKey="count" radius={[10, 10, 10, 10]} barSize={40}>
-                  {chartData.map((_entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index % 2 === 0 ? '#10b981' : '#34d399'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
+          </Card>
+        </div>
 
         {/* Notifications / Alerts */}
-        <Card className="border-none shadow-xl shadow-emerald-900/20 rounded-3xl p-6 bg-emerald-950 text-white relative overflow-hidden">
+        <Card className="border-none shadow-xl shadow-emerald-900/20 rounded-3xl p-6 bg-emerald-950 text-white relative overflow-hidden h-fit">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
           <h3 className="font-bold text-xl mb-6 relative z-10">{isRTL ? "حالة النظام" : "System Status"}</h3>
           
@@ -203,7 +184,7 @@ const Index = () => {
                   <p className="text-xs text-red-300/70 mt-1">
                     {isRTL 
                       ? `تم رصد ${conflicts.roomConflicts.length + conflicts.teacherConflicts.length} تعارض في الجدول` 
-                      : `${conflicts.roomConflicts.length + conflicts.teacherConflicts.length} conflicts found in schedule`
+                      : `${conflicts.roomConflicts.length + conflicts.teacherConflicts.length} conflicts found`
                     }
                   </p>
                 </div>
@@ -215,7 +196,7 @@ const Index = () => {
                 </div>
                 <div>
                   <p className="font-bold text-sm text-emerald-200">{isRTL ? "لا توجد تعارضات" : "No Conflicts"}</p>
-                  <p className="text-xs text-emerald-300/70 mt-1">{isRTL ? "الجدول الزمني متناسق حالياً" : "Schedule is currently consistent"}</p>
+                  <p className="text-xs text-emerald-300/70 mt-1">{isRTL ? "الجدول الزمني متناسق حالياً" : "Schedule is consistent"}</p>
                 </div>
               </div>
             )}
@@ -228,10 +209,7 @@ const Index = () => {
               <span className="text-xs text-emerald-400 font-medium">{new Set(assignments.map(a => a.room)).size}/{rooms.length} {isRTL ? "قاعات" : "Rooms"}</span>
             </div>
             <div className="w-full h-2 bg-emerald-900 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-emerald-400 transition-all duration-1000 ease-out" 
-                style={{ width: `${roomCapacity}%` }}
-              ></div>
+              <div className="h-full bg-emerald-400 transition-all duration-1000 ease-out" style={{ width: `${roomCapacity}%` }}></div>
             </div>
           </div>
         </Card>

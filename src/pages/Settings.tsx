@@ -16,7 +16,9 @@ import {
   Users2, 
   BookOpen,
   Clock,
-  FileCode
+  FileCode,
+  Sparkles,
+  School
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { parseXml } from "../lib/export-utils";
@@ -40,7 +42,7 @@ const DAYS = [
   { id: 4, name: "الخميس", en: "Thursday" },
 ];
 
-const PERIODS = ["Morning", "Afternoon"];
+const PERIODS = Array.from({ length: 8 }, (_, i) => (i + 1).toString());
 
 const Settings = () => {
   const { 
@@ -69,12 +71,9 @@ const Settings = () => {
     reader.onload = (event) => {
       try {
         const buffer = event.target?.result as ArrayBuffer;
-        
-        // محاولة القراءة بترميز UTF-8 أولاً
         let decoder = new TextDecoder("utf-8");
         let xmlText = decoder.decode(buffer);
         
-        // إذا وجدنا إشارة لترميز windows-1256 في رأس الملف، نعيد القراءة بالترميز الصحيح
         if (xmlText.toLowerCase().includes("windows-1256") || xmlText.toLowerCase().includes("iso-8859-6")) {
           decoder = new TextDecoder("windows-1256");
           xmlText = decoder.decode(buffer);
@@ -83,15 +82,38 @@ const Settings = () => {
         const data = parseXml(xmlText);
         importAllData(data);
         showSuccess(isRTL ? "تم استيراد البيانات بنجاح" : "Data imported successfully");
-        
-        // إعادة ضبط المدخل للسماح برفع نفس الملف مرة أخرى
         if (xmlInputRef.current) xmlInputRef.current.value = "";
       } catch (err) {
-        showError(isRTL ? "فشل استيراد الملف، تأكد من التنسيق" : "Failed to import file, check format");
-        console.error(err);
+        showError(isRTL ? "فشل استيراد الملف" : "Failed to import file");
       }
     };
     reader.readAsArrayBuffer(file);
+  };
+
+  const loadDemoData = () => {
+    const demoData = {
+      employees: [
+        { id: "1", firstName: "أحمد", lastName: "محمد", category: "Full-time", observation: "أستاذ رياضيات" },
+        { id: "2", firstName: "سارة", lastName: "علي", category: "Full-time", observation: "أستاذة فيزياء" }
+      ],
+      rooms: ["قاعة 01", "قاعة 02", "مخبر الإعلام الآلي"],
+      classes: [
+        { id: "c1", name: "أولى ثانوي ج م ع" },
+        { id: "c2", name: "ثانية ثانوي تقني" }
+      ],
+      subjects: [
+        { id: "s1", name: "رياضيات" },
+        { id: "s2", name: "فيزياء" },
+        { id: "s3", name: "إعلام آلي" }
+      ],
+      departments: ["مصلحة التكوين", "مصلحة التمهين"],
+      assignments: [
+        { id: "a1", employeeId: "1", subjectId: "s1", classId: "c1", room: "قاعة 01", day: 0, period: "1", department: "مصلحة التكوين" }
+      ],
+      periodConfigs: []
+    };
+    importAllData(demoData);
+    showSuccess(isRTL ? "تم تحميل البيانات التجريبية" : "Demo data loaded");
   };
 
   const addItem = (val: string, setVal: any, list: any[], setList: any[], msg: string) => {
@@ -121,7 +143,7 @@ const Settings = () => {
 
   const handleClearAll = () => {
     localStorage.removeItem("academic_scheduler_v2_data");
-    showSuccess(isRTL ? "تم مسح كافة البيانات بنجاح" : "All data cleared successfully");
+    showSuccess(isRTL ? "تم مسح كافة البيانات" : "All data cleared");
     window.location.reload();
   };
 
@@ -134,53 +156,71 @@ const Settings = () => {
         </div>
         
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
-          <input 
-            type="file" 
-            ref={xmlInputRef} 
-            onChange={handleImportXml} 
-            accept=".xml" 
-            className="hidden" 
-          />
+          <Button variant="outline" onClick={loadDemoData} className="border-amber-200 text-amber-700 rounded-xl bg-amber-50 hover:bg-amber-100">
+            <Sparkles size={18} className={isRTL ? "ml-2" : "mr-2"} />
+            {isRTL ? "تحميل بيانات تجريبية" : "Load Demo Data"}
+          </Button>
+          <input type="file" ref={xmlInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
           <Button variant="outline" className="border-emerald-200 text-emerald-700 rounded-xl bg-white" onClick={() => xmlInputRef.current?.click()}>
             <FileCode size={18} className={isRTL ? "ml-2" : "mr-2"} />
-            {isRTL ? "استيراد MyTable.xml" : "Import MyTable.xml"}
-          </Button>
-          <Button className="bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-100">
-            <Download size={18} className={isRTL ? "ml-2" : "mr-2"} />
-            {isRTL ? "تصدير البيانات" : "Export Data"}
+            {isRTL ? "استيراد XML" : "Import XML"}
           </Button>
         </div>
       </div>
 
-      {/* Schedule Config */}
-      <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden">
-        <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
-          <CardTitle className="text-lg font-bold flex items-center gap-2">
-            <Clock size={20} className="text-emerald-600" />
-            {isRTL ? "إعدادات الجدول" : "Schedule Config"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {DAYS.map(day => (
-              <div key={day.id} className="p-3 bg-emerald-50/30 rounded-2xl border border-emerald-50">
-                <p className="font-bold text-emerald-900 text-sm mb-2">{isRTL ? day.name : day.en}</p>
-                <div className="flex gap-4">
-                  {PERIODS.map(p => (
-                    <div key={p} className="flex items-center gap-2">
-                      <Switch 
-                        checked={isPeriodActive(day.id, p)} 
-                        onCheckedChange={() => togglePeriod(day.id, p)}
-                      />
-                      <span className="text-[10px] font-bold text-emerald-700">{p === "Morning" ? (isRTL ? "ص" : "M") : (isRTL ? "م" : "A")}</span>
-                    </div>
-                  ))}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* School Info */}
+        <Card className="lg:col-span-1 border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden">
+          <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <School size={20} className="text-emerald-600" />
+              {isRTL ? "معلومات المؤسسة" : "School Info"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "اسم المؤسسة" : "School Name"}</label>
+              <Input placeholder="..." className="rounded-xl border-emerald-100" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "السنة الدراسية" : "Academic Year"}</label>
+              <Input placeholder="2024/2025" className="rounded-xl border-emerald-100" />
+            </div>
+            <Button className="w-full bg-emerald-600 rounded-xl">{isRTL ? "حفظ المعلومات" : "Save Info"}</Button>
+          </CardContent>
+        </Card>
+
+        {/* Schedule Config */}
+        <Card className="lg:col-span-2 border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden">
+          <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Clock size={20} className="text-emerald-600" />
+              {isRTL ? "تفعيل الحصص الأسبوعية" : "Weekly Periods Config"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+              {DAYS.map(day => (
+                <div key={day.id} className="p-3 bg-emerald-50/30 rounded-2xl border border-emerald-50">
+                  <p className="font-bold text-emerald-900 text-xs mb-3 text-center">{isRTL ? day.name : day.en}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {PERIODS.map(p => (
+                      <div key={p} className="flex flex-col items-center gap-1 p-1.5 bg-white rounded-lg border border-emerald-50">
+                        <span className="text-[9px] font-bold text-emerald-600">{p}</span>
+                        <Switch 
+                          scale={0.7}
+                          checked={isPeriodActive(day.id, p)} 
+                          onCheckedChange={() => togglePeriod(day.id, p)}
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Classes */}

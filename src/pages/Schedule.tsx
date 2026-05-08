@@ -12,7 +12,8 @@ import {
   MapPin,
   Trash2,
   Printer,
-  Clock
+  Clock,
+  AlertCircle
 } from "lucide-react";
 import { 
   Select, 
@@ -28,6 +29,12 @@ import {
   DialogTitle, 
   DialogFooter 
 } from "@/components/ui/dialog";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { showSuccess } from "../utils/toast";
 
@@ -39,7 +46,6 @@ const DAYS = [
   { id: 4, name: "الخميس", en: "Thursday" },
 ];
 
-// دعم 8 حصص يومياً
 const PERIODS = Array.from({ length: 8 }, (_, i) => (i + 1).toString());
 
 const Schedule = () => {
@@ -68,6 +74,24 @@ const Schedule = () => {
       viewMode === "class" ? a.classId === selectedId : a.employeeId === selectedId
     );
   }, [assignments, viewMode, selectedId]);
+
+  // دالة للتحقق من التعارضات
+  const checkConflict = (day: number, period: string, assignment: any) => {
+    const otherAssignments = assignments.filter(a => a.id !== assignment.id && a.day === day && a.period === period);
+    
+    const teacherConflict = otherAssignments.find(a => a.employeeId === assignment.employeeId);
+    const roomConflict = assignment.room ? otherAssignments.find(a => a.room === assignment.room) : null;
+    
+    if (teacherConflict || roomConflict) {
+      return {
+        type: teacherConflict ? "teacher" : "room",
+        with: teacherConflict 
+          ? (classes.find(c => c.id === teacherConflict.classId)?.name || "Unknown Class")
+          : (classes.find(c => c.id === roomConflict?.classId)?.name || "Unknown Class")
+      };
+    }
+    return null;
+  };
 
   const getAssignment = (day: number, period: string) => {
     return filteredAssignments.find(a => a.day === day && a.period === period);
@@ -106,10 +130,6 @@ const Schedule = () => {
     showSuccess(isRTL ? "تم حذف الحصة" : "Lesson deleted");
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   return (
     <div className="space-y-6 print:p-0">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
@@ -143,7 +163,7 @@ const Schedule = () => {
             </SelectContent>
           </Select>
 
-          <Button variant="outline" onClick={handlePrint} className="rounded-xl border-emerald-100 text-emerald-700">
+          <Button variant="outline" onClick={() => window.print()} className="rounded-xl border-emerald-100 text-emerald-700">
             <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
             {isRTL ? "طباعة" : "Print"}
           </Button>
@@ -159,15 +179,6 @@ const Schedule = () => {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-3xl border border-emerald-100 bg-white shadow-sm print:border-none print:shadow-none">
-          <div className="hidden print:block text-center mb-6">
-            <h1 className="text-2xl font-bold">
-              {isRTL ? "الجدول الزمني لـ: " : "Schedule for: "}
-              {viewMode === "class" 
-                ? classes.find(c => c.id === selectedId)?.name 
-                : employees.find(e => e.id === selectedId)?.lastName + " " + employees.find(e => e.id === selectedId)?.firstName
-              }
-            </h1>
-          </div>
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-emerald-50/50">
@@ -187,25 +198,47 @@ const Schedule = () => {
                   <td className="p-4 border-b border-emerald-100 bg-emerald-50/20 font-bold text-emerald-800 text-xs text-center">
                     <div className="flex flex-col items-center gap-1">
                       <Clock size={12} className="text-emerald-400" />
-                      {isRTL ? `الحصة ${period}` : `Period ${period}`}
+                      {period}
                     </div>
                   </td>
                   {DAYS.map(day => {
                     const assignment = getAssignment(day.id, period);
-                    // التحقق من تفعيل الحصة في الإعدادات (افتراضياً مفعلة)
                     const config = periodConfigs.find(p => p.day === day.id && p.period === period);
                     const isActive = config ? config.isActive : true;
 
-                    if (!isActive) {
-                      return <td key={day.id} className="p-2 border-b border-emerald-100 bg-gray-50/50"></td>;
-                    }
+                    if (!isActive) return <td key={day.id} className="p-2 border-b border-emerald-100 bg-gray-50/30"></td>;
+
+                    const conflict = assignment ? checkConflict(day.id, period, assignment) : null;
 
                     return (
                       <td key={day.id} className="p-2 border-b border-emerald-100 relative group/cell min-h-[100px]">
                         {assignment ? (
-                          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 transition-all hover:shadow-md h-full">
+                          <div className={cn(
+                            "border rounded-xl p-3 transition-all hover:shadow-md h-full relative",
+                            conflict ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-100"
+                          )}>
+                            {conflict && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg animate-bounce">
+                                      <AlertCircle size={12} />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="bg-red-900 text-white border-none rounded-xl">
+                                    <p className="text-xs font-bold">
+                                      {isRTL 
+                                        ? `تعارض: ${conflict.type === 'teacher' ? 'الأستاذ' : 'القاعة'} مشغول مع ${conflict.with}`
+                                        : `Conflict: ${conflict.type === 'teacher' ? 'Teacher' : 'Room'} busy with ${conflict.with}`
+                                      }
+                                    </p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                            
                             <div className="flex justify-between items-start mb-2">
-                              <span className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">
+                              <span className={cn("text-[11px] font-bold uppercase tracking-wider", conflict ? "text-red-700" : "text-emerald-700")}>
                                 {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
                               </span>
                               <Button 
