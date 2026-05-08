@@ -182,11 +182,7 @@ const Employees = () => {
                   </DropdownMenu>
                 </div>
 
-                <div className="mt-6 grid grid-cols-2 gap-4 border-t border-emerald-50 pt-4">
-                  <div className="space-y-1">
-                    <p className="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold">{isRTL ? "رقم التعريف" : "ID NUMBER"}</p>
-                    <p className="text-sm font-medium text-emerald-900">#EMP-{emp.id.padStart(3, '0')}</p>
-                  </div>
+                <div className="mt-6 border-t border-emerald-50 pt-4">
                   <div className="space-y-1">
                     <p className="text-[10px] text-emerald-400 uppercase tracking-wider font-semibold">{isRTL ? "الملاحظات" : "OBSERVATION"}</p>
                     <p className="text-sm font-medium text-emerald-900 truncate">{emp.observation || "---"}</p>
