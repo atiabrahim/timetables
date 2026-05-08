@@ -19,7 +19,10 @@ import {
   Clock,
   Calendar as CalendarIcon,
   FileJson,
-  FileCode
+  FileCode,
+  UserCog,
+  Shield,
+  User
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { exportToXml, exportToJson, parseXml } from "../lib/export-utils";
@@ -34,6 +37,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 const DAYS = [
   { id: 0, name: "الأحد", en: "Sunday" },
@@ -56,6 +66,8 @@ const Settings = () => {
     subjects, setSubjects,
     employees, assignments,
     periodConfigs, setPeriodConfigs,
+    systemUsers, setSystemUsers,
+    user: currentUser,
     importAllData,
     isRTL 
   } = useApp();
@@ -64,6 +76,11 @@ const Settings = () => {
   const [newRoom, setNewRoom] = useState("");
   const [newClass, setNewClass] = useState("");
   const [newSubject, setNewSubject] = useState("");
+  
+  // User Management State
+  const [newUsername, setNewUsername] = useState("");
+  const [newUserRole, setNewUserRole] = useState<"Admin" | "Teacher" | "Student">("Teacher");
+
   const xmlInputRef = useRef<HTMLInputElement>(null);
   const jsonInputRef = useRef<HTMLInputElement>(null);
 
@@ -74,6 +91,33 @@ const Settings = () => {
       setVal("");
       showSuccess(msg);
     }
+  };
+
+  const handleAddUser = () => {
+    if (!newUsername.trim()) return;
+    if (systemUsers.find(u => u.username === newUsername)) {
+      showError(isRTL ? "اسم المستخدم موجود مسبقاً" : "Username already exists");
+      return;
+    }
+
+    const newUser = {
+      id: Math.random().toString(36).substr(2, 9),
+      username: newUsername,
+      role: newUserRole
+    };
+
+    setSystemUsers([...systemUsers, newUser]);
+    setNewUsername("");
+    showSuccess(isRTL ? "تم إضافة المستخدم بنجاح" : "User added successfully");
+  };
+
+  const handleDeleteUser = (id: string) => {
+    if (systemUsers.length <= 1) {
+      showError(isRTL ? "يجب وجود مستخدم واحد على الأقل" : "At least one user must exist");
+      return;
+    }
+    setSystemUsers(systemUsers.filter(u => u.id !== id));
+    showSuccess(isRTL ? "تم حذف المستخدم" : "User deleted");
   };
 
   const togglePeriod = (day: number, period: string) => {
@@ -99,7 +143,7 @@ const Settings = () => {
   };
 
   const handleExport = (type: 'xml' | 'json') => {
-    const data = { employees, departments, rooms, classes, subjects, assignments, periodConfigs };
+    const data = { systemUsers, employees, departments, rooms, classes, subjects, assignments, periodConfigs };
     const fileName = `scheduler_backup_${new Date().toISOString().split('T')[0]}`;
     
     if (type === 'xml') {
@@ -118,21 +162,13 @@ const Settings = () => {
     reader.onload = (e) => {
       try {
         const buffer = e.target?.result as ArrayBuffer;
-        
-        // محاولة فك التشفير كـ UTF-8 أولاً
         let decoder = new TextDecoder('utf-8');
         let text = decoder.decode(buffer);
         
-        // إذا كان الملف XML، نتحقق من وجود ترميز محدد مثل windows-1256
         if (type === 'xml') {
           const encodingMatch = text.match(/encoding="([^"]+)"/i);
           if (encodingMatch && encodingMatch[1].toLowerCase() !== 'utf-8') {
-            // إعادة فك التشفير بالترميز المذكور في الملف (مثل windows-1256)
             decoder = new TextDecoder(encodingMatch[1]);
-            text = decoder.decode(buffer);
-          } else if (text.includes('') || text.includes('Ø')) {
-            // محاولة تلقائية لترميز العربية الشائع إذا ظهرت رموز غريبة
-            decoder = new TextDecoder('windows-1256');
             text = decoder.decode(buffer);
           }
         }
@@ -154,8 +190,6 @@ const Settings = () => {
         showError(isRTL ? "فشل استيراد الملف. تأكد من الصيغة الصحيحة" : "Failed to import file. Check format");
       }
     };
-    
-    // قراءة كـ ArrayBuffer للتحكم في فك التشفير لاحقاً
     reader.readAsArrayBuffer(file);
   };
 
@@ -187,6 +221,80 @@ const Settings = () => {
           </Button>
         </div>
       </div>
+
+      {/* Users Management */}
+      <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden">
+        <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
+              <UserCog size={20} />
+            </div>
+            <CardTitle className="text-lg font-bold text-emerald-900">{isRTL ? "إدارة المستخدمين" : "Users Management"}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="space-y-4">
+              <h4 className="font-bold text-emerald-900 text-sm">{isRTL ? "إضافة مستخدم جديد" : "Add New User"}</h4>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-emerald-700">{isRTL ? "اسم المستخدم" : "Username"}</label>
+                  <Input 
+                    value={newUsername} 
+                    onChange={(e) => setNewUsername(e.target.value)}
+                    placeholder="..."
+                    className="rounded-xl border-emerald-100"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-emerald-700">{isRTL ? "الصلاحية" : "Role"}</label>
+                  <Select value={newUserRole} onValueChange={(v: any) => setNewUserRole(v)}>
+                    <SelectTrigger className="rounded-xl border-emerald-100">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Admin">{isRTL ? "مدير" : "Admin"}</SelectItem>
+                      <SelectItem value="Teacher">{isRTL ? "أستاذ" : "Teacher"}</SelectItem>
+                      <SelectItem value="Student">{isRTL ? "طالب" : "Student"}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleAddUser} className="w-full bg-emerald-600 hover:bg-emerald-700 rounded-xl mt-2">
+                  <Plus size={18} className={isRTL ? "ml-2" : "mr-2"} />
+                  {isRTL ? "إضافة مستخدم" : "Add User"}
+                </Button>
+              </div>
+            </div>
+
+            <div className="lg:col-span-2 space-y-4">
+              <h4 className="font-bold text-emerald-900 text-sm">{isRTL ? "قائمة المستخدمين" : "Users List"}</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {systemUsers.map(u => (
+                  <div key={u.id} className="flex items-center justify-between p-3 bg-emerald-50/30 border border-emerald-50 rounded-2xl group">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm">
+                        {u.role === "Admin" ? <Shield size={18} /> : <User size={18} />}
+                      </div>
+                      <div>
+                        <p className="font-bold text-emerald-950 text-sm">{u.username}</p>
+                        <p className="text-[10px] text-emerald-500 font-bold uppercase">{u.role}</p>
+                      </div>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => handleDeleteUser(u.id)}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Schedule Configuration */}
       <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden">
@@ -229,12 +337,12 @@ const Settings = () => {
         <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <Users2 className="text-emerald-600" size={20} />
-            <CardTitle className="text-sm font-bold">{isRTL ? "الأفواج التربوية" : "Classes"}</CardTitle>
+            <CardTitle className="text-sm font-bold">{isRTL ? "الفروع" : "Branches"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
               <Input value={newClass} onChange={(e) => setNewClass(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
-              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newClass, setNewClass, classes, setClasses, "Class added")}><Plus size={16} /></Button>
+              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newClass, setNewClass, classes, setClasses, "Branch added")}><Plus size={16} /></Button>
             </div>
             <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
               {classes.map(c => (

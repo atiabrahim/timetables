@@ -37,6 +37,7 @@ interface Subject {
 }
 
 interface User {
+  id: string;
   username: string;
   role: "Admin" | "Teacher" | "Student";
 }
@@ -45,6 +46,8 @@ interface AppContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   user: User | null;
+  systemUsers: User[];
+  setSystemUsers: React.Dispatch<React.SetStateAction<User[]>>;
   login: (username: string, role: User["role"]) => void;
   logout: () => void;
   employees: Employee[];
@@ -77,6 +80,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : null;
   });
 
+  const [systemUsers, setSystemUsers] = useState<User[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
@@ -91,6 +95,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
+        setSystemUsers(parsed.systemUsers || [
+          { id: "1", username: "admin", role: "Admin" }
+        ]);
         setEmployees(parsed.employees || []);
         setAssignments(parsed.assignments || []);
         setDepartments(parsed.departments || []);
@@ -101,19 +108,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch (e) {
         console.error("Failed to parse saved data", e);
       }
+    } else {
+      // مستخدم افتراضي إذا لم توجد بيانات
+      setSystemUsers([{ id: "1", username: "admin", role: "Admin" }]);
     }
   }, []);
 
   // حفظ البيانات عند أي تغيير
   useEffect(() => {
-    const dataToSave = { employees, assignments, departments, rooms, classes, subjects, periodConfigs };
+    const dataToSave = { systemUsers, employees, assignments, departments, rooms, classes, subjects, periodConfigs };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  }, [employees, assignments, departments, rooms, classes, subjects, periodConfigs]);
+  }, [systemUsers, employees, assignments, departments, rooms, classes, subjects, periodConfigs]);
 
   const importAllData = (data: any) => {
     if (!data) return;
     
-    // تحديث الحالات
+    setSystemUsers(data.systemUsers || []);
     setEmployees(data.employees || []);
     setDepartments(data.departments || []);
     setRooms(data.rooms || []);
@@ -122,8 +132,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setPeriodConfigs(data.periodConfigs || []);
     setAssignments(data.assignments || []);
     
-    // حفظ فوري لضمان عدم الضياع قبل إعادة التحميل
     const dataToSave = {
+      systemUsers: data.systemUsers || [],
       employees: data.employees || [],
       departments: data.departments || [],
       rooms: data.rooms || [],
@@ -136,7 +146,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const login = (username: string, role: User["role"]) => {
-    const newUser = { username, role };
+    const newUser = { id: Math.random().toString(36).substr(2, 9), username, role };
     setUser(newUser);
     localStorage.setItem("scheduler_user", JSON.stringify(newUser));
   };
@@ -151,7 +161,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{ 
-      language, setLanguage, user, login, logout, 
+      language, setLanguage, user, systemUsers, setSystemUsers, login, logout, 
       employees, setEmployees, assignments, setAssignments,
       departments, setDepartments, rooms, setRooms,
       classes, setClasses, subjects, setSubjects,
