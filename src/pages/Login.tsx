@@ -6,26 +6,28 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar, Shield, User, GraduationCap } from "lucide-react";
-import { showError } from "../utils/toast";
+import { Calendar, Shield, User, GraduationCap, Lock } from "lucide-react";
+import { showError, showSuccess } from "../utils/toast";
 
 const Login = () => {
   const { login, isRTL, systemUsers } = useApp();
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState(""); // في هذا النموذج البسيط لا نستخدم كلمة سر حقيقية
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // البحث عن المستخدم في قائمة مستخدمي النظام
-    const foundUser = systemUsers.find(u => u.username === username || u.isActive);
+    // البحث عن المستخدم بمطابقة اسم المستخدم والحالة النشطة فقط
+    const foundUser = systemUsers.find(u => 
+      u.username.toLowerCase() === username.toLowerCase() && u.isActive
+    );
     
     if (foundUser) {
       login(foundUser.username, foundUser.role);
+      showSuccess(isRTL ? "تم تسجيل الدخول بنجاح" : "Logged in successfully");
       navigate("/");
     } else {
-      showError(isRTL ? "اسم المستخدم غير موجود أو الحساب معطل" : "Username not found or account inactive");
+      showError(isRTL ? "اسم المستخدم غير صحيح أو الحساب معطل" : "Invalid username or account inactive");
     }
   };
 
@@ -53,7 +55,7 @@ const Login = () => {
                 <Input 
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin..."
+                  placeholder={isRTL ? "أدخل اسم المستخدم (مثلاً: Admin)" : "Enter username (e.g. Admin)"}
                   className="pl-12 h-14 rounded-2xl border-emerald-100 bg-emerald-50/30 focus:bg-white transition-all text-lg"
                   required
                 />
