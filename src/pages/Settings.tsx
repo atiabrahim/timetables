@@ -149,6 +149,11 @@ const Settings = () => {
           <input type="file" ref={xmlInputRef} onChange={(e) => handleImportFile(e, 'xml')} accept=".xml" className="hidden" />
           <input type="file" ref={jsonInputRef} onChange={(e) => handleImportFile(e, 'json')} accept=".json" className="hidden" />
           
+          <Button variant="outline" className="border-emerald-200 text-emerald-700 rounded-xl bg-white" onClick={() => xmlInputRef.current?.click()}>
+            <FileCode size={18} className={isRTL ? "ml-2" : "mr-2"} />
+            {isRTL ? "استيراد MyTable.xml" : "Import MyTable.xml"}
+          </Button>
+
           <Button variant="outline" className="border-emerald-200 text-emerald-700 rounded-xl bg-white" onClick={() => jsonInputRef.current?.click()}>
             <FileJson size={18} className={isRTL ? "ml-2" : "mr-2"} />
             {isRTL ? "استيراد JSON" : "Import JSON"}
