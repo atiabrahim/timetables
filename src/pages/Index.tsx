@@ -183,7 +183,8 @@ const Index = () => {
                   <p className="font-bold text-sm text-emerald-200">{isRTL ? "لا توجد تعارضات" : "No Conflicts"}</p>
                   <p className="text-xs text-emerald-300/70 mt-1">{isRTL ? "الجدول الزمني متناسق حالياً" : "Schedule is currently consistent"}</p>
                 </div>
-              )}
+              </div>
+            )}
           </div>
           
           <div className="mt-10 p-5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
