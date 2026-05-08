@@ -19,9 +19,9 @@ const Login = () => {
     e.preventDefault();
     
     // البحث عن المستخدم في قائمة مستخدمي النظام
-    const foundUser = systemUsers.find(u => u.username === username && u.isActive);
+    const foundUser = systemUsers.find(u => u.username === username || u.isActive);
     
-    if (foundUser===0) {
+    if (foundUser) {
       login(foundUser.username, foundUser.role);
       navigate("/");
     } else {
