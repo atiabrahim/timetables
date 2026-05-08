@@ -17,10 +17,12 @@ import {
   Users2, 
   BookOpen,
   Clock,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  FileJson,
+  FileCode
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
-import { exportToXml, parseXml } from "../lib/export-utils";
+import { exportToXml, exportToJson, parseXml } from "../lib/export-utils";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -62,7 +64,8 @@ const Settings = () => {
   const [newRoom, setNewRoom] = useState("");
   const [newClass, setNewClass] = useState("");
   const [newSubject, setNewSubject] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const xmlInputRef = useRef<HTMLInputElement>(null);
+  const jsonInputRef = useRef<HTMLInputElement>(null);
 
   const addItem = (val: string, setVal: any, list: any[], setList: any[], msg: string) => {
     if (val && !list.find(i => (typeof i === 'string' ? i === val : i.name === val))) {
@@ -86,7 +89,7 @@ const Settings = () => {
 
   const isPeriodActive = (day: number, period: string) => {
     const config = periodConfigs.find(p => p.day === day && p.period === period);
-    return config ? config.isActive : true; // Default to active
+    return config ? config.isActive : true;
   };
 
   const handleClearAll = () => {
@@ -95,13 +98,19 @@ const Settings = () => {
     window.location.reload();
   };
 
-  const handleExportXml = () => {
+  const handleExport = (type: 'xml' | 'json') => {
     const data = { employees, departments, rooms, classes, subjects, assignments, periodConfigs };
-    exportToXml(data, `scheduler_backup_${new Date().toISOString().split('T')[0]}`);
+    const fileName = `scheduler_backup_${new Date().toISOString().split('T')[0]}`;
+    
+    if (type === 'xml') {
+      exportToXml(data, fileName);
+    } else {
+      exportToJson(data, fileName);
+    }
     showSuccess(isRTL ? "تم تصدير البيانات بنجاح" : "Data exported successfully");
   };
 
-  const handleImportXml = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportFile = (event: React.ChangeEvent<HTMLInputElement>, type: 'xml' | 'json') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -109,12 +118,20 @@ const Settings = () => {
     reader.onload = (e) => {
       try {
         const text = e.target?.result as string;
-        const data = parseXml(text);
-        importAllData(data);
-        showSuccess(isRTL ? "تم استيراد كافة المعلومات بنجاح" : "All information imported successfully");
-        setTimeout(() => window.location.reload(), 1000);
+        let data;
+        if (type === 'xml') {
+          data = parseXml(text);
+        } else {
+          data = JSON.parse(text);
+        }
+        
+        if (data) {
+          importAllData(data);
+          showSuccess(isRTL ? "تم استيراد كافة المعلومات بنجاح" : "All information imported successfully");
+          setTimeout(() => window.location.reload(), 800);
+        }
       } catch (err) {
-        showError(isRTL ? "فشل استيراد الملف. تأكد من صيغة XML" : "Failed to import file. Check XML format");
+        showError(isRTL ? "فشل استيراد الملف. تأكد من الصيغة الصحيحة" : "Failed to import file. Check format");
       }
     };
     reader.readAsText(file);
@@ -128,15 +145,18 @@ const Settings = () => {
           <p className="text-emerald-600/70 mt-1">{isRTL ? "تخصيص النظام والبيانات الأساسية" : "System customization and core data"}</p>
         </div>
         
-        <div className="flex gap-3 w-full md:w-auto">
-          <input type="file" ref={fileInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
-          <Button variant="outline" className="flex-1 md:flex-none border-emerald-200 text-emerald-700 rounded-xl bg-white" onClick={() => fileInputRef.current?.click()}>
-            <Upload size={18} className={isRTL ? "ml-2" : "mr-2"} />
-            {isRTL ? "استيراد XML" : "Import XML"}
+        <div className="flex flex-wrap gap-3 w-full md:w-auto">
+          <input type="file" ref={xmlInputRef} onChange={(e) => handleImportFile(e, 'xml')} accept=".xml" className="hidden" />
+          <input type="file" ref={jsonInputRef} onChange={(e) => handleImportFile(e, 'json')} accept=".json" className="hidden" />
+          
+          <Button variant="outline" className="border-emerald-200 text-emerald-700 rounded-xl bg-white" onClick={() => jsonInputRef.current?.click()}>
+            <FileJson size={18} className={isRTL ? "ml-2" : "mr-2"} />
+            {isRTL ? "استيراد JSON" : "Import JSON"}
           </Button>
-          <Button className="flex-1 md:flex-none bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-100" onClick={handleExportXml}>
+          
+          <Button className="bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-lg shadow-emerald-100" onClick={() => handleExport('json')}>
             <Download size={18} className={isRTL ? "ml-2" : "mr-2"} />
-            {isRTL ? "تصدير XML" : "Export XML"}
+            {isRTL ? "تصدير JSON" : "Export JSON"}
           </Button>
         </div>
       </div>
