@@ -5,7 +5,20 @@ import { useApp } from "../context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Download, Upload, Database, MapPin, AlertTriangle, Users2, BookOpen } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { 
+  Plus, 
+  Trash2, 
+  Download, 
+  Upload, 
+  Database, 
+  MapPin, 
+  AlertTriangle, 
+  Users2, 
+  BookOpen,
+  Clock,
+  Calendar as CalendarIcon
+} from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { exportToXml, parseXml } from "../lib/export-utils";
 import { 
@@ -20,6 +33,18 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+const DAYS = [
+  { id: 0, name: "الأحد", en: "Sunday" },
+  { id: 1, name: "الاثنين", en: "Monday" },
+  { id: 2, name: "الثلاثاء", en: "Tuesday" },
+  { id: 3, name: "الأربعاء", en: "Wednesday" },
+  { id: 4, name: "الخميس", en: "Thursday" },
+  { id: 5, name: "الجمعة", en: "Friday" },
+  { id: 6, name: "السبت", en: "Saturday" },
+];
+
+const PERIODS = ["Morning", "Afternoon"];
+
 const Settings = () => {
   const { 
     t, 
@@ -28,6 +53,7 @@ const Settings = () => {
     classes, setClasses,
     subjects, setSubjects,
     employees, assignments,
+    periodConfigs, setPeriodConfigs,
     importAllData,
     isRTL 
   } = useApp();
@@ -47,6 +73,22 @@ const Settings = () => {
     }
   };
 
+  const togglePeriod = (day: number, period: string) => {
+    const existing = periodConfigs.find(p => p.day === day && p.period === period);
+    if (existing) {
+      setPeriodConfigs(periodConfigs.map(p => 
+        (p.day === day && p.period === period) ? { ...p, isActive: !p.isActive } : p
+      ));
+    } else {
+      setPeriodConfigs([...periodConfigs, { day, period, isActive: false }]);
+    }
+  };
+
+  const isPeriodActive = (day: number, period: string) => {
+    const config = periodConfigs.find(p => p.day === day && p.period === period);
+    return config ? config.isActive : true; // Default to active
+  };
+
   const handleClearAll = () => {
     localStorage.removeItem("academic_scheduler_v2_data");
     showSuccess(isRTL ? "تم مسح كافة البيانات بنجاح" : "All data cleared successfully");
@@ -54,7 +96,7 @@ const Settings = () => {
   };
 
   const handleExportXml = () => {
-    const data = { employees, departments, rooms, classes, subjects, assignments, periodConfigs: [] };
+    const data = { employees, departments, rooms, classes, subjects, assignments, periodConfigs };
     exportToXml(data, `scheduler_backup_${new Date().toISOString().split('T')[0]}`);
     showSuccess(isRTL ? "تم تصدير البيانات بنجاح" : "Data exported successfully");
   };
@@ -68,15 +110,8 @@ const Settings = () => {
       try {
         const text = e.target?.result as string;
         const data = parseXml(text);
-        
-        if (data.employees.length === 0 && data.classes.length === 0) {
-          throw new Error("Empty or invalid XML");
-        }
-
         importAllData(data);
         showSuccess(isRTL ? "تم استيراد كافة المعلومات بنجاح" : "All information imported successfully");
-        
-        // إعادة تحميل الصفحة لضمان تحديث كافة المكونات
         setTimeout(() => window.location.reload(), 1000);
       } catch (err) {
         showError(isRTL ? "فشل استيراد الملف. تأكد من صيغة XML" : "Failed to import file. Check XML format");
@@ -86,13 +121,16 @@ const Settings = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h2 className="text-2xl font-bold text-emerald-900">{t.settings}</h2>
+        <div>
+          <h2 className="text-3xl font-bold text-emerald-950">{t.settings}</h2>
+          <p className="text-emerald-600/70 mt-1">{isRTL ? "تخصيص النظام والبيانات الأساسية" : "System customization and core data"}</p>
+        </div>
         
         <div className="flex gap-3 w-full md:w-auto">
           <input type="file" ref={fileInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
-          <Button variant="outline" className="flex-1 md:flex-none border-emerald-200 text-emerald-700 rounded-xl" onClick={() => fileInputRef.current?.click()}>
+          <Button variant="outline" className="flex-1 md:flex-none border-emerald-200 text-emerald-700 rounded-xl bg-white" onClick={() => fileInputRef.current?.click()}>
             <Upload size={18} className={isRTL ? "ml-2" : "mr-2"} />
             {isRTL ? "استيراد XML" : "Import XML"}
           </Button>
@@ -103,23 +141,59 @@ const Settings = () => {
         </div>
       </div>
 
+      {/* Schedule Configuration */}
+      <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden">
+        <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
+              <Clock size={20} />
+            </div>
+            <CardTitle className="text-lg font-bold text-emerald-900">{isRTL ? "إعدادات الجدول الزمني" : "Schedule Configuration"}</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {DAYS.slice(0, 5).map(day => (
+              <div key={day.id} className="space-y-4 p-4 bg-emerald-50/30 rounded-2xl border border-emerald-50">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-emerald-900">{isRTL ? day.name : day.en}</span>
+                  <CalendarIcon size={16} className="text-emerald-400" />
+                </div>
+                <div className="space-y-3">
+                  {PERIODS.map(period => (
+                    <div key={period} className="flex items-center justify-between text-sm">
+                      <span className="text-emerald-700">{period === "Morning" ? (isRTL ? "صباحاً" : "Morning") : (isRTL ? "مساءً" : "Afternoon")}</span>
+                      <Switch 
+                        checked={isPeriodActive(day.id, period)} 
+                        onCheckedChange={() => togglePeriod(day.id, period)}
+                        className="data-[state=checked]:bg-emerald-500"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Classes */}
-        <Card className="border-none shadow-lg glass-card">
-          <CardHeader className="flex flex-row items-center gap-2">
+        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+          <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <Users2 className="text-emerald-600" size={20} />
-            <CardTitle className="text-sm">{isRTL ? "الأفواج التربوية" : "Classes"}</CardTitle>
+            <CardTitle className="text-sm font-bold">{isRTL ? "الأفواج التربوية" : "Classes"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
-              <Input value={newClass} onChange={(e) => setNewClass(e.target.value)} placeholder="..." className="h-9 text-xs" />
-              <Button size="sm" onClick={() => addItem(newClass, setNewClass, classes, setClasses, "Class added")}><Plus size={16} /></Button>
+              <Input value={newClass} onChange={(e) => setNewClass(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
+              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newClass, setNewClass, classes, setClasses, "Class added")}><Plus size={16} /></Button>
             </div>
-            <div className="space-y-1 max-h-40 overflow-y-auto">
+            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
               {classes.map(c => (
-                <div key={c.id} className="flex items-center justify-between p-2 bg-white/50 rounded-lg text-xs">
-                  <span>{c.name}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400" onClick={() => setClasses(classes.filter(i => i.id !== c.id))}><Trash2 size={14} /></Button>
+                <div key={c.id} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
+                  <span className="font-medium text-emerald-900">{c.name}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setClasses(classes.filter(i => i.id !== c.id))}><Trash2 size={14} /></Button>
                 </div>
               ))}
             </div>
@@ -127,21 +201,21 @@ const Settings = () => {
         </Card>
 
         {/* Subjects */}
-        <Card className="border-none shadow-lg glass-card">
-          <CardHeader className="flex flex-row items-center gap-2">
+        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+          <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <BookOpen className="text-emerald-600" size={20} />
-            <CardTitle className="text-sm">{isRTL ? "المواد الدراسية" : "Subjects"}</CardTitle>
+            <CardTitle className="text-sm font-bold">{isRTL ? "المواد الدراسية" : "Subjects"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
-              <Input value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="..." className="h-9 text-xs" />
-              <Button size="sm" onClick={() => addItem(newSubject, setNewSubject, subjects, setSubjects, "Subject added")}><Plus size={16} /></Button>
+              <Input value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
+              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newSubject, setNewSubject, subjects, setSubjects, "Subject added")}><Plus size={16} /></Button>
             </div>
-            <div className="space-y-1 max-h-40 overflow-y-auto">
+            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
               {subjects.map(s => (
-                <div key={s.id} className="flex items-center justify-between p-2 bg-white/50 rounded-lg text-xs">
-                  <span>{s.name}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400" onClick={() => setSubjects(subjects.filter(i => i.id !== s.id))}><Trash2 size={14} /></Button>
+                <div key={s.id} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
+                  <span className="font-medium text-emerald-900">{s.name}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setSubjects(subjects.filter(i => i.id !== s.id))}><Trash2 size={14} /></Button>
                 </div>
               ))}
             </div>
@@ -149,21 +223,21 @@ const Settings = () => {
         </Card>
 
         {/* Rooms */}
-        <Card className="border-none shadow-lg glass-card">
-          <CardHeader className="flex flex-row items-center gap-2">
+        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+          <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <MapPin className="text-emerald-600" size={20} />
-            <CardTitle className="text-sm">{isRTL ? "القاعات" : "Rooms"}</CardTitle>
+            <CardTitle className="text-sm font-bold">{isRTL ? "القاعات" : "Rooms"}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
-              <Input value={newRoom} onChange={(e) => setNewRoom(e.target.value)} placeholder="..." className="h-9 text-xs" />
-              <Button size="sm" onClick={() => addItem(newRoom, setNewRoom, rooms, setRooms, "Room added")}><Plus size={16} /></Button>
+              <Input value={newRoom} onChange={(e) => setNewRoom(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
+              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newRoom, setNewRoom, rooms, setRooms, "Room added")}><Plus size={16} /></Button>
             </div>
-            <div className="space-y-1 max-h-40 overflow-y-auto">
+            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
               {rooms.map(r => (
-                <div key={r} className="flex items-center justify-between p-2 bg-white/50 rounded-lg text-xs">
-                  <span>{r}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400" onClick={() => setRooms(rooms.filter(i => i !== r))}><Trash2 size={14} /></Button>
+                <div key={r} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
+                  <span className="font-medium text-emerald-900">{r}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setRooms(rooms.filter(i => i !== r))}><Trash2 size={14} /></Button>
                 </div>
               ))}
             </div>
@@ -171,21 +245,21 @@ const Settings = () => {
         </Card>
 
         {/* Departments */}
-        <Card className="border-none shadow-lg glass-card">
-          <CardHeader className="flex flex-row items-center gap-2">
+        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+          <CardHeader className="flex flex-row items-center gap-2 pb-2">
             <Database className="text-emerald-600" size={20} />
-            <CardTitle className="text-sm">{t.stats.departments}</CardTitle>
+            <CardTitle className="text-sm font-bold">{t.stats.departments}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
-              <Input value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="..." className="h-9 text-xs" />
-              <Button size="sm" onClick={() => addItem(newDept, setNewDept, departments, setDepartments, "Dept added")}><Plus size={16} /></Button>
+              <Input value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
+              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newDept, setNewDept, departments, setDepartments, "Dept added")}><Plus size={16} /></Button>
             </div>
-            <div className="space-y-1 max-h-40 overflow-y-auto">
+            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
               {departments.map(d => (
-                <div key={d} className="flex items-center justify-between p-2 bg-white/50 rounded-lg text-xs">
-                  <span>{d}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400" onClick={() => setDepartments(departments.filter(i => i !== d))}><Trash2 size={14} /></Button>
+                <div key={d} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
+                  <span className="font-medium text-emerald-900">{d}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setDepartments(departments.filter(i => i !== d))}><Trash2 size={14} /></Button>
                 </div>
               ))}
             </div>
@@ -194,7 +268,7 @@ const Settings = () => {
       </div>
 
       {/* Danger Zone */}
-      <Card className="border-red-100 bg-red-50/30">
+      <Card className="border-red-100 bg-red-50/30 rounded-3xl overflow-hidden">
         <CardHeader>
           <CardTitle className="text-red-800 flex items-center gap-2">
             <AlertTriangle size={20} />
@@ -208,11 +282,11 @@ const Settings = () => {
             </p>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="rounded-xl">
+                <Button variant="destructive" className="rounded-xl px-8">
                   {isRTL ? "مسح كافة البيانات" : "Clear All Data"}
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="border-red-100">
+              <AlertDialogContent className="border-red-100 rounded-3xl">
                 <AlertDialogHeader>
                   <AlertDialogTitle>{isRTL ? "هل أنت متأكد تماماً؟" : "Are you absolutely sure?"}</AlertDialogTitle>
                   <AlertDialogDescription>
