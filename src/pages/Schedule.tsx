@@ -69,17 +69,27 @@ const Schedule = () => {
     department: ""
   });
 
+  // تحسين الفلترة لدعم المعرفات المتعددة (مثل "1,2")
   const filteredAssignments = useMemo(() => {
-    return assignments.filter(a => 
-      viewMode === "class" ? a.classId === selectedId : a.employeeId === selectedId
-    );
+    if (!selectedId) return [];
+    return assignments.filter(a => {
+      if (viewMode === "class") {
+        return a.classId.split(',').includes(selectedId);
+      } else {
+        return a.employeeId.split(',').includes(selectedId);
+      }
+    });
   }, [assignments, viewMode, selectedId]);
 
-  // دالة للتحقق من التعارضات
   const checkConflict = (day: number, period: string, assignment: any) => {
     const otherAssignments = assignments.filter(a => a.id !== assignment.id && a.day === day && a.period === period);
     
-    const teacherConflict = otherAssignments.find(a => a.employeeId === assignment.employeeId);
+    const teacherConflict = otherAssignments.find(a => {
+      const teachers = a.employeeId.split(',');
+      const currentTeachers = assignment.employeeId.split(',');
+      return teachers.some(t => currentTeachers.includes(t));
+    });
+
     const roomConflict = assignment.room ? otherAssignments.find(a => a.room === assignment.room) : null;
     
     if (teacherConflict || roomConflict) {
@@ -94,7 +104,7 @@ const Schedule = () => {
   };
 
   const getAssignment = (day: number, period: string) => {
-    return filteredAssignments.find(a => a.day === day && a.period === period);
+    return filteredAssignments.find(a => a.day === day && a.period.toString() === period.toString());
   };
 
   const handleAddClick = (day: number, period: string) => {
@@ -203,7 +213,7 @@ const Schedule = () => {
                   </td>
                   {DAYS.map(day => {
                     const assignment = getAssignment(day.id, period);
-                    const config = periodConfigs.find(p => p.day === day.id && p.period === period);
+                    const config = periodConfigs.find(p => p.day === day.id && p.period.toString() === period.toString());
                     const isActive = config ? config.isActive : true;
 
                     if (!isActive) return <td key={day.id} className="p-2 border-b border-emerald-100 bg-gray-50/30"></td>;
