@@ -1,5 +1,5 @@
 /**
- * دوال معالجة البيانات (استيراد وتصدير) بنمط مرن
+ * دوال معالجة البيانات (استيراد وتصدير) متوافقة مع هيكلة MyTable.xml
  */
 
 export const exportToXml = (data: any, fileName: string) => {
@@ -47,7 +47,7 @@ export const exportToXml = (data: any, fileName: string) => {
   });
   xmlString += '  </PeriodConfigs>\n';
 
-  // تصدير التوزيعات
+  // تصدير التوزيعات (الحصص)
   xmlString += '  <Assignments>\n';
   (data.assignments || []).forEach((asgn: any) => {
     xmlString += `    <Assignment id="${asgn.id}" employeeId="${asgn.employeeId}" day="${asgn.day}" period="${asgn.period}" subjectId="${asgn.subjectId}" classId="${asgn.classId}" department="${asgn.department}" room="${asgn.room || ''}" />\n`;
@@ -84,7 +84,7 @@ export const parseXml = (xmlText: string) => {
   
   const getAttr = (el: Element, attr: string) => el.getAttribute(attr) || "";
 
-  // دالة مساعدة للبحث عن العناصر بمسميات متعددة
+  // دالة ذكية للبحث عن العناصر بمسميات متعددة لضمان التوافق
   const findElements = (tags: string[]) => {
     for (const tag of tags) {
       const found = Array.from(xmlDoc.getElementsByTagName(tag));
@@ -93,8 +93,8 @@ export const parseXml = (xmlText: string) => {
     return [];
   };
 
-  // استخراج الموظفين
-  const employees = findElements(["Employee", "teacher", "staff", "person", "الأستاذ", "المعلم"]).map(el => ({
+  // استخراج الموظفين (الأساتذة)
+  const employees = findElements(["Employee", "teacher", "staff", "الأستاذ", "المعلم"]).map(el => ({
     id: getAttr(el, "id") || Math.random().toString(36).substr(2, 5),
     firstName: getAttr(el, "firstName") || getAttr(el, "name").split(' ')[0] || getAttr(el, "الاسم") || "Unknown",
     lastName: getAttr(el, "lastName") || getAttr(el, "name").split(' ').slice(1).join(' ') || getAttr(el, "اللقب") || "",
@@ -112,26 +112,26 @@ export const parseXml = (xmlText: string) => {
     getAttr(el, "name") || getAttr(el, "number") || getAttr(el, "label")
   );
 
-  // استخراج الأفواج
+  // استخراج الأفواج التربوية
   const classes = findElements(["Class", "grade", "group", "الفوج", "القسم_التربوي"]).map(el => ({
     id: getAttr(el, "id") || Math.random().toString(36).substr(2, 5),
     name: getAttr(el, "name") || getAttr(el, "title") || getAttr(el, "label")
   }));
 
-  // استخراج المواد
+  // استخراج المواد الدراسية
   const subjects = findElements(["Subject", "course", "lesson_type", "المادة"]).map(el => ({
     id: getAttr(el, "id") || Math.random().toString(36).substr(2, 5),
     name: getAttr(el, "name") || getAttr(el, "title") || getAttr(el, "label")
   }));
 
-  // استخراج إعدادات الفترات
-  const periodConfigs = findElements(["PeriodConfig", "schedule_config"]).map(el => ({
+  // استخراج إعدادات الفترات الزمنية
+  const periodConfigs = findElements(["PeriodConfig", "schedule_config", "إعداد_الفترة"]).map(el => ({
     day: parseInt(getAttr(el, "day") || "0"),
     period: getAttr(el, "period"),
     isActive: getAttr(el, "isActive").toLowerCase() === "true"
   }));
 
-  // استخراج التوزيعات
+  // استخراج التوزيعات (الحصص)
   const assignments = findElements(["Assignment", "lesson", "session", "الحصة"]).map(el => ({
     id: getAttr(el, "id") || Math.random().toString(36).substr(2, 9),
     employeeId: getAttr(el, "employeeId") || getAttr(el, "teacherid") || getAttr(el, "أستاذ_id"),
