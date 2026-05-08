@@ -39,7 +39,11 @@ interface Subject {
 interface User {
   id: string;
   username: string;
+  fullName: string;
+  email: string;
   role: "Admin" | "Teacher" | "Student";
+  observation: string;
+  isActive: boolean;
 }
 
 interface AppContextType {
@@ -96,7 +100,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         const parsed = JSON.parse(savedData);
         setSystemUsers(parsed.systemUsers || [
-          { id: "1", username: "admin", role: "Admin" }
+          { 
+            id: "1", 
+            username: "admin", 
+            fullName: "مدير النظام", 
+            email: "admin@edu.com", 
+            role: "Admin", 
+            observation: "الحساب الرئيسي", 
+            isActive: true 
+          }
         ]);
         setEmployees(parsed.employees || []);
         setAssignments(parsed.assignments || []);
@@ -109,8 +121,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error("Failed to parse saved data", e);
       }
     } else {
-      // مستخدم افتراضي إذا لم توجد بيانات
-      setSystemUsers([{ id: "1", username: "admin", role: "Admin" }]);
+      setSystemUsers([{ 
+        id: "1", 
+        username: "admin", 
+        fullName: "مدير النظام", 
+        email: "admin@edu.com", 
+        role: "Admin", 
+        observation: "الحساب الرئيسي", 
+        isActive: true 
+      }]);
     }
   }, []);
 
@@ -122,7 +141,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const importAllData = (data: any) => {
     if (!data) return;
-    
     setSystemUsers(data.systemUsers || []);
     setEmployees(data.employees || []);
     setDepartments(data.departments || []);
@@ -131,22 +149,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSubjects(data.subjects || []);
     setPeriodConfigs(data.periodConfigs || []);
     setAssignments(data.assignments || []);
-    
-    const dataToSave = {
-      systemUsers: data.systemUsers || [],
-      employees: data.employees || [],
-      departments: data.departments || [],
-      rooms: data.rooms || [],
-      classes: data.classes || [],
-      subjects: data.subjects || [],
-      periodConfigs: data.periodConfigs || [],
-      assignments: data.assignments || []
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
   };
 
   const login = (username: string, role: User["role"]) => {
-    const newUser = { id: Math.random().toString(36).substr(2, 9), username, role };
+    const newUser = { 
+      id: Math.random().toString(36).substr(2, 9), 
+      username, 
+      fullName: username, 
+      email: "", 
+      role, 
+      observation: "", 
+      isActive: true 
+    };
     setUser(newUser);
     localStorage.setItem("scheduler_user", JSON.stringify(newUser));
   };
