@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import { useApp } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   Users, 
@@ -19,12 +20,41 @@ import { cn } from "@/lib/utils";
 
 const Index = () => {
   const { employees, classes, subjects, assignments, rooms, isRTL } = useApp();
+  const navigate = useNavigate();
 
   const stats = [
-    { label: isRTL ? "الموظفون" : "Employees", value: employees.length, icon: Users, color: "bg-blue-500", shadow: "shadow-blue-100" },
-    { label: isRTL ? "الأفواج" : "Classes", value: classes.length, icon: Home, color: "bg-emerald-500", shadow: "shadow-emerald-100" },
-    { label: isRTL ? "المواد" : "Subjects", value: subjects.length, icon: BookOpen, color: "bg-amber-500", shadow: "shadow-amber-100" },
-    { label: isRTL ? "الحصص" : "Lessons", value: assignments.length, icon: Calendar, color: "bg-purple-500", shadow: "shadow-purple-100" },
+    { 
+      label: isRTL ? "الموظفون" : "Employees", 
+      value: employees.length, 
+      icon: Users, 
+      color: "bg-blue-500", 
+      shadow: "shadow-blue-100",
+      path: "/employees"
+    },
+    { 
+      label: isRTL ? "الأفواج" : "Classes", 
+      value: classes.length, 
+      icon: Home, 
+      color: "bg-emerald-500", 
+      shadow: "shadow-emerald-100",
+      path: "/classes"
+    },
+    { 
+      label: isRTL ? "المواد" : "Subjects", 
+      value: subjects.length, 
+      icon: BookOpen, 
+      color: "bg-amber-500", 
+      shadow: "shadow-amber-100",
+      path: "/subjects"
+    },
+    { 
+      label: isRTL ? "الحصص" : "Lessons", 
+      value: assignments.length, 
+      icon: Calendar, 
+      color: "bg-purple-500", 
+      shadow: "shadow-purple-100",
+      path: "/schedule"
+    },
   ];
 
   // Conflict Detection Logic
@@ -89,7 +119,11 @@ const Index = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
-          <Card key={idx} className="border-none shadow-xl shadow-emerald-100/20 hover:translate-y-[-4px] transition-all duration-300 rounded-3xl overflow-hidden group bg-white">
+          <Card 
+            key={idx} 
+            onClick={() => navigate(stat.path)}
+            className="border-none shadow-xl shadow-emerald-100/20 hover:translate-y-[-4px] transition-all duration-300 rounded-3xl overflow-hidden group bg-white cursor-pointer active:scale-95"
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className={cn("p-3 rounded-2xl text-white", stat.color, stat.shadow)}>
@@ -97,7 +131,7 @@ const Index = () => {
                 </div>
                 <div className="flex items-center text-emerald-500 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded-lg">
                   <ArrowUpRight size={12} className={isRTL ? "ml-1" : "mr-1"} />
-                  {isRTL ? "نشط" : "ACTIVE"}
+                  {isRTL ? "عرض الكل" : "VIEW ALL"}
                 </div>
               </div>
               <div className="mt-5">
