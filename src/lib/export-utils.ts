@@ -1,60 +1,46 @@
 /**
- * دوال معالجة البيانات (استيراد وتصدير) متوافقة مع هيكلة MyTable.xml
+ * دوال معالجة البيانات (استيراد وتصدير) متوافقة مع MyTable.xml وتنسيق aSc Timetables
  */
 
 export const exportToXml = (data: any, fileName: string) => {
-  let xmlString = '<?xml version="1.0" encoding="UTF-8"?>\n<SchedulerData>\n';
+  let xmlString = '<?xml version="1.0" encoding="UTF-8"?>\n<timetable importtype="xml" importversion="3.1.0">\n';
 
-  // تصدير الموظفين
-  xmlString += '  <Employees>\n';
+  // تصدير الموظفين (الأساتذة)
+  xmlString += `  <teachers count="${data.employees?.length || 0}">\n`;
   (data.employees || []).forEach((emp: any) => {
-    xmlString += `    <Employee id="${emp.id}" firstName="${emp.firstName}" lastName="${emp.lastName}" category="${emp.category}" observation="${emp.observation || ''}" />\n`;
+    xmlString += `    <teacher id="${emp.id}" name="${emp.lastName}, ${emp.firstName}" short="${emp.lastName}" category="${emp.category}" observation="${emp.observation || ''}" />\n`;
   });
-  xmlString += '  </Employees>\n';
-
-  // تصدير المصالح
-  xmlString += '  <Departments>\n';
-  (data.departments || []).forEach((dept: string) => {
-    xmlString += `    <Department name="${dept}" />\n`;
-  });
-  xmlString += '  </Departments>\n';
+  xmlString += '  </teachers>\n';
 
   // تصدير القاعات
-  xmlString += '  <Rooms>\n';
-  (data.rooms || []).forEach((room: string) => {
-    xmlString += `    <Room name="${room}" />\n`;
+  xmlString += `  <classrooms count="${data.rooms?.length || 0}">\n`;
+  (data.rooms || []).forEach((room: string, index: number) => {
+    xmlString += `    <classroom id="${index + 1}" name="${room}" short="${room}" />\n`;
   });
-  xmlString += '  </Rooms>\n';
+  xmlString += '  </classrooms>\n';
 
   // تصدير الأفواج
-  xmlString += '  <Classes>\n';
+  xmlString += `  <classes count="${data.classes?.length || 0}">\n`;
   (data.classes || []).forEach((cls: any) => {
-    xmlString += `    <Class id="${cls.id}" name="${cls.name}" />\n`;
+    xmlString += `    <class id="${cls.id}" name="${cls.name}" short="${cls.name}" />\n`;
   });
-  xmlString += '  </Classes>\n';
+  xmlString += '  </classes>\n';
 
   // تصدير المواد
-  xmlString += '  <Subjects>\n';
+  xmlString += `  <subjects count="${data.subjects?.length || 0}">\n`;
   (data.subjects || []).forEach((sub: any) => {
-    xmlString += `    <Subject id="${sub.id}" name="${sub.name}" />\n`;
+    xmlString += `    <subject id="${sub.id}" name="${sub.name}" short="${sub.name}" />\n`;
   });
-  xmlString += '  </Subjects>\n';
+  xmlString += '  </subjects>\n';
 
-  // تصدير إعدادات الفترات
-  xmlString += '  <PeriodConfigs>\n';
-  (data.periodConfigs || []).forEach((config: any) => {
-    xmlString += `    <PeriodConfig day="${config.day}" period="${config.period}" isActive="${config.isActive}" />\n`;
-  });
-  xmlString += '  </PeriodConfigs>\n';
-
-  // تصدير التوزيعات (الحصص)
-  xmlString += '  <Assignments>\n';
+  // تصدير الحصص (التوزيعات)
+  xmlString += `  <lessons count="${data.assignments?.length || 0}">\n`;
   (data.assignments || []).forEach((asgn: any) => {
-    xmlString += `    <Assignment id="${asgn.id}" employeeId="${asgn.employeeId}" day="${asgn.day}" period="${asgn.period}" subjectId="${asgn.subjectId}" classId="${asgn.classId}" department="${asgn.department}" room="${asgn.room || ''}" />\n`;
+    xmlString += `    <lesson id="${asgn.id}" teacherids="${asgn.employeeId}" subjectid="${asgn.subjectId}" classids="${asgn.classId}" classroomids="${asgn.room || ''}" day="${asgn.day}" period="${asgn.period}" />\n`;
   });
-  xmlString += '  </Assignments>\n';
+  xmlString += '  </lessons>\n';
 
-  xmlString += '</SchedulerData>';
+  xmlString += '</timetable>';
 
   const blob = new Blob([xmlString], { type: 'application/xml' });
   const url = URL.createObjectURL(blob);
@@ -82,66 +68,79 @@ export const parseXml = (xmlText: string) => {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(xmlText, "application/xml");
   
+  // التحقق من وجود خطأ في التحليل
+  if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+    throw new Error("Invalid XML format");
+  }
+
   const getAttr = (el: Element, attr: string) => el.getAttribute(attr) || "";
 
-  // دالة ذكية للبحث عن العناصر بمسميات متعددة لضمان التوافق
-  const findElements = (tags: string[]) => {
-    for (const tag of tags) {
-      const found = Array.from(xmlDoc.getElementsByTagName(tag));
-      if (found.length > 0) return found;
+  // 1. استخراج الأساتذة (Teachers)
+  const teacherElements = Array.from(xmlDoc.getElementsByTagName("teacher"));
+  const employees = teacherElements.map(el => {
+    const fullName = getAttr(el, "name");
+    let firstName = "Unknown";
+    let lastName = "";
+
+    if (fullName.includes(",")) {
+      const parts = fullName.split(",");
+      lastName = parts[0].trim();
+      firstName = parts[1].trim();
+    } else if (fullName.includes(" ")) {
+      const parts = fullName.split(" ");
+      firstName = parts[0];
+      lastName = parts.slice(1).join(" ");
+    } else {
+      firstName = fullName;
     }
-    return [];
-  };
 
-  // استخراج الموظفين (الأساتذة)
-  const employees = findElements(["Employee", "teacher", "staff", "الأستاذ", "المعلم"]).map(el => ({
-    id: getAttr(el, "id") || Math.random().toString(36).substr(2, 5),
-    firstName: getAttr(el, "firstName") || getAttr(el, "name").split(' ')[0] || getAttr(el, "الاسم") || "Unknown",
-    lastName: getAttr(el, "lastName") || getAttr(el, "name").split(' ').slice(1).join(' ') || getAttr(el, "اللقب") || "",
-    category: getAttr(el, "category") || getAttr(el, "الفئة") || "Full-time",
-    observation: getAttr(el, "observation") || getAttr(el, "note") || getAttr(el, "ملاحظة") || ""
-  }));
+    return {
+      id: getAttr(el, "id"),
+      firstName,
+      lastName,
+      category: getAttr(el, "category") || "Full-time",
+      observation: getAttr(el, "observation") || ""
+    };
+  });
 
-  // استخراج المصالح
-  const departments = findElements(["Department", "dept", "office", "المصلحة", "القسم"]).map(el => 
-    getAttr(el, "name") || getAttr(el, "title") || getAttr(el, "label")
+  // 2. استخراج القاعات (Classrooms)
+  const rooms = Array.from(xmlDoc.getElementsByTagName("classroom")).map(el => 
+    getAttr(el, "name") || getAttr(el, "short")
   );
 
-  // استخراج القاعات
-  const rooms = findElements(["Room", "classroom", "lab", "القاعة", "الحجرة"]).map(el => 
-    getAttr(el, "name") || getAttr(el, "number") || getAttr(el, "label")
-  );
-
-  // استخراج الأفواج التربوية
-  const classes = findElements(["Class", "grade", "group", "الفوج", "القسم_التربوي"]).map(el => ({
-    id: getAttr(el, "id") || Math.random().toString(36).substr(2, 5),
-    name: getAttr(el, "name") || getAttr(el, "title") || getAttr(el, "label")
+  // 3. استخراج الأفواج (Classes)
+  const classes = Array.from(xmlDoc.getElementsByTagName("class")).map(el => ({
+    id: getAttr(el, "id"),
+    name: getAttr(el, "name") || getAttr(el, "short")
   }));
 
-  // استخراج المواد الدراسية
-  const subjects = findElements(["Subject", "course", "lesson_type", "المادة"]).map(el => ({
-    id: getAttr(el, "id") || Math.random().toString(36).substr(2, 5),
-    name: getAttr(el, "name") || getAttr(el, "title") || getAttr(el, "label")
+  // 4. استخراج المواد (Subjects)
+  const subjects = Array.from(xmlDoc.getElementsByTagName("subject")).map(el => ({
+    id: getAttr(el, "id"),
+    name: getAttr(el, "name") || getAttr(el, "short")
   }));
 
-  // استخراج إعدادات الفترات الزمنية
-  const periodConfigs = findElements(["PeriodConfig", "schedule_config", "إعداد_الفترة"]).map(el => ({
-    day: parseInt(getAttr(el, "day") || "0"),
-    period: getAttr(el, "period"),
-    isActive: getAttr(el, "isActive").toLowerCase() === "true"
-  }));
-
-  // استخراج التوزيعات (الحصص)
-  const assignments = findElements(["Assignment", "lesson", "session", "الحصة"]).map(el => ({
+  // 5. استخراج الحصص (Lessons/Assignments)
+  // ملاحظة: في ملفات aSc، الحصص قد تكون في وسم <lesson> أو <card>
+  const lessonElements = Array.from(xmlDoc.getElementsByTagName("lesson"));
+  const assignments = lessonElements.map(el => ({
     id: getAttr(el, "id") || Math.random().toString(36).substr(2, 9),
-    employeeId: getAttr(el, "employeeId") || getAttr(el, "teacherid") || getAttr(el, "أستاذ_id"),
+    employeeId: getAttr(el, "teacherids") || getAttr(el, "teacherid"),
     day: parseInt(getAttr(el, "day") || "0"),
-    period: getAttr(el, "period"),
-    subjectId: getAttr(el, "subjectId") || getAttr(el, "subjectid") || getAttr(el, "مادة_id"),
-    classId: getAttr(el, "classId") || getAttr(el, "classid") || getAttr(el, "فوج_id"),
-    department: getAttr(el, "department") || getAttr(el, "مصلحة"),
-    room: getAttr(el, "room") || getAttr(el, "قاعة")
-  }));
+    period: getAttr(el, "period") || "Morning",
+    subjectId: getAttr(el, "subjectid"),
+    classId: getAttr(el, "classids") || getAttr(el, "classid"),
+    department: "", // aSc لا يحتوي عادة على هذا الحقل مباشرة
+    room: getAttr(el, "classroomids") || getAttr(el, "classroomid")
+  })).filter(a => a.employeeId && a.subjectId); // تصفية الحصص غير المكتملة
 
-  return { employees, departments, rooms, classes, subjects, periodConfigs, assignments };
+  return { 
+    employees, 
+    departments: [], 
+    rooms, 
+    classes, 
+    subjects, 
+    periodConfigs: [], 
+    assignments 
+  };
 };
