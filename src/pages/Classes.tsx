@@ -82,9 +82,18 @@ const Classes = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
+        <div className="w-full md:w-auto">
           <h2 className="text-3xl font-bold text-emerald-950">{isRTL ? "الفروع" : "Branches"}</h2>
-          <p className="text-emerald-600/70 mt-1">{isRTL ? `إجمالي الفروع: ${classes.length}` : `Total branches: ${classes.length}`}</p>
+          <div className="flex items-center justify-between gap-8 mt-1">
+            <p className="text-emerald-600/70 text-sm">
+              {isRTL ? `إجمالي الفروع: ${classes.length}` : `Total branches: ${classes.length}`}
+            </p>
+            {searchTerm && (
+              <p className="text-emerald-500 font-bold text-xs bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100 animate-in fade-in slide-in-from-top-1">
+                {isRTL ? `نتائج البحث: ${filteredClasses.length}` : `Search results: ${filteredClasses.length}`}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="flex gap-3 w-full md:w-auto">
