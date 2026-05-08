@@ -15,7 +15,7 @@ export const translations = {
     search: "بحث",
     stats: {
       employees: "الموظفون",
-      classes: "الأفواج التربوية",
+      classes: "الفروع",
       subjects: "المواد الدراسية",
       lessons: "الحصص",
       departments: "المصالح / الأقسام",
@@ -44,7 +44,7 @@ export const translations = {
     search: "Search",
     stats: {
       employees: "Employees",
-      classes: "Classes",
+      classes: "Branches",
       subjects: "Subjects",
       lessons: "Lessons",
       departments: "Departments",

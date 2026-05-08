@@ -30,20 +30,20 @@ const Classes = () => {
     const id = Math.random().toString(36).substr(2, 9);
     setClasses([...classes, { id, name: newClassName }]);
     setNewClassName("");
-    showSuccess(isRTL ? "تم إضافة الفوج بنجاح" : "Class added successfully");
+    showSuccess(isRTL ? "تم إضافة الفرع بنجاح" : "Branch added successfully");
   };
 
   const deleteClass = (id: string) => {
     setClasses(classes.filter(c => c.id !== id));
-    showSuccess(isRTL ? "تم حذف الفوج" : "Class deleted");
+    showSuccess(isRTL ? "تم حذف الفرع" : "Branch deleted");
   };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-emerald-950">{isRTL ? "الأفواج التربوية" : "Academic Classes"}</h2>
-          <p className="text-emerald-600/70 mt-1">{isRTL ? `إجمالي الأفواج: ${classes.length}` : `Total classes: ${classes.length}`}</p>
+          <h2 className="text-3xl font-bold text-emerald-950">{isRTL ? "الفروع" : "Branches"}</h2>
+          <p className="text-emerald-600/70 mt-1">{isRTL ? `إجمالي الفروع: ${classes.length}` : `Total branches: ${classes.length}`}</p>
         </div>
 
         <div className="flex gap-3 w-full md:w-auto">
@@ -64,7 +64,7 @@ const Classes = () => {
           <Input 
             value={newClassName} 
             onChange={e => setNewClassName(e.target.value)}
-            placeholder={isRTL ? "اسم الفوج الجديد..." : "New class name..."}
+            placeholder={isRTL ? "اسم الفرع الجديد..." : "New branch name..."}
             className="rounded-xl border-emerald-100"
           />
           <Button onClick={handleAddClass} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-8">
@@ -97,7 +97,7 @@ const Classes = () => {
         {filteredClasses.length === 0 && (
           <div className="text-center py-12">
             <Home size={48} className="mx-auto text-emerald-100 mb-4" />
-            <p className="text-emerald-600/50">{isRTL ? "لا توجد أفواج حالياً" : "No classes found"}</p>
+            <p className="text-emerald-600/50">{isRTL ? "لا توجد فروع حالياً" : "No branches found"}</p>
           </div>
         )}
       </Card>

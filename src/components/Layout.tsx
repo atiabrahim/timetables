@@ -28,7 +28,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const menuItems = [
     { icon: LayoutDashboard, label: isRTL ? "لوحة التحكم" : "Dashboard", path: "/" },
     { icon: Users, label: isRTL ? "الموظفون" : "Employees", path: "/employees" },
-    { icon: Home, label: isRTL ? "الأفواج" : "Classes", path: "/classes" },
+    { icon: Home, label: isRTL ? "الفروع" : "Branches", path: "/classes" },
     { icon: BookOpen, label: isRTL ? "المواد" : "Subjects", path: "/subjects" },
     { icon: Calendar, label: isRTL ? "الجدول الزمني" : "Schedule", path: "/schedule" },
     { icon: SettingsIcon, label: t.settings, path: "/settings" },
