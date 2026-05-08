@@ -73,45 +73,88 @@ export const parseXml = (xmlText: string) => {
   
   const getAttr = (el: Element, attr: string) => el.getAttribute(attr) || "";
 
-  const employees = Array.from(xmlDoc.getElementsByTagName("Employee")).map(el => ({
-    id: getAttr(el, "id"),
-    firstName: getAttr(el, "firstName"),
-    lastName: getAttr(el, "lastName"),
-    category: getAttr(el, "category"),
-    observation: getAttr(el, "observation")
-  }));
+  // محاولة البحث عن الموظفين بمسميات مختلفة (Employee, teacher, staff)
+  const employeeTags = ["Employee", "teacher", "staff", "person"];
+  let employees: any[] = [];
+  for (const tag of employeeTags) {
+    const found = Array.from(xmlDoc.getElementsByTagName(tag));
+    if (found.length > 0) {
+      employees = found.map(el => ({
+        id: getAttr(el, "id") || Math.random().toString(36).substr(2, 5),
+        firstName: getAttr(el, "firstName") || getAttr(el, "name").split(' ')[0] || "Unknown",
+        lastName: getAttr(el, "lastName") || getAttr(el, "name").split(' ').slice(1).join(' ') || "",
+        category: getAttr(el, "category") || "Full-time",
+        observation: getAttr(el, "observation") || getAttr(el, "note") || ""
+      }));
+      break;
+    }
+  }
 
-  const departments = Array.from(xmlDoc.getElementsByTagName("Department")).map(el => 
-    getAttr(el, "name")
-  );
+  // البحث عن المصالح/الأقسام
+  const deptTags = ["Department", "dept", "office"];
+  let departments: string[] = [];
+  for (const tag of deptTags) {
+    const found = Array.from(xmlDoc.getElementsByTagName(tag));
+    if (found.length > 0) {
+      departments = found.map(el => getAttr(el, "name") || getAttr(el, "title"));
+      break;
+    }
+  }
 
-  const rooms = Array.from(xmlDoc.getElementsByTagName("Room")).map(el => 
-    getAttr(el, "name")
-  );
+  // البحث عن القاعات
+  const roomTags = ["Room", "classroom", "lab"];
+  let rooms: string[] = [];
+  for (const tag of roomTags) {
+    const found = Array.from(xmlDoc.getElementsByTagName(tag));
+    if (found.length > 0) {
+      rooms = found.map(el => getAttr(el, "name") || getAttr(el, "number"));
+      break;
+    }
+  }
 
-  const classes = Array.from(xmlDoc.getElementsByTagName("Class")).map(el => ({
-    id: getAttr(el, "id"),
-    name: getAttr(el, "name")
-  }));
+  // البحث عن الأفواج
+  const classTags = ["Class", "grade", "group", "class"];
+  let classes: any[] = [];
+  for (const tag of classTags) {
+    const found = Array.from(xmlDoc.getElementsByTagName(tag));
+    if (found.length > 0) {
+      classes = found.map(el => ({
+        id: getAttr(el, "id") || Math.random().toString(36).substr(2, 5),
+        name: getAttr(el, "name") || getAttr(el, "title")
+      }));
+      break;
+    }
+  }
 
-  const subjects = Array.from(xmlDoc.getElementsByTagName("Subject")).map(el => ({
-    id: getAttr(el, "id"),
-    name: getAttr(el, "name")
-  }));
+  // البحث عن المواد
+  const subjectTags = ["Subject", "course", "lesson_type"];
+  let subjects: any[] = [];
+  for (const tag of subjectTags) {
+    const found = Array.from(xmlDoc.getElementsByTagName(tag));
+    if (found.length > 0) {
+      subjects = found.map(el => ({
+        id: getAttr(el, "id") || Math.random().toString(36).substr(2, 5),
+        name: getAttr(el, "name") || getAttr(el, "title")
+      }));
+      break;
+    }
+  }
 
+  // البحث عن الإعدادات الزمنية
   const periodConfigs = Array.from(xmlDoc.getElementsByTagName("PeriodConfig")).map(el => ({
     day: parseInt(getAttr(el, "day") || "0"),
     period: getAttr(el, "period"),
     isActive: getAttr(el, "isActive").toLowerCase() === "true"
   }));
 
+  // البحث عن التوزيعات (الحصص)
   const assignments = Array.from(xmlDoc.getElementsByTagName("Assignment")).map(el => ({
-    id: getAttr(el, "id"),
-    employeeId: getAttr(el, "employeeId"),
+    id: getAttr(el, "id") || Math.random().toString(36).substr(2, 9),
+    employeeId: getAttr(el, "employeeId") || getAttr(el, "teacherid"),
     day: parseInt(getAttr(el, "day") || "0"),
     period: getAttr(el, "period"),
-    subjectId: getAttr(el, "subjectId"),
-    classId: getAttr(el, "classId"),
+    subjectId: getAttr(el, "subjectId") || getAttr(el, "subjectid"),
+    classId: getAttr(el, "classId") || getAttr(el, "classid"),
     department: getAttr(el, "department"),
     room: getAttr(el, "room")
   }));

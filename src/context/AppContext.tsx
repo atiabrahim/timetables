@@ -89,14 +89,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
-      const parsed = JSON.parse(savedData);
-      setEmployees(parsed.employees || []);
-      setAssignments(parsed.assignments || []);
-      setDepartments(parsed.departments || []);
-      setRooms(parsed.rooms || []);
-      setClasses(parsed.classes || []);
-      setSubjects(parsed.subjects || []);
-      setPeriodConfigs(parsed.periodConfigs || []);
+      try {
+        const parsed = JSON.parse(savedData);
+        setEmployees(parsed.employees || []);
+        setAssignments(parsed.assignments || []);
+        setDepartments(parsed.departments || []);
+        setRooms(parsed.rooms || []);
+        setClasses(parsed.classes || []);
+        setSubjects(parsed.subjects || []);
+        setPeriodConfigs(parsed.periodConfigs || []);
+      } catch (e) {
+        console.error("Failed to parse saved data", e);
+      }
     }
   }, []);
 
@@ -107,6 +111,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [employees, assignments, departments, rooms, classes, subjects, periodConfigs]);
 
   const importAllData = (data: any) => {
+    if (!data) return;
+    
+    // تحديث الحالات
     setEmployees(data.employees || []);
     setDepartments(data.departments || []);
     setRooms(data.rooms || []);
@@ -115,8 +122,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setPeriodConfigs(data.periodConfigs || []);
     setAssignments(data.assignments || []);
     
-    // حفظ فوري لضمان عدم الضياع
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    // حفظ فوري لضمان عدم الضياع قبل إعادة التحميل
+    const dataToSave = {
+      employees: data.employees || [],
+      departments: data.departments || [],
+      rooms: data.rooms || [],
+      classes: data.classes || [],
+      subjects: data.subjects || [],
+      periodConfigs: data.periodConfigs || [],
+      assignments: data.assignments || []
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
   };
 
   const login = (username: string, role: User["role"]) => {
