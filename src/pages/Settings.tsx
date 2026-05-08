@@ -16,7 +16,6 @@ import {
   Users2, 
   BookOpen,
   Clock,
-  Calendar as CalendarIcon,
   FileCode
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
@@ -69,16 +68,30 @@ const Settings = () => {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const xmlText = event.target?.result as string;
+        const buffer = event.target?.result as ArrayBuffer;
+        
+        // محاولة القراءة بترميز UTF-8 أولاً
+        let decoder = new TextDecoder("utf-8");
+        let xmlText = decoder.decode(buffer);
+        
+        // إذا وجدنا إشارة لترميز windows-1256 في رأس الملف، نعيد القراءة بالترميز الصحيح
+        if (xmlText.toLowerCase().includes("windows-1256") || xmlText.toLowerCase().includes("iso-8859-6")) {
+          decoder = new TextDecoder("windows-1256");
+          xmlText = decoder.decode(buffer);
+        }
+
         const data = parseXml(xmlText);
         importAllData(data);
         showSuccess(isRTL ? "تم استيراد البيانات بنجاح" : "Data imported successfully");
+        
+        // إعادة ضبط المدخل للسماح برفع نفس الملف مرة أخرى
+        if (xmlInputRef.current) xmlInputRef.current.value = "";
       } catch (err) {
         showError(isRTL ? "فشل استيراد الملف، تأكد من التنسيق" : "Failed to import file, check format");
         console.error(err);
       }
     };
-    reader.readAsText(file);
+    reader.readAsArrayBuffer(file);
   };
 
   const addItem = (val: string, setVal: any, list: any[], setList: any[], msg: string) => {
