@@ -12,7 +12,9 @@ import {
   Menu,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Home,
+  BookOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const menuItems = [
     { icon: LayoutDashboard, label: isRTL ? "لوحة التحكم" : "Dashboard", path: "/" },
     { icon: Users, label: isRTL ? "الموظفون" : "Employees", path: "/employees" },
+    { icon: Home, label: isRTL ? "الأفواج" : "Classes", path: "/classes" },
+    { icon: BookOpen, label: isRTL ? "المواد" : "Subjects", path: "/subjects" },
     { icon: Calendar, label: isRTL ? "الجدول الزمني" : "Schedule", path: "/schedule" },
     { icon: SettingsIcon, label: t.settings, path: "/settings" },
   ];
