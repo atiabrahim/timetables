@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useApp } from "../context/AppContext";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
   Users, 
@@ -24,9 +24,15 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { t, isRTL, logout, user } = useApp();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
   const isAdmin = user?.role === "Admin";
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   const menuItems = [
     { icon: LayoutDashboard, label: isRTL ? "لوحة التحكم" : "Dashboard", path: "/" },
@@ -34,7 +40,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { icon: Home, label: isRTL ? "الفروع" : "Branches", path: "/classes" },
     { icon: BookOpen, label: isRTL ? "المواد" : "Subjects", path: "/subjects" },
     { icon: Calendar, label: isRTL ? "الجدول الزمني" : "Schedule", path: "/schedule" },
-    // رابط إدارة المستخدمين يظهر فقط للمدير
     ...(isAdmin ? [{ icon: UserCog, label: isRTL ? "المستخدمون" : "Users", path: "/users" }] : []),
     { icon: SettingsIcon, label: t.settings, path: "/settings" },
   ];
@@ -85,7 +90,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         </div>
         <Button 
           variant="ghost" 
-          onClick={logout}
+          onClick={handleLogout}
           className={cn(
             "w-full justify-start gap-3 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-xl",
             isCollapsed && "justify-center px-0"
@@ -100,7 +105,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className={cn("min-h-screen flex bg-[#F8FAFC]", isRTL ? "font-arabic" : "")}>
-      {/* Desktop Sidebar */}
       <aside 
         className={cn(
           "hidden md:flex flex-col sticky top-0 h-screen transition-all duration-300 z-50",
@@ -119,7 +123,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         </button>
       </aside>
 
-      {/* Mobile Sidebar */}
       <div className="md:hidden fixed top-4 right-4 z-50">
         <Sheet>
           <SheetTrigger asChild>
@@ -133,7 +136,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         </Sheet>
       </div>
 
-      {/* Main Content */}
       <main className="flex-1 p-4 md:p-8 overflow-x-hidden">
         <div className="max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
           {children}
