@@ -117,7 +117,26 @@ const Settings = () => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
-        const text = e.target?.result as string;
+        const buffer = e.target?.result as ArrayBuffer;
+        
+        // محاولة فك التشفير كـ UTF-8 أولاً
+        let decoder = new TextDecoder('utf-8');
+        let text = decoder.decode(buffer);
+        
+        // إذا كان الملف XML، نتحقق من وجود ترميز محدد مثل windows-1256
+        if (type === 'xml') {
+          const encodingMatch = text.match(/encoding="([^"]+)"/i);
+          if (encodingMatch && encodingMatch[1].toLowerCase() !== 'utf-8') {
+            // إعادة فك التشفير بالترميز المذكور في الملف (مثل windows-1256)
+            decoder = new TextDecoder(encodingMatch[1]);
+            text = decoder.decode(buffer);
+          } else if (text.includes('') || text.includes('Ø')) {
+            // محاولة تلقائية لترميز العربية الشائع إذا ظهرت رموز غريبة
+            decoder = new TextDecoder('windows-1256');
+            text = decoder.decode(buffer);
+          }
+        }
+
         let data;
         if (type === 'xml') {
           data = parseXml(text);
@@ -131,10 +150,13 @@ const Settings = () => {
           setTimeout(() => window.location.reload(), 800);
         }
       } catch (err) {
+        console.error(err);
         showError(isRTL ? "فشل استيراد الملف. تأكد من الصيغة الصحيحة" : "Failed to import file. Check format");
       }
     };
-    reader.readAsText(file);
+    
+    // قراءة كـ ArrayBuffer للتحكم في فك التشفير لاحقاً
+    reader.readAsArrayBuffer(file);
   };
 
   return (
