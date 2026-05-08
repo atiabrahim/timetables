@@ -20,6 +20,7 @@ import {
   FileCode
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
+import { parseXml } from "../lib/export-utils";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -50,6 +51,7 @@ const Settings = () => {
     classes, setClasses,
     subjects, setSubjects,
     periodConfigs, setPeriodConfigs,
+    importAllData,
     isRTL 
   } = useApp();
   
@@ -59,6 +61,25 @@ const Settings = () => {
   const [newSubject, setNewSubject] = useState("");
   
   const xmlInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportXml = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const xmlText = event.target?.result as string;
+        const data = parseXml(xmlText);
+        importAllData(data);
+        showSuccess(isRTL ? "تم استيراد البيانات بنجاح" : "Data imported successfully");
+      } catch (err) {
+        showError(isRTL ? "فشل استيراد الملف، تأكد من التنسيق" : "Failed to import file, check format");
+        console.error(err);
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const addItem = (val: string, setVal: any, list: any[], setList: any[], msg: string) => {
     if (val && !list.find(i => (typeof i === 'string' ? i === val : i.name === val))) {
@@ -100,7 +121,13 @@ const Settings = () => {
         </div>
         
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
-          <input type="file" ref={xmlInputRef} onChange={(e) => {/* Import logic */}} accept=".xml" className="hidden" />
+          <input 
+            type="file" 
+            ref={xmlInputRef} 
+            onChange={handleImportXml} 
+            accept=".xml" 
+            className="hidden" 
+          />
           <Button variant="outline" className="border-emerald-200 text-emerald-700 rounded-xl bg-white" onClick={() => xmlInputRef.current?.click()}>
             <FileCode size={18} className={isRTL ? "ml-2" : "mr-2"} />
             {isRTL ? "استيراد MyTable.xml" : "Import MyTable.xml"}

@@ -77,6 +77,16 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const STORAGE_KEY = "academic_scheduler_v2_data";
 
+const DEFAULT_ADMIN: User = { 
+  id: "admin-id", 
+  username: "Admin", 
+  fullName: "مدير النظام", 
+  email: "admin@edu.com", 
+  role: "Admin", 
+  observation: "الحساب الرئيسي", 
+  isActive: true 
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>("ar");
   const [user, setUser] = useState<User | null>(() => {
@@ -84,7 +94,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : null;
   });
 
-  const [systemUsers, setSystemUsers] = useState<User[]>([]);
+  const [systemUsers, setSystemUsers] = useState<User[]>([DEFAULT_ADMIN]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
@@ -99,17 +109,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        setSystemUsers(parsed.systemUsers || [
-          { 
-            id: "1", 
-            username: "admin", 
-            fullName: "مدير النظام", 
-            email: "admin@edu.com", 
-            role: "Admin", 
-            observation: "الحساب الرئيسي", 
-            isActive: true 
-          }
-        ]);
+        if (parsed.systemUsers && parsed.systemUsers.length > 0) {
+          setSystemUsers(parsed.systemUsers);
+        }
         setEmployees(parsed.employees || []);
         setAssignments(parsed.assignments || []);
         setDepartments(parsed.departments || []);
@@ -120,16 +122,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } catch (e) {
         console.error("Failed to parse saved data", e);
       }
-    } else {
-      setSystemUsers([{ 
-        id: "1", 
-        username: "admin", 
-        fullName: "مدير النظام", 
-        email: "admin@edu.com", 
-        role: "Admin", 
-        observation: "الحساب الرئيسي", 
-        isActive: true 
-      }]);
     }
   }, []);
 
@@ -141,18 +133,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const importAllData = (data: any) => {
     if (!data) return;
-    setSystemUsers(data.systemUsers || []);
-    setEmployees(data.employees || []);
-    setDepartments(data.departments || []);
-    setRooms(data.rooms || []);
-    setClasses(data.classes || []);
-    setSubjects(data.subjects || []);
-    setPeriodConfigs(data.periodConfigs || []);
-    setAssignments(data.assignments || []);
+    // تحديث كافة الحالات لضمان ظهور البيانات فوراً
+    if (data.employees) setEmployees(data.employees);
+    if (data.rooms) setRooms(data.rooms);
+    if (data.classes) setClasses(data.classes);
+    if (data.subjects) setSubjects(data.subjects);
+    if (data.assignments) setAssignments(data.assignments);
+    if (data.departments) setDepartments(data.departments);
+    if (data.periodConfigs && data.periodConfigs.length > 0) setPeriodConfigs(data.periodConfigs);
+    if (data.systemUsers) setSystemUsers(data.systemUsers);
   };
 
   const login = (username: string, role: User["role"]) => {
-    const newUser = { 
+    const found = systemUsers.find(u => u.username === username);
+    const userToLogin = found || { 
       id: Math.random().toString(36).substr(2, 9), 
       username, 
       fullName: username, 
@@ -161,8 +155,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       observation: "", 
       isActive: true 
     };
-    setUser(newUser);
-    localStorage.setItem("scheduler_user", JSON.stringify(newUser));
+    setUser(userToLogin);
+    localStorage.setItem("scheduler_user", JSON.stringify(userToLogin));
   };
 
   const logout = () => {
