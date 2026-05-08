@@ -14,7 +14,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
-  BookOpen
+  BookOpen,
+  UserCog
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,12 +26,16 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
 
+  const isAdmin = user?.role === "Admin";
+
   const menuItems = [
     { icon: LayoutDashboard, label: isRTL ? "لوحة التحكم" : "Dashboard", path: "/" },
     { icon: Users, label: isRTL ? "الموظفون" : "Employees", path: "/employees" },
     { icon: Home, label: isRTL ? "الفروع" : "Branches", path: "/classes" },
     { icon: BookOpen, label: isRTL ? "المواد" : "Subjects", path: "/subjects" },
     { icon: Calendar, label: isRTL ? "الجدول الزمني" : "Schedule", path: "/schedule" },
+    // رابط إدارة المستخدمين يظهر فقط للمدير
+    ...(isAdmin ? [{ icon: UserCog, label: isRTL ? "المستخدمون" : "Users", path: "/users" }] : []),
     { icon: SettingsIcon, label: t.settings, path: "/settings" },
   ];
 

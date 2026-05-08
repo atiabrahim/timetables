@@ -17,18 +17,9 @@ import {
   BookOpen,
   Clock,
   Calendar as CalendarIcon,
-  FileJson,
-  FileCode,
-  UserCog,
-  Shield,
-  User,
-  Mail,
-  Info,
-  Power,
-  PowerOff
+  FileCode
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
-import { exportToXml, exportToJson, parseXml } from "../lib/export-utils";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -40,14 +31,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 
 const DAYS = [
   { id: 0, name: "الأحد", en: "Sunday" },
@@ -66,11 +49,7 @@ const Settings = () => {
     rooms, setRooms,
     classes, setClasses,
     subjects, setSubjects,
-    employees, assignments,
     periodConfigs, setPeriodConfigs,
-    systemUsers, setSystemUsers,
-    user: currentUser,
-    importAllData,
     isRTL 
   } = useApp();
   
@@ -79,54 +58,7 @@ const Settings = () => {
   const [newClass, setNewClass] = useState("");
   const [newSubject, setNewSubject] = useState("");
   
-  // User Management State
-  const [newUser, setNewUser] = useState({
-    username: "",
-    fullName: "",
-    email: "",
-    role: "Teacher" as "Admin" | "Teacher" | "Student",
-    observation: ""
-  });
-
   const xmlInputRef = useRef<HTMLInputElement>(null);
-  const jsonInputRef = useRef<HTMLInputElement>(null);
-
-  const handleAddUser = () => {
-    if (!newUser.username.trim() || !newUser.fullName.trim()) {
-      showError(isRTL ? "يرجى ملء الحقول الأساسية" : "Please fill required fields");
-      return;
-    }
-    if (systemUsers.find(u => u.username === newUser.username)) {
-      showError(isRTL ? "اسم المستخدم موجود مسبقاً" : "Username already exists");
-      return;
-    }
-
-    const userToAdd = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...newUser,
-      isActive: true
-    };
-
-    setSystemUsers([...systemUsers, userToAdd]);
-    setNewUser({ username: "", fullName: "", email: "", role: "Teacher", observation: "" });
-    showSuccess(isRTL ? "تم إضافة المستخدم بنجاح" : "User added successfully");
-  };
-
-  const toggleUserStatus = (id: string) => {
-    setSystemUsers(systemUsers.map(u => 
-      u.id === id ? { ...u, isActive: !u.isActive } : u
-    ));
-    showSuccess(isRTL ? "تم تحديث حالة الحساب" : "Account status updated");
-  };
-
-  const handleDeleteUser = (id: string) => {
-    if (id === currentUser?.id) {
-      showError(isRTL ? "لا يمكنك حذف حسابك الحالي" : "You cannot delete your own account");
-      return;
-    }
-    setSystemUsers(systemUsers.filter(u => u.id !== id));
-    showSuccess(isRTL ? "تم حذف المستخدم" : "User deleted");
-  };
 
   const addItem = (val: string, setVal: any, list: any[], setList: any[], msg: string) => {
     if (val && !list.find(i => (typeof i === 'string' ? i === val : i.name === val))) {
@@ -180,221 +112,163 @@ const Settings = () => {
         </div>
       </div>
 
-      {/* Users Management */}
+      {/* Schedule Config */}
       <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden">
         <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl">
-              <UserCog size={20} />
-            </div>
-            <CardTitle className="text-lg font-bold text-emerald-900">{isRTL ? "إدارة مستخدمي النظام" : "System Users Management"}</CardTitle>
-          </div>
+          <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <Clock size={20} className="text-emerald-600" />
+            {isRTL ? "إعدادات الجدول" : "Schedule Config"}
+          </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            {/* Add User Form */}
-            <div className="space-y-4 bg-emerald-50/30 p-6 rounded-3xl border border-emerald-50">
-              <h4 className="font-bold text-emerald-900 flex items-center gap-2">
-                <Plus size={18} />
-                {isRTL ? "إضافة مستخدم جديد" : "Add New User"}
-              </h4>
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "اسم المستخدم" : "Username"}</label>
-                    <Input 
-                      value={newUser.username} 
-                      onChange={(e) => setNewUser({...newUser, username: e.target.value})}
-                      className="rounded-xl border-emerald-100 h-10"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "الصلاحية" : "Role"}</label>
-                    <Select value={newUser.role} onValueChange={(v: any) => setNewUser({...newUser, role: v})}>
-                      <SelectTrigger className="rounded-xl border-emerald-100 h-10">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Admin">{isRTL ? "مدير" : "Admin"}</SelectItem>
-                        <SelectItem value="Teacher">{isRTL ? "أستاذ" : "Teacher"}</SelectItem>
-                        <SelectItem value="Student">{isRTL ? "طالب" : "Student"}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "الاسم الكامل" : "Full Name"}</label>
-                  <Input 
-                    value={newUser.fullName} 
-                    onChange={(e) => setNewUser({...newUser, fullName: e.target.value})}
-                    className="rounded-xl border-emerald-100 h-10"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "البريد الإلكتروني" : "Email"}</label>
-                  <Input 
-                    type="email"
-                    value={newUser.email} 
-                    onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                    className="rounded-xl border-emerald-100 h-10"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "ملاحظة" : "Observation"}</label>
-                  <Input 
-                    value={newUser.observation} 
-                    onChange={(e) => setNewUser({...newUser, observation: e.target.value})}
-                    className="rounded-xl border-emerald-100 h-10"
-                  />
-                </div>
-                <Button onClick={handleAddUser} className="w-full bg-emerald-600 hover:bg-emerald-700 rounded-xl mt-4 h-11">
-                  {isRTL ? "تأكيد الإضافة" : "Confirm Add"}
-                </Button>
-              </div>
-            </div>
-
-            {/* Users List */}
-            <div className="xl:col-span-2 space-y-4">
-              <h4 className="font-bold text-emerald-900 flex items-center gap-2">
-                <Users2 className="text-emerald-500" size={18} />
-                {isRTL ? "قائمة المستخدمين النشطين" : "Active Users List"}
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {systemUsers.map(u => (
-                  <div key={u.id} className={cn(
-                    "p-4 border rounded-3xl transition-all group relative",
-                    u.isActive ? "bg-white border-emerald-100 shadow-sm" : "bg-gray-50 border-gray-200 opacity-70"
-                  )}>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm",
-                          u.role === "Admin" ? "bg-emerald-100 text-emerald-700" : "bg-blue-50 text-blue-600"
-                        )}>
-                          {u.role === "Admin" ? <Shield size={24} /> : <User size={24} />}
-                        </div>
-                        <div>
-                          <p className="font-bold text-emerald-950">{u.fullName}</p>
-                          <p className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">@{u.username} • {u.role}</p>
-                        </div>
-                      </div>
-                      <div className="flex gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className={cn("h-8 w-8 rounded-lg", u.isActive ? "text-emerald-500" : "text-amber-500")}
-                          onClick={() => toggleUserStatus(u.id)}
-                          title={u.isActive ? (isRTL ? "توقيف" : "Deactivate") : (isRTL ? "تنشيط" : "Activate")}
-                        >
-                          {u.isActive ? <Power size={16} /> : <PowerOff size={16} />}
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50"
-                          onClick={() => handleDeleteUser(u.id)}
-                        >
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {DAYS.map(day => (
+              <div key={day.id} className="p-3 bg-emerald-50/30 rounded-2xl border border-emerald-50">
+                <p className="font-bold text-emerald-900 text-sm mb-2">{isRTL ? day.name : day.en}</p>
+                <div className="flex gap-4">
+                  {PERIODS.map(p => (
+                    <div key={p} className="flex items-center gap-2">
+                      <Switch 
+                        checked={isPeriodActive(day.id, p)} 
+                        onCheckedChange={() => togglePeriod(day.id, p)}
+                      />
+                      <span className="text-[10px] font-bold text-emerald-700">{p === "Morning" ? (isRTL ? "ص" : "M") : (isRTL ? "م" : "A")}</span>
                     </div>
-                    
-                    <div className="space-y-2 border-t border-emerald-50 pt-3">
-                      <div className="flex items-center gap-2 text-xs text-emerald-600/70">
-                        <Mail size={12} />
-                        <span className="truncate">{u.email || "---"}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-emerald-600/70">
-                        <Info size={12} />
-                        <span className="truncate italic">{u.observation || "---"}</span>
-                      </div>
-                    </div>
-
-                    {!u.isActive && (
-                      <div className="absolute inset-0 bg-gray-100/20 backdrop-blur-[1px] rounded-3xl pointer-events-none flex items-center justify-center">
-                        <span className="bg-gray-800 text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-widest">
-                          {isRTL ? "موقوف" : "Inactive"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Other Settings (Schedule, Rooms, etc.) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Schedule Config */}
-        <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden">
-          <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Clock size={20} className="text-emerald-600" />
-              {isRTL ? "إعدادات الجدول" : "Schedule Config"}
-            </CardTitle>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Classes */}
+        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+          <CardHeader className="flex flex-row items-center gap-2 pb-2">
+            <Users2 className="text-emerald-600" size={20} />
+            <CardTitle className="text-sm font-bold">{isRTL ? "الفروع" : "Branches"}</CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {DAYS.map(day => (
-                <div key={day.id} className="p-3 bg-emerald-50/30 rounded-2xl border border-emerald-50">
-                  <p className="font-bold text-emerald-900 text-sm mb-2">{isRTL ? day.name : day.en}</p>
-                  <div className="flex gap-4">
-                    {PERIODS.map(p => (
-                      <div key={p} className="flex items-center gap-2">
-                        <Switch 
-                          checked={isPeriodActive(day.id, p)} 
-                          onCheckedChange={() => togglePeriod(day.id, p)}
-                        />
-                        <span className="text-[10px] font-bold text-emerald-700">{p === "Morning" ? (isRTL ? "ص" : "M") : (isRTL ? "م" : "A")}</span>
-                      </div>
-                    ))}
-                  </div>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input value={newClass} onChange={(e) => setNewClass(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
+              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newClass, setNewClass, classes, setClasses, "Branch added")}><Plus size={16} /></Button>
+            </div>
+            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+              {classes.map(c => (
+                <div key={c.id} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
+                  <span className="font-medium text-emerald-900">{c.name}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setClasses(classes.filter(i => i.id !== c.id))}><Trash2 size={14} /></Button>
                 </div>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* Danger Zone */}
-        <Card className="border-red-100 bg-red-50/30 rounded-3xl overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-red-800 flex items-center gap-2">
-              <AlertTriangle size={20} />
-              {isRTL ? "منطقة الخطر" : "Danger Zone"}
-            </CardTitle>
+        {/* Subjects */}
+        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+          <CardHeader className="flex flex-row items-center gap-2 pb-2">
+            <BookOpen className="text-emerald-600" size={20} />
+            <CardTitle className="text-sm font-bold">{isRTL ? "المواد الدراسية" : "Subjects"}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-              <p className="text-sm text-red-600">
-                {isRTL ? "سيؤدي هذا الإجراء إلى حذف كافة المعلومات بشكل نهائي." : "This action will permanently delete all information."}
-              </p>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" className="rounded-xl px-8">
-                    {isRTL ? "مسح كافة البيانات" : "Clear All Data"}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="border-red-100 rounded-3xl">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{isRTL ? "هل أنت متأكد تماماً؟" : "Are you absolutely sure?"}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {isRTL ? "لا يمكن التراجع عن هذا الإجراء. سيتم حذف كل شيء." : "This action cannot be undone. Everything will be deleted."}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleClearAll} className="bg-red-600 hover:bg-red-700 rounded-xl">
-                      {isRTL ? "نعم، امسح الكل" : "Yes, Clear All"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
+              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newSubject, setNewSubject, subjects, setSubjects, "Subject added")}><Plus size={16} /></Button>
+            </div>
+            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+              {subjects.map(s => (
+                <div key={s.id} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
+                  <span className="font-medium text-emerald-900">{s.name}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setSubjects(subjects.filter(i => i.id !== s.id))}><Trash2 size={14} /></Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Rooms */}
+        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+          <CardHeader className="flex flex-row items-center gap-2 pb-2">
+            <MapPin className="text-emerald-600" size={20} />
+            <CardTitle className="text-sm font-bold">{isRTL ? "القاعات" : "Rooms"}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input value={newRoom} onChange={(e) => setNewRoom(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
+              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newRoom, setNewRoom, rooms, setRooms, "Room added")}><Plus size={16} /></Button>
+            </div>
+            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+              {rooms.map(r => (
+                <div key={r} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
+                  <span className="font-medium text-emerald-900">{r}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setRooms(rooms.filter(i => i !== r))}><Trash2 size={14} /></Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Departments */}
+        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
+          <CardHeader className="flex flex-row items-center gap-2 pb-2">
+            <Database className="text-emerald-600" size={20} />
+            <CardTitle className="text-sm font-bold">{t.stats.departments}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
+              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newDept, setNewDept, departments, setDepartments, "Dept added")}><Plus size={16} /></Button>
+            </div>
+            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+              {departments.map(d => (
+                <div key={d} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
+                  <span className="font-medium text-emerald-900">{d}</span>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setDepartments(departments.filter(i => i !== d))}><Trash2 size={14} /></Button>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Danger Zone */}
+      <Card className="border-red-100 bg-red-50/30 rounded-3xl overflow-hidden">
+        <CardHeader>
+          <CardTitle className="text-red-800 flex items-center gap-2">
+            <AlertTriangle size={20} />
+            {isRTL ? "منطقة الخطر" : "Danger Zone"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-red-600">
+              {isRTL ? "سيؤدي هذا الإجراء إلى حذف كافة المعلومات بشكل نهائي." : "This action will permanently delete all information."}
+            </p>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="rounded-xl px-8">
+                  {isRTL ? "مسح كافة البيانات" : "Clear All Data"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="border-red-100 rounded-3xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{isRTL ? "هل أنت متأكد تماماً؟" : "Are you absolutely sure?"}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {isRTL ? "لا يمكن التراجع عن هذا الإجراء. سيتم حذف كل شيء." : "This action cannot be undone. Everything will be deleted."}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleClearAll} className="bg-red-600 hover:bg-red-700 rounded-xl">
+                    {isRTL ? "نعم، امسح الكل" : "Yes, Clear All"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

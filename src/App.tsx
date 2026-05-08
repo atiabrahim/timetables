@@ -11,6 +11,7 @@ import Classes from "./pages/Classes";
 import Subjects from "./pages/Subjects";
 import Schedule from "./pages/Schedule";
 import Settings from "./pages/Settings";
+import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,7 +30,7 @@ const App = () => (
             <Route path="/subjects" element={<Layout><Subjects /></Layout>} />
             <Route path="/schedule" element={<Layout><Schedule /></Layout>} />
             <Route path="/settings" element={<Layout><Settings /></Layout>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/users" element={<Layout><Users /></Layout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
