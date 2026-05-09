@@ -14,7 +14,8 @@ import {
   Users,
   Info,
   ShieldCheck,
-  Lock
+  Lock,
+  MapPin
 } from "lucide-react";
 import { 
   Dialog, 
@@ -23,11 +24,18 @@ import {
   DialogTitle, 
   DialogFooter 
 } from "@/components/ui/dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
 
 const Classes = () => {
-  const { classes, setClasses, isRTL, t, user } = useApp();
+  const { classes, setClasses, rooms, isRTL, t, user } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [newClassName, setNewClassName] = useState("");
   
@@ -35,6 +43,7 @@ const Classes = () => {
   const [selectedClass, setSelectedClass] = useState<any>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [editName, setEditName] = useState("");
+  const [editRoom, setEditRoom] = useState("");
 
   const isAdmin = user?.role === "Admin";
 
@@ -49,13 +58,13 @@ const Classes = () => {
     }
     if (!newClassName) return;
     const id = Math.random().toString(36).substr(2, 9);
-    setClasses([...classes, { id, name: newClassName }]);
+    setClasses([...classes, { id, name: newClassName, room: "" }]);
     setNewClassName("");
     showSuccess(isRTL ? "تم إضافة الفرع بنجاح" : "Branch added successfully");
   };
 
   const deleteClass = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); // Prevent opening details
+    e.stopPropagation();
     if (!isAdmin) {
       showError(isRTL ? "عذراً، المدير فقط يمكنه الحذف" : "Only Admin can delete branches");
       return;
@@ -67,6 +76,7 @@ const Classes = () => {
   const openDetails = (cls: any) => {
     setSelectedClass(cls);
     setEditName(cls.name);
+    setEditRoom(cls.room || "");
     setIsDetailOpen(true);
   };
 
@@ -74,7 +84,7 @@ const Classes = () => {
     if (!isAdmin) return;
     if (!editName.trim()) return;
 
-    setClasses(classes.map(c => c.id === selectedClass.id ? { ...c, name: editName } : c));
+    setClasses(classes.map(c => c.id === selectedClass.id ? { ...c, name: editName, room: editRoom } : c));
     setIsDetailOpen(false);
     showSuccess(isRTL ? "تم تحديث بيانات الفرع" : "Branch updated successfully");
   };
@@ -88,11 +98,6 @@ const Classes = () => {
             <p className="text-emerald-600/70 text-sm">
               {isRTL ? `إجمالي الفروع: ${classes.length}` : `Total branches: ${classes.length}`}
             </p>
-            {searchTerm && (
-              <p className="text-emerald-500 font-bold text-xs bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100 animate-in fade-in slide-in-from-top-1">
-                {isRTL ? `نتائج البحث: ${filteredClasses.length}` : `Search results: ${filteredClasses.length}`}
-              </p>
-            )}
           </div>
         </div>
 
@@ -136,7 +141,14 @@ const Classes = () => {
                 <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm">
                   <Home size={20} />
                 </div>
-                <span className="font-bold text-emerald-900">{cls.name}</span>
+                <div>
+                  <span className="font-bold text-emerald-900 block">{cls.name}</span>
+                  {cls.room && (
+                    <span className="text-[10px] text-emerald-500 flex items-center gap-1">
+                      <MapPin size={10} /> {cls.room}
+                    </span>
+                  )}
+                </div>
               </div>
               {isAdmin && (
                 <Button 
@@ -196,15 +208,27 @@ const Classes = () => {
             </div>
 
             <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-50">
-              <p className="text-xs text-emerald-600/70 mb-2 font-bold uppercase tracking-wider">{isRTL ? "معلومات إضافية" : "Additional Info"}</p>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[10px] text-emerald-400 font-bold">{isRTL ? "المعرف" : "ID"}</p>
-                  <p className="text-sm font-mono text-emerald-900">{selectedClass?.id}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-emerald-400 font-bold">{isRTL ? "الحالة" : "Status"}</p>
-                  <p className="text-sm font-bold text-emerald-600">{isRTL ? "نشط" : "Active"}</p>
+              <p className="text-xs text-emerald-600/70 mb-4 font-bold uppercase tracking-wider">{isRTL ? "تخصيص الموارد" : "Resource Allocation"}</p>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <p className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                    <MapPin size={12} /> {isRTL ? "القاعة الافتراضية" : "Default Room"}
+                  </p>
+                  {isAdmin ? (
+                    <Select value={editRoom} onValueChange={setEditRoom}>
+                      <SelectTrigger className="rounded-xl bg-white border-emerald-100">
+                        <SelectValue placeholder={isRTL ? "اختر قاعة..." : "Select room..."} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">{isRTL ? "بدون قاعة" : "No Room"}</SelectItem>
+                        {rooms.map(r => (
+                          <SelectItem key={r} value={r}>{r}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-sm font-bold text-emerald-900">{editRoom || (isRTL ? "غير محددة" : "Not assigned")}</p>
+                  )}
                 </div>
               </div>
             </div>
