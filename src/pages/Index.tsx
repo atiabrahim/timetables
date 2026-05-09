@@ -23,7 +23,7 @@ const Index = () => {
     { label: t.stats.teachers, value: employees.length, icon: Users, path: "/employees" },
     { label: t.stats.classes, value: classes.length, icon: GraduationCap, path: "/classes" },
     { label: t.stats.subjects, value: subjects.length, icon: BookOpen, path: "/subjects" },
-    { label: t.stats.rooms, value: rooms.length, icon: Home, path: "/settings" },
+    { label: t.stats.rooms, value: rooms.length, icon: MapPin, path: "/rooms" },
     { label: t.stats.lessons, value: assignments.length, icon: ListChecks, path: "/reports" },
     { label: t.stats.periods, value: 10, icon: Clock, path: "/schedule" },
   ];
@@ -36,7 +36,7 @@ const Index = () => {
           {t.welcome} {user?.fullName || "المستخدم"}
         </h2>
         <p className="text-gray-500 text-xl font-bold mt-2">
-          {t.role} {t.admin}
+          {t.role} {user?.role === "Admin" ? t.admin : user?.role}
         </p>
       </div>
 

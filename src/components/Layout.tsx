@@ -39,9 +39,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { icon: Users, label: t.employees, path: "/employees" },
     { icon: Home, label: t.classes, path: "/classes" },
     { icon: BookOpen, label: t.subjects, path: "/subjects" },
-    { icon: MapPin, label: t.rooms, path: "/settings" },
+    { icon: MapPin, label: t.rooms, path: "/rooms" },
     { icon: ListChecks, label: t.lessons, path: "/reports" },
-    { icon: FileUp, label: t.importXml, path: "/settings" },
+    { icon: SettingsIcon, label: t.settings, path: "/settings" },
     ...(isAdmin ? [{ icon: UserCog, label: t.users, path: "/users" }] : []),
   ];
 
@@ -49,13 +49,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     <div className={cn("min-h-screen flex flex-col bg-[#FDFDFD]", isRTL ? "font-arabic" : "")}>
       {/* Header */}
       <header className="h-20 border-b bg-white flex items-center justify-between px-8 sticky top-0 z-50">
-        {/* Logo/Title Section - Always at the 'Start' */}
         <div className="text-start order-first">
           <h1 className="text-2xl font-black text-[#064e3b]">{t.appTitle}</h1>
           <p className="text-gray-400 text-xs font-bold">{t.appSubtitle}</p>
         </div>
 
-        {/* User/Actions Section - Always at the 'End' */}
         <div className="flex items-center gap-6 order-last">
           <Button 
             variant="ghost" 
@@ -69,9 +67,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
           <div className="flex items-center gap-3">
             <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold">
-              {t.admin}
+              {user?.role === "Admin" ? t.admin : user?.role}
             </div>
-            <span className="text-gray-500 text-sm font-medium hidden sm:inline">{user?.email || "atiabrahim@gmail.com"}</span>
+            <span className="text-gray-500 text-sm font-medium hidden sm:inline">{user?.email || user?.username}</span>
           </div>
 
           <Button 
@@ -86,7 +84,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       </header>
 
       <div className="flex flex-1">
-        {/* Sidebar - Placed first in DOM to follow direction naturally (Right in RTL, Left in LTR) */}
         <aside className={cn(
           "w-72 bg-white p-6 hidden md:block",
           isRTL ? "border-l" : "border-r"
@@ -113,7 +110,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           </nav>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 p-12 overflow-x-hidden">
           <div className="max-w-6xl mx-auto">
             {children}
