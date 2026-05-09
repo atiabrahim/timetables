@@ -29,7 +29,6 @@ interface PeriodConfig {
 interface AcademicClass {
   id: string;
   name: string;
-  room?: string;
 }
 
 interface Subject {
@@ -134,6 +133,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const importAllData = (data: any) => {
     if (!data) return;
+    // تحديث كافة الحالات لضمان ظهور البيانات فوراً
     if (data.employees) setEmployees(data.employees);
     if (data.rooms) setRooms(data.rooms);
     if (data.classes) setClasses(data.classes);
