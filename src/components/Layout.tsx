@@ -14,9 +14,8 @@ import {
   UserCog,
   MapPin,
   ListChecks,
-  FileUp,
-  Languages,
-  Shield
+  BarChart3,
+  Languages
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,11 +35,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const menuItems = [
     { icon: LayoutDashboard, label: t.dashboard, path: "/" },
     { icon: Calendar, label: t.schedule, path: "/schedule" },
+    { icon: ListChecks, label: t.lessons, path: "/lessons" },
     { icon: Users, label: t.employees, path: "/employees" },
     { icon: Home, label: t.classes, path: "/classes" },
     { icon: BookOpen, label: t.subjects, path: "/subjects" },
     { icon: MapPin, label: t.rooms, path: "/rooms" },
-    { icon: ListChecks, label: t.lessons, path: "/reports" },
+    { icon: BarChart3, label: t.reports, path: "/reports" },
     { icon: SettingsIcon, label: t.settings, path: "/settings" },
     ...(isAdmin ? [{ icon: UserCog, label: t.users, path: "/users" }] : []),
   ];
