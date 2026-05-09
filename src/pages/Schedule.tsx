@@ -13,7 +13,9 @@ import {
   Trash2,
   Printer,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  X
 } from "lucide-react";
 import { 
   Select, 
@@ -59,6 +61,7 @@ const Schedule = () => {
   const [viewMode, setViewMode] = useState<"class" | "teacher">("class");
   const [selectedId, setSelectedId] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [editingCell, setEditingCell] = useState<{day: number, period: string} | null>(null);
 
   const [newAssignment, setNewAssignment] = useState({
@@ -75,10 +78,8 @@ const Schedule = () => {
     );
   }, [assignments, viewMode, selectedId]);
 
-  // دالة للتحقق من التعارضات
   const checkConflict = (day: number, period: string, assignment: any) => {
     const otherAssignments = assignments.filter(a => a.id !== assignment.id && a.day === day && a.period === period);
-    
     const teacherConflict = otherAssignments.find(a => a.employeeId === assignment.employeeId);
     const roomConflict = assignment.room ? otherAssignments.find(a => a.room === assignment.room) : null;
     
@@ -111,15 +112,8 @@ const Schedule = () => {
 
   const saveAssignment = () => {
     if (!editingCell) return;
-    
     const id = Math.random().toString(36).substr(2, 9);
-    const assignment = {
-      ...newAssignment,
-      id,
-      day: editingCell.day,
-      period: editingCell.period
-    };
-
+    const assignment = { ...newAssignment, id, day: editingCell.day, period: editingCell.period };
     setAssignments([...assignments, assignment]);
     setIsDialogOpen(false);
     showSuccess(isRTL ? "تمت إضافة الحصة بنجاح" : "Lesson added successfully");
@@ -129,6 +123,122 @@ const Schedule = () => {
     setAssignments(assignments.filter(a => a.id !== id));
     showSuccess(isRTL ? "تم حذف الحصة" : "Lesson deleted");
   };
+
+  const ScheduleTable = ({ isPreview = false }: { isPreview?: boolean }) => (
+    <div className={cn(
+      "overflow-x-auto rounded-3xl border border-emerald-100 bg-white shadow-sm",
+      isPreview && "border-gray-300 shadow-none rounded-none"
+    )}>
+      <table className="w-full border-collapse">
+        <thead>
+          <tr className="bg-emerald-50/50">
+            <th className="p-4 border-b border-emerald-100 text-emerald-900 font-bold text-sm w-24">
+              {isRTL ? "الحصة" : "Period"}
+            </th>
+            {DAYS.map(day => (
+              <th key={day.id} className="p-4 border-b border-emerald-100 text-emerald-900 font-bold text-sm min-w-[120px]">
+                {isRTL ? day.name : day.en}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {PERIODS.map(period => (
+            <tr key={period} className="group">
+              <td className="p-4 border-b border-emerald-100 bg-emerald-50/20 font-bold text-emerald-800 text-xs text-center">
+                <div className="flex flex-col items-center gap-1">
+                  <Clock size={12} className="text-emerald-400" />
+                  {period}
+                </div>
+              </td>
+              {DAYS.map(day => {
+                const assignment = getAssignment(day.id, period);
+                const config = periodConfigs.find(p => p.day === day.id && p.period === period);
+                const isActive = config ? config.isActive : true;
+
+                if (!isActive) return <td key={day.id} className="p-2 border-b border-emerald-100 bg-gray-50/30"></td>;
+
+                const conflict = assignment ? checkConflict(day.id, period, assignment) : null;
+
+                return (
+                  <td key={day.id} className="p-2 border-b border-emerald-100 relative group/cell min-h-[100px]">
+                    {assignment ? (
+                      <div className={cn(
+                        "border rounded-xl p-3 transition-all h-full relative",
+                        conflict ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-100",
+                        !isPreview && "hover:shadow-md"
+                      )}>
+                        {conflict && !isPreview && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg animate-bounce">
+                                  <AlertCircle size={12} />
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-red-900 text-white border-none rounded-xl">
+                                <p className="text-xs font-bold">
+                                  {isRTL 
+                                    ? `تعارض: ${conflict.type === 'teacher' ? 'الأستاذ' : 'القاعة'} مشغول مع ${conflict.with}`
+                                    : `Conflict: ${conflict.type === 'teacher' ? 'Teacher' : 'Room'} busy with ${conflict.with}`
+                                  }
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        
+                        <div className="flex justify-between items-start mb-2">
+                          <span className={cn("text-[11px] font-bold uppercase tracking-wider", conflict ? "text-red-700" : "text-emerald-700")}>
+                            {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
+                          </span>
+                          {!isPreview && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-6 w-6 text-red-400 opacity-0 group-hover/cell:opacity-100 transition-opacity"
+                              onClick={() => deleteAssignment(assignment.id)}
+                            >
+                              <Trash2 size={12} />
+                            </Button>
+                          )}
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-1.5 text-xs text-emerald-900 font-medium">
+                            <User size={12} className="text-emerald-400" />
+                            {viewMode === "class" 
+                              ? employees.find(e => e.id === assignment.employeeId)?.lastName 
+                              : classes.find(c => c.id === assignment.classId)?.name
+                            }
+                          </div>
+                          {assignment.room && (
+                            <div className="flex items-center gap-1.5 text-[10px] text-emerald-600/70">
+                              <MapPin size={10} />
+                              {assignment.room}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      !isPreview && (
+                        <Button 
+                          variant="ghost" 
+                          className="w-full h-20 border-2 border-dashed border-transparent hover:border-emerald-100 hover:bg-emerald-50/30 rounded-xl transition-all group/btn"
+                          onClick={() => handleAddClick(day.id, period)}
+                        >
+                          <Plus size={20} className="text-emerald-200 group-hover/btn:text-emerald-400" />
+                        </Button>
+                      )
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 
   return (
     <div className="space-y-6 print:p-0">
@@ -163,10 +273,26 @@ const Schedule = () => {
             </SelectContent>
           </Select>
 
-          <Button variant="outline" onClick={() => window.print()} className="rounded-xl border-emerald-100 text-emerald-700">
-            <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
-            {isRTL ? "طباعة" : "Print"}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsPreviewOpen(true)} 
+              disabled={!selectedId}
+              className="rounded-xl border-emerald-100 text-emerald-700"
+            >
+              <Eye size={18} className={isRTL ? "ml-2" : "mr-2"} />
+              {isRTL ? "معاينة" : "Preview"}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => window.print()} 
+              disabled={!selectedId}
+              className="rounded-xl border-emerald-100 text-emerald-700"
+            >
+              <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
+              {isRTL ? "طباعة" : "Print"}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -178,113 +304,10 @@ const Schedule = () => {
           </h3>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-3xl border border-emerald-100 bg-white shadow-sm print:border-none print:shadow-none">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-emerald-50/50">
-                <th className="p-4 border-b border-emerald-100 text-emerald-900 font-bold text-sm w-24">
-                  {isRTL ? "الحصة" : "Period"}
-                </th>
-                {DAYS.map(day => (
-                  <th key={day.id} className="p-4 border-b border-emerald-100 text-emerald-900 font-bold text-sm min-w-[120px]">
-                    {isRTL ? day.name : day.en}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {PERIODS.map(period => (
-                <tr key={period} className="group">
-                  <td className="p-4 border-b border-emerald-100 bg-emerald-50/20 font-bold text-emerald-800 text-xs text-center">
-                    <div className="flex flex-col items-center gap-1">
-                      <Clock size={12} className="text-emerald-400" />
-                      {period}
-                    </div>
-                  </td>
-                  {DAYS.map(day => {
-                    const assignment = getAssignment(day.id, period);
-                    const config = periodConfigs.find(p => p.day === day.id && p.period === period);
-                    const isActive = config ? config.isActive : true;
-
-                    if (!isActive) return <td key={day.id} className="p-2 border-b border-emerald-100 bg-gray-50/30"></td>;
-
-                    const conflict = assignment ? checkConflict(day.id, period, assignment) : null;
-
-                    return (
-                      <td key={day.id} className="p-2 border-b border-emerald-100 relative group/cell min-h-[100px]">
-                        {assignment ? (
-                          <div className={cn(
-                            "border rounded-xl p-3 transition-all hover:shadow-md h-full relative",
-                            conflict ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-100"
-                          )}>
-                            {conflict && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg animate-bounce">
-                                      <AlertCircle size={12} />
-                                    </div>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="bg-red-900 text-white border-none rounded-xl">
-                                    <p className="text-xs font-bold">
-                                      {isRTL 
-                                        ? `تعارض: ${conflict.type === 'teacher' ? 'الأستاذ' : 'القاعة'} مشغول مع ${conflict.with}`
-                                        : `Conflict: ${conflict.type === 'teacher' ? 'Teacher' : 'Room'} busy with ${conflict.with}`
-                                      }
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            )}
-                            
-                            <div className="flex justify-between items-start mb-2">
-                              <span className={cn("text-[11px] font-bold uppercase tracking-wider", conflict ? "text-red-700" : "text-emerald-700")}>
-                                {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
-                              </span>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-6 w-6 text-red-400 opacity-0 group-hover/cell:opacity-100 transition-opacity print:hidden"
-                                onClick={() => deleteAssignment(assignment.id)}
-                              >
-                                <Trash2 size={12} />
-                              </Button>
-                            </div>
-                            <div className="space-y-1.5">
-                              <div className="flex items-center gap-1.5 text-xs text-emerald-900 font-medium">
-                                <User size={12} className="text-emerald-400" />
-                                {viewMode === "class" 
-                                  ? employees.find(e => e.id === assignment.employeeId)?.lastName 
-                                  : classes.find(c => c.id === assignment.classId)?.name
-                                }
-                              </div>
-                              {assignment.room && (
-                                <div className="flex items-center gap-1.5 text-[10px] text-emerald-600/70">
-                                  <MapPin size={10} />
-                                  {assignment.room}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <Button 
-                            variant="ghost" 
-                            className="w-full h-20 border-2 border-dashed border-transparent hover:border-emerald-100 hover:bg-emerald-50/30 rounded-xl transition-all group/btn print:hidden"
-                            onClick={() => handleAddClick(day.id, period)}
-                          >
-                            <Plus size={20} className="text-emerald-200 group-hover/btn:text-emerald-400" />
-                          </Button>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ScheduleTable />
       )}
 
+      {/* Dialog إضافة حصة */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md rounded-3xl">
           <DialogHeader>
@@ -358,6 +381,52 @@ const Schedule = () => {
               {isRTL ? "حفظ" : "Save"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog معاينة قبل الطباعة */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-[95vw] w-full h-[90vh] overflow-y-auto rounded-3xl p-0 border-none">
+          <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center z-10">
+            <div className="flex items-center gap-3">
+              <Eye className="text-emerald-600" />
+              <h3 className="font-bold text-lg">
+                {isRTL ? "معاينة الطباعة -" : "Print Preview -"} {
+                  viewMode === "class" 
+                    ? classes.find(c => c.id === selectedId)?.name 
+                    : employees.find(e => e.id === selectedId)?.lastName
+                }
+              </h3>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={() => window.print()} className="bg-emerald-600 rounded-xl">
+                <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
+                {isRTL ? "طباعة الآن" : "Print Now"}
+              </Button>
+              <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="rounded-xl">
+                <X size={18} />
+              </Button>
+            </div>
+          </div>
+          <div className="p-8 bg-gray-50 min-h-full">
+            <div className="max-w-5xl mx-auto bg-white shadow-2xl p-10 border border-gray-200">
+              <div className="text-center mb-8 border-b-2 border-emerald-900 pb-6">
+                <h1 className="text-2xl font-black text-emerald-950 mb-2">EduSchedule</h1>
+                <p className="text-sm font-bold text-emerald-700 uppercase tracking-widest">
+                  {isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Academic Schedule"}
+                </p>
+                <div className="mt-4 flex justify-center gap-8 text-xs font-bold text-gray-600">
+                  <p>{isRTL ? "الفئة:" : "Category:"} {viewMode === "class" ? (isRTL ? "فوج تربوي" : "Class") : (isRTL ? "أستاذ" : "Teacher")}</p>
+                  <p>{isRTL ? "التاريخ:" : "Date:"} {new Date().toLocaleDateString()}</p>
+                </div>
+              </div>
+              <ScheduleTable isPreview={true} />
+              <div className="mt-10 flex justify-between text-[10px] font-bold text-gray-400 uppercase">
+                <p>{isRTL ? "توقيع المدير" : "Director Signature"}</p>
+                <p>{isRTL ? "ختم المؤسسة" : "School Stamp"}</p>
+              </div>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
