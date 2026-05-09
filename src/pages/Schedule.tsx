@@ -207,7 +207,10 @@ const Schedule = () => {
                           <div className="flex items-center gap-1.5 text-xs text-emerald-900 font-medium">
                             <User size={12} className="text-emerald-400" />
                             {viewMode === "class" 
-                              ? employees.find(e => e.id === assignment.employeeId)?.lastName 
+                              ? (() => {
+                                  const emp = employees.find(e => e.id === assignment.employeeId);
+                                  return emp ? `${emp.firstName} ${emp.lastName}` : "---";
+                                })()
                               : classes.find(c => c.id === assignment.classId)?.name
                             }
                           </div>
