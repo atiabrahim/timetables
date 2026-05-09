@@ -14,7 +14,8 @@ import {
   Users,
   Info,
   ShieldCheck,
-  Lock
+  Lock,
+  MapPin
 } from "lucide-react";
 import { 
   Dialog, 
@@ -199,8 +200,16 @@ const Classes = () => {
               <p className="text-xs text-emerald-600/70 mb-2 font-bold uppercase tracking-wider">{isRTL ? "معلومات إضافية" : "Additional Info"}</p>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-[10px] text-emerald-400 font-bold">{isRTL ? "المعرف" : "ID"}</p>
-                  <p className="text-sm font-mono text-emerald-900">{selectedClass?.id}</p>
+                  <p className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                    <MapPin size={10} /> {isRTL ? "القاعة" : "Room"}
+                  </p>
+                  <p className="text-sm font-bold text-emerald-900">
+                    {/* هنا نعرض القاعة الافتراضية أو نتركها كمعلومة عامة */}
+                    {isRTL ? "قاعة مخصصة" :"Assigned Room"}
+                  </p>
+                  <p className="text-sm font-bold text-emerald-900">
+                    {isRTL ? "قاعة مخصصة" : "Dedicated Room"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-[10px] text-emerald-400 font-bold">{isRTL ? "الحالة" : "Status"}</p>
