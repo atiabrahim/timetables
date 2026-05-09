@@ -7,6 +7,8 @@ interface Employee {
   lastName: string;
   category: string;
   observation: string;
+  email?: string;
+  phone?: string;
 }
 
 interface Assignment {
@@ -105,13 +107,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const isRTL = language === "ar";
 
-  // تحديث اتجاه الصفحة في عنصر HTML
   useEffect(() => {
     document.documentElement.dir = isRTL ? "rtl" : "ltr";
     document.documentElement.lang = language;
   }, [language, isRTL]);
 
-  // تحميل البيانات عند بدء التشغيل
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
@@ -133,7 +133,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  // حفظ البيانات عند أي تغيير
   useEffect(() => {
     const dataToSave = { systemUsers, employees, assignments, departments, rooms, classes, subjects, periodConfigs };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
