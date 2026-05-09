@@ -29,9 +29,9 @@ const Index = () => {
   return (
     <div className="space-y-12">
       {/* Welcome Section */}
-      <div className="text-right">
-        <h2 className="text-5xl font-black text-gray-900 flex items-center justify-end gap-4">
-          {user?.email || "atiabrahim@gmail.com"} ,{t.welcome}
+      <div className="text-start">
+        <h2 className="text-5xl font-black text-gray-900 flex items-center gap-4">
+          {t.welcome} {user?.fullName || "المستخدم"}
         </h2>
         <p className="text-gray-500 text-xl font-bold mt-2">
           {t.role} {t.admin}
@@ -43,7 +43,7 @@ const Index = () => {
         {stats.map((stat, idx) => (
           <Card key={idx} className="border border-gray-100 shadow-sm rounded-[2rem] overflow-hidden bg-white hover:shadow-md transition-shadow">
             <CardContent className="p-8 flex items-center justify-between">
-              <div className="text-right">
+              <div className="text-start">
                 <p className="text-4xl font-black text-gray-900">{stat.value}</p>
                 <p className="text-gray-500 font-bold text-sm mt-1">{stat.label}</p>
               </div>

@@ -103,6 +103,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>([]);
 
+  const isRTL = language === "ar";
+
+  // تحديث اتجاه الصفحة في عنصر HTML
+  useEffect(() => {
+    document.documentElement.dir = isRTL ? "rtl" : "ltr";
+    document.documentElement.lang = language;
+  }, [language, isRTL]);
+
   // تحميل البيانات عند بدء التشغيل
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
@@ -133,7 +141,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const importAllData = (data: any) => {
     if (!data) return;
-    // تحديث كافة الحالات لضمان ظهور البيانات فوراً
     if (data.employees) setEmployees(data.employees);
     if (data.rooms) setRooms(data.rooms);
     if (data.classes) setClasses(data.classes);
@@ -165,7 +172,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const t = translations[language];
-  const isRTL = language === "ar";
 
   return (
     <AppContext.Provider value={{ 
@@ -177,7 +183,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       importAllData,
       t, isRTL 
     }}>
-      <div dir={isRTL ? "rtl" : "ltr"} className={isRTL ? "font-arabic" : ""}>
+      <div className={isRTL ? "font-arabic" : ""}>
         {children}
       </div>
     </AppContext.Provider>

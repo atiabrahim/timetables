@@ -49,23 +49,14 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     <div className={cn("min-h-screen flex flex-col bg-[#FDFDFD]", isRTL ? "font-arabic" : "")}>
       {/* Header */}
       <header className="h-20 border-b bg-white flex items-center justify-between px-8 sticky top-0 z-50">
-        <div className="flex items-center gap-6">
-          <Button 
-            variant="outline" 
-            onClick={handleLogout}
-            className="rounded-full border-gray-200 text-gray-700 hover:bg-gray-50 gap-2 px-4"
-          >
-            <LogOut size={18} />
-            <span className="font-bold text-sm">{t.logout}</span>
-          </Button>
+        {/* Logo/Title Section - Always at the 'Start' */}
+        <div className="text-start order-first">
+          <h1 className="text-2xl font-black text-[#064e3b]">{t.appTitle}</h1>
+          <p className="text-gray-400 text-xs font-bold">{t.appSubtitle}</p>
+        </div>
 
-          <div className="flex items-center gap-3">
-            <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold">
-              {t.admin}
-            </div>
-            <span className="text-gray-500 text-sm font-medium">{user?.email || "atiabrahim@gmail.com"}</span>
-          </div>
-
+        {/* User/Actions Section - Always at the 'End' */}
+        <div className="flex items-center gap-6 order-last">
           <Button 
             variant="ghost" 
             size="sm" 
@@ -75,24 +66,31 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             <Languages size={18} />
             <span>{language === "ar" ? "EN" : "AR"}</span>
           </Button>
-        </div>
 
-        <div className="text-right">
-          <h1 className="text-2xl font-black text-[#064e3b]">{t.appTitle}</h1>
-          <p className="text-gray-400 text-xs font-bold">{t.appSubtitle}</p>
+          <div className="flex items-center gap-3">
+            <div className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold">
+              {t.admin}
+            </div>
+            <span className="text-gray-500 text-sm font-medium hidden sm:inline">{user?.email || "atiabrahim@gmail.com"}</span>
+          </div>
+
+          <Button 
+            variant="outline" 
+            onClick={handleLogout}
+            className="rounded-full border-gray-200 text-gray-700 hover:bg-gray-50 gap-2 px-4"
+          >
+            <LogOut size={18} />
+            <span className="font-bold text-sm hidden sm:inline">{t.logout}</span>
+          </Button>
         </div>
       </header>
 
       <div className="flex flex-1">
-        {/* Main Content */}
-        <main className="flex-1 p-12 overflow-x-hidden">
-          <div className="max-w-6xl mx-auto">
-            {children}
-          </div>
-        </main>
-
-        {/* Sidebar (Right side in RTL) */}
-        <aside className="w-72 border-l bg-white p-6 hidden md:block">
+        {/* Sidebar - Placed first in DOM to follow direction naturally (Right in RTL, Left in LTR) */}
+        <aside className={cn(
+          "w-72 bg-white p-6 hidden md:block",
+          isRTL ? "border-l" : "border-r"
+        )}>
           <nav className="space-y-1">
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -114,6 +112,13 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             })}
           </nav>
         </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-12 overflow-x-hidden">
+          <div className="max-w-6xl mx-auto">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );
