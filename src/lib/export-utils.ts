@@ -52,30 +52,17 @@ export const exportToXml = (data: any, fileName: string) => {
   document.body.removeChild(link);
 };
 
-export const exportToJson = (data: any, fileName: string) => {
-  const jsonString = JSON.stringify(data, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${fileName}.json`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
-
 export const parseXml = (xmlText: string) => {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(xmlText, "application/xml");
   
-  // التحقق من وجود خطأ في التحليل
   if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
     throw new Error("Invalid XML format");
   }
 
   const getAttr = (el: Element, attr: string) => el.getAttribute(attr) || "";
 
-  // 1. استخراج الأساتذة (Teachers)
+  // 1. استخراج الأساتذة
   const teacherElements = Array.from(xmlDoc.getElementsByTagName("teacher"));
   const employees = teacherElements.map(el => {
     const fullName = getAttr(el, "name");
@@ -103,36 +90,61 @@ export const parseXml = (xmlText: string) => {
     };
   });
 
-  // 2. استخراج القاعات (Classrooms)
+  // 2. استخراج القاعات
   const rooms = Array.from(xmlDoc.getElementsByTagName("classroom")).map(el => 
     getAttr(el, "name") || getAttr(el, "short")
   );
 
-  // 3. استخراج الأفواج (Classes)
+  // 3. استخراج الأفواج
   const classes = Array.from(xmlDoc.getElementsByTagName("class")).map(el => ({
     id: getAttr(el, "id"),
     name: getAttr(el, "name") || getAttr(el, "short")
   }));
 
-  // 4. استخراج المواد (Subjects)
+  // 4. استخراج المواد
   const subjects = Array.from(xmlDoc.getElementsByTagName("subject")).map(el => ({
     id: getAttr(el, "id"),
     name: getAttr(el, "name") || getAttr(el, "short")
   }));
 
-  // 5. استخراج الحصص (Lessons/Assignments)
-  // ملاحظة: في ملفات aSc، الحصص قد تكون في وسم <lesson> أو <card>
-  const lessonElements = Array.from(xmlDoc.getElementsByTagName("lesson"));
-  const assignments = lessonElements.map(el => ({
-    id: getAttr(el, "id") || Math.random().toString(36).substr(2, 9),
-    employeeId: getAttr(el, "teacherids") || getAttr(el, "teacherid"),
-    day: parseInt(getAttr(el, "day") || "0"),
-    period: getAttr(el, "period") || "Morning",
-    subjectId: getAttr(el, "subjectid"),
-    classId: getAttr(el, "classids") || getAttr(el, "classid"),
-    department: "", // aSc لا يحتوي عادة على هذا الحقل مباشرة
-    room: getAttr(el, "classroomids") || getAttr(el, "classroomid")
-  })).filter(a => a.employeeId && a.subjectId); // تصفية الحصص غير المكتملة
+  // 5. استخراج الحصص والبطاقات (الربط بينهما)
+  const lessonsMap = new Map();
+  Array.from(xmlDoc.getElementsByTagName("lesson")).forEach(el => {
+    lessonsMap.set(getAttr(el, "id"), {
+      teacherId: getAttr(el, "teacherids"),
+      subjectId: getAttr(el, "subjectid"),
+      classId: getAttr(el, "classids")
+    });
+  });
+
+  const cardElements = Array.from(xmlDoc.getElementsByTagName("card"));
+  const assignments = cardElements.map(el => {
+    const lessonId = getAttr(el, "lessonid");
+    const lesson = lessonsMap.get(lessonId);
+    
+    if (!lesson) return null;
+
+    // تحويل اليوم من تنسيق aSc (غالباً ثنائي أو رقمي)
+    // ملاحظة: aSc يستخدم أحياناً "10000" للأحد، سنحاول استنتاج الرقم
+    let dayStr = getAttr(el, "days") || getAttr(el, "day");
+    let day = 0;
+    if (dayStr.length > 1 && dayStr.includes("1")) {
+      day = dayStr.indexOf("1");
+    } else {
+      day = parseInt(dayStr) || 0;
+    }
+
+    return {
+      id: Math.random().toString(36).substr(2, 9),
+      employeeId: lesson.teacherId,
+      day: day,
+      period: getAttr(el, "period"),
+      subjectId: lesson.subjectId,
+      classId: lesson.classId,
+      department: "",
+      room: getAttr(el, "classroomids") || ""
+    };
+  }).filter(a => a !== null);
 
   return { 
     employees, 
