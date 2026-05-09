@@ -94,20 +94,20 @@ const Classes = () => {
             {isRTL ? "تصدير PDF" : "Export PDF"}
           </Button>
           <div className="relative flex-1 md:w-80">
-            <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <Input 
               placeholder={isRTL ? "بحث عن فرع..." : "Search branch..."} 
-              className={cn("rounded-xl border-gray-200 bg-white h-11", isRTL ? "pr-10 text-right" : "pl-10 text-left")}
+              className="pl-10 rounded-xl border-gray-200 bg-white h-11 text-right"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
 
-        <div className={cn("order-1 md:order-2 w-full md:w-auto", isRTL ? "text-right" : "text-left")}>
+        <div className="text-right order-1 md:order-2 w-full md:w-auto">
           <h2 className="text-3xl font-black text-gray-900">
             {isRTL ? "الفروع" : "Branches"} 
-            <span className="text-gray-400 text-xl mx-2">({sortedAndFilteredClasses.length})</span>
+            <span className="text-gray-400 text-xl mr-2">({sortedAndFilteredClasses.length})</span>
           </h2>
         </div>
       </div>
@@ -121,7 +121,7 @@ const Classes = () => {
               value={newBranch.name} 
               onChange={e => setNewBranch({...newBranch, name: e.target.value})}
               placeholder={isRTL ? "مثلاً: تقني رياضي" : "e.g. Technical Math"}
-              className={cn("rounded-xl border-gray-200 h-11", isRTL ? "text-right" : "text-left")}
+              className="rounded-xl border-gray-200 h-11"
             />
           </div>
           <div className="space-y-1.5">
@@ -130,7 +130,7 @@ const Classes = () => {
               value={newBranch.code} 
               onChange={e => setNewBranch({...newBranch, code: e.target.value})}
               placeholder={isRTL ? "مثلاً: TM" : "e.g. TM"}
-              className={cn("rounded-xl border-gray-200 h-11", isRTL ? "text-right" : "text-left")}
+              className="rounded-xl border-gray-200 h-11"
             />
           </div>
           <div className="space-y-1.5">
@@ -139,7 +139,7 @@ const Classes = () => {
               value={newBranch.qualificationLevel} 
               onChange={e => setNewBranch({...newBranch, qualificationLevel: e.target.value})}
               placeholder={isRTL ? "مثلاً: تقني سامي" : "e.g. Senior Tech"}
-              className={cn("rounded-xl border-gray-200 h-11", isRTL ? "text-right" : "text-left")}
+              className="rounded-xl border-gray-200 h-11"
             />
           </div>
           <div className="flex items-end">
@@ -153,14 +153,14 @@ const Classes = () => {
 
       {/* Table Section */}
       <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
-        <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
+        <table className="w-full border-collapse text-right">
           <thead>
             <tr className="bg-[#f9f9f1]">
               <th 
                 className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
                 onClick={() => handleSort("name")}
               >
-                <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
+                <div className="flex items-center justify-end gap-2">
                   <SortIcon column="name" />
                   {isRTL ? "اسم الفرع" : "Branch Name"}
                 </div>
@@ -169,7 +169,7 @@ const Classes = () => {
                 className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
                 onClick={() => handleSort("code")}
               >
-                <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
+                <div className="flex items-center justify-end gap-2">
                   <SortIcon column="code" />
                   {isRTL ? "الرمز" : "Code"}
                 </div>
@@ -178,7 +178,7 @@ const Classes = () => {
                 className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
                 onClick={() => handleSort("qualificationLevel")}
               >
-                <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
+                <div className="flex items-center justify-end gap-2">
                   <SortIcon column="qualificationLevel" />
                   {isRTL ? "مستوى التأهيل" : "Qualification Level"}
                 </div>
@@ -192,7 +192,7 @@ const Classes = () => {
             {sortedAndFilteredClasses.map((cls) => (
               <tr key={cls.id} className="hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group">
                 <td className="p-5">
-                  <div className={cn("flex items-center gap-3", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
+                  <div className="flex items-center justify-end gap-3">
                     <span className="font-bold text-emerald-950">{cls.name}</span>
                     <GraduationCap size={16} className="text-emerald-500" />
                   </div>
@@ -203,22 +203,20 @@ const Classes = () => {
                   </span>
                 </td>
                 <td className="p-5 text-gray-600 font-medium">{cls.qualificationLevel || "---"}</td>
-                <td className="p-5 text-center">
-                  <div className="flex justify-center gap-2">
-                    <Button variant="ghost" size="sm" className="text-emerald-700 font-bold gap-2 hover:bg-emerald-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Edit2 size={16} />
+                <td className="p-5 text-center flex justify-center gap-2">
+                  <Button variant="ghost" size="sm" className="text-emerald-700 font-bold gap-2 hover:bg-emerald-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Edit2 size={16} />
+                  </Button>
+                  {isAdmin && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-red-500 hover:bg-red-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => deleteClass(cls.id)}
+                    >
+                      <Trash2 size={16} />
                     </Button>
-                    {isAdmin && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-red-500 hover:bg-red-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => deleteClass(cls.id)}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    )}
-                  </div>
+                  )}
                 </td>
               </tr>
             ))}
