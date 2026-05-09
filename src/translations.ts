@@ -5,7 +5,7 @@ export const translations = {
     dashboard: "لوحة التحكم",
     schedule: "الجدول",
     employees: "المعلمون",
-    classes: "الفصول",
+    classes: "الفروع",
     subjects: "المواد",
     rooms: "القاعات",
     lessons: "الحصص",
@@ -22,7 +22,7 @@ export const translations = {
     cancel: "إلغاء",
     stats: {
       teachers: "المعلمون",
-      classes: "الفصول",
+      classes: "الفروع",
       subjects: "المواد",
       rooms: "القاعات",
       lessons: "الحصص",
@@ -40,7 +40,7 @@ export const translations = {
     dashboard: "Dashboard",
     schedule: "Schedule",
     employees: "Teachers",
-    classes: "Classes",
+    classes: "Branches",
     subjects: "Subjects",
     rooms: "Rooms",
     lessons: "Lessons",
@@ -57,7 +57,7 @@ export const translations = {
     cancel: "Cancel",
     stats: {
       teachers: "Teachers",
-      classes: "Classes",
+      classes: "Branches",
       subjects: "Subjects",
       rooms: "Rooms",
       lessons: "Lessons",
@@ -68,7 +68,7 @@ export const translations = {
       print_report: "Print Report",
       teacher_load: "Teacher Load",
       room_usage: "Room Usage",
-      class_summary: "Class Summary"
+      class_summary: "Branches Summary"
     }
   }
 };

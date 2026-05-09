@@ -31,6 +31,8 @@ interface PeriodConfig {
 interface AcademicClass {
   id: string;
   name: string;
+  code?: string;
+  qualificationLevel?: string;
 }
 
 interface Subject {
