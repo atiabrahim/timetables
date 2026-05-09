@@ -18,7 +18,9 @@ import {
   Clock,
   FileCode,
   Sparkles,
-  School
+  School,
+  ArrowUpDown,
+  Edit2
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { parseXml } from "../lib/export-utils";
@@ -49,19 +51,17 @@ const Settings = () => {
     t, 
     departments, setDepartments, 
     rooms, setRooms,
-    classes, setClasses,
-    subjects, setSubjects,
     periodConfigs, setPeriodConfigs,
     importAllData,
     isRTL 
   } = useApp();
   
-  const [newDept, setNewDept] = useState("");
   const [newRoom, setNewRoom] = useState("");
-  const [newClass, setNewClass] = useState("");
-  const [newSubject, setNewSubject] = useState("");
+  const [roomSearch, setRoomSearch] = useState("");
   
   const xmlInputRef = useRef<HTMLInputElement>(null);
+
+  const filteredRooms = rooms.filter(r => r.toLowerCase().includes(roomSearch.toLowerCase()));
 
   const handleImportXml = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,38 +90,11 @@ const Settings = () => {
     reader.readAsArrayBuffer(file);
   };
 
-  const loadDemoData = () => {
-    const demoData = {
-      employees: [
-        { id: "1", firstName: "أحمد", lastName: "محمد", category: "Full-time", observation: "أستاذ رياضيات" },
-        { id: "2", firstName: "سارة", lastName: "علي", category: "Full-time", observation: "أستاذة فيزياء" }
-      ],
-      rooms: ["قاعة 01", "قاعة 02", "مخبر الإعلام الآلي"],
-      classes: [
-        { id: "c1", name: "أولى ثانوي ج م ع" },
-        { id: "c2", name: "ثانية ثانوي تقني" }
-      ],
-      subjects: [
-        { id: "s1", name: "رياضيات" },
-        { id: "s2", name: "فيزياء" },
-        { id: "s3", name: "إعلام آلي" }
-      ],
-      departments: ["مصلحة التكوين", "مصلحة التمهين"],
-      assignments: [
-        { id: "a1", employeeId: "1", subjectId: "s1", classId: "c1", room: "قاعة 01", day: 0, period: "1", department: "مصلحة التكوين" }
-      ],
-      periodConfigs: []
-    };
-    importAllData(demoData);
-    showSuccess(isRTL ? "تم تحميل البيانات التجريبية" : "Demo data loaded");
-  };
-
-  const addItem = (val: string, setVal: any, list: any[], setList: any[], msg: string) => {
-    if (val && !list.find(i => (typeof i === 'string' ? i === val : i.name === val))) {
-      const newItem = typeof list[0] === 'object' ? { id: Math.random().toString(36).substr(2, 9), name: val } : val;
-      setList([...list, newItem]);
-      setVal("");
-      showSuccess(msg);
+  const handleAddRoom = () => {
+    if (newRoom && !rooms.includes(newRoom)) {
+      setRooms([...rooms, newRoom]);
+      setNewRoom("");
+      showSuccess(isRTL ? "تم إضافة القاعة" : "Room added");
     }
   };
 
@@ -151,166 +124,129 @@ const Settings = () => {
     <div className="space-y-8 pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-emerald-950">{t.settings}</h2>
-          <p className="text-emerald-600/70 mt-1">{isRTL ? "تخصيص النظام والبيانات الأساسية" : "System customization and core data"}</p>
+          <h2 className="text-3xl font-black text-gray-900">{t.settings}</h2>
+          <p className="text-gray-500 font-bold mt-1">{isRTL ? "تخصيص النظام والبيانات الأساسية" : "System customization and core data"}</p>
         </div>
         
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
-          <Button variant="outline" onClick={loadDemoData} className="border-amber-200 text-amber-700 rounded-xl bg-amber-50 hover:bg-amber-100">
-            <Sparkles size={18} className={isRTL ? "ml-2" : "mr-2"} />
-            {isRTL ? "تحميل بيانات تجريبية" : "Load Demo Data"}
-          </Button>
           <input type="file" ref={xmlInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
-          <Button variant="outline" className="border-emerald-200 text-emerald-700 rounded-xl bg-white" onClick={() => xmlInputRef.current?.click()}>
-            <FileCode size={18} className={isRTL ? "ml-2" : "mr-2"} />
+          <Button variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700" onClick={() => xmlInputRef.current?.click()}>
+            <FileCode size={18} />
             {isRTL ? "استيراد XML" : "Import XML"}
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* School Info */}
-        <Card className="lg:col-span-1 border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden">
-          <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <School size={20} className="text-emerald-600" />
-              {isRTL ? "معلومات المؤسسة" : "School Info"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "اسم المؤسسة" : "School Name"}</label>
-              <Input placeholder="..." className="rounded-xl border-emerald-100" />
+      {/* Rooms Section - Styled like Teachers Page */}
+      <div className="space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-4 w-full md:w-auto order-2 md:order-1">
+            <Button variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700">
+              <Download size={18} />
+              {isRTL ? "تصدير PDF" : "Export PDF"}
+            </Button>
+            <div className="relative flex-1 md:w-80">
+              <Input 
+                placeholder={isRTL ? "بحث عن قاعة..." : "Search room..."} 
+                className="rounded-xl border-gray-200 bg-white h-11 text-right"
+                value={roomSearch}
+                onChange={(e) => setRoomSearch(e.target.value)}
+              />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "السنة الدراسية" : "Academic Year"}</label>
-              <Input placeholder="2024/2025" className="rounded-xl border-emerald-100" />
-            </div>
-            <Button className="w-full bg-emerald-600 rounded-xl">{isRTL ? "حفظ المعلومات" : "Save Info"}</Button>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="text-right order-1 md:order-2 w-full md:w-auto">
+            <h3 className="text-2xl font-black text-gray-900">
+              {isRTL ? "القاعات" : "Rooms"} 
+              <span className="text-gray-400 text-lg mr-2">({rooms.length})</span>
+            </h3>
+          </div>
+        </div>
 
-        {/* Schedule Config */}
-        <Card className="lg:col-span-2 border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden">
-          <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Clock size={20} className="text-emerald-600" />
-              {isRTL ? "تفعيل الحصص الأسبوعية" : "Weekly Periods Config"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-              {DAYS.map(day => (
-                <div key={day.id} className="p-3 bg-emerald-50/30 rounded-2xl border border-emerald-50">
-                  <p className="font-bold text-emerald-900 text-xs mb-3 text-center">{isRTL ? day.name : day.en}</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {PERIODS.map(p => (
-                      <div key={p} className="flex flex-col items-center gap-1 p-1.5 bg-white rounded-lg border border-emerald-50">
-                        <span className="text-[9px] font-bold text-emerald-600">{p}</span>
-                        <Switch 
-                          scale={0.7}
-                          checked={isPeriodActive(day.id, p)} 
-                          onCheckedChange={() => togglePeriod(day.id, p)}
-                        />
-                      </div>
-                    ))}
+        <div className="flex gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+          <Input 
+            value={newRoom} 
+            onChange={e => setNewRoom(e.target.value)}
+            placeholder={isRTL ? "اسم القاعة الجديدة..." : "New room name..."}
+            className="rounded-xl border-gray-200 h-11"
+          />
+          <Button onClick={handleAddRoom} className="bg-[#064e3b] hover:bg-[#053a2c] rounded-xl px-6 h-11 font-bold">
+            <Plus size={18} className={isRTL ? "ml-2" : "mr-2"} />
+            {isRTL ? "إضافة" : "Add"}
+          </Button>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+          <table className="w-full border-collapse text-right">
+            <thead>
+              <tr className="bg-[#f9f9f1]">
+                <th className="p-4 text-gray-700 font-bold text-sm border-b border-gray-100">
+                  <div className="flex items-center justify-end gap-2">
+                    <ArrowUpDown size={14} className="text-gray-400" />
+                    {isRTL ? "اسم القاعة" : "Room Name"}
                   </div>
-                </div>
+                </th>
+                <th className="p-4 text-gray-700 font-bold text-sm border-b border-gray-100 text-center">
+                  {isRTL ? "إجراءات" : "Actions"}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRooms.map((room, idx) => (
+                <tr key={idx} className="hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0">
+                  <td className="p-4 font-bold text-gray-900 flex items-center justify-end gap-3">
+                    {room}
+                    <MapPin size={16} className="text-gray-400" />
+                  </td>
+                  <td className="p-4 text-center flex justify-center gap-2">
+                    <Button variant="ghost" size="sm" className="text-gray-700 font-bold gap-2 hover:bg-gray-100 rounded-lg">
+                      <Edit2 size={16} />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-red-500 hover:bg-red-50 rounded-lg"
+                      onClick={() => setRooms(rooms.filter(r => r !== room))}
+                    >
+                      <Trash2 size={16} />
+                    </Button>
+                  </td>
+                </tr>
               ))}
-            </div>
-          </CardContent>
-        </Card>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Classes */}
-        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
-          <CardHeader className="flex flex-row items-center gap-2 pb-2">
-            <Users2 className="text-emerald-600" size={20} />
-            <CardTitle className="text-sm font-bold">{isRTL ? "الفروع" : "Branches"}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input value={newClass} onChange={(e) => setNewClass(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
-              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newClass, setNewClass, classes, setClasses, "Branch added")}><Plus size={16} /></Button>
-            </div>
-            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
-              {classes.map(c => (
-                <div key={c.id} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
-                  <span className="font-medium text-emerald-900">{c.name}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setClasses(classes.filter(i => i.id !== c.id))}><Trash2 size={14} /></Button>
+      {/* Schedule Config */}
+      <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+        <CardHeader className="bg-[#f9f9f1] border-b border-gray-100">
+          <CardTitle className="text-lg font-bold flex items-center gap-2">
+            <Clock size={20} className="text-[#064e3b]" />
+            {isRTL ? "تفعيل الحصص الأسبوعية" : "Weekly Periods Config"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {DAYS.map(day => (
+              <div key={day.id} className="p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                <p className="font-bold text-gray-900 text-xs mb-3 text-center">{isRTL ? day.name : day.en}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {PERIODS.map(p => (
+                    <div key={p} className="flex flex-col items-center gap-1 p-1.5 bg-white rounded-lg border border-gray-100">
+                      <span className="text-[9px] font-bold text-gray-500">{p}</span>
+                      <Switch 
+                        scale={0.7}
+                        checked={isPeriodActive(day.id, p)} 
+                        onCheckedChange={() => togglePeriod(day.id, p)}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Subjects */}
-        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
-          <CardHeader className="flex flex-row items-center gap-2 pb-2">
-            <BookOpen className="text-emerald-600" size={20} />
-            <CardTitle className="text-sm font-bold">{isRTL ? "المواد الدراسية" : "Subjects"}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input value={newSubject} onChange={(e) => setNewSubject(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
-              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newSubject, setNewSubject, subjects, setSubjects, "Subject added")}><Plus size={16} /></Button>
-            </div>
-            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
-              {subjects.map(s => (
-                <div key={s.id} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
-                  <span className="font-medium text-emerald-900">{s.name}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setSubjects(subjects.filter(i => i.id !== s.id))}><Trash2 size={14} /></Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Rooms */}
-        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
-          <CardHeader className="flex flex-row items-center gap-2 pb-2">
-            <MapPin className="text-emerald-600" size={20} />
-            <CardTitle className="text-sm font-bold">{isRTL ? "القاعات" : "Rooms"}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input value={newRoom} onChange={(e) => setNewRoom(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
-              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newRoom, setNewRoom, rooms, setRooms, "Room added")}><Plus size={16} /></Button>
-            </div>
-            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
-              {rooms.map(r => (
-                <div key={r} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
-                  <span className="font-medium text-emerald-900">{r}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setRooms(rooms.filter(i => i !== r))}><Trash2 size={14} /></Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Departments */}
-        <Card className="border-none shadow-lg rounded-3xl overflow-hidden bg-white">
-          <CardHeader className="flex flex-row items-center gap-2 pb-2">
-            <Database className="text-emerald-600" size={20} />
-            <CardTitle className="text-sm font-bold">{t.stats.departments}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="..." className="h-9 text-xs rounded-xl" />
-              <Button size="sm" className="rounded-xl bg-emerald-600" onClick={() => addItem(newDept, setNewDept, departments, setDepartments, "Dept added")}><Plus size={16} /></Button>
-            </div>
-            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
-              {departments.map(d => (
-                <div key={d} className="flex items-center justify-between p-2 bg-emerald-50/50 rounded-xl text-xs group">
-                  <span className="font-medium text-emerald-900">{d}</span>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 text-red-400 hover:text-red-600 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => setDepartments(departments.filter(i => i !== d))}><Trash2 size={14} /></Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Danger Zone */}
       <Card className="border-red-100 bg-red-50/30 rounded-3xl overflow-hidden">
