@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -11,13 +11,21 @@ import {
   Edit2, 
   ArrowUpDown,
   Trash2,
-  GraduationCap
+  GraduationCap,
+  ChevronUp,
+  ChevronDown
 } from "lucide-react";
 import { showSuccess } from "../utils/toast";
+
+type SortConfig = {
+  key: "name" | "code" | "qualificationLevel" | null;
+  direction: "asc" | "desc";
+};
 
 const Classes = () => {
   const { classes, setClasses, isRTL, user } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: "asc" });
   const [newBranch, setNewBranch] = useState({
     name: "",
     code: "",
@@ -26,10 +34,42 @@ const Classes = () => {
 
   const isAdmin = user?.role === "Admin";
 
-  const filteredClasses = classes.filter(c => 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (c.code || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSort = (key: SortConfig["key"]) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedAndFilteredClasses = useMemo(() => {
+    let items = [...classes].filter(c => 
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c.code || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (c.qualificationLevel || "").toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (sortConfig.key !== null) {
+      items.sort((a, b) => {
+        const aValue = (a[sortConfig.key!] || "").toString().toLowerCase();
+        const bValue = (b[sortConfig.key!] || "").toString().toLowerCase();
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === "asc" ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === "asc" ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return items;
+  }, [classes, searchTerm, sortConfig]);
+
+  const SortIcon = ({ column }: { column: SortConfig["key"] }) => {
+    if (sortConfig.key !== column) return <ArrowUpDown size={14} className="text-gray-300" />;
+    return sortConfig.direction === "asc" ? <ChevronUp size={14} className="text-emerald-600" /> : <ChevronDown size={14} className="text-emerald-600" />;
+  };
 
   const handleAddBranch = () => {
     if (!newBranch.name.trim()) return;
@@ -67,7 +107,7 @@ const Classes = () => {
         <div className="text-right order-1 md:order-2 w-full md:w-auto">
           <h2 className="text-3xl font-black text-gray-900">
             {isRTL ? "الفروع" : "Branches"} 
-            <span className="text-gray-400 text-xl mr-2">({classes.length})</span>
+            <span className="text-gray-400 text-xl mr-2">({sortedAndFilteredClasses.length})</span>
           </h2>
         </div>
       </div>
@@ -116,14 +156,32 @@ const Classes = () => {
         <table className="w-full border-collapse text-right">
           <thead>
             <tr className="bg-[#f9f9f1]">
-              <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100">
-                {isRTL ? "اسم الفرع" : "Branch Name"}
+              <th 
+                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                onClick={() => handleSort("name")}
+              >
+                <div className="flex items-center justify-end gap-2">
+                  <SortIcon column="name" />
+                  {isRTL ? "اسم الفرع" : "Branch Name"}
+                </div>
               </th>
-              <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100">
-                {isRTL ? "الرمز" : "Code"}
+              <th 
+                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                onClick={() => handleSort("code")}
+              >
+                <div className="flex items-center justify-end gap-2">
+                  <SortIcon column="code" />
+                  {isRTL ? "الرمز" : "Code"}
+                </div>
               </th>
-              <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100">
-                {isRTL ? "مستوى التأهيل" : "Qualification Level"}
+              <th 
+                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                onClick={() => handleSort("qualificationLevel")}
+              >
+                <div className="flex items-center justify-end gap-2">
+                  <SortIcon column="qualificationLevel" />
+                  {isRTL ? "مستوى التأهيل" : "Qualification Level"}
+                </div>
               </th>
               <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 text-center">
                 {isRTL ? "إجراءات" : "Actions"}
@@ -131,7 +189,7 @@ const Classes = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredClasses.map((cls) => (
+            {sortedAndFilteredClasses.map((cls) => (
               <tr key={cls.id} className="hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group">
                 <td className="p-5">
                   <div className="flex items-center justify-end gap-3">
@@ -165,7 +223,7 @@ const Classes = () => {
           </tbody>
         </table>
 
-        {filteredClasses.length === 0 && (
+        {sortedAndFilteredClasses.length === 0 && (
           <div className="text-center py-24 bg-gray-50/30">
             <p className="text-gray-400 font-bold">{isRTL ? "لا توجد فروع مطابقة" : "No matching branches found"}</p>
           </div>
