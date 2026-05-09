@@ -16,6 +16,7 @@ import {
   ChevronDown
 } from "lucide-react";
 import { showSuccess } from "../utils/toast";
+import { cn } from "@/lib/utils";
 
 type SortConfig = {
   key: "name" | "code" | "qualificationLevel" | null;
