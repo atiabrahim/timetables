@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,9 @@ import {
   Eye,
   X,
   RotateCw,
-  Maximize2
+  Maximize2,
+  ArrowsMaximize,
+  Expand
 } from "lucide-react";
 import { 
   Select, 
@@ -53,6 +55,8 @@ const DAYS = [
 
 const PERIODS = Array.from({ length: 8 }, (_, i) => (i + 1).toString());
 
+type FitMode = "manual" | "width" | "height" | "all";
+
 const Schedule = () => {
   const { 
     isRTL, t, 
@@ -67,7 +71,10 @@ const Schedule = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [printScale, setPrintScale] = useState(100);
+  const [fitMode, setFitMode] = useState<FitMode>("manual");
   const [editingCell, setEditingCell] = useState<{day: number, period: string} | null>(null);
+
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const [newAssignment, setNewAssignment] = useState({
     employeeId: "",
@@ -82,6 +89,38 @@ const Schedule = () => {
       viewMode === "class" ? a.classId === selectedId : a.employeeId === selectedId
     );
   }, [assignments, viewMode, selectedId]);
+
+  // حساب التحجيم التلقائي
+  useEffect(() => {
+    if (isPreviewOpen && fitMode !== "manual" && contentRef.current) {
+      const container = contentRef.current;
+      const content = container.firstElementChild as HTMLElement;
+      if (!content) return;
+
+      // أبعاد A4 بالبكسل (تقريبياً لـ 96 DPI)
+      const A4_WIDTH = orientation === "portrait" ? 794 : 1123;
+      const A4_HEIGHT = orientation === "portrait" ? 1123 : 794;
+      const MARGIN = 40; // هوامش الأمان
+
+      const targetWidth = A4_WIDTH - MARGIN;
+      const targetHeight = A4_HEIGHT - MARGIN;
+
+      const contentWidth = content.scrollWidth;
+      const contentHeight = content.scrollHeight;
+
+      let newScale = 100;
+
+      if (fitMode === "width") {
+        newScale = (targetWidth / contentWidth) * 100;
+      } else if (fitMode === "height") {
+        newScale = (targetHeight / contentHeight) * 100;
+      } else if (fitMode === "all") {
+        newScale = Math.min(targetWidth / contentWidth, targetHeight / contentHeight) * 100;
+      }
+
+      setPrintScale(Math.floor(Math.min(Math.max(newScale, 30), 150)));
+    }
+  }, [isPreviewOpen, fitMode, orientation, selectedId, assignments]);
 
   const checkConflict = (day: number, period: string, assignment: any) => {
     const otherAssignments = assignments.filter(a => a.id !== assignment.id && a.day === day && a.period === period);
@@ -395,61 +434,94 @@ const Schedule = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog معاينة قبل الطباعة */}
+      {/* Dialog معاينة قبل الطباعة الاحترافي */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-[95vw] w-full h-[90vh] overflow-y-auto rounded-3xl p-0 border-none">
-          <div className="sticky top-0 bg-white border-b p-4 flex flex-col md:flex-row justify-between items-center gap-4 z-10">
+        <DialogContent className="max-w-[98vw] w-full h-[95vh] overflow-hidden rounded-3xl p-0 border-none flex flex-col">
+          <div className="bg-white border-b p-4 flex flex-col md:flex-row justify-between items-center gap-4 z-10 shadow-sm">
             <div className="flex items-center gap-3">
-              <Eye className="text-emerald-600" />
-              <h3 className="font-bold text-lg">
-                {isRTL ? "معاينة الطباعة -" : "Print Preview -"} {
-                  viewMode === "class" 
-                    ? classes.find(c => c.id === selectedId)?.name 
-                    : employees.find(e => e.id === selectedId)?.lastName
-                }
-              </h3>
+              <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
+                <Eye size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-emerald-950">
+                  {isRTL ? "معاينة الطباعة الذكية" : "Smart Print Preview"}
+                </h3>
+                <p className="text-[10px] text-gray-500 font-medium">
+                  {viewMode === "class" ? classes.find(c => c.id === selectedId)?.name : employees.find(e => e.id === selectedId)?.lastName}
+                </p>
+              </div>
             </div>
             
-            <div className="flex flex-1 max-w-xs items-center gap-4 px-4">
-              <Maximize2 size={16} className="text-gray-400" />
-              <Slider 
-                value={[printScale]} 
-                onValueChange={(v) => setPrintScale(v[0])} 
-                min={50} 
-                max={150} 
-                step={1}
-                className="flex-1"
-              />
-              <span className="text-xs font-bold text-emerald-700 w-10">{printScale}%</span>
+            <div className="flex flex-wrap items-center gap-4 bg-gray-50 p-2 rounded-2xl border border-gray-100">
+              <div className="flex items-center gap-2 border-r border-gray-200 pr-4">
+                <span className="text-[10px] font-bold text-gray-500 uppercase">{isRTL ? "التحجيم" : "Scaling"}:</span>
+                <Select value={fitMode} onValueChange={(v: FitMode) => setFitMode(v)}>
+                  <SelectTrigger className="h-8 w-32 text-[10px] font-bold rounded-lg border-none bg-white shadow-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manual">{isRTL ? "يدوي" : "Manual"}</SelectItem>
+                    <SelectItem value="width">{isRTL ? "ملء العرض" : "Fit Width"}</SelectItem>
+                    <SelectItem value="height">{isRTL ? "ملء الارتفاع" : "Fit Height"}</SelectItem>
+                    <SelectItem value="all">{isRTL ? "احتواء الكل" : "Fit All"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {fitMode === "manual" && (
+                <div className="flex items-center gap-3 px-2 min-w-[150px]">
+                  <Slider 
+                    value={[printScale]} 
+                    onValueChange={(v) => setPrintScale(v[0])} 
+                    min={50} 
+                    max={150} 
+                    step={1}
+                    className="w-24"
+                  />
+                  <span className="text-[10px] font-black text-emerald-700 w-8">{printScale}%</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 border-l border-gray-200 pl-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")}
+                  className="h-8 rounded-lg text-[10px] font-bold gap-2 hover:bg-white"
+                >
+                  <RotateCw size={14} />
+                  {isRTL ? (orientation === "portrait" ? "عرضي" : "طولي") : (orientation === "portrait" ? "Landscape" : "Portrait")}
+                </Button>
+              </div>
             </div>
 
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")}
-                className="rounded-xl border-emerald-100 text-emerald-700"
-              >
-                <RotateCw size={18} className={isRTL ? "ml-2" : "mr-2"} />
-                {isRTL ? (orientation === "portrait" ? "عرضي" : "طولي") : (orientation === "portrait" ? "Landscape" : "Portrait")}
-              </Button>
-              <Button onClick={() => window.print()} className="bg-emerald-600 rounded-xl">
+              <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl h-10 px-6 shadow-lg shadow-emerald-100">
                 <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
                 {isRTL ? "طباعة الآن" : "Print Now"}
               </Button>
-              <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="rounded-xl">
-                <X size={18} />
+              <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="rounded-xl h-10 w-10 p-0">
+                <X size={20} />
               </Button>
             </div>
           </div>
-          <div className="p-8 bg-gray-50 min-h-full flex justify-center overflow-auto">
-            <div className={cn(
-              "bg-white shadow-2xl p-8 border border-gray-200 transition-all duration-300 origin-top overflow-hidden",
-              orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
-            )} style={{ transform: `scale(${printScale / 100})` }}>
+
+          <div className="flex-1 bg-gray-100/50 overflow-auto p-8 flex justify-center items-start custom-scrollbar">
+            <div 
+              ref={contentRef}
+              className={cn(
+                "bg-white shadow-2xl border border-gray-200 transition-all duration-300 origin-top overflow-hidden",
+                orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
+              )} 
+              style={{ transform: `scale(${printScale / 100})` }}
+            >
               <style>
                 {`
                   @media print {
-                    @page { size: ${orientation}; margin: 5mm; }
+                    @page { 
+                      size: A4 ${orientation}; 
+                      margin: 0; 
+                    }
                     body * { visibility: hidden; }
                     .print-content, .print-content * { visibility: visible; }
                     .print-content { 
@@ -461,28 +533,55 @@ const Schedule = () => {
                       transform-origin: top center;
                     }
                   }
+                  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+                  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                  .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
                 `}
               </style>
-              <div className="print-content">
-                <div className="text-center mb-4 border-b-2 border-emerald-900 pb-4">
-                  <h1 className="text-xl font-black text-emerald-950 mb-1">EduSchedule</h1>
-                  <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
-                    {isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Academic Schedule"}
-                  </p>
-                  <div className="mt-2 flex justify-center gap-6 text-[9px] font-bold text-gray-600">
-                    <p>{isRTL ? "الفئة:" : "Category:"} {viewMode === "class" ? (isRTL ? "فوج تربوي" : "Class") : (isRTL ? "أستاذ" : "Teacher")}</p>
-                    <p>{isRTL ? "الاسم:" : "Name:"} {
-                      viewMode === "class" 
-                        ? classes.find(c => c.id === selectedId)?.name 
-                        : employees.find(e => e.id === selectedId)?.lastName
-                    }</p>
-                    <p>{isRTL ? "التاريخ:" : "Date:"} {new Date().toLocaleDateString()}</p>
+              <div className="print-content p-10">
+                <div className="flex justify-between items-start mb-8 border-b-2 border-emerald-900 pb-6">
+                  <div className="text-right">
+                    <h1 className="text-2xl font-black text-emerald-950 mb-1">EduSchedule</h1>
+                    <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
+                      {isRTL ? "نظام الجدولة التربوي الذكي" : "Smart Academic Scheduling System"}
+                    </p>
+                  </div>
+                  <div className="text-left bg-emerald-50 p-3 rounded-2xl border border-emerald-100">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-emerald-900 mb-1">
+                      <CalendarIcon size={12} />
+                      {isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Schedule"}
+                    </div>
+                    <div className="flex flex-col gap-0.5 text-[9px] text-emerald-700 font-medium">
+                      <p>{isRTL ? "الاسم:" : "Name:"} {viewMode === "class" ? classes.find(c => c.id === selectedId)?.name : employees.find(e => e.id === selectedId)?.lastName}</p>
+                      <p>{isRTL ? "التاريخ:" : "Date:"} {new Date().toLocaleDateString()}</p>
+                    </div>
                   </div>
                 </div>
+
                 <ScheduleTable isPreview={true} />
-                <div className="mt-6 flex justify-between text-[9px] font-bold text-gray-400 uppercase">
-                  <p>{isRTL ? "توقيع المدير" : "Director Signature"}</p>
-                  <p>{isRTL ? "ختم المؤسسة" : "School Stamp"}</p>
+
+                <div className="mt-12 grid grid-cols-3 gap-8">
+                  <div className="text-center p-4 border border-dashed border-gray-200 rounded-2xl">
+                    <p className="text-[9px] font-bold text-gray-400 uppercase mb-8">{isRTL ? "توقيع المدير" : "Director Signature"}</p>
+                    <div className="h-10"></div>
+                  </div>
+                  <div className="text-center p-4 border border-dashed border-gray-200 rounded-2xl">
+                    <p className="text-[9px] font-bold text-gray-400 uppercase mb-8">{isRTL ? "ختم المؤسسة" : "School Stamp"}</p>
+                    <div className="h-10"></div>
+                  </div>
+                  <div className="text-center p-4 border border-dashed border-gray-200 rounded-2xl">
+                    <p className="text-[9px] font-bold text-gray-400 uppercase mb-8">{isRTL ? "ملاحظات" : "Notes"}</p>
+                    <div className="h-10"></div>
+                  </div>
+                </div>
+                
+                <div className="mt-8 pt-4 border-t border-gray-100 flex justify-between items-center">
+                  <p className="text-[8px] text-gray-400 font-medium italic">Generated by EduSchedule Pro - {new Date().toLocaleString()}</p>
+                  <div className="flex gap-2">
+                    <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                    <span className="w-2 h-2 bg-emerald-300 rounded-full"></span>
+                    <span className="w-2 h-2 bg-emerald-100 rounded-full"></span>
+                  </div>
                 </div>
               </div>
             </div>
