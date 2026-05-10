@@ -16,7 +16,8 @@ import {
   AlertCircle,
   Eye,
   X,
-  RotateCw
+  RotateCw,
+  Maximize2
 } from "lucide-react";
 import { 
   Select, 
@@ -38,6 +39,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { showSuccess } from "../utils/toast";
 
@@ -64,6 +66,7 @@ const Schedule = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
+  const [printScale, setPrintScale] = useState(100);
   const [editingCell, setEditingCell] = useState<{day: number, period: string} | null>(null);
 
   const [newAssignment, setNewAssignment] = useState({
@@ -392,7 +395,7 @@ const Schedule = () => {
       {/* Dialog معاينة قبل الطباعة */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[95vw] w-full h-[90vh] overflow-y-auto rounded-3xl p-0 border-none">
-          <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center z-10">
+          <div className="sticky top-0 bg-white border-b p-4 flex flex-col md:flex-row justify-between items-center gap-4 z-10">
             <div className="flex items-center gap-3">
               <Eye className="text-emerald-600" />
               <h3 className="font-bold text-lg">
@@ -403,6 +406,20 @@ const Schedule = () => {
                 }
               </h3>
             </div>
+            
+            <div className="flex flex-1 max-w-xs items-center gap-4 px-4">
+              <Maximize2 size={16} className="text-gray-400" />
+              <Slider 
+                value={[printScale]} 
+                onValueChange={(v) => setPrintScale(v[0])} 
+                min={50} 
+                max={150} 
+                step={1}
+                className="flex-1"
+              />
+              <span className="text-xs font-bold text-emerald-700 w-10">{printScale}%</span>
+            </div>
+
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
@@ -421,18 +438,25 @@ const Schedule = () => {
               </Button>
             </div>
           </div>
-          <div className="p-8 bg-gray-50 min-h-full flex justify-center">
+          <div className="p-8 bg-gray-50 min-h-full flex justify-center overflow-auto">
             <div className={cn(
-              "bg-white shadow-2xl p-10 border border-gray-200 transition-all duration-300",
+              "bg-white shadow-2xl p-10 border border-gray-200 transition-all duration-300 origin-top",
               orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
-            )}>
+            )} style={{ transform: `scale(${printScale / 100})` }}>
               <style>
                 {`
                   @media print {
                     @page { size: ${orientation}; margin: 10mm; }
                     body * { visibility: hidden; }
                     .print-content, .print-content * { visibility: visible; }
-                    .print-content { position: absolute; left: 0; top: 0; width: 100%; }
+                    .print-content { 
+                      position: absolute; 
+                      left: 0; 
+                      top: 0; 
+                      width: 100%; 
+                      transform: scale(${printScale / 100});
+                      transform-origin: top center;
+                    }
                   }
                 `}
               </style>
