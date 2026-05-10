@@ -132,16 +132,16 @@ const Schedule = () => {
   const ScheduleTable = ({ isPreview = false }: { isPreview?: boolean }) => (
     <div className={cn(
       "overflow-x-auto rounded-3xl border border-emerald-100 bg-white shadow-sm",
-      isPreview && "border-gray-300 shadow-none rounded-none"
+      isPreview && "border-gray-300 shadow-none rounded-none border-collapse"
     )}>
-      <table className="w-full border-collapse">
+      <table className="w-full border-collapse table-fixed">
         <thead>
           <tr className="bg-emerald-50/50">
-            <th className="p-4 border-b border-emerald-100 text-emerald-900 font-bold text-sm w-24">
+            <th className={cn("p-2 border-b border-emerald-100 text-emerald-900 font-bold text-xs w-16", isPreview && "p-1")}>
               {isRTL ? "الحصة" : "Period"}
             </th>
             {DAYS.map(day => (
-              <th key={day.id} className="p-4 border-b border-emerald-100 text-emerald-900 font-bold text-sm min-w-[120px]">
+              <th key={day.id} className={cn("p-2 border-b border-emerald-100 text-emerald-900 font-bold text-xs", isPreview && "p-1")}>
                 {isRTL ? day.name : day.en}
               </th>
             ))}
@@ -150,9 +150,9 @@ const Schedule = () => {
         <tbody>
           {PERIODS.map(period => (
             <tr key={period} className="group">
-              <td className="p-4 border-b border-emerald-100 bg-emerald-50/20 font-bold text-emerald-800 text-xs text-center">
-                <div className="flex flex-col items-center gap-1">
-                  <Clock size={12} className="text-emerald-400" />
+              <td className={cn("p-2 border-b border-emerald-100 bg-emerald-50/20 font-bold text-emerald-800 text-[10px] text-center", isPreview && "p-1")}>
+                <div className="flex flex-col items-center gap-0.5">
+                  <Clock size={10} className="text-emerald-400" />
                   {period}
                 </div>
               </td>
@@ -161,15 +161,18 @@ const Schedule = () => {
                 const config = periodConfigs.find(p => p.day === day.id && p.period === period);
                 const isActive = config ? config.isActive : true;
 
-                if (!isActive) return <td key={day.id} className="p-2 border-b border-emerald-100 bg-gray-50/30"></td>;
+                if (!isActive) return <td key={day.id} className="p-1 border-b border-emerald-100 bg-gray-50/30"></td>;
 
                 const conflict = assignment ? checkConflict(day.id, period, assignment) : null;
 
                 return (
-                  <td key={day.id} className="p-2 border-b border-emerald-100 relative group/cell min-h-[100px]">
+                  <td key={day.id} className={cn(
+                    "p-1 border-b border-emerald-100 relative group/cell",
+                    isPreview ? "h-auto" : "min-h-[80px]"
+                  )}>
                     {assignment ? (
                       <div className={cn(
-                        "border rounded-xl p-3 transition-all h-full relative",
+                        "border rounded-lg p-2 transition-all h-full relative",
                         conflict ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-100",
                         !isPreview && "hover:shadow-md"
                       )}>
@@ -178,11 +181,11 @@ const Schedule = () => {
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg animate-bounce">
-                                  <AlertCircle size={12} />
+                                  <AlertCircle size={10} />
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent className="bg-red-900 text-white border-none rounded-xl">
-                                <p className="text-xs font-bold">
+                                <p className="text-[10px] font-bold">
                                   {isRTL 
                                     ? `تعارض: ${conflict.type === 'teacher' ? 'الأستاذ' : 'القاعة'} مشغول مع ${conflict.with}`
                                     : `Conflict: ${conflict.type === 'teacher' ? 'Teacher' : 'Room'} busy with ${conflict.with}`
@@ -193,24 +196,24 @@ const Schedule = () => {
                           </TooltipProvider>
                         )}
                         
-                        <div className="flex justify-between items-start mb-2">
-                          <span className={cn("text-[11px] font-bold uppercase tracking-wider", conflict ? "text-red-700" : "text-emerald-700")}>
+                        <div className="flex justify-between items-start mb-1">
+                          <span className={cn("text-[9px] font-bold uppercase tracking-tight truncate", conflict ? "text-red-700" : "text-emerald-700")}>
                             {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
                           </span>
                           {!isPreview && (
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="h-6 w-6 text-red-400 opacity-0 group-hover/cell:opacity-100 transition-opacity"
+                              className="h-5 w-5 text-red-400 opacity-0 group-hover/cell:opacity-100 transition-opacity"
                               onClick={() => deleteAssignment(assignment.id)}
                             >
-                              <Trash2 size={12} />
+                              <Trash2 size={10} />
                             </Button>
                           )}
                         </div>
-                        <div className="space-y-1.5">
-                          <div className="flex items-center gap-1.5 text-xs text-emerald-900 font-medium">
-                            <User size={12} className="text-emerald-400" />
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1 text-[9px] text-emerald-900 font-medium truncate">
+                            <User size={10} className="text-emerald-400 shrink-0" />
                             {viewMode === "class" 
                               ? (() => {
                                   const emp = employees.find(e => e.id === assignment.employeeId);
@@ -220,8 +223,8 @@ const Schedule = () => {
                             }
                           </div>
                           {assignment.room && (
-                            <div className="flex items-center gap-1.5 text-[10px] text-emerald-600/70">
-                              <MapPin size={10} />
+                            <div className="flex items-center gap-1 text-[8px] text-emerald-600/70 truncate">
+                              <MapPin size={8} className="shrink-0" />
                               {assignment.room}
                             </div>
                           )}
@@ -231,10 +234,10 @@ const Schedule = () => {
                       !isPreview && (
                         <Button 
                           variant="ghost" 
-                          className="w-full h-20 border-2 border-dashed border-transparent hover:border-emerald-100 hover:bg-emerald-50/30 rounded-xl transition-all group/btn"
+                          className="w-full h-16 border-2 border-dashed border-transparent hover:border-emerald-100 hover:bg-emerald-50/30 rounded-xl transition-all group/btn"
                           onClick={() => handleAddClick(day.id, period)}
                         >
-                          <Plus size={20} className="text-emerald-200 group-hover/btn:text-emerald-400" />
+                          <Plus size={16} className="text-emerald-200 group-hover/btn:text-emerald-400" />
                         </Button>
                       )
                     )}
@@ -440,13 +443,13 @@ const Schedule = () => {
           </div>
           <div className="p-8 bg-gray-50 min-h-full flex justify-center overflow-auto">
             <div className={cn(
-              "bg-white shadow-2xl p-10 border border-gray-200 transition-all duration-300 origin-top",
+              "bg-white shadow-2xl p-8 border border-gray-200 transition-all duration-300 origin-top overflow-hidden",
               orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
             )} style={{ transform: `scale(${printScale / 100})` }}>
               <style>
                 {`
                   @media print {
-                    @page { size: ${orientation}; margin: 10mm; }
+                    @page { size: ${orientation}; margin: 5mm; }
                     body * { visibility: hidden; }
                     .print-content, .print-content * { visibility: visible; }
                     .print-content { 
@@ -461,18 +464,23 @@ const Schedule = () => {
                 `}
               </style>
               <div className="print-content">
-                <div className="text-center mb-8 border-b-2 border-emerald-900 pb-6">
-                  <h1 className="text-2xl font-black text-emerald-950 mb-2">EduSchedule</h1>
-                  <p className="text-sm font-bold text-emerald-700 uppercase tracking-widest">
+                <div className="text-center mb-4 border-b-2 border-emerald-900 pb-4">
+                  <h1 className="text-xl font-black text-emerald-950 mb-1">EduSchedule</h1>
+                  <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
                     {isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Academic Schedule"}
                   </p>
-                  <div className="mt-4 flex justify-center gap-8 text-xs font-bold text-gray-600">
+                  <div className="mt-2 flex justify-center gap-6 text-[9px] font-bold text-gray-600">
                     <p>{isRTL ? "الفئة:" : "Category:"} {viewMode === "class" ? (isRTL ? "فوج تربوي" : "Class") : (isRTL ? "أستاذ" : "Teacher")}</p>
+                    <p>{isRTL ? "الاسم:" : "Name:"} {
+                      viewMode === "class" 
+                        ? classes.find(c => c.id === selectedId)?.name 
+                        : employees.find(e => e.id === selectedId)?.lastName
+                    }</p>
                     <p>{isRTL ? "التاريخ:" : "Date:"} {new Date().toLocaleDateString()}</p>
                   </div>
                 </div>
                 <ScheduleTable isPreview={true} />
-                <div className="mt-10 flex justify-between text-[10px] font-bold text-gray-400 uppercase">
+                <div className="mt-6 flex justify-between text-[9px] font-bold text-gray-400 uppercase">
                   <p>{isRTL ? "توقيع المدير" : "Director Signature"}</p>
                   <p>{isRTL ? "ختم المؤسسة" : "School Stamp"}</p>
                 </div>
