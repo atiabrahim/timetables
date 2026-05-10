@@ -107,8 +107,9 @@ const Schedule = () => {
     const target = orientation === "portrait" ? A4_PORTRAIT : A4_LANDSCAPE;
     const contentWidth = printRef.current.scrollWidth;
     const contentHeight = printRef.current.scrollHeight;
-    const scaleW = (target.width / contentWidth) * 0.95;
-    const scaleH = (target.height / contentHeight) * 0.95;
+    // زيادة معامل الاستغلال إلى 0.97 لاستخدام مساحة أكبر
+    const scaleW = (target.width / contentWidth) * 0.97;
+    const scaleH = (target.height / contentHeight) * 0.97;
     const finalScale = Math.min(scaleW, scaleH) * 100;
     setPrintScale(Math.min(Math.max(Math.floor(finalScale), 40), 150));
   };
