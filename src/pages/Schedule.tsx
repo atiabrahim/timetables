@@ -18,7 +18,8 @@ import {
   Maximize2,
   ArrowUpFromLine,
   ArrowLeftRight,
-  Expand
+  Expand,
+  ListFilter
 } from "lucide-react";
 import { 
   Select, 
@@ -41,6 +42,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { showSuccess } from "../utils/toast";
 
@@ -72,6 +75,7 @@ const Schedule = () => {
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [printScale, setPrintScale] = useState(100);
   const [editingCell, setEditingCell] = useState<{day: number, period: string} | null>(null);
+  const [showEmptyRows, setShowEmptyRows] = useState(false);
   
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -89,6 +93,22 @@ const Schedule = () => {
     );
   }, [assignments, viewMode, selectedId]);
 
+  const getAssignment = (day: number, period: string) => {
+    return filteredAssignments.find(a => a.day === day && a.period === period);
+  };
+
+  // حساب الحصص (الأسطر) التي تحتوي على بيانات
+  const visiblePeriods = useMemo(() => {
+    if (!selectedId || showEmptyRows) return PERIODS;
+    
+    const active = PERIODS.filter(period => 
+      DAYS.some(day => !!getAssignment(day.id, period))
+    );
+    
+    // إذا كان الجدول فارغاً تماماً، نعرض كل الحصص للسماح بالإضافة
+    return active.length > 0 ? active : PERIODS;
+  }, [filteredAssignments, selectedId, showEmptyRows]);
+
   const checkConflict = (day: number, period: string, assignment: any) => {
     const otherAssignments = assignments.filter(a => a.id !== assignment.id && a.day === day && a.period === period);
     const teacherConflict = otherAssignments.find(a => a.employeeId === assignment.employeeId);
@@ -103,10 +123,6 @@ const Schedule = () => {
       };
     }
     return null;
-  };
-
-  const getAssignment = (day: number, period: string) => {
-    return filteredAssignments.find(a => a.day === day && a.period === period);
   };
 
   const handleAddClick = (day: number, period: string) => {
@@ -181,7 +197,7 @@ const Schedule = () => {
           </tr>
         </thead>
         <tbody>
-          {PERIODS.map(period => (
+          {visiblePeriods.map(period => (
             <tr key={period} className="group">
               <td className={cn("p-2 border-b border-emerald-100 bg-emerald-50/20 font-bold text-emerald-800 text-[10px] text-center", isPreview && "p-1")}>
                 <div className="flex flex-col items-center gap-0.5">
@@ -294,7 +310,18 @@ const Schedule = () => {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3 w-full md:w-auto">
+        <div className="flex flex-wrap gap-3 w-full md:w-auto items-center">
+          <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-xl border border-emerald-100">
+            <Switch 
+              id="show-empty" 
+              checked={showEmptyRows} 
+              onCheckedChange={setShowEmptyRows} 
+            />
+            <Label htmlFor="show-empty" className="text-xs font-bold text-emerald-800 cursor-pointer">
+              {isRTL ? "إظهار الكل" : "Show All"}
+            </Label>
+          </div>
+
           <Select value={viewMode} onValueChange={(v: any) => { setViewMode(v); setSelectedId(""); }}>
             <SelectTrigger className="w-[140px] rounded-xl border-emerald-100 bg-white">
               <SelectValue />
