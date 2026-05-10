@@ -13,10 +13,19 @@ import {
   Trash2,
   GraduationCap,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  X,
+  Check
 } from "lucide-react";
 import { showSuccess } from "../utils/toast";
 import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 type SortConfig = {
   key: "name" | "code" | "qualificationLevel" | null;
@@ -24,14 +33,14 @@ type SortConfig = {
 };
 
 const Classes = () => {
-  const { classes, setClasses, isRTL, user } = useApp();
+  const { classes, setClasses, isRTL, user, t } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: "asc" });
-  const [newBranch, setNewBranch] = useState({
-    name: "",
-    code: "",
-    qualificationLevel: ""
-  });
+  
+  // حالات الإضافة والتعديل
+  const [newBranch, setNewBranch] = useState({ name: "", code: "", qualificationLevel: "" });
+  const [editingBranch, setEditingBranch] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const isAdmin = user?.role === "Admin";
 
@@ -78,6 +87,18 @@ const Classes = () => {
     setClasses([...classes, { id, ...newBranch }]);
     setNewBranch({ name: "", code: "", qualificationLevel: "" });
     showSuccess(isRTL ? "تم إضافة الفرع بنجاح" : "Branch added successfully");
+  };
+
+  const handleEditClick = (cls: any) => {
+    setEditingBranch({ ...cls });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateBranch = () => {
+    if (!editingBranch.name.trim()) return;
+    setClasses(classes.map(c => c.id === editingBranch.id ? editingBranch : c));
+    setIsEditDialogOpen(false);
+    showSuccess(isRTL ? "تم تحديث بيانات الفرع" : "Branch updated successfully");
   };
 
   const deleteClass = (id: string) => {
@@ -206,8 +227,14 @@ const Classes = () => {
                 <td className="p-5 text-gray-600 font-medium">{cls.qualificationLevel || "---"}</td>
                 <td className="p-5 text-center">
                   <div className="flex justify-center gap-2">
-                    <Button variant="ghost" size="sm" className="text-emerald-700 font-bold gap-2 hover:bg-emerald-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-emerald-700 font-bold gap-2 hover:bg-emerald-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => handleEditClick(cls)}
+                    >
                       <Edit2 size={16} />
+                      {isRTL ? "تعديل" : "Edit"}
                     </Button>
                     {isAdmin && (
                       <Button 
@@ -232,6 +259,53 @@ const Classes = () => {
           </div>
         )}
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-md rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-emerald-950">
+              {isRTL ? "تعديل بيانات الفرع" : "Edit Branch Details"}
+            </DialogTitle>
+          </DialogHeader>
+          {editingBranch && (
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-emerald-800">{isRTL ? "اسم الفرع" : "Branch Name"}</label>
+                <Input 
+                  value={editingBranch.name} 
+                  onChange={e => setEditingBranch({...editingBranch, name: e.target.value})}
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-emerald-800">{isRTL ? "الرمز" : "Code"}</label>
+                <Input 
+                  value={editingBranch.code} 
+                  onChange={e => setEditingBranch({...editingBranch, code: e.target.value})}
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-emerald-800">{isRTL ? "مستوى التأهيل" : "Qualification Level"}</label>
+                <Input 
+                  value={editingBranch.qualificationLevel} 
+                  onChange={e => setEditingBranch({...editingBranch, qualificationLevel: e.target.value})}
+                  className="rounded-xl"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl">
+              {t.cancel}
+            </Button>
+            <Button onClick={handleUpdateBranch} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">
+              {isRTL ? "حفظ التغييرات" : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
