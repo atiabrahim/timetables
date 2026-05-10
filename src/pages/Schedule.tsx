@@ -1,14 +1,12 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { useApp } from "../context/AppContext";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   Plus, 
   Calendar as CalendarIcon, 
   User, 
-  BookOpen, 
   MapPin,
   Trash2,
   Printer,
@@ -18,8 +16,8 @@ import {
   X,
   RotateCw,
   Maximize2,
-  ArrowsUpFromLine,
-  ArrowsLeftRight,
+  ArrowUpFromLine,
+  ArrowLeftRight,
   Expand
 } from "lucide-react";
 import { 
@@ -56,7 +54,6 @@ const DAYS = [
 
 const PERIODS = Array.from({ length: 8 }, (_, i) => (i + 1).toString());
 
-// أبعاد A4 بالبكسل (تقريباً عند 96 DPI)
 const A4_PORTRAIT = { width: 794, height: 1123 };
 const A4_LANDSCAPE = { width: 1123, height: 794 };
 
@@ -138,12 +135,11 @@ const Schedule = () => {
     showSuccess(isRTL ? "تم حذف الحصة" : "Lesson deleted");
   };
 
-  // وظائف التحجيم التلقائي
   const fitToWidth = () => {
     if (!contentRef.current) return;
     const target = orientation === "portrait" ? A4_PORTRAIT : A4_LANDSCAPE;
     const contentWidth = contentRef.current.scrollWidth;
-    const scale = (target.width / contentWidth) * 95; // 95% لتوفير هامش بسيط
+    const scale = (target.width / contentWidth) * 95;
     setPrintScale(Math.min(Math.max(Math.floor(scale), 50), 150));
   };
 
@@ -355,7 +351,6 @@ const Schedule = () => {
         <ScheduleTable />
       )}
 
-      {/* Dialog إضافة حصة */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md rounded-3xl">
           <DialogHeader>
@@ -382,8 +377,7 @@ const Schedule = () => {
                 <Select value={newAssignment.classId} onValueChange={v => setNewAssignment({...newAssignment, classId: v})}>
                   <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)
-                    }
+                    {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -433,10 +427,8 @@ const Schedule = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog معاينة قبل الطباعة المتطور */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[98vw] w-full h-[95vh] overflow-hidden rounded-3xl p-0 border-none flex flex-col">
-          {/* شريط التحكم العلوي */}
           <div className="bg-white border-b p-4 flex flex-col lg:flex-row justify-between items-center gap-4 z-10 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
@@ -452,13 +444,12 @@ const Schedule = () => {
               </div>
             </div>
             
-            {/* أدوات التحجيم التلقائي */}
             <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-xl border border-gray-100">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="sm" onClick={fitToWidth} className="h-8 px-2 text-gray-600 hover:text-emerald-600">
-                      <ArrowsLeftRight size={16} />
+                      <ArrowLeftRight size={16} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>{isRTL ? "احتواء العرض" : "Fit to Width"}</TooltipContent>
@@ -466,7 +457,7 @@ const Schedule = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="sm" onClick={fitToHeight} className="h-8 px-2 text-gray-600 hover:text-emerald-600">
-                      <ArrowsUpFromLine size={16} />
+                      <ArrowUpFromLine size={16} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>{isRTL ? "احتواء الارتفاع" : "Fit to Height"}</TooltipContent>
@@ -482,7 +473,6 @@ const Schedule = () => {
               </TooltipProvider>
             </div>
 
-            {/* شريط التحكم اليدوي */}
             <div className="flex flex-1 max-w-xs items-center gap-4 px-4">
               <Maximize2 size={14} className="text-gray-400" />
               <Slider 
@@ -515,7 +505,6 @@ const Schedule = () => {
             </div>
           </div>
 
-          {/* منطقة العرض */}
           <div className="flex-1 bg-gray-100 overflow-auto p-8 flex justify-center items-start">
             <div 
               className={cn(
@@ -523,7 +512,6 @@ const Schedule = () => {
                 orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
               )}
             >
-              {/* الهوامش البصرية (للمعاينة فقط) */}
               <div className="absolute inset-0 border-[10mm] border-transparent pointer-events-none"></div>
               
               <style>
