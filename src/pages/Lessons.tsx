@@ -13,7 +13,8 @@ import {
   GraduationCap,
   MapPin,
   FilterX,
-  Clock
+  Clock,
+  Building2
 } from "lucide-react";
 import { 
   Select, 
@@ -56,7 +57,7 @@ const Lessons = () => {
 
   const filteredLessons = useMemo(() => {
     return assignments.filter(asgn => {
-      const matchesSearch = `${getSubjectName(asgn.subjectId)} ${getTeacherName(asgn.employeeId)} ${getClassName(asgn.classId)} ${asgn.room}`
+      const matchesSearch = `${getSubjectName(asgn.subjectId)} ${getTeacherName(asgn.employeeId)} ${getClassName(asgn.classId)} ${asgn.room} ${asgn.department}`
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
       
@@ -189,7 +190,7 @@ const Lessons = () => {
                   {isRTL ? "الفوج" : "Class"}
                 </th>
                 <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100">
-                  {isRTL ? "القاعة" : "Room"}
+                  {isRTL ? "اسم القاعدة" : "Base Name"}
                 </th>
                 <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100">
                   {isRTL ? "التوقيت" : "Timing"}
@@ -226,8 +227,8 @@ const Lessons = () => {
                   </td>
                   <td className="p-5">
                     <div className="flex items-center justify-end gap-1.5 text-gray-600 text-xs font-bold">
-                      {asgn.room || "---"}
-                      <MapPin size={12} className="text-emerald-500" />
+                      {asgn.department || "---"}
+                      <Building2 size={12} className="text-emerald-500" />
                     </div>
                   </td>
                   <td className="p-5">
