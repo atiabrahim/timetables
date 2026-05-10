@@ -15,7 +15,8 @@ import {
   Clock,
   AlertCircle,
   Eye,
-  X
+  X,
+  RotateCw
 } from "lucide-react";
 import { 
   Select, 
@@ -62,6 +63,7 @@ const Schedule = () => {
   const [selectedId, setSelectedId] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [editingCell, setEditingCell] = useState<{day: number, period: string} | null>(null);
 
   const [newAssignment, setNewAssignment] = useState({
@@ -402,6 +404,14 @@ const Schedule = () => {
               </h3>
             </div>
             <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")}
+                className="rounded-xl border-emerald-100 text-emerald-700"
+              >
+                <RotateCw size={18} className={isRTL ? "ml-2" : "mr-2"} />
+                {isRTL ? (orientation === "portrait" ? "عرضي" : "طولي") : (orientation === "portrait" ? "Landscape" : "Portrait")}
+              </Button>
               <Button onClick={() => window.print()} className="bg-emerald-600 rounded-xl">
                 <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
                 {isRTL ? "طباعة الآن" : "Print Now"}
@@ -411,22 +421,37 @@ const Schedule = () => {
               </Button>
             </div>
           </div>
-          <div className="p-8 bg-gray-50 min-h-full">
-            <div className="max-w-5xl mx-auto bg-white shadow-2xl p-10 border border-gray-200">
-              <div className="text-center mb-8 border-b-2 border-emerald-900 pb-6">
-                <h1 className="text-2xl font-black text-emerald-950 mb-2">EduSchedule</h1>
-                <p className="text-sm font-bold text-emerald-700 uppercase tracking-widest">
-                  {isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Academic Schedule"}
-                </p>
-                <div className="mt-4 flex justify-center gap-8 text-xs font-bold text-gray-600">
-                  <p>{isRTL ? "الفئة:" : "Category:"} {viewMode === "class" ? (isRTL ? "فوج تربوي" : "Class") : (isRTL ? "أستاذ" : "Teacher")}</p>
-                  <p>{isRTL ? "التاريخ:" : "Date:"} {new Date().toLocaleDateString()}</p>
+          <div className="p-8 bg-gray-50 min-h-full flex justify-center">
+            <div className={cn(
+              "bg-white shadow-2xl p-10 border border-gray-200 transition-all duration-300",
+              orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
+            )}>
+              <style>
+                {`
+                  @media print {
+                    @page { size: ${orientation}; margin: 10mm; }
+                    body * { visibility: hidden; }
+                    .print-content, .print-content * { visibility: visible; }
+                    .print-content { position: absolute; left: 0; top: 0; width: 100%; }
+                  }
+                `}
+              </style>
+              <div className="print-content">
+                <div className="text-center mb-8 border-b-2 border-emerald-900 pb-6">
+                  <h1 className="text-2xl font-black text-emerald-950 mb-2">EduSchedule</h1>
+                  <p className="text-sm font-bold text-emerald-700 uppercase tracking-widest">
+                    {isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Academic Schedule"}
+                  </p>
+                  <div className="mt-4 flex justify-center gap-8 text-xs font-bold text-gray-600">
+                    <p>{isRTL ? "الفئة:" : "Category:"} {viewMode === "class" ? (isRTL ? "فوج تربوي" : "Class") : (isRTL ? "أستاذ" : "Teacher")}</p>
+                    <p>{isRTL ? "التاريخ:" : "Date:"} {new Date().toLocaleDateString()}</p>
+                  </div>
                 </div>
-              </div>
-              <ScheduleTable isPreview={true} />
-              <div className="mt-10 flex justify-between text-[10px] font-bold text-gray-400 uppercase">
-                <p>{isRTL ? "توقيع المدير" : "Director Signature"}</p>
-                <p>{isRTL ? "ختم المؤسسة" : "School Stamp"}</p>
+                <ScheduleTable isPreview={true} />
+                <div className="mt-10 flex justify-between text-[10px] font-bold text-gray-400 uppercase">
+                  <p>{isRTL ? "توقيع المدير" : "Director Signature"}</p>
+                  <p>{isRTL ? "ختم المؤسسة" : "School Stamp"}</p>
+                </div>
               </div>
             </div>
           </div>
