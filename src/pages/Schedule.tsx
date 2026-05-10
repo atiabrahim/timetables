@@ -11,13 +11,10 @@ import {
   Trash2,
   Printer,
   Clock,
-  AlertCircle,
   Eye,
   X,
   RotateCw,
   Maximize2,
-  ArrowUpFromLine,
-  ArrowLeftRight,
   Expand,
   FileText,
   Settings2
@@ -33,8 +30,7 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle, 
-  DialogFooter 
+  DialogTitle 
 } from "@/components/ui/dialog";
 import { 
   Tooltip,
@@ -58,7 +54,6 @@ const DAYS = [
 
 const PERIODS = Array.from({ length: 8 }, (_, i) => (i + 1).toString());
 
-// أبعاد A4 القياسية بالبكسل (96 DPI)
 const A4_PORTRAIT = { width: 794, height: 1123 };
 const A4_LANDSCAPE = { width: 1123, height: 794 };
 
@@ -107,24 +102,17 @@ const Schedule = () => {
     return active.length > 0 ? active : PERIODS;
   }, [filteredAssignments, selectedId, showEmptyRows]);
 
-  // وظيفة الاحتواء التلقائي الذكي
   const autoFitToPage = () => {
     if (!printRef.current) return;
-    
     const target = orientation === "portrait" ? A4_PORTRAIT : A4_LANDSCAPE;
     const contentWidth = printRef.current.scrollWidth;
     const contentHeight = printRef.current.scrollHeight;
-    
-    // حساب النسبة المطلوبة للعرض والارتفاع مع ترك هامش 10%
     const scaleW = (target.width / contentWidth) * 0.9;
     const scaleH = (target.height / contentHeight) * 0.9;
-    
-    // اختيار النسبة الأصغر لضمان الاحتواء الكامل
     const finalScale = Math.min(scaleW, scaleH) * 100;
     setPrintScale(Math.min(Math.max(Math.floor(finalScale), 40), 150));
   };
 
-  // تنفيذ الاحتواء التلقائي عند فتح المعاينة أو تغيير الاتجاه
   useEffect(() => {
     if (isPreviewOpen) {
       setTimeout(autoFitToPage, 100);
@@ -258,7 +246,6 @@ const Schedule = () => {
 
   return (
     <div className="space-y-6">
-      {/* شريط التحكم الرئيسي */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
         <div>
           <h2 className="text-3xl font-black text-emerald-950 flex items-center gap-3">
@@ -327,11 +314,9 @@ const Schedule = () => {
         <ScheduleTable />
       )}
 
-      {/* نافذة المعاينة الاحترافية */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 backdrop-blur-xl flex flex-col">
-          {/* شريط أدوات المعاينة */}
-          <div className="h-20 bg-black/40 border-b border-white/10 flex items-center justify-between px-8 shrink-0">
+          <div className="h-20 bg-black/40 border-b border-white/10 flex items-center justify-between px-8 shrink-0 print:hidden">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
                 <FileText className="text-white" size={24} />
@@ -347,7 +332,6 @@ const Schedule = () => {
             </div>
 
             <div className="flex items-center gap-6">
-              {/* أدوات التحكم في التحجيم */}
               <div className="flex items-center gap-3 bg-white/5 p-1.5 rounded-2xl border border-white/10">
                 <TooltipProvider>
                   <Tooltip>
@@ -392,18 +376,15 @@ const Schedule = () => {
             </div>
           </div>
 
-          {/* منطقة عرض الورقة */}
-          <div className="flex-1 overflow-auto p-12 flex justify-center items-start bg-zinc-950/50">
+          <div className="flex-1 overflow-auto p-12 flex justify-center items-start bg-zinc-950/50 print:p-0 print:bg-white">
             <div 
               className={cn(
-                "bg-white shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all duration-500 origin-top flex flex-col",
+                "bg-white shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all duration-500 origin-top flex flex-col print:shadow-none print:m-0 print-area-wrapper",
                 orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
               )}
               style={{ transform: `scale(${printScale / 100})` }}
             >
-              {/* محتوى الوثيقة */}
-              <div className="p-[15mm] flex-1 flex flex-col" ref={printRef}>
-                {/* ترويسة رسمية */}
+              <div className="p-[15mm] flex-1 flex flex-col print-scaled-content" ref={printRef}>
                 <div className="flex justify-between items-start border-b-4 border-emerald-900 pb-6 mb-8">
                   <div className="text-right">
                     <h1 className="text-3xl font-black text-emerald-950">EduSchedule</h1>
@@ -428,12 +409,10 @@ const Schedule = () => {
                   </div>
                 </div>
 
-                {/* الجدول */}
                 <div className="flex-1">
                   <ScheduleTable isPrint={true} />
                 </div>
 
-                {/* تذييل رسمي */}
                 <div className="mt-12 grid grid-cols-2 gap-20 px-10">
                   <div className="text-center">
                     <p className="text-xs font-black text-emerald-950 mb-16">{isRTL ? "توقيع ومصادقة المدير" : "Director's Signature"}</p>
@@ -454,7 +433,6 @@ const Schedule = () => {
             </div>
           </div>
 
-          {/* CSS خاص بالطباعة لضمان الجودة */}
           <style>
             {`
               @media print {
@@ -474,6 +452,7 @@ const Schedule = () => {
                   justify-content: center;
                   align-items: flex-start;
                   background: white !important;
+                  transform: none !important;
                 }
                 .print-scaled-content {
                   transform: scale(${printScale / 100});
