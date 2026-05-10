@@ -107,8 +107,9 @@ const Schedule = () => {
     const target = orientation === "portrait" ? A4_PORTRAIT : A4_LANDSCAPE;
     const contentWidth = printRef.current.scrollWidth;
     const contentHeight = printRef.current.scrollHeight;
-    const scaleW = (target.width / contentWidth) * 0.9;
-    const scaleH = (target.height / contentHeight) * 0.9;
+    // استخدام معامل أمان 0.95 بدلاً من 0.9 لاستغلال الهوامش الدنيا
+    const scaleW = (target.width / contentWidth) * 0.95;
+    const scaleH = (target.height / contentHeight) * 0.95;
     const finalScale = Math.min(scaleW, scaleH) * 100;
     setPrintScale(Math.min(Math.max(Math.floor(finalScale), 40), 150));
   };
@@ -384,7 +385,8 @@ const Schedule = () => {
               )}
               style={{ transform: `scale(${printScale / 100})` }}
             >
-              <div className="p-[15mm] flex-1 flex flex-col print-scaled-content" ref={printRef}>
+              {/* تقليص الهوامش الداخلية إلى 5 ملم */}
+              <div className="p-[5mm] flex-1 flex flex-col print-scaled-content" ref={printRef}>
                 <div className="flex justify-between items-start border-b-4 border-emerald-900 pb-6 mb-8">
                   <div className="text-right">
                     <h1 className="text-3xl font-black text-emerald-950">EduSchedule</h1>
