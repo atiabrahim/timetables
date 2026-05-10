@@ -107,7 +107,6 @@ const Schedule = () => {
     const target = orientation === "portrait" ? A4_PORTRAIT : A4_LANDSCAPE;
     const contentWidth = printRef.current.scrollWidth;
     const contentHeight = printRef.current.scrollHeight;
-    // استخدام معامل أمان 0.95 بدلاً من 0.9 لاستغلال الهوامش الدنيا
     const scaleW = (target.width / contentWidth) * 0.95;
     const scaleH = (target.height / contentHeight) * 0.95;
     const finalScale = Math.min(scaleW, scaleH) * 100;
@@ -385,7 +384,6 @@ const Schedule = () => {
               )}
               style={{ transform: `scale(${printScale / 100})` }}
             >
-              {/* تقليص الهوامش الداخلية إلى 5 ملم */}
               <div className="p-[5mm] flex-1 flex flex-col print-scaled-content" ref={printRef}>
                 <div className="flex justify-between items-start border-b-4 border-emerald-900 pb-6 mb-8">
                   <div className="text-right">
@@ -448,11 +446,10 @@ const Schedule = () => {
                   position: fixed; 
                   left: 0; 
                   top: 0; 
-                  width: 100%; 
-                  height: 100%;
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
+                  width: 100vw; 
+                  height: 100vh;
+                  display: grid;
+                  place-items: center;
                   background: white !important;
                   transform: none !important;
                 }
