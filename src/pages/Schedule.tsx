@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,10 @@ import {
   Eye,
   X,
   RotateCw,
-  Maximize2
+  Maximize2,
+  ArrowsUpFromLine,
+  ArrowsLeftRight,
+  Expand
 } from "lucide-react";
 import { 
   Select, 
@@ -53,6 +56,10 @@ const DAYS = [
 
 const PERIODS = Array.from({ length: 8 }, (_, i) => (i + 1).toString());
 
+// أبعاد A4 بالبكسل (تقريباً عند 96 DPI)
+const A4_PORTRAIT = { width: 794, height: 1123 };
+const A4_LANDSCAPE = { width: 1123, height: 794 };
+
 const Schedule = () => {
   const { 
     isRTL, t, 
@@ -68,6 +75,8 @@ const Schedule = () => {
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [printScale, setPrintScale] = useState(100);
   const [editingCell, setEditingCell] = useState<{day: number, period: string} | null>(null);
+  
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const [newAssignment, setNewAssignment] = useState({
     employeeId: "",
@@ -127,6 +136,34 @@ const Schedule = () => {
   const deleteAssignment = (id: string) => {
     setAssignments(assignments.filter(a => a.id !== id));
     showSuccess(isRTL ? "تم حذف الحصة" : "Lesson deleted");
+  };
+
+  // وظائف التحجيم التلقائي
+  const fitToWidth = () => {
+    if (!contentRef.current) return;
+    const target = orientation === "portrait" ? A4_PORTRAIT : A4_LANDSCAPE;
+    const contentWidth = contentRef.current.scrollWidth;
+    const scale = (target.width / contentWidth) * 95; // 95% لتوفير هامش بسيط
+    setPrintScale(Math.min(Math.max(Math.floor(scale), 50), 150));
+  };
+
+  const fitToHeight = () => {
+    if (!contentRef.current) return;
+    const target = orientation === "portrait" ? A4_PORTRAIT : A4_LANDSCAPE;
+    const contentHeight = contentRef.current.scrollHeight;
+    const scale = (target.height / contentHeight) * 95;
+    setPrintScale(Math.min(Math.max(Math.floor(scale), 50), 150));
+  };
+
+  const fitEntireContent = () => {
+    if (!contentRef.current) return;
+    const target = orientation === "portrait" ? A4_PORTRAIT : A4_LANDSCAPE;
+    const contentWidth = contentRef.current.scrollWidth;
+    const contentHeight = contentRef.current.scrollHeight;
+    const scaleW = (target.width / contentWidth) * 95;
+    const scaleH = (target.height / contentHeight) * 95;
+    const scale = Math.min(scaleW, scaleH);
+    setPrintScale(Math.min(Math.max(Math.floor(scale), 50), 150));
   };
 
   const ScheduleTable = ({ isPreview = false }: { isPreview?: boolean }) => (
@@ -345,7 +382,8 @@ const Schedule = () => {
                 <Select value={newAssignment.classId} onValueChange={v => setNewAssignment({...newAssignment, classId: v})}>
                   <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    {classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)
+                    }
                   </SelectContent>
                 </Select>
               </div>
@@ -395,23 +433,58 @@ const Schedule = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog معاينة قبل الطباعة */}
+      {/* Dialog معاينة قبل الطباعة المتطور */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-[95vw] w-full h-[90vh] overflow-y-auto rounded-3xl p-0 border-none">
-          <div className="sticky top-0 bg-white border-b p-4 flex flex-col md:flex-row justify-between items-center gap-4 z-10">
+        <DialogContent className="max-w-[98vw] w-full h-[95vh] overflow-hidden rounded-3xl p-0 border-none flex flex-col">
+          {/* شريط التحكم العلوي */}
+          <div className="bg-white border-b p-4 flex flex-col lg:flex-row justify-between items-center gap-4 z-10 shadow-sm">
             <div className="flex items-center gap-3">
-              <Eye className="text-emerald-600" />
-              <h3 className="font-bold text-lg">
-                {isRTL ? "معاينة الطباعة -" : "Print Preview -"} {
-                  viewMode === "class" 
-                    ? classes.find(c => c.id === selectedId)?.name 
-                    : employees.find(e => e.id === selectedId)?.lastName
-                }
-              </h3>
+              <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600">
+                <Eye size={20} />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-emerald-950">
+                  {isRTL ? "معاينة الطباعة الذكية" : "Smart Print Preview"}
+                </h3>
+                <p className="text-[10px] text-gray-500 font-medium">
+                  {viewMode === "class" ? classes.find(c => c.id === selectedId)?.name : employees.find(e => e.id === selectedId)?.lastName}
+                </p>
+              </div>
             </div>
             
+            {/* أدوات التحجيم التلقائي */}
+            <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-xl border border-gray-100">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={fitToWidth} className="h-8 px-2 text-gray-600 hover:text-emerald-600">
+                      <ArrowsLeftRight size={16} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isRTL ? "احتواء العرض" : "Fit to Width"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={fitToHeight} className="h-8 px-2 text-gray-600 hover:text-emerald-600">
+                      <ArrowsUpFromLine size={16} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isRTL ? "احتواء الارتفاع" : "Fit to Height"}</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={fitEntireContent} className="h-8 px-2 text-gray-600 hover:text-emerald-600">
+                      <Expand size={16} />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{isRTL ? "احتواء كامل المحتوى" : "Fit Entire Content"}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            {/* شريط التحكم اليدوي */}
             <div className="flex flex-1 max-w-xs items-center gap-4 px-4">
-              <Maximize2 size={16} className="text-gray-400" />
+              <Maximize2 size={14} className="text-gray-400" />
               <Slider 
                 value={[printScale]} 
                 onValueChange={(v) => setPrintScale(v[0])} 
@@ -420,69 +493,98 @@ const Schedule = () => {
                 step={1}
                 className="flex-1"
               />
-              <span className="text-xs font-bold text-emerald-700 w-10">{printScale}%</span>
+              <span className="text-[10px] font-black text-emerald-700 w-12 bg-emerald-50 py-1 rounded-md text-center">{printScale}%</span>
             </div>
 
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
                 onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")}
-                className="rounded-xl border-emerald-100 text-emerald-700"
+                className="rounded-xl border-emerald-100 text-emerald-700 h-10 text-xs font-bold"
               >
-                <RotateCw size={18} className={isRTL ? "ml-2" : "mr-2"} />
+                <RotateCw size={16} className={isRTL ? "ml-2" : "mr-2"} />
                 {isRTL ? (orientation === "portrait" ? "عرضي" : "طولي") : (orientation === "portrait" ? "Landscape" : "Portrait")}
               </Button>
-              <Button onClick={() => window.print()} className="bg-emerald-600 rounded-xl">
-                <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
+              <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl h-10 px-6 text-xs font-bold shadow-lg shadow-emerald-100">
+                <Printer size={16} className={isRTL ? "ml-2" : "mr-2"} />
                 {isRTL ? "طباعة الآن" : "Print Now"}
               </Button>
-              <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="rounded-xl">
+              <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="rounded-xl h-10 w-10 p-0">
                 <X size={18} />
               </Button>
             </div>
           </div>
-          <div className="p-8 bg-gray-50 min-h-full flex justify-center overflow-auto">
-            <div className={cn(
-              "bg-white shadow-2xl p-8 border border-gray-200 transition-all duration-300 origin-top overflow-hidden",
-              orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
-            )} style={{ transform: `scale(${printScale / 100})` }}>
+
+          {/* منطقة العرض */}
+          <div className="flex-1 bg-gray-100 overflow-auto p-8 flex justify-center items-start">
+            <div 
+              className={cn(
+                "bg-white shadow-2xl border border-gray-200 transition-all duration-300 origin-top overflow-hidden relative",
+                orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
+              )}
+            >
+              {/* الهوامش البصرية (للمعاينة فقط) */}
+              <div className="absolute inset-0 border-[10mm] border-transparent pointer-events-none"></div>
+              
               <style>
                 {`
                   @media print {
-                    @page { size: ${orientation}; margin: 5mm; }
+                    @page { 
+                      size: A4 ${orientation}; 
+                      margin: 10mm; 
+                    }
                     body * { visibility: hidden; }
-                    .print-content, .print-content * { visibility: visible; }
-                    .print-content { 
-                      position: absolute; 
+                    .print-content-wrapper, .print-content-wrapper * { visibility: visible; }
+                    .print-content-wrapper { 
+                      position: fixed; 
                       left: 0; 
                       top: 0; 
                       width: 100%; 
+                      height: 100%;
+                      display: flex;
+                      justify-content: center;
+                      align-items: flex-start;
+                      background: white !important;
+                    }
+                    .print-content-scaled {
                       transform: scale(${printScale / 100});
                       transform-origin: top center;
+                      width: 100%;
                     }
                   }
                 `}
               </style>
-              <div className="print-content">
-                <div className="text-center mb-4 border-b-2 border-emerald-900 pb-4">
-                  <h1 className="text-xl font-black text-emerald-950 mb-1">EduSchedule</h1>
-                  <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
-                    {isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Academic Schedule"}
-                  </p>
-                  <div className="mt-2 flex justify-center gap-6 text-[9px] font-bold text-gray-600">
-                    <p>{isRTL ? "الفئة:" : "Category:"} {viewMode === "class" ? (isRTL ? "فوج تربوي" : "Class") : (isRTL ? "أستاذ" : "Teacher")}</p>
-                    <p>{isRTL ? "الاسم:" : "Name:"} {
-                      viewMode === "class" 
-                        ? classes.find(c => c.id === selectedId)?.name 
-                        : employees.find(e => e.id === selectedId)?.lastName
-                    }</p>
-                    <p>{isRTL ? "التاريخ:" : "Date:"} {new Date().toLocaleDateString()}</p>
+
+              <div className="print-content-wrapper p-[10mm] w-full h-full">
+                <div className="print-content-scaled w-full" ref={contentRef}>
+                  <div className="text-center mb-6 border-b-2 border-emerald-900 pb-4">
+                    <h1 className="text-2xl font-black text-emerald-950 mb-1">EduSchedule</h1>
+                    <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
+                      {isRTL ? "الجدول الزمني الأكاديمي الأسبوعي" : "Weekly Academic Schedule"}
+                    </p>
+                    <div className="mt-3 flex justify-center gap-8 text-[10px] font-bold text-gray-600">
+                      <p>{isRTL ? "الفئة:" : "Category:"} {viewMode === "class" ? (isRTL ? "فوج تربوي" : "Class") : (isRTL ? "أستاذ" : "Teacher")}</p>
+                      <p>{isRTL ? "الاسم:" : "Name:"} {
+                        viewMode === "class" 
+                          ? classes.find(c => c.id === selectedId)?.name 
+                          : employees.find(e => e.id === selectedId)?.lastName
+                      }</p>
+                      <p>{isRTL ? "التاريخ:" : "Date:"} {new Date().toLocaleDateString()}</p>
+                    </div>
                   </div>
-                </div>
-                <ScheduleTable isPreview={true} />
-                <div className="mt-6 flex justify-between text-[9px] font-bold text-gray-400 uppercase">
-                  <p>{isRTL ? "توقيع المدير" : "Director Signature"}</p>
-                  <p>{isRTL ? "ختم المؤسسة" : "School Stamp"}</p>
+                  
+                  <ScheduleTable isPreview={true} />
+                  
+                  <div className="mt-8 flex justify-between text-[10px] font-bold text-gray-400 uppercase px-4">
+                    <div className="text-center">
+                      <p className="mb-12">{isRTL ? "توقيع المدير" : "Director Signature"}</p>
+                      <div className="w-32 h-px bg-gray-200"></div>
+                    </div>
+                    <div className="text-center">
+                      <p className="mb-12">{isRTL ? "ختم المؤسسة" : "School Stamp"}</p>
+                      <div className="w-32 h-px bg-gray-200"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
