@@ -448,15 +448,19 @@ const Schedule = () => {
                   top: 0; 
                   width: 100vw; 
                   height: 100vh;
-                  display: grid;
-                  place-items: center;
+                  display: flex !important;
+                  justify-content: center !important;
+                  align-items: center !important;
                   background: white !important;
                   transform: none !important;
+                  margin: 0 !important;
+                  padding: 0 !important;
                 }
                 .print-scaled-content {
                   transform: scale(${printScale / 100});
                   transform-origin: center center;
                   width: 100%;
+                  margin: 0 auto !important;
                 }
               }
             `}
