@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,12 +16,35 @@ import {
   Pie,
   Cell
 } from "recharts";
-import { Printer, FileText, Users, Home, BookOpen, MapPin } from "lucide-react";
+import { 
+  Printer, 
+  FileText, 
+  Users, 
+  Home, 
+  BookOpen, 
+  MapPin, 
+  Eye, 
+  X, 
+  RotateCw, 
+  Maximize2 
+} from "lucide-react";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
+import { cn } from "@/lib/utils";
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ef4444', '#ec4899'];
 
 const Reports = () => {
-  const { employees, assignments, classes, rooms, isRTL, t } = useApp();
+  const { employees, assignments, classes, rooms, subjects, isRTL, t } = useApp();
+  
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [printScale, setPrintScale] = useState(100);
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
 
   // حساب نصاب كل أستاذ
   const teacherLoadData = useMemo(() => {
@@ -47,21 +70,8 @@ const Reports = () => {
     })).filter(d => d.lessons > 0);
   }, [classes, assignments]);
 
-  return (
-    <div className="space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
-        <div>
-          <h2 className="text-3xl font-bold text-emerald-950">{t.reports_page.title}</h2>
-          <p className="text-emerald-600/70 mt-1">
-            {isRTL ? "تحليل شامل لتوزيع الموارد والمهام" : "Comprehensive analysis of resource distribution"}
-          </p>
-        </div>
-        <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">
-          <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
-          {t.reports_page.print_report}
-        </Button>
-      </div>
-
+  const ReportContent = ({ isPreview = false }: { isPreview?: boolean }) => (
+    <div className={cn("space-y-8", isPreview && "p-4")}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* نصاب الأساتذة */}
         <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden bg-white">
@@ -162,30 +172,136 @@ const Reports = () => {
         </Card>
       </div>
 
-      {/* نسخة الطباعة فقط */}
-      <div className="hidden print:block mt-10">
-        <h1 className="text-2xl font-bold text-center mb-8">{isRTL ? "تقرير الإحصائيات العام" : "General Statistics Report"}</h1>
-        <table className="w-full border-collapse border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border border-gray-300 p-2">{isRTL ? "الأستاذ" : "Teacher"}</th>
-              <th className="border border-gray-300 p-2">{isRTL ? "عدد الحصص" : "Lessons"}</th>
-              <th className="border border-gray-300 p-2">{isRTL ? "المواد" : "Subjects"}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {employees.map(emp => (
-              <tr key={emp.id}>
-                <td className="border border-gray-300 p-2">{emp.lastName} {emp.firstName}</td>
-                <td className="border border-gray-300 p-2 text-center">{assignments.filter(a => a.employeeId === emp.id).length}</td>
-                <td className="border border-gray-300 p-2">
-                  {Array.from(new Set(assignments.filter(a => a.employeeId === emp.id).map(a => subjects.find(s => s.id === a.subjectId)?.name))).join(", ")}
-                </td>
+      {/* نسخة الجدول التفصيلي */}
+      <div className="mt-10">
+        <h3 className="text-xl font-bold text-emerald-950 mb-4 text-center">{isRTL ? "تقرير الإحصائيات العام" : "General Statistics Report"}</h3>
+        <div className="overflow-hidden rounded-2xl border border-gray-200">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="border-b border-gray-200 p-3 text-sm font-bold text-emerald-900">{isRTL ? "الأستاذ" : "Teacher"}</th>
+                <th className="border-b border-gray-200 p-3 text-sm font-bold text-emerald-900">{isRTL ? "عدد الحصص" : "Lessons"}</th>
+                <th className="border-b border-gray-200 p-3 text-sm font-bold text-emerald-900">{isRTL ? "المواد" : "Subjects"}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {employees.map(emp => (
+                <tr key={emp.id} className="hover:bg-gray-50/50">
+                  <td className="border-b border-gray-100 p-3 text-sm">{emp.lastName} {emp.firstName}</td>
+                  <td className="border-b border-gray-100 p-3 text-sm text-center font-bold">{assignments.filter(a => a.employeeId === emp.id).length}</td>
+                  <td className="border-b border-gray-100 p-3 text-xs text-gray-600">
+                    {Array.from(new Set(assignments.filter(a => a.employeeId === emp.id).map(a => subjects.find(s => s.id === a.subjectId)?.name))).join(", ")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-8 pb-20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
+        <div>
+          <h2 className="text-3xl font-bold text-emerald-950">{t.reports_page.title}</h2>
+          <p className="text-emerald-600/70 mt-1">
+            {isRTL ? "تحليل شامل لتوزيع الموارد والمهام" : "Comprehensive analysis of resource distribution"}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl border-emerald-100 text-emerald-700">
+            <Eye size={18} className={isRTL ? "ml-2" : "mr-2"} />
+            {isRTL ? "معاينة الطباعة" : "Print Preview"}
+          </Button>
+          <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">
+            <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
+            {t.reports_page.print_report}
+          </Button>
+        </div>
+      </div>
+
+      <ReportContent />
+
+      {/* Dialog معاينة قبل الطباعة */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-[95vw] w-full h-[90vh] overflow-y-auto rounded-3xl p-0 border-none">
+          <div className="sticky top-0 bg-white border-b p-4 flex flex-col md:flex-row justify-between items-center gap-4 z-10">
+            <div className="flex items-center gap-3">
+              <Eye className="text-emerald-600" />
+              <h3 className="font-bold text-lg">{isRTL ? "معاينة تقرير الإحصائيات" : "Statistics Report Preview"}</h3>
+            </div>
+            
+            <div className="flex flex-1 max-w-xs items-center gap-4 px-4">
+              <Maximize2 size={16} className="text-gray-400" />
+              <Slider 
+                value={[printScale]} 
+                onValueChange={(v) => setPrintScale(v[0])} 
+                min={30} 
+                max={150} 
+                step={1}
+                className="flex-1"
+              />
+              <span className="text-xs font-bold text-emerald-700 w-10">{printScale}%</span>
+            </div>
+
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")}
+                className="rounded-xl border-emerald-100 text-emerald-700"
+              >
+                <RotateCw size={18} className={isRTL ? "ml-2" : "mr-2"} />
+                {isRTL ? (orientation === "portrait" ? "عرضي" : "طولي") : (orientation === "portrait" ? "Landscape" : "Portrait")}
+              </Button>
+              <Button onClick={() => window.print()} className="bg-emerald-600 rounded-xl">
+                <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
+                {isRTL ? "طباعة الآن" : "Print Now"}
+              </Button>
+              <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="rounded-xl">
+                <X size={18} />
+              </Button>
+            </div>
+          </div>
+          <div className="p-8 bg-gray-50 min-h-full flex justify-center overflow-auto">
+            <div className={cn(
+              "bg-white shadow-2xl p-10 border border-gray-200 transition-all duration-300 origin-top",
+              orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
+            )} style={{ transform: `scale(${printScale / 100})` }}>
+              <style>
+                {`
+                  @media print {
+                    @page { size: ${orientation}; margin: 10mm; }
+                    body * { visibility: hidden; }
+                    .print-report-content, .print-report-content * { visibility: visible; }
+                    .print-report-content { 
+                      position: absolute; 
+                      left: 0; 
+                      top: 0; 
+                      width: 100%; 
+                      transform: scale(${printScale / 100});
+                      transform-origin: top center;
+                    }
+                  }
+                `}
+              </style>
+              <div className="print-report-content">
+                <div className="text-center mb-8 border-b-2 border-emerald-900 pb-6">
+                  <h1 className="text-2xl font-black text-emerald-950 mb-2">EduSchedule</h1>
+                  <p className="text-sm font-bold text-emerald-700 uppercase tracking-widest">
+                    {isRTL ? "تقرير الإحصائيات والتحليل العام" : "General Statistics & Analysis Report"}
+                  </p>
+                  <div className="mt-4 flex justify-center gap-8 text-xs font-bold text-gray-600">
+                    <p>{isRTL ? "التاريخ:" : "Date:"} {new Date().toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <ReportContent isPreview={true} />
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
