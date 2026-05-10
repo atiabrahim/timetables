@@ -376,10 +376,10 @@ const Schedule = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-auto p-12 flex justify-center items-start bg-zinc-950/50 print:p-0 print:bg-white">
+          <div className="flex-1 overflow-auto p-12 flex justify-center items-center bg-zinc-950/50 print:p-0 print:bg-white">
             <div 
               className={cn(
-                "bg-white shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all duration-500 origin-top flex flex-col print:shadow-none print:m-0 print-area-wrapper",
+                "bg-white shadow-[0_0_100px_rgba(0,0,0,0.5)] transition-all duration-500 origin-center flex flex-col print:shadow-none print:m-0 print-area-wrapper",
                 orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
               )}
               style={{ transform: `scale(${printScale / 100})` }}
@@ -450,13 +450,13 @@ const Schedule = () => {
                   height: 100%;
                   display: flex;
                   justify-content: center;
-                  align-items: flex-start;
+                  align-items: center;
                   background: white !important;
                   transform: none !important;
                 }
                 .print-scaled-content {
                   transform: scale(${printScale / 100});
-                  transform-origin: top center;
+                  transform-origin: center center;
                   width: 100%;
                 }
               }
