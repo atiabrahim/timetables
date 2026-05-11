@@ -107,9 +107,9 @@ const PrintPreview = ({
               </div>
 
               <div className="mt-12 grid grid-cols-3 gap-8 text-center">
-                <div><p className="font-bold text-sm mb-16">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
-                <div><p className="font-bold text-sm mb-16">{isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
                 <div><p className="font-bold text-sm mb-16">{isRTL ? "الأستاذ" : "Teacher"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
+                <div><p className="font-bold text-sm mb-16">{isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
+                <div><p className="font-bold text-sm mb-16">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
               </div>
 
               <div className="mt-auto pt-4 text-center text-[8px] text-gray-400 border-t border-gray-100">
