@@ -49,17 +49,20 @@ const ScheduleTable = ({
                 <tr 
                   key={slot.id} 
                   className={cn(
-                    slot.id === 'break-am' ? "h-[10px]" : (isPrint ? "h-16" : "h-20")
+                    slot.id === 'break-am' ? "h-[15px]" : (isPrint ? "h-16" : "h-20")
                   )}
                 >
                   <td className={cn(
                     "border border-black text-center font-bold bg-gray-50",
                     slot.isBreak ? "bg-gray-100" : ""
                   )}>
-                    <p className={cn("font-bold", slot.id === 'break-am' ? "text-[7px] leading-none" : "text-[9px] md:text-[10px]")}>
+                    <p className={cn(
+                      "font-bold", 
+                      slot.id === 'break-am' ? "text-[8px] leading-none" : "text-[9px] md:text-[10px]"
+                    )}>
                       {slot.label}
                     </p>
-                    {slot.id !== 'break-am' && (
+                    {slot.id !== 'break-am' && !slot.isBreak && (
                       <p className="text-[7px] md:text-[8px] text-gray-500">{slot.time}</p>
                     )}
                   </td>
@@ -152,10 +155,13 @@ const ScheduleTable = ({
                   "border border-black p-1 text-center",
                   slot.isBreak ? (slot.id === 'break-am' ? "bg-gray-100 w-4 md:w-6" : "bg-gray-100 w-8 md:w-12") : "bg-white"
                 )}>
-                  <p className={cn("font-bold", slot.id === 'break-am' ? "text-[7px] leading-none" : "text-[9px] md:text-[10px]")}>
+                  <p className={cn(
+                    "font-bold", 
+                    slot.id === 'break-am' ? "text-[8px] leading-none [writing-mode:vertical-rl] rotate-180 mx-auto h-16 flex items-center justify-center" : "text-[9px] md:text-[10px]"
+                  )}>
                     {slot.label}
                   </p>
-                  {slot.id !== 'break-am' && (
+                  {slot.id !== 'break-am' && !slot.isBreak && (
                     <p className="text-[7px] md:text-[8px] text-gray-500">{slot.time}</p>
                   )}
                 </th>
