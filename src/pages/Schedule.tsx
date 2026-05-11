@@ -406,7 +406,7 @@ const Schedule = () => {
           <div className="flex-1 overflow-auto p-12 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white">
             <div 
               className={cn(
-                "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0",
+                "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0 print-area-wrapper",
                 orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
               )}
               style={{ transform: `scale(${printScale / 100})` }}
@@ -472,6 +472,7 @@ const Schedule = () => {
                 .print-area-wrapper { 
                   position: fixed; left: 0; top: 0; width: 100%; height: 100%;
                   background: white !important;
+                  transform: none !important;
                 }
               }
             `}
