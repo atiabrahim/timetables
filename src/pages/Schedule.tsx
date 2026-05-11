@@ -2,12 +2,13 @@
 
 import React, { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
-import { Settings2 } from "lucide-react";
+import { Settings2, ArrowLeftRight } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import ScheduleHeader from "../components/schedule/ScheduleHeader";
 import ScheduleTable from "../components/schedule/ScheduleTable";
 import AddLessonDialog from "../components/schedule/AddLessonDialog";
 import PrintPreview from "../components/schedule/PrintPreview";
+import { Button } from "@/components/ui/button";
 
 const DAYS = [
   { id: 0, name: "الأحد", en: "Sunday" },
@@ -42,6 +43,7 @@ const Schedule = () => {
   const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
   const [printScale, setPrintScale] = useState(100);
   const [editingCell, setEditingCell] = useState<{day: number, period: string} | null>(null);
+  const [isTransposed, setIsTransposed] = useState(false);
   
   const [newAssignment, setNewAssignment] = useState({
     employeeId: "", subjectId: "", classId: "", room: "", department: ""
@@ -104,10 +106,26 @@ const Schedule = () => {
 
   return (
     <div className="space-y-6">
-      <ScheduleHeader 
-        isRTL={isRTL} viewMode={viewMode} setViewMode={setViewMode} selectedId={selectedId} 
-        setSelectedId={setSelectedId} classes={classes} employees={employees} onPreview={() => setIsPreviewOpen(true)}
-      />
+      <div className="flex flex-col gap-4">
+        <ScheduleHeader 
+          isRTL={isRTL} viewMode={viewMode} setViewMode={setViewMode} selectedId={selectedId} 
+          setSelectedId={setSelectedId} classes={classes} employees={employees} onPreview={() => setIsPreviewOpen(true)}
+        />
+        
+        {selectedId && (
+          <div className="flex justify-end print:hidden">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsTransposed(!isTransposed)}
+              className="rounded-xl border-emerald-100 text-emerald-700 font-bold gap-2"
+            >
+              <ArrowLeftRight size={16} />
+              {isRTL ? "تبديل المحاور (أسطر/أعمدة)" : "Transpose Table"}
+            </Button>
+          </div>
+        )}
+      </div>
 
       {!selectedId ? (
         <div className="flex flex-col items-center justify-center py-32 bg-white rounded-[3rem] border-2 border-dashed border-emerald-100">
@@ -119,6 +137,7 @@ const Schedule = () => {
           isRTL={isRTL} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment} 
           onAddClick={handleAddClick} onDeleteClick={(id) => setAssignments(assignments.filter(a => a.id !== id))} 
           subjects={subjects} employees={employees} classes={classes} viewMode={viewMode}
+          isTransposed={isTransposed}
         />
       )}
 
@@ -133,7 +152,7 @@ const Schedule = () => {
         setOrientation={setOrientation} printScale={printScale} setPrintScale={setPrintScale} 
         viewMode={viewMode} selectedId={selectedId} employees={employees} classes={classes} 
         subjects={subjects} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment} 
-        summaryData={summaryData} totalHours={totalHours}
+        summaryData={summaryData} totalHours={totalHours} isTransposed={isTransposed}
       />
     </div>
   );

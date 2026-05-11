@@ -19,12 +19,116 @@ interface ScheduleTableProps {
   isPrint?: boolean;
   summaryData?: any[];
   totalHours?: number;
+  isTransposed?: boolean;
 }
 
 const ScheduleTable = ({ 
   isRTL, days, timeSlots, getAssignment, onAddClick, onDeleteClick, 
-  subjects, employees, classes, viewMode, isPrint = false, summaryData, totalHours 
+  subjects, employees, classes, viewMode, isPrint = false, summaryData, totalHours, isTransposed = false 
 }: ScheduleTableProps) => {
+  
+  if (isTransposed) {
+    return (
+      <div className={cn("flex gap-0 w-full", isPrint ? "items-stretch" : "overflow-x-auto")}>
+        <div className={cn("flex-1", isPrint ? "w-full" : "min-w-[600px]")}>
+          <table className="w-full border-collapse border-2 border-black table-fixed">
+            <thead>
+              <tr>
+                <th className="border border-black p-1 bg-gray-50 w-16 md:w-24 text-[10px] font-bold">
+                  {isRTL ? "الحصص / الأيام" : "Periods / Days"}
+                </th>
+                {days.map(day => (
+                  <th key={day.id} className="border border-black p-1 text-center bg-white">
+                    <p className="text-[9px] md:text-[10px] font-bold">{isRTL ? day.name : day.en}</p>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {timeSlots.map(slot => (
+                <tr key={slot.id} className={cn(isPrint ? "h-16" : "h-20")}>
+                  <td className={cn(
+                    "border border-black text-center font-bold bg-gray-50",
+                    slot.isBreak ? "bg-gray-100" : ""
+                  )}>
+                    <p className="text-[9px] md:text-[10px] font-bold">{slot.label}</p>
+                    <p className="text-[7px] md:text-[8px] text-gray-500">{slot.time}</p>
+                  </td>
+                  {days.map(day => {
+                    if (slot.isBreak) return <td key={day.id} className="border border-black bg-gray-100"></td>;
+                    const assignment = getAssignment(day.id, slot.id);
+                    return (
+                      <td key={day.id} className="border border-black relative p-0.5 md:p-1 group overflow-hidden">
+                        {assignment ? (
+                          <div className="h-full flex flex-col justify-center items-center text-center">
+                            <p className="text-[9px] md:text-[11px] font-bold leading-tight truncate w-full">
+                              {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
+                            </p>
+                            <p className="text-[8px] md:text-[9px] text-gray-600 mt-0.5 truncate w-full">
+                              {viewMode === "class" 
+                                ? employees.find(e => e.id === assignment.employeeId)?.lastName 
+                                : classes.find(c => c.id === assignment.classId)?.name
+                              }
+                            </p>
+                            {assignment.room && (
+                              <p className="text-[7px] md:text-[8px] text-emerald-700 font-medium mt-0.5">{assignment.room}</p>
+                            )}
+                            {!isPrint && (
+                              <Button 
+                                variant="ghost" size="icon" className="absolute top-0 right-0 h-5 w-5 text-red-400 opacity-0 group-hover:opacity-100"
+                                onClick={() => onDeleteClick(assignment.id)}
+                              ><Trash2 size={10} /></Button>
+                            )}
+                          </div>
+                        ) : (
+                          !isPrint && (
+                            <Button variant="ghost" className="w-full h-full opacity-0 group-hover:opacity-100" onClick={() => onAddClick(day.id, slot.id)}>
+                              <Plus size={14} />
+                            </Button>
+                          )
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {isPrint && summaryData && (
+          <div className="w-32 md:w-48 mr-[-2px] shrink-0">
+            <table className="w-full h-full border-collapse border-2 border-black border-r-0">
+              <thead>
+                <tr className="bg-gray-50">
+                  <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold">{isRTL ? "المادة" : "Subject"}</th>
+                  <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold w-10">{isRTL ? "العدد" : "Qty"}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {summaryData.map((item, idx) => (
+                  <tr key={idx} className="h-7 md:h-8">
+                    <td className="border border-black p-1 text-[8px] md:text-[9px] text-center truncate">{item.subject}</td>
+                    <td className="border border-black p-1 text-[8px] md:text-[9px] text-center font-bold w-10">{item.count}</td>
+                  </tr>
+                ))}
+                {Array.from({ length: Math.max(0, 10 - summaryData.length) }).map((_, i) => (
+                  <tr key={`empty-${i}`} className="h-7 md:h-8">
+                    <td className="border border-black p-1"></td>
+                    <td className="border border-black p-1 w-10"></td>
+                  </tr>
+                ))}
+                <tr className="bg-gray-50 font-bold">
+                  <td className="border border-black p-1 text-[9px] md:text-[10px] text-center">{isRTL ? "المجموع" : "Total"}</td>
+                  <td className="border border-black p-1 text-[9px] md:text-[10px] text-center w-10">{totalHours}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex gap-0 w-full", isPrint ? "items-stretch" : "overflow-x-auto")}>
       <div className={cn("flex-1", isPrint ? "w-full" : "min-w-[600px]")}>

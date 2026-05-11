@@ -29,11 +29,12 @@ interface PrintPreviewProps {
   getAssignment: (day: number, period: string) => any;
   summaryData: any[];
   totalHours: number;
+  isTransposed?: boolean;
 }
 
 const PrintPreview = ({ 
   isOpen, onOpenChange, isRTL, orientation, setOrientation, printScale, setPrintScale, 
-  viewMode, selectedId, employees, classes, subjects, days, timeSlots, getAssignment, summaryData, totalHours 
+  viewMode, selectedId, employees, classes, subjects, days, timeSlots, getAssignment, summaryData, totalHours, isTransposed = false 
 }: PrintPreviewProps) => {
   const selectedEntity = viewMode === "teacher" 
     ? employees.find(e => e.id === selectedId) 
@@ -103,6 +104,7 @@ const PrintPreview = ({
                   isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
                   onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
                   classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={totalHours}
+                  isTransposed={isTransposed}
                 />
               </div>
 
