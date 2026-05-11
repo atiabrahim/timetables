@@ -506,7 +506,7 @@ const Schedule = () => {
               @media print {
                 @page { 
                   size: A4 ${orientation}; 
-                  margin: 10mm; 
+                  margin: 0; 
                 }
                 html, body {
                   width: 100%;
@@ -534,6 +534,7 @@ const Schedule = () => {
                 .print-container { 
                   width: 98% !important; 
                   margin: 0 auto !important;
+                  padding: 10mm !important;
                   box-sizing: border-box !important;
                 }
                 table { 
