@@ -11,10 +11,8 @@ import {
   Eye,
   X,
   RotateCw,
-  Expand,
   FileText,
-  Settings2,
-  Info
+  Settings2
 } from "lucide-react";
 import { 
   Select, 
@@ -29,15 +27,7 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { showSuccess } from "../utils/toast";
 
@@ -49,13 +39,18 @@ const DAYS = [
   { id: 4, name: "الخميس", en: "Thursday" },
 ];
 
-// التوقيتات كما في الصورة
-const TIME_SLOTS = [
+// تعريف جميع الفترات الممكنة وتوقيتاتها
+const ALL_PERIODS = [
   { id: "1", label: "1", time: "8:00 - 9:00" },
   { id: "2", label: "2", time: "9:00 - 9:55" },
-  { id: "break", label: "الراحة الصباحية", time: "9:55 - 10:05", isBreak: true },
+  { id: "break-am", label: "الراحة الصباحية", time: "9:55 - 10:05", isBreak: true, after: "2" },
   { id: "3", label: "3", time: "10:05 - 11:00" },
   { id: "4", label: "4", time: "11:00 - 12:00" },
+  { id: "5", label: "5", time: "13:00 - 14:00" },
+  { id: "6", label: "6", time: "14:00 - 14:55" },
+  { id: "break-pm", label: "الراحة المسائية", time: "14:55 - 15:05", isBreak: true, after: "6" },
+  { id: "7", label: "7", time: "15:05 - 16:00" },
+  { id: "8", label: "8", time: "16:00 - 17:00" },
 ];
 
 const A4_PORTRAIT = { width: 794, height: 1123 };
@@ -64,16 +59,15 @@ const A4_LANDSCAPE = { width: 1123, height: 794 };
 const Schedule = () => {
   const { 
     isRTL, t, 
-    employees, classes, subjects, rooms, departments,
-    assignments, setAssignments,
-    periodConfigs 
+    employees, classes, subjects, rooms,
+    assignments, setAssignments
   } = useApp();
 
   const [viewMode, setViewMode] = useState<"class" | "teacher">("class");
   const [selectedId, setSelectedId] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [orientation, setOrientation] = useState<"portrait" | "landscape">("landscape");
+  const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
   const [printScale, setPrintScale] = useState(100);
   const [editingCell, setEditingCell] = useState<{day: number, period: string} | null>(null);
   
@@ -93,11 +87,35 @@ const Schedule = () => {
     );
   }, [assignments, viewMode, selectedId]);
 
+  // تحديد الأعمدة النشطة بناءً على البيانات الموجودة
+  const activeTimeSlots = useMemo(() => {
+    const usedPeriodIds = new Set(filteredAssignments.map(a => a.period));
+    
+    // إذا لم تكن هناك بيانات، نعرض أول 4 حصص كافتراضي
+    if (usedPeriodIds.size === 0) {
+      return ALL_PERIODS.filter(p => !p.isBreak && parseInt(p.id) <= 4 || (p.isBreak && p.after === "2"));
+    }
+
+    const maxPeriod = Math.max(...Array.from(usedPeriodIds).map(id => parseInt(id)));
+    
+    const slots = [];
+    for (const period of ALL_PERIODS) {
+      if (period.isBreak) {
+        // إظهار فترة الراحة إذا كانت الحصة التي تسبقها موجودة أو هناك حصص بعدها
+        if (parseInt(period.after!) < maxPeriod) {
+          slots.push(period);
+        }
+      } else if (parseInt(period.id) <= maxPeriod) {
+        slots.push(period);
+      }
+    }
+    return slots;
+  }, [filteredAssignments]);
+
   const getAssignment = (day: number, period: string) => {
     return filteredAssignments.find(a => a.day === day && a.period === period);
   };
 
-  // حساب ملخص الحصص للجدول الجانبي
   const summaryData = useMemo(() => {
     const summary: Record<string, { subject: string, branch: string, count: number }> = {};
     filteredAssignments.forEach(a => {
@@ -115,23 +133,6 @@ const Schedule = () => {
   }, [filteredAssignments, subjects, classes]);
 
   const totalHours = summaryData.reduce((acc, curr) => acc + curr.count, 0);
-
-  const autoFitToPage = () => {
-    if (!printRef.current) return;
-    const target = orientation === "portrait" ? A4_PORTRAIT : A4_LANDSCAPE;
-    const contentWidth = printRef.current.scrollWidth;
-    const contentHeight = printRef.current.scrollHeight;
-    const scaleW = (target.width / contentWidth) * 0.95;
-    const scaleH = (target.height / contentHeight) * 0.95;
-    const finalScale = Math.min(scaleW, scaleH) * 100;
-    setPrintScale(Math.min(Math.max(Math.floor(finalScale), 40), 150));
-  };
-
-  useEffect(() => {
-    if (isPreviewOpen) {
-      setTimeout(autoFitToPage, 100);
-    }
-  }, [isPreviewOpen, orientation, selectedId]);
 
   const handleAddClick = (day: number, period: string) => {
     setEditingCell({ day, period });
@@ -160,17 +161,18 @@ const Schedule = () => {
   };
 
   const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => (
-    <div className="flex gap-0 w-full">
-      {/* الجدول الرئيسي */}
-      <div className="flex-1">
+    <div className="flex gap-0 w-full overflow-x-auto">
+      <div className="flex-1 min-w-[600px]">
         <table className="w-full border-collapse border-2 border-black">
           <thead>
             <tr>
-              <th className="border border-black p-1 bg-gray-50 w-24"></th>
-              {TIME_SLOTS.map(slot => (
+              <th className="border border-black p-1 bg-gray-50 w-24 text-[10px] font-bold">
+                {isRTL ? "الأيام / الحصص" : "Days / Periods"}
+              </th>
+              {activeTimeSlots.map(slot => (
                 <th key={slot.id} className={cn(
                   "border border-black p-1 text-center",
-                  slot.isBreak ? "bg-gray-50 w-16" : "bg-white"
+                  slot.isBreak ? "bg-gray-100 w-12" : "bg-white"
                 )}>
                   <p className="text-[10px] font-bold">{slot.label}</p>
                   <p className="text-[8px] text-gray-500">{slot.time}</p>
@@ -184,9 +186,9 @@ const Schedule = () => {
                 <td className="border border-black text-center font-bold text-sm bg-gray-50">
                   {isRTL ? day.name : day.en}
                 </td>
-                {TIME_SLOTS.map(slot => {
+                {activeTimeSlots.map(slot => {
                   if (slot.isBreak) {
-                    return <td key={slot.id} className="border border-black bg-gray-50"></td>;
+                    return <td key={slot.id} className="border border-black bg-gray-100"></td>;
                   }
                   const assignment = getAssignment(day.id, slot.id);
                   return (
@@ -238,9 +240,8 @@ const Schedule = () => {
         </table>
       </div>
 
-      {/* جدول الإحصائيات الجانبي (يظهر فقط في الطباعة أو المعاينة) */}
       {(isPrint || isPreviewOpen) && (
-        <div className="w-64 mr-[-2px]">
+        <div className="w-64 mr-[-2px] shrink-0">
           <table className="w-full border-collapse border-2 border-black border-r-0">
             <thead>
               <tr className="bg-gray-50">
@@ -257,8 +258,7 @@ const Schedule = () => {
                   <td className="border border-black p-1 text-[9px] text-center font-bold">{item.count}</td>
                 </tr>
               ))}
-              {/* ملء الفراغات للحفاظ على شكل الجدول */}
-              {Array.from({ length: Math.max(0, 8 - summaryData.length) }).map((_, i) => (
+              {Array.from({ length: Math.max(0, 10 - summaryData.length) }).map((_, i) => (
                 <tr key={`empty-${i}`} className="h-8">
                   <td className="border border-black p-1"></td>
                   <td className="border border-black p-1"></td>
@@ -267,7 +267,7 @@ const Schedule = () => {
               ))}
               <tr className="bg-gray-50 font-bold">
                 <td colSpan={2} className="border border-black p-1 text-[10px] text-center">
-                  {isRTL ? "الحجم الساعي للأستاذ" : "Total Weekly Hours"}
+                  {isRTL ? "الحجم الساعي الإجمالي" : "Total Weekly Hours"}
                 </td>
                 <td className="border border-black p-1 text-[10px] text-center">{totalHours}</td>
               </tr>
@@ -338,7 +338,6 @@ const Schedule = () => {
         <ScheduleTable />
       )}
 
-      {/* حوار إضافة حصة */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md rounded-3xl">
           <DialogHeader>
@@ -379,12 +378,12 @@ const Schedule = () => {
             )}
             <div className="space-y-2">
               <label className="text-sm font-medium">{isRTL ? "القاعة / الورشة" : "Room / Workshop"}</label>
-              <Select value={newAssignment.room} onValueChange={v => setNewAssignment({...newAssignment, room: v})}>
-                <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  {rooms.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Input 
+                value={newAssignment.room} 
+                onChange={e => setNewAssignment({...newAssignment, room: e.target.value})}
+                placeholder={isRTL ? "رقم القاعة..." : "Room number..."}
+                className="rounded-xl"
+              />
             </div>
           </div>
           <div className="flex justify-end gap-2">
@@ -394,7 +393,6 @@ const Schedule = () => {
         </DialogContent>
       </Dialog>
 
-      {/* نافذة المعاينة والطباعة */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 flex flex-col">
           <div className="h-16 bg-black/40 border-b border-white/10 flex items-center justify-between px-8 shrink-0 print:hidden">
@@ -428,7 +426,6 @@ const Schedule = () => {
               style={{ transform: `scale(${printScale / 100})` }}
             >
               <div className="p-10 flex-1 flex flex-col" ref={printRef}>
-                {/* رأس الصفحة الرسمي */}
                 <div className="flex justify-between items-center mb-6">
                   <div className="w-20 h-20 border border-gray-200 rounded-full flex items-center justify-center text-[8px] text-gray-400">LOGO</div>
                   <div className="text-center flex-1">
@@ -438,17 +435,12 @@ const Schedule = () => {
                   <div className="w-20 h-20 border border-gray-200 rounded-full flex items-center justify-center text-[8px] text-gray-400">LOGO</div>
                 </div>
 
-                {/* معلومات الأستاذ/القسم */}
                 <div className="grid grid-cols-3 gap-4 mb-6 text-sm font-bold border-y-2 border-black py-3">
                   <div className="text-right">
                     {viewMode === "teacher" ? (
-                      <>
-                        <p>{isRTL ? "الأستاذ(ة):" : "Teacher:"} {employees.find(e => e.id === selectedId)?.lastName} {employees.find(e => e.id === selectedId)?.firstName}</p>
-                      </>
+                      <p>{isRTL ? "الأستاذ(ة):" : "Teacher:"} {employees.find(e => e.id === selectedId)?.lastName} {employees.find(e => e.id === selectedId)?.firstName}</p>
                     ) : (
-                      <>
-                        <p>{isRTL ? "الفرع:" : "Branch:"} {classes.find(c => c.id === selectedId)?.name}</p>
-                      </>
+                      <p>{isRTL ? "الفرع:" : "Branch:"} {classes.find(c => c.id === selectedId)?.name}</p>
                     )}
                   </div>
                   <div className="text-center">
@@ -459,12 +451,10 @@ const Schedule = () => {
                   </div>
                 </div>
 
-                {/* الجدول */}
                 <div className="flex-1">
                   <ScheduleTable isPrint={true} />
                 </div>
 
-                {/* تذييل الصفحة (التوقيعات) */}
                 <div className="mt-12 grid grid-cols-3 gap-8 text-center">
                   <div>
                     <p className="font-bold text-sm mb-16">{isRTL ? "المدير" : "Director"}</p>
