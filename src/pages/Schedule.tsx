@@ -470,14 +470,27 @@ const Schedule = () => {
                 body * { visibility: hidden; }
                 .print-area-wrapper, .print-area-wrapper * { visibility: visible; }
                 .print-area-wrapper { 
-                  position: fixed; left: 0; top: 0; width: 100% !important; height: 100%;
+                  position: fixed !important; 
+                  left: 0 !important; 
+                  top: 0 !important; 
+                  width: 100% !important; 
+                  height: 100% !important;
                   background: white !important;
                   transform: none !important;
                   padding: 0 !important;
                   margin: 0 !important;
+                  display: block !important;
                 }
-                .print-area-wrapper > div { width: 100% !important; padding: 10mm !important; }
-                table { width: 100% !important; table-layout: fixed !important; }
+                .print-area-wrapper > div { 
+                  width: 100% !important; 
+                  padding: 10mm !important; 
+                  box-sizing: border-box !important;
+                }
+                table { 
+                  width: 100% !important; 
+                  table-layout: fixed !important; 
+                  border-collapse: collapse !important;
+                }
               }
             `}
           </style>
