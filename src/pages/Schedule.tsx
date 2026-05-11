@@ -23,10 +23,10 @@ const ALL_PERIODS = [
   { id: "break-am", label: "الراحة الصباحية", time: "9:55 - 10:05", isBreak: true, after: "2" },
   { id: "3", label: "3", time: "10:05 - 11:00" },
   { id: "4", label: "4", time: "11:00 - 12:00" },
+  { id: "break-noon", label: "راحة الزوال", time: "12:00 - 13:00", isBreak: true, after: "4" },
   { id: "5", label: "5", time: "13:00 - 14:00" },
-  { id: "6", label: "6", time: "14:00 - 14:55" },
-  { id: "break-pm", label: "الراحة المسائية", time: "14:55 - 15:05", isBreak: true, after: "6" },
-  { id: "7", label: "7", time: "15:05 - 16:00" },
+  { id: "6", label: "6", time: "14:00 - 15:00" },
+  { id: "7", label: "7", time: "15:00 - 16:00" },
   { id: "8", label: "8", time: "16:00 - 17:00" },
 ];
 
@@ -53,9 +53,15 @@ const Schedule = () => {
 
   const activeTimeSlots = useMemo(() => {
     const usedPeriodIds = new Set(filteredAssignments.map(a => a.period));
-    if (usedPeriodIds.size === 0) return ALL_PERIODS.filter(p => !p.isBreak && parseInt(p.id) <= 4 || (p.isBreak && p.after === "2"));
+    if (usedPeriodIds.size === 0) return ALL_PERIODS.filter(p => !p.isBreak && parseInt(p.id) <= 4 || (p.isBreak && (p.after === "2" || p.after === "4")));
+    
     const maxPeriod = Math.max(...Array.from(usedPeriodIds).map(id => parseInt(id)));
-    return ALL_PERIODS.filter(p => p.isBreak ? parseInt(p.after!) < maxPeriod : parseInt(p.id) <= maxPeriod);
+    return ALL_PERIODS.filter(p => {
+      if (p.isBreak) {
+        return parseInt(p.after!) < maxPeriod;
+      }
+      return parseInt(p.id) <= maxPeriod;
+    });
   }, [filteredAssignments]);
 
   const getAssignment = (day: number, period: string) => filteredAssignments.find(a => a.day === day && a.period === period);
