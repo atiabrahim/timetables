@@ -3,16 +3,17 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { 
   Plus, 
   Calendar as CalendarIcon, 
-  Trash2,
-  Printer,
-  Eye,
-  X,
-  RotateCw,
-  FileText,
-  Settings2
+  Trash2, 
+  Printer, 
+  Eye, 
+  X, 
+  RotateCw, 
+  FileText, 
+  Settings2 
 } from "lucide-react";
 import { 
   Select, 
@@ -39,7 +40,6 @@ const DAYS = [
   { id: 4, name: "الخميس", en: "Thursday" },
 ];
 
-// تعريف جميع الفترات الممكنة وتوقيتاتها
 const ALL_PERIODS = [
   { id: "1", label: "1", time: "8:00 - 9:00" },
   { id: "2", label: "2", time: "9:00 - 9:55" },
@@ -52,9 +52,6 @@ const ALL_PERIODS = [
   { id: "7", label: "7", time: "15:05 - 16:00" },
   { id: "8", label: "8", time: "16:00 - 17:00" },
 ];
-
-const A4_PORTRAIT = { width: 794, height: 1123 };
-const A4_LANDSCAPE = { width: 1123, height: 794 };
 
 const Schedule = () => {
   const { 
@@ -87,24 +84,16 @@ const Schedule = () => {
     );
   }, [assignments, viewMode, selectedId]);
 
-  // تحديد الأعمدة النشطة بناءً على البيانات الموجودة
   const activeTimeSlots = useMemo(() => {
     const usedPeriodIds = new Set(filteredAssignments.map(a => a.period));
-    
-    // إذا لم تكن هناك بيانات، نعرض أول 4 حصص كافتراضي
     if (usedPeriodIds.size === 0) {
       return ALL_PERIODS.filter(p => !p.isBreak && parseInt(p.id) <= 4 || (p.isBreak && p.after === "2"));
     }
-
     const maxPeriod = Math.max(...Array.from(usedPeriodIds).map(id => parseInt(id)));
-    
     const slots = [];
     for (const period of ALL_PERIODS) {
       if (period.isBreak) {
-        // إظهار فترة الراحة إذا كانت الحصة التي تسبقها موجودة أو هناك حصص بعدها
-        if (parseInt(period.after!) < maxPeriod) {
-          slots.push(period);
-        }
+        if (parseInt(period.after!) < maxPeriod) slots.push(period);
       } else if (parseInt(period.id) <= maxPeriod) {
         slots.push(period);
       }
