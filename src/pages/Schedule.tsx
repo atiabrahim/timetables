@@ -150,7 +150,7 @@ const Schedule = () => {
   };
 
   const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => (
-    <div className={cn("flex gap-0 w-full", isPrint ? "" : "overflow-x-auto")}>
+    <div className={cn("flex gap-0 w-full", isPrint ? "items-stretch" : "overflow-x-auto")}>
       <div className={cn("flex-1", isPrint ? "w-full" : "min-w-[600px]")}>
         <table className="w-full border-collapse border-2 border-black table-fixed">
           <thead>
@@ -231,7 +231,7 @@ const Schedule = () => {
 
       {(isPrint || isPreviewOpen) && (
         <div className="w-32 md:w-48 mr-[-2px] shrink-0">
-          <table className="w-full border-collapse border-2 border-black border-r-0">
+          <table className="w-full h-full border-collapse border-2 border-black border-r-0">
             <thead>
               <tr className="bg-gray-50">
                 <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold">{isRTL ? "المادة" : "Subject"}</th>
@@ -437,7 +437,7 @@ const Schedule = () => {
                   </div>
                 </div>
 
-                <div className="flex-1">
+                <div className="flex-1 w-full">
                   <ScheduleTable isPrint={true} />
                 </div>
 
@@ -470,11 +470,14 @@ const Schedule = () => {
                 body * { visibility: hidden; }
                 .print-area-wrapper, .print-area-wrapper * { visibility: visible; }
                 .print-area-wrapper { 
-                  position: fixed; left: 0; top: 0; width: 100%; height: 100%;
+                  position: fixed; left: 0; top: 0; width: 100% !important; height: 100%;
                   background: white !important;
                   transform: none !important;
+                  padding: 0 !important;
+                  margin: 0 !important;
                 }
-                table { table-layout: fixed !important; width: 100% !important; }
+                .print-area-wrapper > div { width: 100% !important; padding: 10mm !important; }
+                table { width: 100% !important; table-layout: fixed !important; }
               }
             `}
           </style>
