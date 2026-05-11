@@ -46,13 +46,22 @@ const ScheduleTable = ({
             </thead>
             <tbody>
               {timeSlots.map(slot => (
-                <tr key={slot.id} className={cn(isPrint ? "h-16" : "h-20")}>
+                <tr 
+                  key={slot.id} 
+                  className={cn(
+                    slot.id === 'break-am' ? "h-[10px]" : (isPrint ? "h-16" : "h-20")
+                  )}
+                >
                   <td className={cn(
                     "border border-black text-center font-bold bg-gray-50",
                     slot.isBreak ? "bg-gray-100" : ""
                   )}>
-                    <p className="text-[9px] md:text-[10px] font-bold">{slot.label}</p>
-                    <p className="text-[7px] md:text-[8px] text-gray-500">{slot.time}</p>
+                    <p className={cn("font-bold", slot.id === 'break-am' ? "text-[7px] leading-none" : "text-[9px] md:text-[10px]")}>
+                      {slot.label}
+                    </p>
+                    {slot.id !== 'break-am' && (
+                      <p className="text-[7px] md:text-[8px] text-gray-500">{slot.time}</p>
+                    )}
                   </td>
                   {days.map(day => {
                     if (slot.isBreak) return <td key={day.id} className="border border-black bg-gray-100"></td>;
@@ -141,10 +150,14 @@ const ScheduleTable = ({
               {timeSlots.map(slot => (
                 <th key={slot.id} className={cn(
                   "border border-black p-1 text-center",
-                  slot.isBreak ? "bg-gray-100 w-8 md:w-12" : "bg-white"
+                  slot.isBreak ? (slot.id === 'break-am' ? "bg-gray-100 w-4 md:w-6" : "bg-gray-100 w-8 md:w-12") : "bg-white"
                 )}>
-                  <p className="text-[9px] md:text-[10px] font-bold">{slot.label}</p>
-                  <p className="text-[7px] md:text-[8px] text-gray-500">{slot.time}</p>
+                  <p className={cn("font-bold", slot.id === 'break-am' ? "text-[7px] leading-none" : "text-[9px] md:text-[10px]")}>
+                    {slot.label}
+                  </p>
+                  {slot.id !== 'break-am' && (
+                    <p className="text-[7px] md:text-[8px] text-gray-500">{slot.time}</p>
+                  )}
                 </th>
               ))}
             </tr>
