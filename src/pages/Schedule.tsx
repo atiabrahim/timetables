@@ -137,40 +137,28 @@ const Schedule = () => {
   };
 
   const checkConflicts = (day: number, period: string, empId: string, clsId: string, room: string) => {
-    // 1. تعارض الأستاذ
     const teacherConflict = assignments.find(a => 
       a.day === day && a.period === period && a.employeeId === empId
     );
     if (teacherConflict) {
       const clsName = classes.find(c => c.id === teacherConflict.classId)?.name;
-      return isRTL 
-        ? `الأستاذ مشغول حالياً مع الفوج: ${clsName}` 
-        : `Teacher is busy with class: ${clsName}`;
+      return isRTL ? `الأستاذ مشغول حالياً مع الفوج: ${clsName}` : `Teacher is busy with class: ${clsName}`;
     }
-
-    // 2. تعارض الفوج (في حال كان الإضافة من واجهة الأستاذ)
     const classConflict = assignments.find(a => 
       a.day === day && a.period === period && a.classId === clsId
     );
     if (classConflict) {
       const empName = employees.find(e => e.id === classConflict.employeeId)?.lastName;
-      return isRTL 
-        ? `هذا الفوج لديه حصة بالفعل مع الأستاذ: ${empName}` 
-        : `This class already has a lesson with teacher: ${empName}`;
+      return isRTL ? `هذا الفوج لديه حصة بالفعل مع الأستاذ: ${empName}` : `This class already has a lesson with teacher: ${empName}`;
     }
-
-    // 3. تعارض القاعة
     if (room) {
       const roomConflict = assignments.find(a => 
         a.day === day && a.period === period && a.room === room
       );
       if (roomConflict) {
-        return isRTL 
-          ? `القاعة ${room} مشغولة في هذا التوقيت` 
-          : `Room ${room} is occupied at this time`;
+        return isRTL ? `القاعة ${room} مشغولة في هذا التوقيت` : `Room ${room} is occupied at this time`;
       }
     }
-
     return null;
   };
 
@@ -179,20 +167,11 @@ const Schedule = () => {
       showError(isRTL ? "يرجى إكمال البيانات الأساسية" : "Please complete basic data");
       return;
     }
-
-    const conflict = checkConflicts(
-      editingCell.day, 
-      editingCell.period, 
-      newAssignment.employeeId, 
-      newAssignment.classId, 
-      newAssignment.room
-    );
-
+    const conflict = checkConflicts(editingCell.day, editingCell.period, newAssignment.employeeId, newAssignment.classId, newAssignment.room);
     if (conflict) {
       showError(conflict);
       return;
     }
-
     const id = Math.random().toString(36).substr(2, 9);
     const assignment = { ...newAssignment, id, day: editingCell.day, period: editingCell.period };
     setAssignments([...assignments, assignment]);
@@ -470,7 +449,7 @@ const Schedule = () => {
               )}
               style={{ transform: `scale(${printScale / 100})` }}
             >
-              <div className="p-10 flex-1 flex flex-col" ref={printRef}>
+              <div className="p-10 flex-1 flex flex-col print-container" ref={printRef}>
                 <div className="flex justify-between items-center mb-6">
                   <div className="w-20 h-20 border border-gray-200 rounded-full flex items-center justify-center text-[8px] text-gray-400">LOGO</div>
                   <div className="text-center flex-1">
@@ -525,24 +504,36 @@ const Schedule = () => {
           <style>
             {`
               @media print {
-                @page { size: ${orientation}; margin: 0; }
-                body * { visibility: hidden; }
-                .print-area-wrapper, .print-area-wrapper * { visibility: visible; }
+                @page { 
+                  size: A4 ${orientation}; 
+                  margin: 10mm; 
+                }
+                html, body {
+                  width: 100%;
+                  height: 100%;
+                  margin: 0 !important;
+                  padding: 0 !important;
+                  background: white;
+                }
+                body {
+                  display: flex;
+                  justify-content: center;
+                  align-items: flex-start;
+                }
                 .print-area-wrapper { 
-                  position: fixed !important; 
-                  left: 0 !important; 
-                  top: 0 !important; 
-                  width: 100% !important; 
-                  height: 100% !important;
+                  position: relative !important;
+                  width: 100% !important;
+                  height: auto !important;
                   background: white !important;
                   transform: none !important;
                   padding: 0 !important;
                   margin: 0 !important;
-                  display: block !important;
+                  display: flex !important;
+                  justify-content: center !important;
                 }
-                .print-area-wrapper > div { 
-                  width: 100% !important; 
-                  padding: 10mm !important; 
+                .print-container { 
+                  width: 98% !important; 
+                  margin: 0 auto !important;
                   box-sizing: border-box !important;
                 }
                 table { 
@@ -550,6 +541,7 @@ const Schedule = () => {
                   table-layout: fixed !important; 
                   border-collapse: collapse !important;
                 }
+                .print\\:hidden { display: none !important; }
               }
             `}
           </style>
