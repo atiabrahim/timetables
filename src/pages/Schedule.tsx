@@ -150,35 +150,29 @@ const Schedule = () => {
   };
 
   const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => (
-    <div className={cn("w-full", isPrint ? "print-layout" : "overflow-x-auto")}>
-      <div className={cn("w-full", isPrint ? "" : "min-w-[800px]")}>
-        <table className={cn(
-          "w-full border-collapse border-2 border-black",
-          isPrint ? "table-fixed" : ""
-        )}>
+    <div className={cn("flex gap-0 w-full", isPrint ? "" : "overflow-x-auto")}>
+      <div className={cn("flex-1", isPrint ? "w-full" : "min-w-[600px]")}>
+        <table className="w-full border-collapse border-2 border-black table-fixed">
           <thead>
             <tr>
-              <th className={cn(
-                "border border-black p-1 bg-gray-50 font-bold",
-                isPrint ? "w-[12%]" : "w-24"
-              )}>
-                <span className="text-[10px]">{isRTL ? "الأيام / الحصص" : "Days / Periods"}</span>
+              <th className="border border-black p-1 bg-gray-50 w-16 md:w-24 text-[10px] font-bold">
+                {isRTL ? "الأيام / الحصص" : "Days / Periods"}
               </th>
               {activeTimeSlots.map(slot => (
                 <th key={slot.id} className={cn(
                   "border border-black p-1 text-center",
-                  slot.isBreak ? "bg-gray-100" : "bg-white"
-                )} style={isPrint ? { width: `${88 / activeTimeSlots.length}%` } : {}}>
-                  <p className="text-[10px] font-bold">{slot.label}</p>
-                  <p className="text-[8px] text-gray-500">{slot.time}</p>
+                  slot.isBreak ? "bg-gray-100 w-8 md:w-12" : "bg-white"
+                )}>
+                  <p className="text-[9px] md:text-[10px] font-bold">{slot.label}</p>
+                  <p className="text-[7px] md:text-[8px] text-gray-500">{slot.time}</p>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {DAYS.map(day => (
-              <tr key={day.id} className={cn(isPrint ? "h-14" : "h-20")}>
-                <td className="border border-black text-center font-bold text-xs bg-gray-50">
+              <tr key={day.id} className={cn(isPrint ? "h-16" : "h-20")}>
+                <td className="border border-black text-center font-bold text-xs md:text-sm bg-gray-50">
                   {isRTL ? day.name : day.en}
                 </td>
                 {activeTimeSlots.map(slot => {
@@ -187,20 +181,20 @@ const Schedule = () => {
                   }
                   const assignment = getAssignment(day.id, slot.id);
                   return (
-                    <td key={slot.id} className="border border-black relative p-0.5 group overflow-hidden">
+                    <td key={slot.id} className="border border-black relative p-0.5 md:p-1 group overflow-hidden">
                       {assignment ? (
                         <div className="h-full flex flex-col justify-center items-center text-center">
-                          <p className="text-[9px] md:text-[10px] font-bold leading-tight truncate w-full">
+                          <p className="text-[9px] md:text-[11px] font-bold leading-tight truncate w-full">
                             {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
                           </p>
-                          <p className="text-[8px] text-gray-600 mt-0.5 truncate w-full">
+                          <p className="text-[8px] md:text-[9px] text-gray-600 mt-0.5 truncate w-full">
                             {viewMode === "class" 
                               ? employees.find(e => e.id === assignment.employeeId)?.lastName 
                               : classes.find(c => c.id === assignment.classId)?.name
                             }
                           </p>
                           {assignment.room && (
-                            <p className="text-[7px] text-emerald-700 font-medium mt-0.5">
+                            <p className="text-[7px] md:text-[8px] text-emerald-700 font-medium mt-0.5">
                               {assignment.room}
                             </p>
                           )}
@@ -236,29 +230,32 @@ const Schedule = () => {
       </div>
 
       {(isPrint || isPreviewOpen) && (
-        <div className={cn(
-          "mt-4",
-          isPrint ? "w-full" : "w-64"
-        )}>
-          <table className="w-full border-collapse border-2 border-black">
+        <div className="w-32 md:w-48 mr-[-2px] shrink-0">
+          <table className="w-full border-collapse border-2 border-black border-r-0">
             <thead>
               <tr className="bg-gray-50">
-                <th className="border border-black p-1 text-[10px] font-bold">{isRTL ? "المادة" : "Subject"}</th>
-                <th className="border border-black p-1 text-[10px] font-bold">{isRTL ? "العدد" : "Qty"}</th>
+                <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold">{isRTL ? "المادة" : "Subject"}</th>
+                <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold">{isRTL ? "العدد" : "Qty"}</th>
               </tr>
             </thead>
-            <tbody className={isPrint ? "grid grid-cols-2" : ""}>
+            <tbody>
               {summaryData.map((item, idx) => (
-                <tr key={idx} className={cn("h-8", isPrint ? "flex border-b border-black" : "")}>
-                  <td className={cn("border border-black p-1 text-[9px] text-center truncate", isPrint ? "flex-1 border-none" : "")}>{item.subject}</td>
-                  <td className={cn("border border-black p-1 text-[9px] text-center font-bold", isPrint ? "w-12 border-none border-r" : "")}>{item.count}</td>
+                <tr key={idx} className="h-7 md:h-8">
+                  <td className="border border-black p-1 text-[8px] md:text-[9px] text-center truncate">{item.subject}</td>
+                  <td className="border border-black p-1 text-[8px] md:text-[9px] text-center font-bold">{item.count}</td>
                 </tr>
               ))}
-              <tr className={cn("bg-gray-50 font-bold", isPrint ? "col-span-2 flex" : "")}>
-                <td className={cn("border border-black p-1 text-[10px] text-center", isPrint ? "flex-1 border-none" : "")}>
-                  {isRTL ? "الحجم الساعي الإجمالي" : "Total Weekly Hours"}
+              {Array.from({ length: Math.max(0, 10 - summaryData.length) }).map((_, i) => (
+                <tr key={`empty-${i}`} className="h-7 md:h-8">
+                  <td className="border border-black p-1"></td>
+                  <td className="border border-black p-1"></td>
+                </tr>
+              ))}
+              <tr className="bg-gray-50 font-bold">
+                <td className="border border-black p-1 text-[9px] md:text-[10px] text-center">
+                  {isRTL ? "المجموع" : "Total"}
                 </td>
-                <td className={cn("border border-black p-1 text-[10px] text-center", isPrint ? "w-12 border-none" : "")}>{totalHours}</td>
+                <td className="border border-black p-1 text-[9px] md:text-[10px] text-center">{totalHours}</td>
               </tr>
             </tbody>
           </table>
@@ -469,11 +466,11 @@ const Schedule = () => {
           <style>
             {`
               @media print {
-                @page { size: ${orientation}; margin: 10mm; }
+                @page { size: ${orientation}; margin: 0; }
                 body * { visibility: hidden; }
                 .print-area-wrapper, .print-area-wrapper * { visibility: visible; }
                 .print-area-wrapper { 
-                  position: absolute; left: 0; top: 0; width: 100%; height: auto;
+                  position: fixed; left: 0; top: 0; width: 100%; height: 100%;
                   background: white !important;
                   transform: none !important;
                 }
