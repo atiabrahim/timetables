@@ -150,9 +150,9 @@ const Schedule = () => {
   };
 
   const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => (
-    <div className={cn("flex gap-0 w-full", isPrint ? "" : "overflow-x-auto")}>
-      <div className={cn("flex-1", isPrint ? "w-full" : "min-w-[600px]")}>
-        <table className="w-full border-collapse border-2 border-black table-fixed">
+    <div className={cn("flex gap-0 w-full", isPrint ? "print-container" : "overflow-x-auto")}>
+      <div className={cn("flex-grow", isPrint ? "print-main-table" : "min-w-[600px]")}>
+        <table className="w-full border-collapse border-2 border-black">
           <thead>
             <tr>
               <th className="border border-black p-1 bg-gray-50 w-16 md:w-24 text-[10px] font-bold">
@@ -171,7 +171,7 @@ const Schedule = () => {
           </thead>
           <tbody>
             {DAYS.map(day => (
-              <tr key={day.id} className={cn(isPrint ? "h-16" : "h-20")}>
+              <tr key={day.id} className={cn(isPrint ? "h-14" : "h-20")}>
                 <td className="border border-black text-center font-bold text-xs md:text-sm bg-gray-50">
                   {isRTL ? day.name : day.en}
                 </td>
@@ -230,7 +230,7 @@ const Schedule = () => {
       </div>
 
       {(isPrint || isPreviewOpen) && (
-        <div className="w-32 md:w-48 mr-[-2px] shrink-0">
+        <div className="w-32 md:w-40 mr-[-2px] shrink-0 print-summary-table">
           <table className="w-full border-collapse border-2 border-black border-r-0">
             <thead>
               <tr className="bg-gray-50">
@@ -245,7 +245,7 @@ const Schedule = () => {
                   <td className="border border-black p-1 text-[8px] md:text-[9px] text-center font-bold">{item.count}</td>
                 </tr>
               ))}
-              {Array.from({ length: Math.max(0, 10 - summaryData.length) }).map((_, i) => (
+              {Array.from({ length: Math.max(0, 8 - summaryData.length) }).map((_, i) => (
                 <tr key={`empty-${i}`} className="h-7 md:h-8">
                   <td className="border border-black p-1"></td>
                   <td className="border border-black p-1"></td>
@@ -473,8 +473,23 @@ const Schedule = () => {
                   position: fixed; left: 0; top: 0; width: 100%; height: 100%;
                   background: white !important;
                   transform: none !important;
+                  display: block !important;
                 }
-                table { table-layout: fixed !important; width: 100% !important; }
+                .print-container {
+                  display: flex !important;
+                  flex-direction: row !important;
+                  width: 100% !important;
+                  gap: 0 !important;
+                }
+                .print-main-table {
+                  flex: 1 1 auto !important;
+                  width: auto !important;
+                }
+                .print-summary-table {
+                  flex: 0 0 150px !important;
+                  width: 150px !important;
+                }
+                table { width: 100% !important; table-layout: auto !important; }
               }
             `}
           </style>
