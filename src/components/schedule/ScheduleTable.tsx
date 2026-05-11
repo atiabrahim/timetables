@@ -99,22 +99,25 @@ const ScheduleTable = ({
             <thead>
               <tr className="bg-gray-50">
                 <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold">{isRTL ? "المادة" : "Subject"}</th>
-                <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold">{isRTL ? "العدد" : "Qty"}</th>
+                <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold w-10">{isRTL ? "العدد" : "Qty"}</th>
               </tr>
             </thead>
             <tbody>
               {summaryData.map((item, idx) => (
                 <tr key={idx} className="h-7 md:h-8">
                   <td className="border border-black p-1 text-[8px] md:text-[9px] text-center truncate">{item.subject}</td>
-                  <td className="border border-black p-1 text-[8px] md:text-[9px] text-center font-bold">{item.count}</td>
+                  <td className="border border-black p-1 text-[8px] md:text-[9px] text-center font-bold w-10">{item.count}</td>
                 </tr>
               ))}
               {Array.from({ length: Math.max(0, 10 - summaryData.length) }).map((_, i) => (
-                <tr key={`empty-${i}`} className="h-7 md:h-8"><td className="border border-black p-1"></td><td className="border border-black p-1"></td></tr>
+                <tr key={`empty-${i}`} className="h-7 md:h-8">
+                  <td className="border border-black p-1"></td>
+                  <td className="border border-black p-1 w-10"></td>
+                </tr>
               ))}
               <tr className="bg-gray-50 font-bold">
                 <td className="border border-black p-1 text-[9px] md:text-[10px] text-center">{isRTL ? "المجموع" : "Total"}</td>
-                <td className="border border-black p-1 text-[9px] md:text-[10px] text-center">{totalHours}</td>
+                <td className="border border-black p-1 text-[9px] md:text-[10px] text-center w-10">{totalHours}</td>
               </tr>
             </tbody>
           </table>
