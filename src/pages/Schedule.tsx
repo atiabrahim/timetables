@@ -13,7 +13,8 @@ import {
   X, 
   RotateCw, 
   FileText, 
-  Settings2 
+  Settings2,
+  AlertTriangle
 } from "lucide-react";
 import { 
   Select, 
@@ -30,7 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
-import { showSuccess } from "../utils/toast";
+import { showSuccess, showError } from "../utils/toast";
 
 const DAYS = [
   { id: 0, name: "الأحد", en: "Sunday" },
@@ -135,8 +136,63 @@ const Schedule = () => {
     setIsDialogOpen(true);
   };
 
+  const checkConflicts = (day: number, period: string, empId: string, clsId: string, room: string) => {
+    // 1. تعارض الأستاذ
+    const teacherConflict = assignments.find(a => 
+      a.day === day && a.period === period && a.employeeId === empId
+    );
+    if (teacherConflict) {
+      const clsName = classes.find(c => c.id === teacherConflict.classId)?.name;
+      return isRTL 
+        ? `الأستاذ مشغول حالياً مع الفوج: ${clsName}` 
+        : `Teacher is busy with class: ${clsName}`;
+    }
+
+    // 2. تعارض الفوج (في حال كان الإضافة من واجهة الأستاذ)
+    const classConflict = assignments.find(a => 
+      a.day === day && a.period === period && a.classId === clsId
+    );
+    if (classConflict) {
+      const empName = employees.find(e => e.id === classConflict.employeeId)?.lastName;
+      return isRTL 
+        ? `هذا الفوج لديه حصة بالفعل مع الأستاذ: ${empName}` 
+        : `This class already has a lesson with teacher: ${empName}`;
+    }
+
+    // 3. تعارض القاعة
+    if (room) {
+      const roomConflict = assignments.find(a => 
+        a.day === day && a.period === period && a.room === room
+      );
+      if (roomConflict) {
+        return isRTL 
+          ? `القاعة ${room} مشغولة في هذا التوقيت` 
+          : `Room ${room} is occupied at this time`;
+      }
+    }
+
+    return null;
+  };
+
   const saveAssignment = () => {
-    if (!editingCell || !newAssignment.subjectId) return;
+    if (!editingCell || !newAssignment.subjectId || !newAssignment.employeeId || !newAssignment.classId) {
+      showError(isRTL ? "يرجى إكمال البيانات الأساسية" : "Please complete basic data");
+      return;
+    }
+
+    const conflict = checkConflicts(
+      editingCell.day, 
+      editingCell.period, 
+      newAssignment.employeeId, 
+      newAssignment.classId, 
+      newAssignment.room
+    );
+
+    if (conflict) {
+      showError(conflict);
+      return;
+    }
+
     const id = Math.random().toString(36).substr(2, 9);
     const assignment = { ...newAssignment, id, day: editingCell.day, period: editingCell.period };
     setAssignments([...assignments, assignment]);
@@ -327,7 +383,8 @@ const Schedule = () => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-md rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-emerald-950">
+            <DialogTitle className="text-xl font-bold text-emerald-950 flex items-center gap-2">
+              <Plus className="text-emerald-600" />
               {isRTL ? "إضافة حصة جديدة" : "Add New Lesson"}
             </DialogTitle>
           </DialogHeader>
@@ -364,12 +421,14 @@ const Schedule = () => {
             )}
             <div className="space-y-2">
               <label className="text-sm font-medium">{isRTL ? "القاعة / الورشة" : "Room / Workshop"}</label>
-              <Input 
-                value={newAssignment.room} 
-                onChange={e => setNewAssignment({...newAssignment, room: e.target.value})}
-                placeholder={isRTL ? "رقم القاعة..." : "Room number..."}
-                className="rounded-xl"
-              />
+              <Select value={newAssignment.room} onValueChange={v => setNewAssignment({...newAssignment, room: v})}>
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue placeholder={isRTL ? "اختر القاعة..." : "Select room..."} />
+                </SelectTrigger>
+                <SelectContent>
+                  {rooms.map((r, idx) => <SelectItem key={idx} value={r}>{r}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="flex justify-end gap-2">
