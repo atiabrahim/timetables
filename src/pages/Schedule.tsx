@@ -230,12 +230,11 @@ const Schedule = () => {
       </div>
 
       {(isPrint || isPreviewOpen) && (
-        <div className="w-64 mr-[-2px] shrink-0">
+        <div className="w-48 mr-[-2px] shrink-0">
           <table className="w-full border-collapse border-2 border-black border-r-0">
             <thead>
               <tr className="bg-gray-50">
                 <th className="border border-black p-1 text-[10px] font-bold">{isRTL ? "المادة" : "Subject"}</th>
-                <th className="border border-black p-1 text-[10px] font-bold">{isRTL ? "الفرع" : "Branch"}</th>
                 <th className="border border-black p-1 text-[10px] font-bold">{isRTL ? "العدد" : "Qty"}</th>
               </tr>
             </thead>
@@ -243,7 +242,6 @@ const Schedule = () => {
               {summaryData.map((item, idx) => (
                 <tr key={idx} className="h-8">
                   <td className="border border-black p-1 text-[9px] text-center">{item.subject}</td>
-                  <td className="border border-black p-1 text-[9px] text-center">{item.branch}</td>
                   <td className="border border-black p-1 text-[9px] text-center font-bold">{item.count}</td>
                 </tr>
               ))}
@@ -251,11 +249,10 @@ const Schedule = () => {
                 <tr key={`empty-${i}`} className="h-8">
                   <td className="border border-black p-1"></td>
                   <td className="border border-black p-1"></td>
-                  <td className="border border-black p-1"></td>
                 </tr>
               ))}
               <tr className="bg-gray-50 font-bold">
-                <td colSpan={2} className="border border-black p-1 text-[10px] text-center">
+                <td className="border border-black p-1 text-[10px] text-center">
                   {isRTL ? "الحجم الساعي الإجمالي" : "Total Weekly Hours"}
                 </td>
                 <td className="border border-black p-1 text-[10px] text-center">{totalHours}</td>
