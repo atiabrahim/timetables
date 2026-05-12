@@ -16,6 +16,7 @@ import Reports from "./pages/Reports";
 import Lessons from "./pages/Lessons";
 import Login from "./pages/Login";
 import Rooms from "./pages/Rooms";
+import Institution from "./pages/Institution";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +41,7 @@ const AppRoutes = () => (
     <Route path="/reports" element={<ProtectedRoute><Layout><Reports /></Layout></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Layout><Settings /></Layout></ProtectedRoute>} />
     <Route path="/users" element={<ProtectedRoute><Layout><Users /></Layout></ProtectedRoute>} />
+    <Route path="/institution" element={<ProtectedRoute><Layout><Institution /></Layout></ProtectedRoute>} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

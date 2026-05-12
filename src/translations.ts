@@ -12,6 +12,7 @@ export const translations = {
     reports: "التقارير",
     importXml: "استيراد XML",
     users: "المستخدمون",
+    institution: "المؤسسة",
     logout: "تسجيل الخروج",
     welcome: "مرحباً،",
     role: "الدور:",
@@ -20,6 +21,7 @@ export const translations = {
     appSubtitle: "مستكشف قاعدة بيانات aSc XML",
     settings: "الإعدادات",
     cancel: "إلغاء",
+    save: "حفظ",
     stats: {
       teachers: "المعلمون",
       classes: "الفروع",
@@ -34,6 +36,15 @@ export const translations = {
       teacher_load: "نصاب الأساتذة",
       room_usage: "إشغال القاعات",
       class_summary: "ملخص الفروع"
+    },
+    institution_page: {
+      title: "بيانات المؤسسة",
+      subtitle: "المعلومات التي تظهر في ترويسة التقارير",
+      name: "اسم المؤسسة",
+      subName: "الاسم الفرعي / العنوان",
+      address: "العنوان الكامل",
+      phone: "رقم الهاتف",
+      email: "البريد الإلكتروني"
     }
   },
   en: {
@@ -47,6 +58,7 @@ export const translations = {
     reports: "Reports",
     importXml: "Import XML",
     users: "Users",
+    institution: "Institution",
     logout: "Logout",
     welcome: "Welcome,",
     role: "Role:",
@@ -55,6 +67,7 @@ export const translations = {
     appSubtitle: "aSc XML Database Explorer",
     settings: "Settings",
     cancel: "Cancel",
+    save: "Save",
     stats: {
       teachers: "Teachers",
       classes: "Branches",
@@ -69,6 +82,15 @@ export const translations = {
       teacher_load: "Teacher Load",
       room_usage: "Room Usage",
       class_summary: "Branches Summary"
+    },
+    institution_page: {
+      title: "Institution Details",
+      subtitle: "Information displayed in report headers",
+      name: "Institution Name",
+      subName: "Sub-name / Title",
+      address: "Full Address",
+      phone: "Phone Number",
+      email: "Email Address"
     }
   }
 };

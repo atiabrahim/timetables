@@ -5,6 +5,11 @@
 export const exportToXml = (data: any, fileName: string) => {
   let xmlString = '<?xml version="1.0" encoding="UTF-8"?>\n<timetable importtype="xml" importversion="3.1.0">\n';
 
+  // تصدير بيانات المؤسسة
+  if (data.institution) {
+    xmlString += `  <institution name="${data.institution.name}" subname="${data.institution.subName}" address="${data.institution.address}" phone="${data.institution.phone}" email="${data.institution.email}" />\n`;
+  }
+
   // تصدير الموظفين (الأساتذة)
   xmlString += `  <teachers count="${data.employees?.length || 0}">\n`;
   (data.employees || []).forEach((emp: any) => {
@@ -61,6 +66,19 @@ export const parseXml = (xmlText: string) => {
   }
 
   const getAttr = (el: Element, attr: string) => el.getAttribute(attr) || "";
+
+  // 0. استخراج بيانات المؤسسة
+  let institution = null;
+  const instEl = xmlDoc.getElementsByTagName("institution")[0];
+  if (instEl) {
+    institution = {
+      name: getAttr(instEl, "name"),
+      subName: getAttr(instEl, "subname"),
+      address: getAttr(instEl, "address"),
+      phone: getAttr(instEl, "phone"),
+      email: getAttr(instEl, "email")
+    };
+  }
 
   // 1. استخراج الأساتذة
   const teacherElements = Array.from(xmlDoc.getElementsByTagName("teacher"));
@@ -137,7 +155,6 @@ export const parseXml = (xmlText: string) => {
       day = parseInt(dayStr) || 0;
     }
 
-    // جلب اسم القاعة من الخريطة باستخدام المعرف
     const roomName = classroomsMap.get(lesson.classroomIds) || "";
 
     return {
@@ -153,6 +170,7 @@ export const parseXml = (xmlText: string) => {
   }).filter(a => a !== null);
 
   return { 
+    institution,
     employees, 
     departments: [], 
     rooms, 

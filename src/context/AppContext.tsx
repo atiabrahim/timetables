@@ -1,6 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Language, translations } from "../translations";
 
+interface Institution {
+  name: string;
+  subName: string;
+  address: string;
+  phone: string;
+  email: string;
+  logo?: string;
+}
+
 interface Employee {
   id: string;
   firstName: string;
@@ -58,6 +67,8 @@ interface AppContextType {
   setSystemUsers: React.Dispatch<React.SetStateAction<User[]>>;
   login: (username: string, role: User["role"]) => void;
   logout: () => void;
+  institution: Institution;
+  setInstitution: React.Dispatch<React.SetStateAction<Institution>>;
   employees: Employee[];
   setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
   assignments: Assignment[];
@@ -91,6 +102,14 @@ const DEFAULT_ADMIN: User = {
   isActive: true 
 };
 
+const DEFAULT_INSTITUTION: Institution = {
+  name: "مركز التكوين المهني والتمهين",
+  subName: "المجاهد لمقدم مبروك بالدبيلة",
+  address: "الدبيلة، الوادي",
+  phone: "",
+  email: ""
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>("ar");
   const [user, setUser] = useState<User | null>(() => {
@@ -99,6 +118,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [systemUsers, setSystemUsers] = useState<User[]>([DEFAULT_ADMIN]);
+  const [institution, setInstitution] = useState<Institution>(DEFAULT_INSTITUTION);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
@@ -122,6 +142,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (parsed.systemUsers && parsed.systemUsers.length > 0) {
           setSystemUsers(parsed.systemUsers);
         }
+        if (parsed.institution) setInstitution(parsed.institution);
         setEmployees(parsed.employees || []);
         setAssignments(parsed.assignments || []);
         setDepartments(parsed.departments || []);
@@ -136,12 +157,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   useEffect(() => {
-    const dataToSave = { systemUsers, employees, assignments, departments, rooms, classes, subjects, periodConfigs };
+    const dataToSave = { systemUsers, institution, employees, assignments, departments, rooms, classes, subjects, periodConfigs };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  }, [systemUsers, employees, assignments, departments, rooms, classes, subjects, periodConfigs]);
+  }, [systemUsers, institution, employees, assignments, departments, rooms, classes, subjects, periodConfigs]);
 
   const importAllData = (data: any) => {
     if (!data) return;
+    if (data.institution) setInstitution(data.institution);
     if (data.employees) setEmployees(data.employees);
     if (data.rooms) setRooms(data.rooms);
     if (data.classes) setClasses(data.classes);
@@ -177,6 +199,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider value={{ 
       language, setLanguage, user, systemUsers, setSystemUsers, login, logout, 
+      institution, setInstitution,
       employees, setEmployees, assignments, setAssignments,
       departments, setDepartments, rooms, setRooms,
       classes, setClasses, subjects, setSubjects,

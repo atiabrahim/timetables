@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import ScheduleTable from "./ScheduleTable";
 import logo from "@/assets/logo.png";
+import { useApp } from "../../context/AppContext";
 
 interface PrintPreviewProps {
   isOpen: boolean;
@@ -37,6 +38,8 @@ const PrintPreview = ({
   isOpen, onOpenChange, isRTL, orientation, setOrientation, printScale, setPrintScale, 
   viewMode, selectedId, employees, classes, subjects, days, timeSlots, getAssignment, summaryData, totalHours, isTransposed = false 
 }: PrintPreviewProps) => {
+  const { institution } = useApp();
+  
   const selectedEntity = viewMode === "teacher" 
     ? employees.find(e => e.id === selectedId) 
     : classes.find(c => c.id === selectedId);
@@ -81,8 +84,8 @@ const PrintPreview = ({
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
                 </div>
                 <div className="text-center flex-1">
-                  <h1 className="text-sm md:text-base font-bold text-emerald-900">مركز التكوين المهني والتمهين</h1>
-                  <h2 className="text-xs md:text-sm font-bold text-emerald-800">المجاهد لمقدم مبروك بالدبيلة</h2>
+                  <h1 className="text-sm md:text-base font-bold text-emerald-900">{institution.name}</h1>
+                  <h2 className="text-xs md:text-sm font-bold text-emerald-800">{institution.subName}</h2>
                 </div>
                 <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />

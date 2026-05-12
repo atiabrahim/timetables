@@ -15,7 +15,8 @@ import {
   MapPin,
   ListChecks,
   BarChart3,
-  Languages
+  Languages,
+  Building2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { icon: BookOpen, label: t.subjects, path: "/subjects" },
     { icon: MapPin, label: t.rooms, path: "/rooms" },
     { icon: BarChart3, label: t.reports, path: "/reports" },
+    { icon: Building2, label: t.institution, path: "/institution" },
     { icon: SettingsIcon, label: t.settings, path: "/settings" },
     ...(isAdmin ? [{ icon: UserCog, label: t.users, path: "/users" }] : []),
   ];
