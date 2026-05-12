@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import ScheduleTable from "./ScheduleTable";
+import logo from "@/assets/logo.png";
 
 interface PrintPreviewProps {
   isOpen: boolean;
@@ -75,12 +76,16 @@ const PrintPreview = ({
           >
             <div className="p-10 flex-1 flex flex-col print-container">
               <div className="flex justify-between items-center mb-6">
-                <div className="w-20 h-20 border border-gray-200 rounded-full flex items-center justify-center text-[8px] text-gray-400">LOGO</div>
+                <div className="w-24 h-24 flex items-center justify-center">
+                  <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
+                </div>
                 <div className="text-center flex-1">
                   <h1 className="text-xl font-bold text-emerald-900">مركز التكوين المهني والتمهين</h1>
                   <h2 className="text-lg font-bold text-emerald-800">المجاهد لمقدم مبروك بالدبيلة</h2>
                 </div>
-                <div className="w-20 h-20 border border-gray-200 rounded-full flex items-center justify-center text-[8px] text-gray-400">LOGO</div>
+                <div className="w-24 h-24 flex items-center justify-center">
+                  <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
+                </div>
               </div>
 
               <div className="grid grid-cols-3 gap-4 mb-6 text-sm font-bold border-y-2 border-black py-3">
