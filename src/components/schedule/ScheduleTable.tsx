@@ -49,7 +49,7 @@ const ScheduleTable = ({
                 <tr 
                   key={slot.id} 
                   className={cn(
-                    slot.id === 'break-am' ? "h-[15px]" : (isPrint ? "h-16" : "h-20")
+                    (slot.id === 'break-am' || slot.id === 'break-noon') ? "h-[15px]" : (isPrint ? "h-16" : "h-20")
                   )}
                 >
                   <td className={cn(
@@ -58,11 +58,11 @@ const ScheduleTable = ({
                   )}>
                     <p className={cn(
                       "font-bold", 
-                      slot.id === 'break-am' ? "text-[8px] leading-none" : "text-[9px] md:text-[10px]"
+                      (slot.id === 'break-am' || slot.id === 'break-noon') ? "text-[8px] leading-none" : "text-[9px] md:text-[10px]"
                     )}>
                       {slot.label}
                     </p>
-                    {slot.id !== 'break-am' && !slot.isBreak && (
+                    {slot.id !== 'break-am' && slot.id !== 'break-noon' && !slot.isBreak && (
                       <p className="text-[7px] md:text-[8px] text-gray-500">{slot.time}</p>
                     )}
                   </td>
