@@ -27,6 +27,37 @@ const ScheduleTable = ({
   subjects, employees, classes, viewMode, isPrint = false, summaryData, totalHours, isTransposed = false 
 }: ScheduleTableProps) => {
   
+  const SummaryTable = () => (
+    <div className="w-40 md:w-56 mr-[-2px] shrink-0">
+      <table className="w-full border-collapse border-2 border-black border-r-0">
+        <thead>
+          <tr className="bg-gray-50">
+            <th className="border border-black p-1 text-[8px] md:text-[9px] font-bold">{isRTL ? "المادة" : "Subject"}</th>
+            <th className="border border-black p-1 text-[8px] md:text-[9px] font-bold">
+              {viewMode === "class" ? (isRTL ? "الأستاذ" : "Teacher") : (isRTL ? "الفرع" : "Branch")}
+            </th>
+            <th className="border border-black p-1 text-[8px] md:text-[9px] font-bold w-8">{isRTL ? "س" : "H"}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {summaryData?.map((item, idx) => (
+            <tr key={idx} className="h-7 md:h-8">
+              <td className="border border-black p-1 text-[7px] md:text-[8px] text-center truncate">{item.subject}</td>
+              <td className="border border-black p-1 text-[7px] md:text-[8px] text-center truncate">
+                {viewMode === "class" ? item.teacher : item.branch}
+              </td>
+              <td className="border border-black p-1 text-[7px] md:text-[8px] text-center font-bold w-8">{item.count}</td>
+            </tr>
+          ))}
+          <tr className="bg-gray-50 font-bold">
+            <td colSpan={2} className="border border-black p-1 text-[8px] md:text-[9px] text-center">{isRTL ? "المجموع" : "Total"}</td>
+            <td className="border border-black p-1 text-[8px] md:text-[9px] text-center w-8">{totalHours}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+
   if (isTransposed) {
     return (
       <div className={cn("flex gap-0 w-full", isPrint ? "items-start" : "overflow-x-auto")}>
@@ -111,30 +142,7 @@ const ScheduleTable = ({
             </tbody>
           </table>
         </div>
-        {isPrint && summaryData && (
-          <div className="w-32 md:w-48 mr-[-2px] shrink-0">
-            <table className="w-full border-collapse border-2 border-black border-r-0">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold">{isRTL ? "المادة" : "Subject"}</th>
-                  <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold w-10">{isRTL ? "العدد" : "Qty"}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {summaryData.map((item, idx) => (
-                  <tr key={idx} className="h-7 md:h-8">
-                    <td className="border border-black p-1 text-[8px] md:text-[9px] text-center truncate">{item.subject}</td>
-                    <td className="border border-black p-1 text-[8px] md:text-[9px] text-center font-bold w-10">{item.count}</td>
-                  </tr>
-                ))}
-                <tr className="bg-gray-50 font-bold">
-                  <td className="border border-black p-1 text-[9px] md:text-[10px] text-center">{isRTL ? "المجموع" : "Total"}</td>
-                  <td className="border border-black p-1 text-[9px] md:text-[10px] text-center w-10">{totalHours}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        )}
+        {isPrint && summaryData && <SummaryTable />}
       </div>
     );
   }
@@ -213,31 +221,7 @@ const ScheduleTable = ({
           </tbody>
         </table>
       </div>
-
-      {isPrint && summaryData && (
-        <div className="w-32 md:w-48 mr-[-2px] shrink-0">
-          <table className="w-full border-collapse border-2 border-black border-r-0">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold">{isRTL ? "المادة" : "Subject"}</th>
-                <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold w-10">{isRTL ? "العدد" : "Qty"}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {summaryData.map((item, idx) => (
-                <tr key={idx} className="h-7 md:h-8">
-                  <td className="border border-black p-1 text-[8px] md:text-[9px] text-center truncate">{item.subject}</td>
-                  <td className="border border-black p-1 text-[8px] md:text-[9px] text-center font-bold w-10">{item.count}</td>
-                </tr>
-              ))}
-              <tr className="bg-gray-50 font-bold">
-                <td className="border border-black p-1 text-[9px] md:text-[10px] text-center">{isRTL ? "المجموع" : "Total"}</td>
-                <td className="border border-black p-1 text-[9px] md:text-[10px] text-center w-10">{totalHours}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
+      {isPrint && summaryData && <SummaryTable />}
     </div>
   );
 };

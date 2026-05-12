@@ -69,14 +69,25 @@ const Schedule = () => {
   const getAssignment = (day: number, period: string) => filteredAssignments.find(a => a.day === day && a.period === period);
 
   const summaryData = useMemo(() => {
-    const summary: Record<string, { subject: string, branch: string, count: number }> = {};
+    const summary: Record<string, { subject: string, branch: string, teacher: string, count: number }> = {};
     filteredAssignments.forEach(a => {
-      const key = `${a.subjectId}-${a.classId}`;
-      if (!summary[key]) summary[key] = { subject: subjects.find(s => s.id === a.subjectId)?.name || "---", branch: classes.find(c => c.id === a.classId)?.name || "---", count: 0 };
+      // التجميع حسب المادة والطرف الآخر (الأستاذ أو الفرع)
+      const key = viewMode === "class" 
+        ? `${a.subjectId}-${a.employeeId}` 
+        : `${a.subjectId}-${a.classId}`;
+
+      if (!summary[key]) {
+        summary[key] = { 
+          subject: subjects.find(s => s.id === a.subjectId)?.name || "---", 
+          branch: classes.find(c => c.id === a.classId)?.name || "---",
+          teacher: employees.find(e => e.id === a.employeeId)?.lastName || "---",
+          count: 0 
+        };
+      }
       summary[key].count += 1;
     });
     return Object.values(summary);
-  }, [filteredAssignments, subjects, classes]);
+  }, [filteredAssignments, subjects, classes, employees, viewMode]);
 
   const totalHours = summaryData.reduce((acc, curr) => acc + curr.count, 0);
 
