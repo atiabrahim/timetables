@@ -41,15 +41,15 @@ const ScheduleTable = ({
         </thead>
         <tbody>
           {summaryData?.map((item, idx) => (
-            <tr key={idx} className={cn(isPrint ? "h-auto min-h-[20px]" : "h-auto min-h-[28px]")}>
-              <td className={cn("border border-black p-0.5 text-center whitespace-normal break-words", isPrint ? "text-[6px]" : "text-[7px] md:text-[8px]")}>{item.subject}</td>
-              <td className={cn("border border-black p-0.5 text-center whitespace-normal break-words", isPrint ? "text-[6px]" : "text-[7px] md:text-[8px]")}>
+            <tr key={idx} className={cn(isPrint ? "h-5" : "h-8")}>
+              <td className={cn("border border-black p-0.5 text-center whitespace-normal break-words leading-tight", isPrint ? "text-[6px]" : "text-[7px] md:text-[8px]")}>{item.subject}</td>
+              <td className={cn("border border-black p-0.5 text-center whitespace-normal break-words leading-tight", isPrint ? "text-[6px]" : "text-[7px] md:text-[8px]")}>
                 {viewMode === "class" ? item.teacher : item.branch}
               </td>
               <td className={cn("border border-black p-0.5 text-center font-bold w-6", isPrint ? "text-[6px]" : "text-[7px] md:text-[8px]")}>{item.count}</td>
             </tr>
           ))}
-          <tr className="bg-gray-50 font-bold">
+          <tr className="bg-gray-50 font-bold h-6">
             <td colSpan={2} className={cn("border border-black p-0.5 text-center", isPrint ? "text-[7px]" : "text-[8px] md:text-[9px]")}>{isRTL ? "المجموع" : "Total"}</td>
             <td className={cn("border border-black p-0.5 text-center w-6", isPrint ? "text-[7px]" : "text-[8px] md:text-[9px]")}>{totalHours}</td>
           </tr>
@@ -82,7 +82,7 @@ const ScheduleTable = ({
                   className={cn(
                     slot.id === 'break-am' ? "h-[12px]" : 
                     slot.id === 'break-noon' ? "h-[20px]" : 
-                    (isPrint ? "h-auto min-h-[48px]" : "h-auto min-h-[80px]")
+                    (isPrint ? "h-12" : "h-20")
                   )}
                 >
                   <td className={cn(
@@ -111,14 +111,14 @@ const ScheduleTable = ({
                             <p className={cn("font-bold leading-tight whitespace-normal break-words w-full", isPrint ? "text-[8px]" : "text-[9px] md:text-[11px]")}>
                               {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
                             </p>
-                            <p className={cn("text-gray-600 mt-0.5 whitespace-normal break-words w-full", isPrint ? "text-[7px]" : "text-[8px] md:text-[9px]")}>
+                            <p className={cn("text-gray-600 mt-0.5 whitespace-normal break-words w-full leading-none", isPrint ? "text-[7px]" : "text-[8px] md:text-[9px]")}>
                               {viewMode === "class" 
                                 ? employees.find(e => e.id === assignment.employeeId)?.lastName 
                                 : classes.find(c => c.id === assignment.classId)?.name
                               }
                             </p>
                             {assignment.room && (
-                              <p className={cn("text-emerald-700 font-medium mt-0.5", isPrint ? "text-[6px]" : "text-[7px] md:text-[8px]")}>{assignment.room}</p>
+                              <p className={cn("text-emerald-700 font-medium mt-0.5 leading-none", isPrint ? "text-[6px]" : "text-[7px] md:text-[8px]")}>{assignment.room}</p>
                             )}
                             {!isPrint && (
                               <Button 
@@ -176,7 +176,7 @@ const ScheduleTable = ({
           </thead>
           <tbody>
             {days.map(day => (
-              <tr key={day.id} className={cn(isPrint ? "h-auto min-h-[48px]" : "h-auto min-h-[80px]")}>
+              <tr key={day.id} className={cn(isPrint ? "h-12" : "h-20")}>
                 <td className={cn("border border-black text-center font-bold bg-gray-50", isPrint ? "text-[8px]" : "text-xs md:text-sm")}>
                   {isRTL ? day.name : day.en}
                 </td>
@@ -190,14 +190,14 @@ const ScheduleTable = ({
                           <p className={cn("font-bold leading-tight whitespace-normal break-words w-full", isPrint ? "text-[8px]" : "text-[9px] md:text-[11px]")}>
                             {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
                           </p>
-                          <p className={cn("text-gray-600 mt-0.5 whitespace-normal break-words w-full", isPrint ? "text-[7px]" : "text-[8px] md:text-[9px]")}>
+                          <p className={cn("text-gray-600 mt-0.5 whitespace-normal break-words w-full leading-none", isPrint ? "text-[7px]" : "text-[8px] md:text-[9px]")}>
                             {viewMode === "class" 
                               ? employees.find(e => e.id === assignment.employeeId)?.lastName 
                               : classes.find(c => c.id === assignment.classId)?.name
                             }
                           </p>
                           {assignment.room && (
-                            <p className={cn("text-emerald-700 font-medium mt-0.5", isPrint ? "text-[6px]" : "text-[7px] md:text-[8px]")}>{assignment.room}</p>
+                            <p className={cn("text-emerald-700 font-medium mt-0.5 leading-none", isPrint ? "text-[6px]" : "text-[7px] md:text-[8px]")}>{assignment.room}</p>
                           )}
                           {!isPrint && (
                             <Button 
