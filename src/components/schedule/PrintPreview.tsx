@@ -66,7 +66,7 @@ const PrintPreview = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-12 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white">
+        <div className="flex-1 overflow-auto p-4 md:p-12 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white">
           <div 
             className={cn(
               "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0 print-area-wrapper",
@@ -74,21 +74,21 @@ const PrintPreview = ({
             )}
             style={{ transform: `scale(${printScale / 100})` }}
           >
-            <div className="p-10 flex-1 flex flex-col print-container">
-              <div className="flex justify-between items-center mb-6">
-                <div className="w-24 h-24 flex items-center justify-center">
+            <div className="p-4 md:p-10 flex-1 flex flex-col print-container">
+              <div className="flex justify-between items-center mb-4">
+                <div className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center">
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
                 </div>
                 <div className="text-center flex-1">
-                  <h1 className="text-xl font-bold text-emerald-900">مركز التكوين المهني والتمهين</h1>
-                  <h2 className="text-lg font-bold text-emerald-800">المجاهد لمقدم مبروك بالدبيلة</h2>
+                  <h1 className="text-lg md:text-xl font-bold text-emerald-900">مركز التكوين المهني والتمهين</h1>
+                  <h2 className="text-md md:text-lg font-bold text-emerald-800">المجاهد لمقدم مبروك بالدبيلة</h2>
                 </div>
-                <div className="w-24 h-24 flex items-center justify-center">
+                <div className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center">
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 mb-6 text-sm font-bold border-y-2 border-black py-3">
+              <div className="grid grid-cols-3 gap-2 mb-4 text-[10px] md:text-sm font-bold border-y-2 border-black py-2">
                 <div className="text-right">
                   {viewMode === "teacher" ? (
                     <p>{isRTL ? "الأستاذ(ة):" : "Teacher:"} {selectedEntity?.lastName} {selectedEntity?.firstName}</p>
@@ -113,13 +113,13 @@ const PrintPreview = ({
                 />
               </div>
 
-              <div className="mt-12 grid grid-cols-3 gap-8 text-center">
-                <div><p className="font-bold text-sm mb-16">{isRTL ? "الأستاذ" : "Teacher"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
-                <div><p className="font-bold text-sm mb-16">{isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
-                <div><p className="font-bold text-sm mb-16">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
+              <div className="mt-8 grid grid-cols-3 gap-4 text-center">
+                <div><p className="font-bold text-[10px] md:text-sm mb-12">{isRTL ? "الأستاذ" : "Teacher"}</p><div className="border-t border-black w-24 md:w-32 mx-auto"></div></div>
+                <div><p className="font-bold text-[10px] md:text-sm mb-12">{isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}</p><div className="border-t border-black w-24 md:w-32 mx-auto"></div></div>
+                <div><p className="font-bold text-[10px] md:text-sm mb-12">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-24 md:w-32 mx-auto"></div></div>
               </div>
 
-              <div className="mt-auto pt-4 text-center text-[8px] text-gray-400 border-t border-gray-100">
+              <div className="mt-auto pt-2 text-center text-[7px] md:text-[8px] text-gray-400 border-t border-gray-100">
                 تم إنشاء الجدول بتاريخ: {new Date().toLocaleDateString()} - نظام EduSchedule
               </div>
             </div>
@@ -129,13 +129,47 @@ const PrintPreview = ({
         <style>
           {`
             @media print {
-              @page { size: A4 ${orientation}; margin: 0; }
-              html, body { width: 100%; height: 100%; margin: 0 !important; padding: 0 !important; background: white; }
-              body { display: flex; justify-content: center; align-items: flex-start; }
-              .print-area-wrapper { position: relative !important; width: 100% !important; height: auto !important; background: white !important; transform: none !important; padding: 0 !important; margin: 0 !important; display: flex !important; justify-content: center !important; }
-              .print-container { width: 100% !important; margin: 0 auto !important; box-sizing: border-box !important; padding: 5mm !important; }
-              table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
-              .print\\:hidden { display: none !important; }
+              @page { 
+                size: A4 ${orientation}; 
+                margin: 2mm !important; 
+              }
+              html, body { 
+                width: 100%; 
+                height: 100%; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                background: white; 
+              }
+              body { 
+                display: flex; 
+                justify-content: center; 
+                align-items: flex-start; 
+              }
+              .print-area-wrapper { 
+                position: relative !important; 
+                width: 100% !important; 
+                height: auto !important; 
+                background: white !important; 
+                transform: none !important; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+                display: flex !important; 
+                justify-content: center !important; 
+              }
+              .print-container { 
+                width: 100% !important; 
+                margin: 0 auto !important; 
+                box-sizing: border-box !important; 
+                padding: 2mm !important; 
+              }
+              table { 
+                width: 100% !important; 
+                table-layout: fixed !important; 
+                border-collapse: collapse !important; 
+              }
+              .print\\:hidden { 
+                display: none !important; 
+              }
             }
           `}
         </style>
