@@ -98,7 +98,6 @@ const Subjects = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4 w-full md:w-auto order-2 md:order-1">
           <Button variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700">
@@ -124,7 +123,6 @@ const Subjects = () => {
         </div>
       </div>
 
-      {/* Add Section (Admin Only) */}
       {isAdmin && (
         <div className="flex gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
           <Input 
@@ -140,7 +138,6 @@ const Subjects = () => {
         </div>
       )}
 
-      {/* Table Section */}
       <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
         <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
           <thead>
@@ -195,15 +192,8 @@ const Subjects = () => {
             ))}
           </tbody>
         </table>
-
-        {sortedAndFilteredSubjects.length === 0 && (
-          <div className="text-center py-24 bg-gray-50/30">
-            <p className="text-gray-400 font-bold">{isRTL ? "لا توجد مواد مطابقة" : "No matching subjects found"}</p>
-          </div>
-        )}
       </div>
 
-      {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-md rounded-3xl">
           <DialogHeader>
