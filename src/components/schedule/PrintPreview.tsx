@@ -124,11 +124,11 @@ const PrintPreview = ({
         <style>
           {`
             @media print {
-              @page { size: A4 ${orientation}; margin: 10mm; }
+              @page { size: A4 ${orientation}; margin: 0; }
               html, body { width: 100%; height: 100%; margin: 0 !important; padding: 0 !important; background: white; }
               body { display: flex; justify-content: center; align-items: flex-start; }
               .print-area-wrapper { position: relative !important; width: 100% !important; height: auto !important; background: white !important; transform: none !important; padding: 0 !important; margin: 0 !important; display: flex !important; justify-content: center !important; }
-              .print-container { width: 98% !important; margin: 0 auto !important; box-sizing: border-box !important; }
+              .print-container { width: 100% !important; margin: 0 auto !important; box-sizing: border-box !important; padding: 5mm !important; }
               table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
               .print\\:hidden { display: none !important; }
             }

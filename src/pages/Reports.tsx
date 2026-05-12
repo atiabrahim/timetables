@@ -272,7 +272,7 @@ const Reports = () => {
               <style>
                 {`
                   @media print {
-                    @page { size: ${orientation}; margin: 10mm; }
+                    @page { size: ${orientation}; margin: 0; }
                     body * { visibility: hidden; }
                     .print-report-content, .print-report-content * { visibility: visible; }
                     .print-report-content { 
