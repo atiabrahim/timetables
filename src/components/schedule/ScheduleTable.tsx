@@ -29,7 +29,7 @@ const ScheduleTable = ({
   
   if (isTransposed) {
     return (
-      <div className={cn("flex gap-0 w-full", isPrint ? "items-stretch" : "overflow-x-auto")}>
+      <div className={cn("flex gap-0 w-full", isPrint ? "items-start" : "overflow-x-auto")}>
         <div className={cn("flex-1", isPrint ? "w-full" : "min-w-[600px]")}>
           <table className="w-full border-collapse border-2 border-black table-fixed">
             <thead>
@@ -113,7 +113,7 @@ const ScheduleTable = ({
         </div>
         {isPrint && summaryData && (
           <div className="w-32 md:w-48 mr-[-2px] shrink-0">
-            <table className="w-full h-full border-collapse border-2 border-black border-r-0">
+            <table className="w-full border-collapse border-2 border-black border-r-0">
               <thead>
                 <tr className="bg-gray-50">
                   <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold">{isRTL ? "المادة" : "Subject"}</th>
@@ -125,12 +125,6 @@ const ScheduleTable = ({
                   <tr key={idx} className="h-7 md:h-8">
                     <td className="border border-black p-1 text-[8px] md:text-[9px] text-center truncate">{item.subject}</td>
                     <td className="border border-black p-1 text-[8px] md:text-[9px] text-center font-bold w-10">{item.count}</td>
-                  </tr>
-                ))}
-                {Array.from({ length: Math.max(0, 10 - summaryData.length) }).map((_, i) => (
-                  <tr key={`empty-${i}`} className="h-7 md:h-8">
-                    <td className="border border-black p-1"></td>
-                    <td className="border border-black p-1 w-10"></td>
                   </tr>
                 ))}
                 <tr className="bg-gray-50 font-bold">
@@ -146,7 +140,7 @@ const ScheduleTable = ({
   }
 
   return (
-    <div className={cn("flex gap-0 w-full", isPrint ? "items-stretch" : "overflow-x-auto")}>
+    <div className={cn("flex gap-0 w-full", isPrint ? "items-start" : "overflow-x-auto")}>
       <div className={cn("flex-1", isPrint ? "w-full" : "min-w-[600px]")}>
         <table className="w-full border-collapse border-2 border-black table-fixed">
           <thead>
@@ -222,7 +216,7 @@ const ScheduleTable = ({
 
       {isPrint && summaryData && (
         <div className="w-32 md:w-48 mr-[-2px] shrink-0">
-          <table className="w-full h-full border-collapse border-2 border-black border-r-0">
+          <table className="w-full border-collapse border-2 border-black border-r-0">
             <thead>
               <tr className="bg-gray-50">
                 <th className="border border-black p-1 text-[9px] md:text-[10px] font-bold">{isRTL ? "المادة" : "Subject"}</th>
@@ -234,12 +228,6 @@ const ScheduleTable = ({
                 <tr key={idx} className="h-7 md:h-8">
                   <td className="border border-black p-1 text-[8px] md:text-[9px] text-center truncate">{item.subject}</td>
                   <td className="border border-black p-1 text-[8px] md:text-[9px] text-center font-bold w-10">{item.count}</td>
-                </tr>
-              ))}
-              {Array.from({ length: Math.max(0, 10 - summaryData.length) }).map((_, i) => (
-                <tr key={`empty-${i}`} className="h-7 md:h-8">
-                  <td className="border border-black p-1"></td>
-                  <td className="border border-black p-1 w-10"></td>
                 </tr>
               ))}
               <tr className="bg-gray-50 font-bold">
