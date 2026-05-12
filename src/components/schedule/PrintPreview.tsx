@@ -74,21 +74,21 @@ const PrintPreview = ({
             )}
             style={{ transform: `scale(${printScale / 100})` }}
           >
-            <div className="p-4 md:p-10 flex-1 flex flex-col print-container">
-              <div className="flex justify-between items-center mb-4">
-                <div className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center">
+            <div className="p-4 md:p-8 flex-1 flex flex-col print-container">
+              <div className="flex justify-between items-center mb-3">
+                <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
                 </div>
                 <div className="text-center flex-1">
-                  <h1 className="text-lg md:text-xl font-bold text-emerald-900">مركز التكوين المهني والتمهين</h1>
-                  <h2 className="text-md md:text-lg font-bold text-emerald-800">المجاهد لمقدم مبروك بالدبيلة</h2>
+                  <h1 className="text-sm md:text-base font-bold text-emerald-900">مركز التكوين المهني والتمهين</h1>
+                  <h2 className="text-xs md:text-sm font-bold text-emerald-800">المجاهد لمقدم مبروك بالدبيلة</h2>
                 </div>
-                <div className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center">
+                <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 mb-4 text-[10px] md:text-sm font-bold border-y-2 border-black py-2">
+              <div className="grid grid-cols-3 gap-2 mb-3 text-[8px] md:text-[10px] font-bold border-y border-black py-1.5">
                 <div className="text-right">
                   {viewMode === "teacher" ? (
                     <p>{isRTL ? "الأستاذ(ة):" : "Teacher:"} {selectedEntity?.lastName} {selectedEntity?.firstName}</p>
@@ -113,13 +113,13 @@ const PrintPreview = ({
                 />
               </div>
 
-              <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-                <div><p className="font-bold text-[10px] md:text-sm mb-12">{isRTL ? "الأستاذ" : "Teacher"}</p><div className="border-t border-black w-24 md:w-32 mx-auto"></div></div>
-                <div><p className="font-bold text-[10px] md:text-sm mb-12">{isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}</p><div className="border-t border-black w-24 md:w-32 mx-auto"></div></div>
-                <div><p className="font-bold text-[10px] md:text-sm mb-12">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-24 md:w-32 mx-auto"></div></div>
+              <div className="mt-6 grid grid-cols-3 gap-4 text-center">
+                <div><p className="font-bold text-[8px] md:text-[10px] mb-8">{isRTL ? "الأستاذ" : "Teacher"}</p><div className="border-t border-black w-20 md:w-24 mx-auto"></div></div>
+                <div><p className="font-bold text-[8px] md:text-[10px] mb-8">{isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}</p><div className="border-t border-black w-20 md:w-24 mx-auto"></div></div>
+                <div><p className="font-bold text-[8px] md:text-[10px] mb-8">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-20 md:w-24 mx-auto"></div></div>
               </div>
 
-              <div className="mt-auto pt-2 text-center text-[7px] md:text-[8px] text-gray-400 border-t border-gray-100">
+              <div className="mt-auto pt-1.5 text-center text-[6px] md:text-[7px] text-gray-400 border-t border-gray-100">
                 تم إنشاء الجدول بتاريخ: {new Date().toLocaleDateString()} - نظام EduSchedule
               </div>
             </div>
