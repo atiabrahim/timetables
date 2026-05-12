@@ -68,6 +68,7 @@ const PrintPreview = ({
 
         <div className="flex-1 overflow-auto p-4 md:p-12 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white">
           <div 
+            id="printable-area"
             className={cn(
               "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0 print-area-wrapper",
               orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
@@ -104,7 +105,7 @@ const PrintPreview = ({
                 </div>
               </div>
 
-              <div className="flex-1 w-full">
+              <div className="flex-1 w-full overflow-hidden">
                 <ScheduleTable 
                   isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
                   onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
@@ -131,7 +132,7 @@ const PrintPreview = ({
             @media print {
               @page { 
                 size: A4 ${orientation}; 
-                margin: 2mm !important; 
+                margin: 0 !important; 
               }
               html, body { 
                 width: 100%; 
@@ -139,33 +140,22 @@ const PrintPreview = ({
                 margin: 0 !important; 
                 padding: 0 !important; 
                 background: white; 
-              }
-              body { 
-                display: flex; 
-                justify-content: center; 
-                align-items: flex-start; 
+                overflow: hidden;
               }
               .print-area-wrapper { 
-                position: relative !important; 
-                width: 100% !important; 
-                height: auto !important; 
-                background: white !important; 
-                transform: none !important; 
-                padding: 0 !important; 
+                position: absolute !important; 
+                left: 0 !important; 
+                top: 0 !important; 
+                width: ${orientation === 'portrait' ? '210mm' : '297mm'} !important; 
+                height: ${orientation === 'portrait' ? '297mm' : '210mm'} !important; 
+                transform: scale(${printScale / 100}) !important; 
+                transform-origin: top center !important;
                 margin: 0 !important; 
-                display: flex !important; 
-                justify-content: center !important; 
+                padding: 0 !important; 
+                box-shadow: none !important;
               }
               .print-container { 
-                width: 100% !important; 
-                margin: 0 auto !important; 
-                box-sizing: border-box !important; 
-                padding: 2mm !important; 
-              }
-              table { 
-                width: 100% !important; 
-                table-layout: fixed !important; 
-                border-collapse: collapse !important; 
+                padding: 5mm !important; 
               }
               .print\\:hidden { 
                 display: none !important; 
