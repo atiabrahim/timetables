@@ -90,10 +90,14 @@ export const parseXml = (xmlText: string) => {
     };
   });
 
-  // 2. استخراج القاعات
-  const rooms = Array.from(xmlDoc.getElementsByTagName("classroom")).map(el => 
-    getAttr(el, "name") || getAttr(el, "short")
-  );
+  // 2. استخراج القاعات وإنشاء خريطة للمعرفات
+  const classroomsMap = new Map();
+  const classroomElements = Array.from(xmlDoc.getElementsByTagName("classroom"));
+  const rooms = classroomElements.map(el => {
+    const name = getAttr(el, "name") || getAttr(el, "short");
+    classroomsMap.set(getAttr(el, "id"), name);
+    return name;
+  });
 
   // 3. استخراج الأفواج
   const classes = Array.from(xmlDoc.getElementsByTagName("class")).map(el => ({
@@ -113,7 +117,8 @@ export const parseXml = (xmlText: string) => {
     lessonsMap.set(getAttr(el, "id"), {
       teacherId: getAttr(el, "teacherids"),
       subjectId: getAttr(el, "subjectid"),
-      classId: getAttr(el, "classids")
+      classId: getAttr(el, "classids"),
+      classroomIds: getAttr(el, "classroomids")
     });
   });
 
@@ -124,8 +129,6 @@ export const parseXml = (xmlText: string) => {
     
     if (!lesson) return null;
 
-    // تحويل اليوم من تنسيق aSc (غالباً ثنائي أو رقمي)
-    // ملاحظة: aSc يستخدم أحياناً "10000" للأحد، سنحاول استنتاج الرقم
     let dayStr = getAttr(el, "days") || getAttr(el, "day");
     let day = 0;
     if (dayStr.length > 1 && dayStr.includes("1")) {
@@ -133,6 +136,9 @@ export const parseXml = (xmlText: string) => {
     } else {
       day = parseInt(dayStr) || 0;
     }
+
+    // جلب اسم القاعة من الخريطة باستخدام المعرف
+    const roomName = classroomsMap.get(lesson.classroomIds) || "";
 
     return {
       id: Math.random().toString(36).substr(2, 9),
@@ -142,7 +148,7 @@ export const parseXml = (xmlText: string) => {
       subjectId: lesson.subjectId,
       classId: lesson.classId,
       department: "",
-      room: getAttr(el, "classroomids") || ""
+      room: roomName
     };
   }).filter(a => a !== null);
 
