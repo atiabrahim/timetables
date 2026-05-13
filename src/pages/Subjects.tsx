@@ -13,7 +13,8 @@ import {
   Trash2,
   BookOpen,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Languages
 } from "lucide-react";
 import { showSuccess } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -26,7 +27,7 @@ import {
 } from "@/components/ui/dialog";
 
 type SortConfig = {
-  key: "name" | null;
+  key: "name" | "nameEn" | null;
   direction: "asc" | "desc";
 };
 
@@ -35,7 +36,7 @@ const Subjects = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: "asc" });
   
-  const [newSubjectName, setNewSubjectName] = useState("");
+  const [newSubject, setNewSubject] = useState({ name: "", nameEn: "" });
   const [editingSubject, setEditingSubject] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -51,13 +52,14 @@ const Subjects = () => {
 
   const sortedAndFilteredSubjects = useMemo(() => {
     let items = [...subjects].filter(s => 
-      s.name.toLowerCase().includes(searchTerm.toLowerCase())
+      s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (s.nameEn || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (sortConfig.key !== null) {
       items.sort((a, b) => {
-        const aValue = a.name.toLowerCase();
-        const bValue = b.name.toLowerCase();
+        const aValue = (a[sortConfig.key!] || "").toLowerCase();
+        const bValue = (b[sortConfig.key!] || "").toLowerCase();
         if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
         if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
         return 0;
@@ -72,10 +74,10 @@ const Subjects = () => {
   };
 
   const handleAddSubject = () => {
-    if (!newSubjectName.trim()) return;
+    if (!newSubject.name.trim()) return;
     const id = Math.random().toString(36).substr(2, 9);
-    setSubjects([...subjects, { id, name: newSubjectName }]);
-    setNewSubjectName("");
+    setSubjects([...subjects, { id, ...newSubject }]);
+    setNewSubject({ name: "", nameEn: "" });
     showSuccess(isRTL ? "تم إضافة المادة بنجاح" : "Subject added successfully");
   };
 
@@ -126,11 +128,17 @@ const Subjects = () => {
 
       {/* Add Section (Admin Only) */}
       {isAdmin && (
-        <div className="flex gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
           <Input 
-            value={newSubjectName} 
-            onChange={e => setNewSubjectName(e.target.value)}
-            placeholder={isRTL ? "اسم المادة الجديدة..." : "New subject name..."}
+            value={newSubject.name} 
+            onChange={e => setNewSubject({...newSubject, name: e.target.value})}
+            placeholder={isRTL ? "اسم المادة بالعربية..." : "Subject name in Arabic..."}
+            className={cn("rounded-xl border-gray-200 h-11", isRTL ? "text-right" : "text-left")}
+          />
+          <Input 
+            value={newSubject.nameEn} 
+            onChange={e => setNewSubject({...newSubject, nameEn: e.target.value})}
+            placeholder={isRTL ? "التسمية بالإنجليزية..." : "English translation..."}
             className={cn("rounded-xl border-gray-200 h-11", isRTL ? "text-right" : "text-left")}
           />
           <Button onClick={handleAddSubject} className="bg-[#064e3b] hover:bg-[#053a2c] rounded-xl px-6 h-11 font-bold">
@@ -154,6 +162,15 @@ const Subjects = () => {
                   {isRTL ? "اسم المادة" : "Subject Name"}
                 </div>
               </th>
+              <th 
+                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                onClick={() => handleSort("nameEn")}
+              >
+                <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
+                  <SortIcon column="nameEn" />
+                  {isRTL ? "التسمية بالإنجليزية" : "English Name"}
+                </div>
+              </th>
               <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 text-center">
                 {isRTL ? "إجراءات" : "Actions"}
               </th>
@@ -166,6 +183,12 @@ const Subjects = () => {
                   <div className={cn("flex items-center gap-3", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
                     <span className="font-bold text-emerald-950">{sub.name}</span>
                     <BookOpen size={16} className="text-emerald-500" />
+                  </div>
+                </td>
+                <td className="p-5">
+                  <div className={cn("flex items-center gap-3", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
+                    <span className="text-gray-600 font-medium">{sub.nameEn || "---"}</span>
+                    <Languages size={14} className="text-gray-400" />
                   </div>
                 </td>
                 <td className="p-5 text-center">
@@ -218,6 +241,14 @@ const Subjects = () => {
                 <Input 
                   value={editingSubject.name} 
                   onChange={e => setEditingSubject({...editingSubject, name: e.target.value})}
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-emerald-800">{isRTL ? "التسمية بالإنجليزية" : "English Name"}</label>
+                <Input 
+                  value={editingSubject.nameEn || ""} 
+                  onChange={e => setEditingSubject({...editingSubject, nameEn: e.target.value})}
                   className="rounded-xl"
                 />
               </div>

@@ -47,6 +47,7 @@ interface AcademicClass {
 interface Subject {
   id: string;
   name: string;
+  nameEn?: string;
 }
 
 interface User {

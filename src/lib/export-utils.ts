@@ -34,7 +34,7 @@ export const exportToXml = (data: any, fileName: string) => {
   // تصدير المواد
   xmlString += `  <subjects count="${data.subjects?.length || 0}">\n`;
   (data.subjects || []).forEach((sub: any) => {
-    xmlString += `    <subject id="${sub.id}" name="${sub.name}" short="${sub.name}" />\n`;
+    xmlString += `    <subject id="${sub.id}" name="${sub.name}" name_en="${sub.nameEn || ''}" short="${sub.name}" />\n`;
   });
   xmlString += '  </subjects>\n';
 
@@ -126,7 +126,8 @@ export const parseXml = (xmlText: string) => {
   // 4. استخراج المواد
   const subjects = Array.from(xmlDoc.getElementsByTagName("subject")).map(el => ({
     id: getAttr(el, "id"),
-    name: getAttr(el, "name") || getAttr(el, "short")
+    name: getAttr(el, "name") || getAttr(el, "short"),
+    nameEn: getAttr(el, "name_en")
   }));
 
   // 5. استخراج الحصص والبطاقات (الربط بينهما)
