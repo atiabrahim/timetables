@@ -17,7 +17,7 @@ import {
   Languages,
   Sparkles
 } from "lucide-react";
-import { showSuccess } from "../utils/toast";
+import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -98,13 +98,22 @@ const Subjects = () => {
   };
 
   const suggestTranslation = (arabicName: string, isEdit: boolean = false) => {
-    const suggestion = SUBJECT_DICTIONARY[arabicName.trim()];
+    const trimmedName = arabicName.trim();
+    if (!trimmedName) {
+      showError(isRTL ? "يرجى كتابة اسم المادة أولاً" : "Please enter subject name first");
+      return;
+    }
+
+    const suggestion = SUBJECT_DICTIONARY[trimmedName];
     if (suggestion) {
       if (isEdit) {
         setEditingSubject({ ...editingSubject, nameEn: suggestion });
       } else {
         setNewSubject({ ...newSubject, nameEn: suggestion });
       }
+      showSuccess(isRTL ? "تم العثور على ترجمة مقترحة" : "Suggested translation found");
+    } else {
+      showError(isRTL ? "عذراً، لا توجد ترجمة مقترحة لهذه المادة" : "Sorry, no suggestion found for this subject");
     }
   };
 
@@ -181,7 +190,7 @@ const Subjects = () => {
                 size="icon" 
                 className="h-4 w-4 text-emerald-500 hover:text-emerald-600"
                 onClick={() => suggestTranslation(newSubject.name)}
-                title={isRTL ? "اقتراح ترجمة" : "Suggest translation"}
+                type="button"
               >
                 <Sparkles size={12} />
               </Button>
@@ -306,6 +315,7 @@ const Subjects = () => {
                     size="sm" 
                     className="h-6 text-emerald-500 hover:text-emerald-600 gap-1 text-xs"
                     onClick={() => suggestTranslation(editingSubject.name, true)}
+                    type="button"
                   >
                     <Sparkles size={12} />
                     {isRTL ? "اقتراح" : "Suggest"}
