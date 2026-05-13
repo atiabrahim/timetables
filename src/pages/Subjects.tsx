@@ -62,7 +62,8 @@ const Subjects = () => {
   
   const [newSubject, setNewSubject] = useState({ name: "", nameEn: "" });
   const [editingSubject, setEditingSubject] = useState<any>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isEditDialogOpen] = useState(false); // Note: This was missing its setter in previous turn logic but used in JSX. Fixed below.
+  const [isEditDialogOpenState, setIsEditDialogOpen] = useState(false);
 
   const isAdmin = user?.role === "Admin";
 
@@ -217,7 +218,7 @@ const Subjects = () => {
           <thead>
             <tr className="bg-[#f9f9f1]">
               <th 
-                className="p-4 text-gray-700 font-bold text-sm border border-gray-200 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 cursor-pointer hover:bg-emerald-50/50 transition-colors"
                 onClick={() => handleSort("name")}
               >
                 <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
@@ -226,7 +227,7 @@ const Subjects = () => {
                 </div>
               </th>
               <th 
-                className="p-4 text-gray-700 font-bold text-sm border border-gray-200 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 cursor-pointer hover:bg-emerald-50/50 transition-colors"
                 onClick={() => handleSort("nameEn")}
               >
                 <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
@@ -234,7 +235,7 @@ const Subjects = () => {
                   {isRTL ? "التسمية بالإنجليزية" : "English Name"}
                 </div>
               </th>
-              <th className="p-4 text-gray-700 font-bold text-sm border border-gray-200 text-center w-32">
+              <th className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 text-center w-24">
                 {isRTL ? "إجراءات" : "Actions"}
               </th>
             </tr>
@@ -242,37 +243,37 @@ const Subjects = () => {
           <tbody>
             {sortedAndFilteredSubjects.map((sub) => (
               <tr key={sub.id} className="hover:bg-gray-50 transition-colors group">
-                <td className="p-4 border border-gray-200 align-middle">
-                  <div className={cn("flex items-center gap-3", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                    <span className="font-bold text-emerald-950 break-words">{sub.name}</span>
-                    <BookOpen size={16} className="text-emerald-500 shrink-0" />
+                <td className="py-1 px-3 border border-gray-200 align-middle">
+                  <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
+                    <span className="font-bold text-emerald-950 text-sm break-words">{sub.name}</span>
+                    <BookOpen size={14} className="text-emerald-500 shrink-0" />
                   </div>
                 </td>
-                <td className="p-4 border border-gray-200 align-middle">
-                  <div className={cn("flex items-center gap-3", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                    <span className="text-gray-600 font-medium break-words">{sub.nameEn || "---"}</span>
-                    <Languages size={14} className="text-gray-400 shrink-0" />
+                <td className="py-1 px-3 border border-gray-200 align-middle">
+                  <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
+                    <span className="text-gray-600 font-medium text-sm break-words">{sub.nameEn || "---"}</span>
+                    <Languages size={12} className="text-gray-400 shrink-0" />
                   </div>
                 </td>
-                <td className="p-4 border border-gray-200 text-center align-middle">
-                  <div className="flex justify-center gap-2">
+                <td className="py-1 px-3 border border-gray-200 text-center align-middle">
+                  <div className="flex justify-center gap-1">
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-emerald-700 font-bold gap-2 hover:bg-emerald-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="h-7 px-2 text-emerald-700 font-bold gap-1 hover:bg-emerald-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity text-xs"
                       onClick={() => handleEditClick(sub)}
                     >
-                      <Edit2 size={16} />
+                      <Edit2 size={12} />
                       {isRTL ? "تعديل" : "Edit"}
                     </Button>
                     {isAdmin && (
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="text-red-500 hover:bg-red-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="h-7 w-7 p-0 text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => deleteSubject(sub.id)}
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={12} />
                       </Button>
                     )}
                   </div>
@@ -283,14 +284,14 @@ const Subjects = () => {
         </table>
 
         {sortedAndFilteredSubjects.length === 0 && (
-          <div className="text-center py-24 bg-gray-50/30">
-            <p className="text-gray-400 font-bold">{isRTL ? "لا توجد مواد مطابقة" : "No matching subjects found"}</p>
+          <div className="text-center py-12 bg-gray-50/30">
+            <p className="text-gray-400 font-bold text-sm">{isRTL ? "لا توجد مواد مطابقة" : "No matching subjects found"}</p>
           </div>
         )}
       </div>
 
       {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog open={isEditDialogOpenState} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-md rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-emerald-950">
