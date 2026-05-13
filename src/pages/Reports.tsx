@@ -49,7 +49,7 @@ const Reports = () => {
   // حساب نصاب كل أستاذ
   const teacherLoadData = useMemo(() => {
     return employees.map(emp => ({
-      name: `${emp.lastName} ${emp.firstName[0]}.`,
+      name: `${emp.lastName} ${emp.firstName}`,
       lessons: assignments.filter(a => a.employeeId === emp.id).length
     })).filter(d => d.lessons > 0).sort((a, b) => b.lessons - a.lessons);
   }, [employees, assignments]);
@@ -82,9 +82,18 @@ const Reports = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="h-[350px] w-full">
+            <div className="h-[400px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={teacherLoadData} layout="vertical" margin={{ left: 40 }}>
+                <BarChart 
+                  data={teacherLoadData} 
+                  layout="vertical" 
+                  margin={{ 
+                    top: 5, 
+                    right: isRTL ? 30 : 20, 
+                    left: isRTL ? 20 : 30, 
+                    bottom: 5 
+                  }}
+                >
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#f0fdf4" />
                   <XAxis type="number" hide />
                   <YAxis 
@@ -92,14 +101,30 @@ const Reports = () => {
                     type="category" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: '#064e3b', fontSize: 12, fontWeight: 600 }}
-                    width={100}
+                    tick={{ 
+                      fill: '#064e3b', 
+                      fontSize: 11, 
+                      fontWeight: 600,
+                      textAnchor: isRTL ? 'start' : 'end'
+                    }}
+                    width={120}
+                    orientation={isRTL ? "right" : "left"}
                   />
                   <Tooltip 
                     cursor={{ fill: '#f0fdf4' }}
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                    contentStyle={{ 
+                      borderRadius: '16px', 
+                      border: 'none', 
+                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
                   />
-                  <Bar dataKey="lessons" fill="#10b981" radius={[0, 10, 10, 0]} barSize={20} />
+                  <Bar 
+                    dataKey="lessons" 
+                    fill="#10b981" 
+                    radius={isRTL ? [10, 0, 0, 10] : [0, 10, 10, 0]} 
+                    barSize={20} 
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
