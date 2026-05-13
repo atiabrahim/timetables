@@ -113,7 +113,10 @@ const ScheduleTable = ({
                             </p>
                             <p className={cn("text-gray-600 mt-0.5 whitespace-normal break-words w-full leading-none", isPrint ? "text-[7px]" : "text-[8px] md:text-[9px]")}>
                               {viewMode === "class" 
-                                ? employees.find(e => e.id === assignment.employeeId)?.lastName 
+                                ? (() => {
+                                    const e = employees.find(emp => emp.id === assignment.employeeId);
+                                    return e ? `${e.lastName} ${e.firstName}` : "---";
+                                  })()
                                 : classes.find(c => c.id === assignment.classId)?.name
                               }
                             </p>
@@ -192,7 +195,10 @@ const ScheduleTable = ({
                           </p>
                           <p className={cn("text-gray-600 mt-0.5 whitespace-normal break-words w-full leading-none", isPrint ? "text-[7px]" : "text-[8px] md:text-[9px]")}>
                             {viewMode === "class" 
-                              ? employees.find(e => e.id === assignment.employeeId)?.lastName 
+                              ? (() => {
+                                  const e = employees.find(emp => emp.id === assignment.employeeId);
+                                  return e ? `${e.lastName} ${e.firstName}` : "---";
+                                })()
                               : classes.find(c => c.id === assignment.classId)?.name
                             }
                           </p>

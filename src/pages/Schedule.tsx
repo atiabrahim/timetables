@@ -71,16 +71,16 @@ const Schedule = () => {
   const summaryData = useMemo(() => {
     const summary: Record<string, { subject: string, branch: string, teacher: string, count: number }> = {};
     filteredAssignments.forEach(a => {
-      // التجميع حسب المادة والطرف الآخر (الأستاذ أو الفرع)
       const key = viewMode === "class" 
         ? `${a.subjectId}-${a.employeeId}` 
         : `${a.subjectId}-${a.classId}`;
 
       if (!summary[key]) {
+        const emp = employees.find(e => e.id === a.employeeId);
         summary[key] = { 
           subject: subjects.find(s => s.id === a.subjectId)?.name || "---", 
           branch: classes.find(c => c.id === a.classId)?.name || "---",
-          teacher: employees.find(e => e.id === a.employeeId)?.lastName || "---",
+          teacher: emp ? `${emp.lastName} ${emp.firstName}` : "---",
           count: 0 
         };
       }
