@@ -212,12 +212,12 @@ const Subjects = () => {
       )}
 
       {/* Table Section */}
-      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
-        <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
+      <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
+        <table className={cn("w-full border-collapse border border-gray-200", isRTL ? "text-right" : "text-left")}>
           <thead>
             <tr className="bg-[#f9f9f1]">
               <th 
-                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                className="p-4 text-gray-700 font-bold text-sm border border-gray-200 cursor-pointer hover:bg-emerald-50/50 transition-colors"
                 onClick={() => handleSort("name")}
               >
                 <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
@@ -226,7 +226,7 @@ const Subjects = () => {
                 </div>
               </th>
               <th 
-                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                className="p-4 text-gray-700 font-bold text-sm border border-gray-200 cursor-pointer hover:bg-emerald-50/50 transition-colors"
                 onClick={() => handleSort("nameEn")}
               >
                 <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
@@ -234,27 +234,27 @@ const Subjects = () => {
                   {isRTL ? "التسمية بالإنجليزية" : "English Name"}
                 </div>
               </th>
-              <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 text-center">
+              <th className="p-4 text-gray-700 font-bold text-sm border border-gray-200 text-center w-32">
                 {isRTL ? "إجراءات" : "Actions"}
               </th>
             </tr>
           </thead>
           <tbody>
             {sortedAndFilteredSubjects.map((sub) => (
-              <tr key={sub.id} className="hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group">
-                <td className="p-5">
+              <tr key={sub.id} className="hover:bg-gray-50 transition-colors group">
+                <td className="p-4 border border-gray-200 align-middle">
                   <div className={cn("flex items-center gap-3", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                    <span className="font-bold text-emerald-950">{sub.name}</span>
-                    <BookOpen size={16} className="text-emerald-500" />
+                    <span className="font-bold text-emerald-950 break-words">{sub.name}</span>
+                    <BookOpen size={16} className="text-emerald-500 shrink-0" />
                   </div>
                 </td>
-                <td className="p-5">
+                <td className="p-4 border border-gray-200 align-middle">
                   <div className={cn("flex items-center gap-3", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                    <span className="text-gray-600 font-medium">{sub.nameEn || "---"}</span>
-                    <Languages size={14} className="text-gray-400" />
+                    <span className="text-gray-600 font-medium break-words">{sub.nameEn || "---"}</span>
+                    <Languages size={14} className="text-gray-400 shrink-0" />
                   </div>
                 </td>
-                <td className="p-5 text-center">
+                <td className="p-4 border border-gray-200 text-center align-middle">
                   <div className="flex justify-center gap-2">
                     <Button 
                       variant="ghost" 
