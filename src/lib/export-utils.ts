@@ -7,7 +7,7 @@ export const exportToXml = (data: any, fileName: string) => {
 
   // تصدير بيانات المؤسسة
   if (data.institution) {
-    xmlString += `  <institution name="${data.institution.name}" subname="${data.institution.subName}" address="${data.institution.address}" phone="${data.institution.phone}" email="${data.institution.email}" />\n`;
+    xmlString += `  <institution name="${data.institution.name}" subname="${data.institution.subName}" address="${data.institution.address}" phone="${data.institution.phone}" email="${data.institution.email}" academicyear="${data.institution.academicYear || ''}" />\n`;
   }
 
   // تصدير الموظفين (الأساتذة)
@@ -76,7 +76,8 @@ export const parseXml = (xmlText: string) => {
       subName: getAttr(instEl, "subname"),
       address: getAttr(instEl, "address"),
       phone: getAttr(instEl, "phone"),
-      email: getAttr(instEl, "email")
+      email: getAttr(instEl, "email"),
+      academicYear: getAttr(instEl, "academicyear")
     };
   }
 

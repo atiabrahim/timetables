@@ -5,15 +5,33 @@ import { useApp } from "../context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Building2, Save, Mail, Phone, MapPin, Info } from "lucide-react";
+import { Building2, Save, Mail, Phone, MapPin, Info, Calendar, FileCode } from "lucide-react";
 import { showSuccess } from "../utils/toast";
 import { cn } from "@/lib/utils";
+import { exportToXml } from "../lib/export-utils";
 
 const Institution = () => {
-  const { institution, setInstitution, isRTL, t } = useApp();
+  const { 
+    institution, setInstitution, 
+    employees, assignments, rooms, classes, subjects,
+    isRTL, t 
+  } = useApp();
 
   const handleSave = () => {
     showSuccess(isRTL ? "تم حفظ بيانات المؤسسة بنجاح" : "Institution details saved successfully");
+  };
+
+  const handleExportXml = () => {
+    const dataToExport = {
+      institution,
+      employees,
+      assignments,
+      rooms,
+      classes,
+      subjects
+    };
+    exportToXml(dataToExport, `EduSchedule_Export_${new Date().toISOString().split('T')[0]}`);
+    showSuccess(isRTL ? "تم تصدير ملف XML المحدث" : "Updated XML file exported");
   };
 
   return (
@@ -23,10 +41,23 @@ const Institution = () => {
           <h2 className="text-3xl font-black text-gray-900">{t.institution_page.title}</h2>
           <p className="text-gray-500 font-bold mt-1">{t.institution_page.subtitle}</p>
         </div>
-        <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl gap-2 font-bold px-8 h-12 shadow-lg shadow-emerald-100">
-          <Save size={20} />
-          {t.save}
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            onClick={handleExportXml} 
+            className="rounded-xl border-emerald-200 text-emerald-700 gap-2 font-bold px-6 h-12"
+          >
+            <FileCode size={20} />
+            {isRTL ? "تصدير XML المحدث" : "Export Updated XML"}
+          </Button>
+          <Button 
+            onClick={handleSave} 
+            className="bg-emerald-600 hover:bg-emerald-700 rounded-xl gap-2 font-bold px-8 h-12 shadow-lg shadow-emerald-100"
+          >
+            <Save size={20} />
+            {t.save}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -39,17 +70,34 @@ const Institution = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8 space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
-                  {t.institution_page.name}
-                </label>
-                <div className="relative">
-                  <Building2 className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
-                  <Input 
-                    value={institution.name}
-                    onChange={(e) => setInstitution({...institution, name: e.target.value})}
-                    className={cn("h-14 rounded-2xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all text-lg font-bold", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
+                    {t.institution_page.name}
+                  </label>
+                  <div className="relative">
+                    <Building2 className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
+                    <Input 
+                      value={institution.name}
+                      onChange={(e) => setInstitution({...institution, name: e.target.value})}
+                      className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all font-bold", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
+                    {isRTL ? "السنة الدراسية" : "Academic Year"}
+                  </label>
+                  <div className="relative">
+                    <Calendar className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
+                    <Input 
+                      value={institution.academicYear || ""}
+                      onChange={(e) => setInstitution({...institution, academicYear: e.target.value})}
+                      placeholder="2023/2024"
+                      className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all font-bold", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -62,7 +110,7 @@ const Institution = () => {
                   <Input 
                     value={institution.subName}
                     onChange={(e) => setInstitution({...institution, subName: e.target.value})}
-                    className={cn("h-14 rounded-2xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all text-lg font-bold", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
+                    className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all font-bold", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
                   />
                 </div>
               </div>
@@ -125,6 +173,7 @@ const Institution = () => {
               <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center space-y-2">
                 <h3 className="text-lg font-black text-emerald-900">{institution.name || "---"}</h3>
                 <p className="text-sm font-bold text-emerald-700">{institution.subName || "---"}</p>
+                <p className="text-xs font-medium text-gray-500">{institution.academicYear || "---"}</p>
                 <div className="pt-4 border-t border-gray-100 mt-4 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                   {isRTL ? "ستظهر هذه البيانات في أعلى كل جدول مطبوع" : "This data will appear at the top of every printed schedule"}
                 </div>

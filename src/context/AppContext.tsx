@@ -7,6 +7,7 @@ interface Institution {
   address: string;
   phone: string;
   email: string;
+  academicYear?: string;
   logo?: string;
 }
 
@@ -108,7 +109,8 @@ const DEFAULT_INSTITUTION: Institution = {
   subName: "المجاهد لمقدم مبروك بالدبيلة",
   address: "الدبيلة، الوادي",
   phone: "",
-  email: ""
+  email: "",
+  academicYear: "2023/2024"
 };
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
