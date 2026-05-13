@@ -14,7 +14,8 @@ import {
   BookOpen,
   ChevronUp,
   ChevronDown,
-  Languages
+  Languages,
+  Sparkles
 } from "lucide-react";
 import { showSuccess } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,29 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+
+// قاموس بسيط للمواد الشائعة للاقتراح الآلي
+const SUBJECT_DICTIONARY: Record<string, string> = {
+  "الرياضيات": "Mathematics",
+  "الفيزياء": "Physics",
+  "الكيمياء": "Chemistry",
+  "العلوم الطبيعية": "Natural Sciences",
+  "اللغة العربية": "Arabic Language",
+  "اللغة الفرنسية": "French Language",
+  "اللغة الإنجليزية": "English Language",
+  "التاريخ": "History",
+  "الجغرافيا": "Geography",
+  "التربية الإسلامية": "Islamic Education",
+  "الفلسفة": "Philosophy",
+  "التربية البدنية": "Physical Education",
+  "المعلوماتية": "Informatics",
+  "التكنولوجيا": "Technology",
+  "الرسم": "Drawing",
+  "الموسيقى": "Music",
+  "الاقتصاد": "Economics",
+  "القانون": "Law",
+  "المحاسبة": "Accounting"
+};
 
 type SortConfig = {
   key: "name" | "nameEn" | null;
@@ -71,6 +95,17 @@ const Subjects = () => {
   const SortIcon = ({ column }: { column: SortConfig["key"] }) => {
     if (sortConfig.key !== column) return <ArrowUpDown size={14} className="text-gray-300" />;
     return sortConfig.direction === "asc" ? <ChevronUp size={14} className="text-emerald-600" /> : <ChevronDown size={14} className="text-emerald-600" />;
+  };
+
+  const suggestTranslation = (arabicName: string, isEdit: boolean = false) => {
+    const suggestion = SUBJECT_DICTIONARY[arabicName.trim()];
+    if (suggestion) {
+      if (isEdit) {
+        setEditingSubject({ ...editingSubject, nameEn: suggestion });
+      } else {
+        setNewSubject({ ...newSubject, nameEn: suggestion });
+      }
+    }
   };
 
   const handleAddSubject = () => {
@@ -128,23 +163,42 @@ const Subjects = () => {
 
       {/* Add Section (Admin Only) */}
       {isAdmin && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-          <Input 
-            value={newSubject.name} 
-            onChange={e => setNewSubject({...newSubject, name: e.target.value})}
-            placeholder={isRTL ? "اسم المادة بالعربية..." : "Subject name in Arabic..."}
-            className={cn("rounded-xl border-gray-200 h-11", isRTL ? "text-right" : "text-left")}
-          />
-          <Input 
-            value={newSubject.nameEn} 
-            onChange={e => setNewSubject({...newSubject, nameEn: e.target.value})}
-            placeholder={isRTL ? "التسمية بالإنجليزية..." : "English translation..."}
-            className={cn("rounded-xl border-gray-200 h-11", isRTL ? "text-right" : "text-left")}
-          />
-          <Button onClick={handleAddSubject} className="bg-[#064e3b] hover:bg-[#053a2c] rounded-xl px-6 h-11 font-bold">
-            <Plus size={18} className={isRTL ? "ml-2" : "mr-2"} />
-            {isRTL ? "إضافة" : "Add"}
-          </Button>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm items-end">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-emerald-700 uppercase px-1">{isRTL ? "اسم المادة" : "Subject Name"}</label>
+            <Input 
+              value={newSubject.name} 
+              onChange={e => setNewSubject({...newSubject, name: e.target.value})}
+              placeholder={isRTL ? "مثلاً: الرياضيات" : "e.g. Mathematics"}
+              className={cn("rounded-xl border-gray-200 h-11", isRTL ? "text-right" : "text-left")}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold text-emerald-700 uppercase px-1 flex justify-between items-center">
+              <span>{isRTL ? "التسمية بالإنجليزية" : "English Name"}</span>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-4 w-4 text-emerald-500 hover:text-emerald-600"
+                onClick={() => suggestTranslation(newSubject.name)}
+                title={isRTL ? "اقتراح ترجمة" : "Suggest translation"}
+              >
+                <Sparkles size={12} />
+              </Button>
+            </label>
+            <Input 
+              value={newSubject.nameEn} 
+              onChange={e => setNewSubject({...newSubject, nameEn: e.target.value})}
+              placeholder={isRTL ? "English Name" : "English Name"}
+              className={cn("rounded-xl border-gray-200 h-11", isRTL ? "text-right" : "text-left")}
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Button onClick={handleAddSubject} className="w-full bg-[#064e3b] hover:bg-[#053a2c] rounded-xl h-11 font-bold">
+              <Plus size={18} className={isRTL ? "ml-2" : "mr-2"} />
+              {isRTL ? "إضافة مادة" : "Add Subject"}
+            </Button>
+          </div>
         </div>
       )}
 
@@ -245,7 +299,18 @@ const Subjects = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-emerald-800">{isRTL ? "التسمية بالإنجليزية" : "English Name"}</label>
+                <div className="flex justify-between items-center">
+                  <label className="text-sm font-medium text-emerald-800">{isRTL ? "التسمية بالإنجليزية" : "English Name"}</label>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 text-emerald-500 hover:text-emerald-600 gap-1 text-xs"
+                    onClick={() => suggestTranslation(editingSubject.name, true)}
+                  >
+                    <Sparkles size={12} />
+                    {isRTL ? "اقتراح" : "Suggest"}
+                  </Button>
+                </div>
                 <Input 
                   value={editingSubject.nameEn || ""} 
                   onChange={e => setEditingSubject({...editingSubject, nameEn: e.target.value})}
