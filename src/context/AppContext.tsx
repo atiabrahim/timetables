@@ -1,65 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Language, translations } from "../translations";
-
-interface Institution {
-  name: string;
-  subName: string;
-  address: string;
-  phone: string;
-  email: string;
-  academicYear?: string;
-  logo?: string;
-}
-
-interface Employee {
-  id: string;
-  firstName: string;
-  lastName: string;
-  category: string;
-  observation: string;
-  email?: string;
-  phone?: string;
-}
-
-interface Assignment {
-  id: string;
-  employeeId: string;
-  day: number;
-  period: string;
-  subjectId: string;
-  classId: string;
-  department: string;
-  room?: string;
-}
-
-interface PeriodConfig {
-  day: number;
-  period: string;
-  isActive: boolean;
-}
-
-interface AcademicClass {
-  id: string;
-  name: string;
-  code?: string;
-  qualificationLevel?: string;
-}
-
-interface Subject {
-  id: string;
-  name: string;
-  nameEn?: string;
-}
-
-interface User {
-  id: string;
-  username: string;
-  fullName: string;
-  email: string;
-  role: "Admin" | "Teacher" | "Student";
-  observation: string;
-  isActive: boolean;
-}
+import { 
+  User, Institution, Employee, Assignment, 
+  AcademicClass, Subject, PeriodConfig, AppState 
+} from "../types";
 
 interface AppContextType {
   language: Language;
@@ -85,7 +29,7 @@ interface AppContextType {
   setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
   periodConfigs: PeriodConfig[];
   setPeriodConfigs: React.Dispatch<React.SetStateAction<PeriodConfig[]>>;
-  importAllData: (data: any) => void;
+  importAllData: (data: Partial<AppState>) => void;
   t: any;
   isRTL: boolean;
 }
@@ -142,9 +86,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        if (parsed.systemUsers && parsed.systemUsers.length > 0) {
-          setSystemUsers(parsed.systemUsers);
-        }
+        if (parsed.systemUsers?.length > 0) setSystemUsers(parsed.systemUsers);
         if (parsed.institution) setInstitution(parsed.institution);
         setEmployees(parsed.employees || []);
         setAssignments(parsed.assignments || []);
@@ -164,7 +106,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
   }, [systemUsers, institution, employees, assignments, departments, rooms, classes, subjects, periodConfigs]);
 
-  const importAllData = (data: any) => {
+  const importAllData = (data: Partial<AppState>) => {
     if (!data) return;
     if (data.institution) setInstitution(data.institution);
     if (data.employees) setEmployees(data.employees);
@@ -181,12 +123,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const found = systemUsers.find(u => u.username === username);
     const userToLogin = found || { 
       id: Math.random().toString(36).substr(2, 9), 
-      username, 
-      fullName: username, 
-      email: "", 
-      role, 
-      observation: "", 
-      isActive: true 
+      username, fullName: username, email: "", role, observation: "", isActive: true 
     };
     setUser(userToLogin);
     localStorage.setItem("scheduler_user", JSON.stringify(userToLogin));
@@ -202,13 +139,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <AppContext.Provider value={{ 
       language, setLanguage, user, systemUsers, setSystemUsers, login, logout, 
-      institution, setInstitution,
-      employees, setEmployees, assignments, setAssignments,
-      departments, setDepartments, rooms, setRooms,
-      classes, setClasses, subjects, setSubjects,
-      periodConfigs, setPeriodConfigs,
-      importAllData,
-      t, isRTL 
+      institution, setInstitution, employees, setEmployees, assignments, setAssignments,
+      departments, setDepartments, rooms, setRooms, classes, setClasses, subjects, setSubjects,
+      periodConfigs, setPeriodConfigs, importAllData, t, isRTL 
     }}>
       <div className={isRTL ? "font-arabic" : ""}>
         {children}
