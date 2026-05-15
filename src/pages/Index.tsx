@@ -1,12 +1,12 @@
 "use client";
 
 import React from "react";
-import { useData } from "../context/DataContext";
-import { useAuth } from "../context/AuthContext";
+import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { 
   Users, 
   BookOpen, 
+  Home, 
   Calendar, 
   MapPin,
   ListChecks,
@@ -16,8 +16,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 
 const Index = () => {
-  const { employees, classes, subjects, assignments, rooms, t } = useData();
-  const { user } = useAuth();
+  const { employees, classes, subjects, assignments, rooms, isRTL, t, user } = useApp();
   const navigate = useNavigate();
 
   const stats = [
@@ -31,6 +30,7 @@ const Index = () => {
 
   return (
     <div className="space-y-12">
+      {/* Welcome Section */}
       <div className="text-start">
         <h2 className="text-5xl font-black text-gray-900 flex items-center gap-4">
           {t.welcome} {user?.fullName || "المستخدم"}
@@ -40,6 +40,7 @@ const Index = () => {
         </p>
       </div>
 
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat, idx) => (
           <Card 
