@@ -1,35 +1,27 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useApp } from "../context/AppContext";
+import { useData } from "../context/DataContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-  Search, 
-  Download, 
-  Edit2, 
-  ArrowUpDown,
-  ChevronUp,
-  ChevronDown
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Search, Download, Edit2, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
+import { Employee } from "../types";
 
 type SortConfig = {
-  key: "firstName" | "lastName" | "email" | "phone" | null;
+  key: keyof Employee | null;
   direction: "asc" | "desc";
 };
 
 const Employees = () => {
-  const { employees, isRTL, t } = useApp();
+  const { employees, isRTL } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: "asc" });
 
-  const handleSort = (key: SortConfig["key"]) => {
-    let direction: "asc" | "desc" = "asc";
-    if (sortConfig.key === key && sortConfig.direction === "asc") {
-      direction = "desc";
-    }
-    setSortConfig({ key, direction });
+  const handleSort = (key: keyof Employee) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc"
+    }));
   };
 
   const sortedEmployees = useMemo(() => {
@@ -39,31 +31,20 @@ const Employees = () => {
         .includes(searchTerm.toLowerCase())
     );
 
-    if (sortConfig.key !== null) {
+    if (sortConfig.key) {
       items.sort((a, b) => {
-        const aValue = (a[sortConfig.key!] || "").toString().toLowerCase();
-        const bValue = (b[sortConfig.key!] || "").toString().toLowerCase();
-        
-        if (aValue < bValue) {
-          return sortConfig.direction === "asc" ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === "asc" ? 1 : -1;
-        }
-        return 0;
+        const aVal = String(a[sortConfig.key!] || "").toLowerCase();
+        const bVal = String(b[sortConfig.key!] || "").toLowerCase();
+        return sortConfig.direction === "asc" 
+          ? aVal.localeCompare(bVal) 
+          : bVal.localeCompare(aVal);
       });
     }
     return items;
   }, [employees, searchTerm, sortConfig]);
 
-  const SortIcon = ({ column }: { column: SortConfig["key"] }) => {
-    if (sortConfig.key !== column) return <ArrowUpDown size={14} className="text-gray-300" />;
-    return sortConfig.direction === "asc" ? <ChevronUp size={14} className="text-emerald-600" /> : <ChevronDown size={14} className="text-emerald-600" />;
-  };
-
   return (
     <div className="space-y-6">
-      {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="flex items-center gap-4 w-full md:w-auto order-2 md:order-1">
           <Button variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700">
@@ -80,7 +61,6 @@ const Employees = () => {
             />
           </div>
         </div>
-
         <div className="text-right order-1 md:order-2 w-full md:w-auto">
           <h2 className="text-3xl font-black text-gray-900">
             {isRTL ? "المعلمون" : "Teachers"} 
@@ -89,47 +69,24 @@ const Employees = () => {
         </div>
       </div>
 
-      {/* Table Section */}
       <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
         <table className="w-full border-collapse text-right">
           <thead>
             <tr className="bg-[#f9f9f1]">
-              <th 
-                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
-                onClick={() => handleSort("firstName")}
-              >
-                <div className="flex items-center justify-end gap-2">
-                  <SortIcon column="firstName" />
-                  {isRTL ? "الاسم الأول" : "First Name"}
-                </div>
-              </th>
-              <th 
-                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
-                onClick={() => handleSort("lastName")}
-              >
-                <div className="flex items-center justify-end gap-2">
-                  <SortIcon column="lastName" />
-                  {isRTL ? "اسم العائلة" : "Last Name"}
-                </div>
-              </th>
-              <th 
-                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
-                onClick={() => handleSort("email")}
-              >
-                <div className="flex items-center justify-end gap-2">
-                  <SortIcon column="email" />
-                  {isRTL ? "البريد الإلكتروني" : "Email"}
-                </div>
-              </th>
-              <th 
-                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
-                onClick={() => handleSort("phone")}
-              >
-                <div className="flex items-center justify-end gap-2">
-                  <SortIcon column="phone" />
-                  {isRTL ? "الجوال" : "Mobile"}
-                </div>
-              </th>
+              {["firstName", "lastName", "email", "phone"].map((key) => (
+                <th 
+                  key={key}
+                  className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                  onClick={() => handleSort(key as keyof Employee)}
+                >
+                  <div className="flex items-center justify-end gap-2">
+                    {sortConfig.key === key ? (
+                      sortConfig.direction === "asc" ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                    ) : <ArrowUpDown size={14} className="text-gray-300" />}
+                    {isRTL ? (key === "firstName" ? "الاسم الأول" : key === "lastName" ? "اسم العائلة" : key === "email" ? "البريد" : "الجوال") : key}
+                  </div>
+                </th>
+              ))}
               <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 text-center">
                 {isRTL ? "إجراءات" : "Actions"}
               </th>
@@ -152,12 +109,6 @@ const Employees = () => {
             ))}
           </tbody>
         </table>
-
-        {sortedEmployees.length === 0 && (
-          <div className="text-center py-24 bg-gray-50/30">
-            <p className="text-gray-400 font-bold">{isRTL ? "لا يوجد معلمون مطابقون للبحث" : "No matching teachers found"}</p>
-          </div>
-        )}
       </div>
     </div>
   );
