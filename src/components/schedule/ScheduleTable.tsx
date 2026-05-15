@@ -52,11 +52,11 @@ const ScheduleTable = ({
                 <td className="p-1">
                   <div className="flex items-center gap-1">
                     <div className={cn("rounded-full shrink-0", isPrint ? "w-1 h-1" : "w-2 h-2", getSubjectColor(idx))}></div>
-                    <span className={cn("font-bold text-gray-700 break-words whitespace-normal leading-tight", isPrint ? "text-[6px]" : "text-[11px]")}>{item.subject}</span>
+                    <span className={cn("font-bold text-gray-700 break-words leading-tight", isPrint ? "text-[6px]" : "text-[11px]")}>{item.subject}</span>
                   </div>
                 </td>
                 <td className="p-1 text-center">
-                  <span className={cn("font-medium text-gray-500 break-words whitespace-normal leading-tight", isPrint ? "text-[5px]" : "text-[10px]")}>{viewMode === "class" ? item.teacher : item.branch}</span>
+                  <span className={cn("font-medium text-gray-500 break-words leading-tight", isPrint ? "text-[5px]" : "text-[10px]")}>{viewMode === "class" ? item.teacher : item.branch}</span>
                 </td>
                 <td className="p-1 text-center">
                   <span className={cn("font-black text-gray-900", isPrint ? "text-[7px]" : "text-xs")}>{item.count}</span>
@@ -83,10 +83,10 @@ const ScheduleTable = ({
         isPrint ? "rounded-sm p-0.5" : "rounded-lg md:rounded-xl p-1 md:p-2",
         colorClass
       )}>
-        <p className={cn("font-black leading-tight break-words whitespace-normal w-full", isPrint ? "text-[6px] mb-0" : "text-[10px] md:text-[12px] mb-0.5 md:mb-1")}>
+        <p className={cn("font-black leading-tight break-words w-full", isPrint ? "text-[6px] mb-0" : "text-[10px] md:text-[12px] mb-0.5 md:mb-1")}>
           {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
         </p>
-        <p className={cn("opacity-90 font-medium leading-tight break-words whitespace-normal w-full", isPrint ? "text-[5px] mb-0" : "text-[8px] md:text-[10px] mb-0.5 md:mb-1")}>
+        <p className={cn("opacity-90 font-medium leading-tight break-words w-full", isPrint ? "text-[5px] mb-0" : "text-[8px] md:text-[10px] mb-0.5 md:mb-1")}>
           {viewMode === "class" 
             ? (() => {
                 const e = employees.find(emp => emp.id === assignment.employeeId);
@@ -97,7 +97,7 @@ const ScheduleTable = ({
         </p>
         {assignment.room && (
           <div className={cn("bg-white/20 rounded-sm", isPrint ? "px-0.5 py-0" : "px-1 md:px-2 py-0.5")}>
-            <p className={cn("font-bold leading-none whitespace-nowrap", isPrint ? "text-[5px]" : "text-[8px] md:text-[9px]")}>{assignment.room}</p>
+            <p className={cn("font-bold leading-none", isPrint ? "text-[5px]" : "text-[8px] md:text-[9px]")}>{assignment.room}</p>
           </div>
         )}
         {!isPrint && (
@@ -147,7 +147,7 @@ const ScheduleTable = ({
             );
           }
           return (
-            <tr key={slot.id} className={isPrint ? "min-h-[32px]" : "h-20 md:h-24"}>
+            <tr key={slot.id} className={isPrint ? "h-8" : "h-20 md:h-24"}>
               <td className="p-0.5">
                 <div className="flex flex-col items-center justify-center h-full bg-white rounded-md border border-gray-100 shadow-sm">
                   <span className={cn("text-emerald-600 font-black", isPrint ? "text-[6px]" : "text-[9px] md:text-xs")}>{isRTL ? "ح" : "P"} {slot.label}</span>
@@ -195,7 +195,7 @@ const ScheduleTable = ({
       </thead>
       <tbody>
         {days.map(day => (
-          <tr key={day.id} className={isPrint ? "min-h-[32px]" : "h-20 md:h-24"}>
+          <tr key={day.id} className={isPrint ? "h-8" : "h-20 md:h-24"}>
             <td className="p-0.5">
               <div className="flex flex-col items-center justify-center h-full bg-white rounded-md border border-gray-100 shadow-sm">
                 <span className={cn("text-emerald-600 font-black", isPrint ? "text-[7px]" : "text-[9px] md:text-xs")}>{isRTL ? day.name : day.en}</span>
