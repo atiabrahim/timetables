@@ -22,7 +22,6 @@ interface ScheduleTableProps {
   isTransposed?: boolean;
 }
 
-// قائمة ألوان زاهية للمواد
 const SUBJECT_COLORS = [
   "bg-blue-600", "bg-emerald-500", "bg-rose-500", "bg-amber-500", 
   "bg-violet-600", "bg-cyan-500", "bg-orange-500", "bg-indigo-500",
@@ -43,8 +42,8 @@ const ScheduleTable = ({
           <thead>
             <tr className="bg-gray-50/50">
               <th className="p-3 text-[10px] font-black text-gray-400 uppercase text-right">{isRTL ? "المادة" : "Subject"}</th>
-              <th className="p-3 text-[10px] font-black text-gray-400 uppercase text-center">{isRTL ? "المعلم" : "Teacher"}</th>
-              <th className="p-3 text-[10px] font-black text-gray-400 uppercase text-center">{isRTL ? "عدد الحصص" : "Hrs"}</th>
+              <th className="p-3 text-[10px] font-black text-gray-400 uppercase text-center">{isRTL ? (viewMode === "class" ? "المعلم" : "الفوج") : (viewMode === "class" ? "Teacher" : "Class")}</th>
+              <th className="p-3 text-[10px] font-black text-gray-400 uppercase text-center">{isRTL ? "س" : "Hrs"}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -74,8 +73,7 @@ const ScheduleTable = ({
     </div>
   );
 
-  // تصميم الخلية (البطاقة الملونة)
-  const LessonCard = ({ assignment, dayId, slotId }: { assignment: any, dayId: number, slotId: string }) => {
+  const LessonCard = ({ assignment }: { assignment: any }) => {
     const subjectIndex = subjects.findIndex(s => s.id === assignment.subjectId);
     const colorClass = getSubjectColor(subjectIndex);
 
@@ -114,82 +112,130 @@ const ScheduleTable = ({
     );
   };
 
-  return (
-    <div className={cn("flex gap-6 w-full", isRTL ? "flex-row" : "flex-row-reverse", isPrint ? "items-start" : "overflow-x-auto pb-4")}>
-      <div className={cn("flex-1", isPrint ? "w-full" : "min-w-[800px]")}>
-        <table className="w-full border-separate border-spacing-2">
-          <thead>
-            <tr>
-              <th className={cn(
-                "p-3 rounded-2xl bg-emerald-50 text-emerald-900 font-black text-xs",
-                isPrint ? "w-16" : "w-24"
-              )}>
-                {isRTL ? "الحصة" : "Period"}
-              </th>
-              {days.map(day => (
-                <th key={day.id} className="p-3 rounded-2xl bg-emerald-50 text-emerald-900 font-black text-xs text-center">
-                  {isRTL ? day.name : day.en}
-                </th>
-              ))}
+  // منطق العرض العادي (الحصص أسطر، الأيام أعمدة)
+  const renderStandard = () => (
+    <table className="w-full border-separate border-spacing-2">
+      <thead>
+        <tr>
+          <th className={cn("p-3 rounded-2xl bg-emerald-50 text-emerald-900 font-black text-xs", isPrint ? "w-16" : "w-24")}>
+            {isRTL ? "الحصة" : "Period"}
+          </th>
+          {days.map(day => (
+            <th key={day.id} className="p-3 rounded-2xl bg-emerald-50 text-emerald-900 font-black text-xs text-center">
+              {isRTL ? day.name : day.en}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {timeSlots.map(slot => {
+          if (slot.isBreak) {
+            return (
+              <tr key={slot.id}>
+                <td className="p-2 text-center">
+                  <div className="flex flex-col items-center justify-center text-amber-600">
+                    {slot.id === 'break-am' ? <Coffee size={18} /> : <Utensils size={18} />}
+                    <span className="text-[10px] font-black mt-1">{slot.label}</span>
+                  </div>
+                </td>
+                <td colSpan={days.length} className="p-2">
+                  <div className="w-full h-10 bg-amber-50/50 rounded-2xl border border-dashed border-amber-200 flex items-center justify-center">
+                    <span className="text-amber-700 font-bold text-xs tracking-widest uppercase">{slot.label}</span>
+                  </div>
+                </td>
+              </tr>
+            );
+          }
+          return (
+            <tr key={slot.id} className={isPrint ? "h-16" : "h-24"}>
+              <td className="p-2">
+                <div className="flex flex-col items-center justify-center h-full bg-white rounded-2xl border border-gray-100 shadow-sm">
+                  <span className="text-emerald-600 font-black text-xs">{isRTL ? "الحصة" : "Period"} {slot.label}</span>
+                  <span className="text-[9px] font-bold text-gray-400 mt-1">{slot.time}</span>
+                </div>
+              </td>
+              {days.map(day => {
+                const assignment = getAssignment(day.id, slot.id);
+                return (
+                  <td key={day.id} className="p-1 relative group">
+                    {assignment ? <LessonCard assignment={assignment} /> : (
+                      !isPrint && (
+                        <div className="h-full w-full rounded-2xl border-2 border-dashed border-gray-100 flex items-center justify-center cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/30 transition-all group/add" onClick={() => onAddClick(day.id, slot.id)}>
+                          <Plus size={20} className="text-gray-200 group-hover/add:text-emerald-400 transition-colors" />
+                        </div>
+                      )
+                    )}
+                  </td>
+                );
+              })}
             </tr>
-          </thead>
-          <tbody>
+          );
+        })}
+      </tbody>
+    </table>
+  );
+
+  // منطق العرض المتبادل (الأيام أسطر، الحصص أعمدة)
+  const renderTransposed = () => (
+    <table className="w-full border-separate border-spacing-2">
+      <thead>
+        <tr>
+          <th className={cn("p-3 rounded-2xl bg-emerald-50 text-emerald-900 font-black text-xs", isPrint ? "w-16" : "w-24")}>
+            {isRTL ? "اليوم" : "Day"}
+          </th>
+          {timeSlots.map(slot => (
+            <th key={slot.id} className={cn("p-3 rounded-2xl bg-emerald-50 text-emerald-900 font-black text-xs text-center", slot.isBreak && "bg-amber-50 text-amber-700")}>
+              <div className="flex flex-col items-center">
+                {slot.isBreak ? (slot.id === 'break-am' ? <Coffee size={14} /> : <Utensils size={14} />) : null}
+                <span>{slot.label}</span>
+                {!slot.isBreak && <span className="text-[8px] opacity-60">{slot.time}</span>}
+              </div>
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {days.map(day => (
+          <tr key={day.id} className={isPrint ? "h-16" : "h-24"}>
+            <td className="p-2">
+              <div className="flex flex-col items-center justify-center h-full bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <span className="text-emerald-600 font-black text-xs">{isRTL ? day.name : day.en}</span>
+              </div>
+            </td>
             {timeSlots.map(slot => {
               if (slot.isBreak) {
                 return (
-                  <tr key={slot.id}>
-                    <td className="p-2 text-center">
-                      <div className="flex flex-col items-center justify-center text-amber-600">
-                        {slot.id === 'break-am' ? <Coffee size={18} /> : <Utensils size={18} />}
-                        <span className="text-[10px] font-black mt-1">{slot.label}</span>
-                      </div>
-                    </td>
-                    <td colSpan={days.length} className="p-2">
-                      <div className="w-full h-10 bg-amber-50/50 rounded-2xl border border-dashed border-amber-200 flex items-center justify-center">
-                        <span className="text-amber-700 font-bold text-xs tracking-widest uppercase">
-                          {slot.label}
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              }
-
-              return (
-                <tr key={slot.id} className={isPrint ? "h-16" : "h-24"}>
-                  <td className="p-2">
-                    <div className="flex flex-col items-center justify-center h-full bg-white rounded-2xl border border-gray-100 shadow-sm">
-                      <span className="text-emerald-600 font-black text-xs">{isRTL ? "الحصة" : "Period"} {slot.label}</span>
-                      <span className="text-[9px] font-bold text-gray-400 mt-1">{slot.time}</span>
+                  <td key={slot.id} className="p-1">
+                    <div className="h-full w-full bg-amber-50/30 rounded-xl border border-dashed border-amber-100 flex items-center justify-center">
+                      <span className="text-amber-600/40 text-[8px] font-bold rotate-90">{slot.label}</span>
                     </div>
                   </td>
-                  {days.map(day => {
-                    const assignment = getAssignment(day.id, slot.id);
-                    return (
-                      <td key={day.id} className="p-1 relative group">
-                        {assignment ? (
-                          <LessonCard assignment={assignment} dayId={day.id} slotId={slot.id} />
-                        ) : (
-                          !isPrint && (
-                            <div 
-                              className="h-full w-full rounded-2xl border-2 border-dashed border-gray-100 flex items-center justify-center cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/30 transition-all group/add"
-                              onClick={() => onAddClick(day.id, slot.id)}
-                            >
-                              <Plus size={20} className="text-gray-200 group-hover/add:text-emerald-400 transition-colors" />
-                            </div>
-                          )
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
+                );
+              }
+              const assignment = getAssignment(day.id, slot.id);
+              return (
+                <td key={slot.id} className="p-1 relative group">
+                  {assignment ? <LessonCard assignment={assignment} /> : (
+                    !isPrint && (
+                      <div className="h-full w-full rounded-2xl border-2 border-dashed border-gray-100 flex items-center justify-center cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/30 transition-all group/add" onClick={() => onAddClick(day.id, slot.id)}>
+                        <Plus size={20} className="text-gray-200 group-hover/add:text-emerald-400 transition-colors" />
+                      </div>
+                    )
+                  )}
+                </td>
               );
             })}
-          </tbody>
-        </table>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
+  return (
+    <div className={cn("flex gap-6 w-full", isRTL ? "flex-row" : "flex-row-reverse", isPrint ? "items-start" : "overflow-x-auto pb-4")}>
+      <div className={cn("flex-1", isPrint ? "w-full" : "min-w-[800px]")}>
+        {isTransposed ? renderTransposed() : renderStandard()}
       </div>
-      
-      {/* الملخص الجانبي يظهر فقط في وضع الطباعة أو إذا كانت هناك بيانات */}
       {(isPrint || summaryData) && <SummaryTable />}
     </div>
   );
