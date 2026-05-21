@@ -36,7 +36,7 @@ const ScheduleTable = ({
 }: ScheduleTableProps) => {
   
   const SummaryTable = () => (
-    <div className={cn("shrink-0", isPrint ? "w-32" : "w-64")}>
+    <div className={cn("shrink-0", isPrint ? "w-28" : "w-64")}>
       <div className={cn(
         "bg-white border shadow-sm overflow-hidden h-full",
         isPrint ? "rounded-none border-black" : "rounded-lg md:rounded-2xl border-gray-100"
@@ -124,8 +124,8 @@ const ScheduleTable = ({
       <thead>
         <tr className={isPrint ? "h-6" : "h-10"}>
           <th className={cn(
-            "font-black", 
-            isPrint ? "border border-black text-[7px] text-black bg-transparent" : "rounded-md bg-emerald-50 text-emerald-900 p-2 text-xs w-24"
+            "font-black text-center", 
+            isPrint ? "border border-black text-[7px] text-black bg-transparent w-10" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs w-14"
           )}>
             {isRTL ? "الحصة" : "Period"}
           </th>
@@ -164,8 +164,9 @@ const ScheduleTable = ({
             <tr key={slot.id} className={cn("group", isPrint ? "h-14" : "h-16")}>
               <td className={cn(isPrint ? "border border-black" : "p-0.5")}>
                 <div className={cn("flex flex-col items-center justify-center h-full", !isPrint && "bg-white rounded-md border border-gray-100 shadow-sm")}>
-                  <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[11px] text-emerald-600")}>{isRTL ? "ح" : "P"} {slot.label}</span>
-                  <span className={cn("font-bold", isPrint ? "text-[5px] text-black/60" : "text-[8px] text-gray-400")}>{slot.time}</span>
+                  <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[11px] text-emerald-600")}>{isRTL ? "ح" : "P"}{slot.label}</span>
+                  {!isPrint && <span className="font-bold text-[8px] text-gray-400">{slot.time}</span>}
+                  {isPrint && <span className="text-[5px] text-black/60">{slot.time}</span>}
                 </div>
               </td>
               {days.map(day => {
