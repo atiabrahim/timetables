@@ -69,30 +69,30 @@ const PrintPreview = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-4 md:p-12 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white">
+        <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white">
           <div 
             id="printable-area"
             className={cn(
-              "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0 print-area-wrapper",
+              "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0 print:w-full print:h-full",
               orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
             )}
             style={{ transform: `scale(${printScale / 100})` }}
           >
-            <div className="p-4 md:p-8 flex-1 flex flex-col print-container">
-              <div className="flex justify-between items-center mb-3">
-                <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
+            <div className="p-8 md:p-12 flex-1 flex flex-col print:p-6 h-full">
+              <div className="flex justify-between items-center mb-6">
+                <div className="w-16 h-16 flex items-center justify-center">
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
                 </div>
                 <div className="text-center flex-1">
-                  <h1 className="text-sm md:text-base font-bold text-emerald-900">{institution.name}</h1>
-                  <h2 className="text-xs md:text-sm font-bold text-emerald-800">{institution.subName}</h2>
+                  <h1 className="text-base md:text-xl font-bold text-emerald-900 leading-tight">{institution.name}</h1>
+                  <h2 className="text-sm md:text-base font-bold text-emerald-800">{institution.subName}</h2>
                 </div>
-                <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
+                <div className="w-16 h-16 flex items-center justify-center">
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 mb-3 text-[8px] md:text-[10px] font-bold border-y border-black py-1.5">
+              <div className="grid grid-cols-3 gap-2 mb-4 text-[10px] md:text-xs font-bold border-y border-black py-2">
                 <div className="text-right">
                   {viewMode === "teacher" ? (
                     <p>{isRTL ? "الأستاذ(ة):" : "Teacher:"} {selectedEntity?.lastName} {selectedEntity?.firstName}</p>
@@ -117,13 +117,13 @@ const PrintPreview = ({
                 />
               </div>
 
-              <div className="mt-6 grid grid-cols-3 gap-4 text-center">
-                <div><p className="font-bold text-[8px] md:text-[10px] mb-8">{isRTL ? "الأستاذ" : "Teacher"}</p><div className="border-t border-black w-20 md:w-24 mx-auto"></div></div>
-                <div><p className="font-bold text-[8px] md:text-[10px] mb-8">{isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}</p><div className="border-t border-black w-20 md:w-24 mx-auto"></div></div>
-                <div><p className="font-bold text-[8px] md:text-[10px] mb-8">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-20 md:w-24 mx-auto"></div></div>
+              <div className="mt-8 grid grid-cols-3 gap-4 text-center">
+                <div><p className="font-bold text-xs mb-10">{isRTL ? "الأستاذ" : "Teacher"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
+                <div><p className="font-bold text-xs mb-10">{isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
+                <div><p className="font-bold text-xs mb-10">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
               </div>
 
-              <div className="mt-auto pt-1.5 text-center text-[6px] md:text-[7px] text-gray-400 border-t border-gray-100">
+              <div className="mt-4 pt-2 text-center text-[8px] text-gray-400 border-t border-gray-100">
                 تم إنشاء الجدول بتاريخ: {new Date().toLocaleDateString()} - نظام EduSchedule
               </div>
             </div>
@@ -138,31 +138,20 @@ const PrintPreview = ({
                 margin: 0 !important; 
               }
               html, body { 
-                width: 100%; 
-                height: 100%; 
+                width: 100% !important; 
+                height: 100% !important; 
                 margin: 0 !important; 
                 padding: 0 !important; 
                 background: white; 
-                overflow: hidden;
+                overflow: visible !important;
               }
-              .print-area-wrapper { 
-                position: absolute !important; 
-                left: 0 !important; 
-                top: 0 !important; 
-                width: ${orientation === 'portrait' ? '210mm' : '297mm'} !important; 
-                height: ${orientation === 'portrait' ? '297mm' : '210mm'} !important; 
-                transform: scale(${printScale / 100}) !important; 
-                transform-origin: top center !important;
-                margin: 0 !important; 
-                padding: 0 !important; 
-                box-shadow: none !important;
+              #printable-area {
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                transform: none !important;
               }
-              .print-container { 
-                padding: 5mm !important; 
-              }
-              .print\\:hidden { 
-                display: none !important; 
-              }
+              .print\\:hidden { display: none !important; }
             }
           `}
         </style>
