@@ -38,24 +38,24 @@ const ScheduleTable = ({
   const SummaryTable = () => (
     <div className={cn("shrink-0", isPrint ? "w-32" : "w-64")}>
       <div className="bg-white rounded-lg md:rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-full">
-        <table className="w-full border-collapse h-full">
+        <table className="w-full border-collapse h-full table-fixed">
           <thead>
             <tr className="bg-gray-50/50">
-              <th className={cn("p-1 font-black text-gray-400 uppercase text-right", isPrint ? "text-[7px]" : "text-[10px]")}>{isRTL ? "المادة" : "Subject"}</th>
-              <th className={cn("p-1 font-black text-gray-400 uppercase text-center", isPrint ? "text-[7px]" : "text-[10px]")}>{isRTL ? (viewMode === "class" ? "المعلم" : "الفوج") : (viewMode === "class" ? "Teacher" : "Class")}</th>
-              <th className={cn("p-1 font-black text-gray-400 uppercase text-center", isPrint ? "text-[7px]" : "text-[10px]")}>{isRTL ? "س" : "Hrs"}</th>
+              <th className={cn("p-1 font-black text-gray-400 uppercase text-right w-[45%]", isPrint ? "text-[7px]" : "text-[10px]")}>{isRTL ? "المادة" : "Subject"}</th>
+              <th className={cn("p-1 font-black text-gray-400 uppercase text-center w-[40%]", isPrint ? "text-[7px]" : "text-[10px]")}>{isRTL ? (viewMode === "class" ? "المعلم" : "الفوج") : (viewMode === "class" ? "Teacher" : "Class")}</th>
+              <th className={cn("p-1 font-black text-gray-400 uppercase text-center w-[15%]", isPrint ? "text-[7px]" : "text-[10px]")}>{isRTL ? "س" : "Hrs"}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {summaryData?.map((item, idx) => (
               <tr key={idx} className="hover:bg-gray-50/30 transition-colors">
-                <td className="p-1">
+                <td className="p-1 overflow-hidden">
                   <div className="flex items-center gap-1">
                     <div className={cn("rounded-full shrink-0", isPrint ? "w-1 h-1" : "w-2 h-2", getSubjectColor(idx))}></div>
                     <span className={cn("font-bold text-gray-700 break-words whitespace-normal leading-tight", isPrint ? "text-[7px]" : "text-[11px]")}>{item.subject}</span>
                   </div>
                 </td>
-                <td className="p-1 text-center">
+                <td className="p-1 text-center overflow-hidden">
                   <span className={cn("font-medium text-gray-500 break-words whitespace-normal leading-tight", isPrint ? "text-[6px]" : "text-[10px]")}>{viewMode === "class" ? item.teacher : item.branch}</span>
                 </td>
                 <td className="p-1 text-center">
@@ -114,10 +114,10 @@ const ScheduleTable = ({
   };
 
   const renderStandard = () => (
-    <table className={cn("w-full border-separate border-spacing-1 h-full")}>
+    <table className={cn("w-full border-separate border-spacing-1 h-full table-fixed")}>
       <thead>
-        <tr>
-          <th className={cn("rounded-md bg-emerald-50 text-emerald-900 font-black", isPrint ? "p-1 text-[8px] w-12" : "p-3 text-xs w-24")}>
+        <tr className={isPrint ? "h-8" : "h-12"}>
+          <th className={cn("rounded-md bg-emerald-50 text-emerald-900 font-black w-16", isPrint ? "p-1 text-[8px]" : "p-3 text-xs w-24")}>
             {isRTL ? "الحصة" : "Period"}
           </th>
           {days.map(day => (
@@ -131,7 +131,7 @@ const ScheduleTable = ({
         {timeSlots.map(slot => {
           if (slot.isBreak) {
             return (
-              <tr key={slot.id}>
+              <tr key={slot.id} className={isPrint ? "h-6" : "h-10"}>
                 <td className="p-0.5 text-center">
                   <div className="flex flex-col items-center justify-center text-amber-600">
                     {slot.id === 'break-am' ? <Coffee size={isPrint ? 10 : 14} /> : <Utensils size={isPrint ? 10 : 14} />}
@@ -139,7 +139,7 @@ const ScheduleTable = ({
                   </div>
                 </td>
                 <td colSpan={days.length} className="p-0.5">
-                  <div className={cn("w-full bg-amber-50/50 rounded-md border border-dashed border-amber-200 flex items-center justify-center", isPrint ? "h-5" : "h-10")}>
+                  <div className={cn("w-full bg-amber-50/50 rounded-md border border-dashed border-amber-200 flex items-center justify-center h-full")}>
                     <span className={cn("text-amber-700 font-bold tracking-widest uppercase", isPrint ? "text-[7px]" : "text-xs")}>{slot.label}</span>
                   </div>
                 </td>
@@ -147,7 +147,7 @@ const ScheduleTable = ({
             );
           }
           return (
-            <tr key={slot.id} className={cn("group", isPrint ? "min-h-[2.5rem]" : "h-24")}>
+            <tr key={slot.id} className={cn("group", isPrint ? "h-20" : "h-24")}>
               <td className="p-0.5">
                 <div className="flex flex-col items-center justify-center h-full bg-white rounded-md border border-gray-100 shadow-sm">
                   <span className={cn("text-emerald-600 font-black", isPrint ? "text-[8px]" : "text-xs")}>{isRTL ? "ح" : "P"} {slot.label}</span>
@@ -176,10 +176,10 @@ const ScheduleTable = ({
   );
 
   const renderTransposed = () => (
-    <table className={cn("w-full border-separate border-spacing-1 h-full")}>
+    <table className={cn("w-full border-separate border-spacing-1 h-full table-fixed")}>
       <thead>
-        <tr>
-          <th className={cn("rounded-md bg-emerald-50 text-emerald-900 font-black", isPrint ? "p-1 text-[8px] w-12" : "p-3 text-xs w-24")}>
+        <tr className={isPrint ? "h-8" : "h-12"}>
+          <th className={cn("rounded-md bg-emerald-50 text-emerald-900 font-black w-24", isPrint ? "p-1 text-[8px]" : "p-3 text-xs")}>
             {isRTL ? "اليوم" : "Day"}
           </th>
           {timeSlots.map(slot => (
@@ -195,7 +195,7 @@ const ScheduleTable = ({
       </thead>
       <tbody>
         {days.map(day => (
-          <tr key={day.id} className={cn("group", isPrint ? "min-h-[2.5rem]" : "h-24")}>
+          <tr key={day.id} className={cn("group", isPrint ? "h-20" : "h-24")}>
             <td className="p-0.5">
               <div className="flex flex-col items-center justify-center h-full bg-white rounded-md border border-gray-100 shadow-sm">
                 <span className={cn("text-emerald-600 font-black", isPrint ? "text-[8px]" : "text-xs")}>{isRTL ? day.name : day.en}</span>
