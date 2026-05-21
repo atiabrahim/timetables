@@ -2,13 +2,24 @@
 
 import React, { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
-import { Settings2, ArrowLeftRight } from "lucide-react";
+import { Settings2, ArrowLeftRight, Trash2, Share2 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import ScheduleHeader from "../components/schedule/ScheduleHeader";
 import ScheduleTable from "../components/schedule/ScheduleTable";
 import AddLessonDialog from "../components/schedule/AddLessonDialog";
 import PrintPreview from "../components/schedule/PrintPreview";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const DAYS = [
   { id: 0, name: "الأحد", en: "Sunday" },
@@ -97,6 +108,18 @@ const Schedule = () => {
     setIsDialogOpen(true);
   };
 
+  const handleClearSchedule = () => {
+    const remainingAssignments = assignments.filter(a => viewMode === "class" ? a.classId !== selectedId : a.employeeId !== selectedId);
+    setAssignments(remainingAssignments);
+    showSuccess(isRTL ? "تم تفريغ الجدول بالكامل" : "Schedule cleared successfully");
+  };
+
+  const handleCopyLink = () => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url);
+    showSuccess(isRTL ? "تم نسخ رابط الصفحة" : "Link copied to clipboard");
+  };
+
   const checkConflicts = (day: number, period: string, empId: string, clsId: string, room: string) => {
     const teacherConflict = assignments.find(a => a.day === day && a.period === period && a.employeeId === empId);
     if (teacherConflict) return isRTL ? `الأستاذ مشغول حالياً مع الفوج: ${classes.find(c => c.id === teacherConflict.classId)?.name}` : `Teacher is busy`;
@@ -124,7 +147,48 @@ const Schedule = () => {
         />
         
         {selectedId && (
-          <div className="flex justify-end print:hidden">
+          <div className="flex justify-between items-center print:hidden">
+            <div className="flex gap-2">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 gap-2 font-bold"
+                  >
+                    <Trash2 size={16} />
+                    {isRTL ? "تفريغ الجدول" : "Clear Schedule"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-3xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{isRTL ? "هل أنت متأكد؟" : "Are you sure?"}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {isRTL 
+                        ? "سيتم حذف جميع الحصص المرتبطة بهذا الجدول نهائياً. لا يمكن التراجع عن هذا الإجراء." 
+                        : "All lessons for this schedule will be permanently deleted. This action cannot be undone."}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearSchedule} className="bg-red-600 hover:bg-red-700 rounded-xl">
+                      {isRTL ? "نعم، حذف الكل" : "Yes, Clear All"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleCopyLink}
+                className="rounded-xl text-emerald-600 hover:bg-emerald-50 gap-2 font-bold"
+              >
+                <Share2 size={16} />
+                {isRTL ? "مشاركة" : "Share"}
+              </Button>
+            </div>
+
             <Button 
               variant="outline" 
               size="sm" 
@@ -132,7 +196,7 @@ const Schedule = () => {
               className="rounded-xl border-emerald-100 text-emerald-700 font-bold gap-2"
             >
               <ArrowLeftRight size={16} />
-              {isRTL ? "تبديل المحاور (أسطر/أعمدة)" : "Transpose Table"}
+              {isRTL ? "تبديل المحاور" : "Transpose"}
             </Button>
           </div>
         )}

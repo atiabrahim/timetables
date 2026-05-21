@@ -36,13 +36,13 @@ const ScheduleTable = ({
 }: ScheduleTableProps) => {
   
   const SummaryTable = () => (
-    <div className={cn("shrink-0", isPrint ? "w-28" : "w-64")}>
+    <div className={cn("shrink-0", isPrint ? "w-28" : "w-64 sticky top-0 h-fit")}>
       <div className={cn(
-        "bg-white border shadow-sm overflow-hidden h-full",
+        "bg-white border shadow-sm overflow-hidden",
         isPrint ? "rounded-none border-black" : "rounded-lg md:rounded-2xl border-gray-100"
       )}>
-        <table className={cn("w-full h-full table-fixed", isPrint ? "border-collapse" : "border-collapse")}>
-          <thead>
+        <table className={cn("w-full table-fixed", isPrint ? "border-collapse" : "border-collapse")}>
+          <thead className="sticky top-0 bg-white z-10">
             <tr className={cn(isPrint ? "bg-transparent border-b border-black" : "bg-gray-50/50")}>
               <th className={cn("p-1 font-black uppercase text-right w-[45%]", isPrint ? "text-[7px] text-black" : "text-[10px] text-gray-400")}>{isRTL ? "المادة" : "Subject"}</th>
               <th className={cn("p-1 font-black uppercase text-center w-[40%]", isPrint ? "text-[7px] text-black border-x border-black" : "text-[10px] text-gray-400")}>{isRTL ? (viewMode === "class" ? "المعلم" : "الفوج") : (viewMode === "class" ? "Teacher" : "Class")}</th>
@@ -121,7 +121,7 @@ const ScheduleTable = ({
 
   const renderStandard = () => (
     <table className={tableStyles}>
-      <thead>
+      <thead className="sticky top-0 bg-white z-10 shadow-sm">
         <tr className={isPrint ? "h-6" : "h-10"}>
           <th className={cn(
             "font-black text-center", 
@@ -192,7 +192,7 @@ const ScheduleTable = ({
 
   const renderTransposed = () => (
     <table className={tableStyles}>
-      <thead>
+      <thead className="sticky top-0 bg-white z-10 shadow-sm">
         <tr className={isPrint ? "h-6" : "h-10"}>
           <th className={cn(
             "font-black", 
@@ -254,7 +254,7 @@ const ScheduleTable = ({
   );
 
   return (
-    <div className={cn("flex w-full h-full", isRTL ? "flex-row" : "flex-row-reverse", isPrint ? "gap-2 items-stretch" : "gap-6 overflow-x-auto pb-4")}>
+    <div className={cn("flex w-full h-full", isRTL ? "flex-row" : "flex-row-reverse", isPrint ? "gap-2 items-stretch" : "gap-6 overflow-x-auto pb-4 relative")}>
       <div className={cn("flex-1 h-full", isPrint ? "w-full" : "min-w-[800px]")}>
         {isTransposed ? renderTransposed() : renderStandard()}
       </div>
