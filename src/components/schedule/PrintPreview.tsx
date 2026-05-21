@@ -73,27 +73,29 @@ const PrintPreview = ({
           <div 
             id="printable-area"
             className={cn(
-              "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0 print:w-full print:h-full",
-              orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
+              "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0 print:overflow-hidden",
+              orientation === "portrait" ? "w-[210mm] h-[297mm]" : "w-[297mm] h-[210mm]"
             )}
             style={{ transform: `scale(${printScale / 100})` }}
           >
-            <div className="p-8 md:p-12 flex-1 flex flex-col print:p-6 h-full">
-              <div className="flex justify-between items-center mb-6">
-                <div className="w-16 h-16 flex items-center justify-center">
+            <div className="p-8 md:p-10 flex-1 flex flex-col print:p-6 overflow-hidden h-full">
+              {/* Header */}
+              <div className="flex justify-between items-center mb-4 shrink-0">
+                <div className="w-14 h-14 flex items-center justify-center">
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
                 </div>
                 <div className="text-center flex-1">
-                  <h1 className="text-base md:text-xl font-bold text-emerald-900 leading-tight">{institution.name}</h1>
-                  <h2 className="text-sm md:text-base font-bold text-emerald-800">{institution.subName}</h2>
+                  <h1 className="text-sm md:text-lg font-bold text-emerald-900 leading-tight">{institution.name}</h1>
+                  <h2 className="text-xs md:text-sm font-bold text-emerald-800">{institution.subName}</h2>
                 </div>
-                <div className="w-16 h-16 flex items-center justify-center">
+                <div className="w-14 h-14 flex items-center justify-center">
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 mb-4 text-[10px] md:text-xs font-bold border-y border-black py-2">
-                <div className="text-right">
+              {/* Info Bar */}
+              <div className="grid grid-cols-3 gap-2 mb-3 text-[9px] md:text-[11px] font-bold border-y border-black py-1.5 shrink-0">
+                <div className={isRTL ? "text-right" : "text-left"}>
                   {viewMode === "teacher" ? (
                     <p>{isRTL ? "الأستاذ(ة):" : "Teacher:"} {selectedEntity?.lastName} {selectedEntity?.firstName}</p>
                   ) : (
@@ -101,14 +103,15 @@ const PrintPreview = ({
                   )}
                 </div>
                 <div className="text-center">
-                  <p>{isRTL ? "الشعبة المهنية:" : "Specialty:"} {viewMode === "teacher" ? selectedEntity?.observation : "---"}</p>
+                  <p>{isRTL ? "السنة الدراسية:" : "Academic Year:"} {institution.academicYear || "---"}</p>
                 </div>
-                <div className="text-left">
+                <div className={isRTL ? "text-left" : "text-right"}>
                   <p>{isRTL ? "الرتبة:" : "Rank:"} {viewMode === "teacher" ? selectedEntity?.category : "---"}</p>
                 </div>
               </div>
 
-              <div className="flex-1 w-full overflow-hidden">
+              {/* Table Area - Forced to fill space but not overflow */}
+              <div className="flex-1 min-h-0 w-full overflow-hidden">
                 <ScheduleTable 
                   isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
                   onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
@@ -117,14 +120,15 @@ const PrintPreview = ({
                 />
               </div>
 
-              <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-                <div><p className="font-bold text-xs mb-10">{isRTL ? "الأستاذ" : "Teacher"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
-                <div><p className="font-bold text-xs mb-10">{isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
-                <div><p className="font-bold text-xs mb-10">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
+              {/* Footer / Signatures */}
+              <div className="mt-6 grid grid-cols-3 gap-4 text-center shrink-0">
+                <div><p className="font-bold text-[10px] mb-8">{isRTL ? "الأستاذ" : "Teacher"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
+                <div><p className="font-bold text-[10px] mb-8">{isRTL ? "المسؤول البيداغوجي" : "Supervisor"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
+                <div><p className="font-bold text-[10px] mb-8">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
               </div>
 
-              <div className="mt-4 pt-2 text-center text-[8px] text-gray-400 border-t border-gray-100">
-                تم إنشاء الجدول بتاريخ: {new Date().toLocaleDateString()} - نظام EduSchedule
+              <div className="mt-3 pt-1.5 text-center text-[7px] text-gray-400 border-t border-gray-100 shrink-0">
+                تم إنشاء الجدول بتاريخ: {new Date().toLocaleDateString()} - نظام EduSchedule v2.0
               </div>
             </div>
           </div>
@@ -143,13 +147,17 @@ const PrintPreview = ({
                 margin: 0 !important; 
                 padding: 0 !important; 
                 background: white; 
-                overflow: visible !important;
+                overflow: hidden !important;
               }
               #printable-area {
                 width: 100% !important;
                 height: 100% !important;
                 margin: 0 !important;
+                padding: 0 !important;
                 transform: none !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
               }
               .print\\:hidden { display: none !important; }
             }
