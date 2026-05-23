@@ -36,41 +36,41 @@ const ScheduleTable = ({
 }: ScheduleTableProps) => {
   
   const SummaryTable = () => (
-    <div className={cn("shrink-0", isPrint ? "w-24" : "w-64 sticky top-0 h-fit")}>
+    <div className={cn("shrink-0", isPrint ? "w-fit" : "w-fit max-w-[300px] sticky top-0 h-fit")}>
       <div className={cn(
         "bg-white border shadow-sm overflow-hidden",
         isPrint ? "rounded-none border-black" : "rounded-lg md:rounded-2xl border-gray-100"
       )}>
-        <table className={cn("w-full table-fixed", isPrint ? "border-collapse" : "border-collapse")}>
+        <table className={cn("w-full table-auto", isPrint ? "border-collapse" : "border-collapse")}>
           <thead className="sticky top-0 bg-white z-10">
             <tr className={cn(isPrint ? "bg-transparent border-b border-black" : "bg-gray-50/50")}>
-              <th className={cn("p-1 font-black uppercase text-right w-[45%] truncate", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-400")}>{isRTL ? "المادة" : "Subject"}</th>
-              <th className={cn("p-1 font-black uppercase text-center w-[40%] truncate", isPrint ? "text-[6px] text-black border-x border-black" : "text-[10px] text-gray-400")}>{isRTL ? (viewMode === "class" ? "المعلم" : "الفوج") : (viewMode === "class" ? "Teacher" : "Class")}</th>
-              <th className={cn("p-1 font-black uppercase text-center w-[15%]", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-400")}>{isRTL ? "س" : "Hrs"}</th>
+              <th className={cn("p-1 font-black uppercase text-right whitespace-nowrap", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-400")}>{isRTL ? "المادة" : "Subject"}</th>
+              <th className={cn("p-1 font-black uppercase text-center whitespace-nowrap", isPrint ? "text-[6px] text-black border-x border-black px-2" : "text-[10px] text-gray-400 px-3")}>{isRTL ? (viewMode === "class" ? "المعلم" : "الفوج") : (viewMode === "class" ? "Teacher" : "Class")}</th>
+              <th className={cn("p-1 font-black uppercase text-center whitespace-nowrap", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-400")}>{isRTL ? "س" : "Hrs"}</th>
             </tr>
           </thead>
           <tbody className={cn(isPrint ? "divide-y divide-black" : "divide-y divide-gray-50")}>
             {summaryData?.map((item, idx) => (
               <tr key={idx} className="hover:bg-gray-50/30 transition-colors">
-                <td className="p-1 overflow-hidden">
-                  <div className="flex items-center gap-1 w-full overflow-hidden">
+                <td className="p-1 whitespace-nowrap">
+                  <div className="flex items-center gap-1">
                     {!isPrint && <div className={cn("rounded-full shrink-0 w-2 h-2", getSubjectColor(idx))}></div>}
-                    <span className={cn("font-bold truncate", isPrint ? "text-[6.5px] text-black" : "text-[11px] text-gray-700")} title={item.subject}>{item.subject}</span>
+                    <span className={cn("font-bold", isPrint ? "text-[6.5px] text-black" : "text-[11px] text-gray-700")}>{item.subject}</span>
                   </div>
                 </td>
-                <td className={cn("p-1 text-center overflow-hidden", isPrint && "border-x border-black")}>
-                  <span className={cn("font-medium truncate block w-full", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-500")} title={viewMode === "class" ? item.teacher : item.branch}>
+                <td className={cn("p-1 text-center whitespace-nowrap", isPrint && "border-x border-black px-2")}>
+                  <span className={cn("font-medium", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-500")}>
                     {viewMode === "class" ? item.teacher : item.branch}
                   </span>
                 </td>
-                <td className="p-1 text-center">
+                <td className="p-1 text-center whitespace-nowrap">
                   <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-xs text-gray-900")}>{item.count}</span>
                 </td>
               </tr>
             ))}
             <tr className={cn("font-black", isPrint ? "bg-transparent border-t border-black" : "bg-emerald-50/30")}>
-              <td colSpan={2} className={cn("p-1 truncate", isPrint ? "text-[7px] text-black" : "text-xs text-emerald-900")}>{isRTL ? "المجموع" : "Total"}</td>
-              <td className={cn("p-1 text-center", isPrint ? "text-[8px] text-black" : "text-sm text-emerald-600")}>{totalHours}</td>
+              <td colSpan={2} className={cn("p-1 whitespace-nowrap", isPrint ? "text-[7px] text-black" : "text-xs text-emerald-900")}>{isRTL ? "المجموع" : "Total"}</td>
+              <td className={cn("p-1 text-center whitespace-nowrap", isPrint ? "text-[8px] text-black" : "text-sm text-emerald-600")}>{totalHours}</td>
             </tr>
           </tbody>
         </table>
