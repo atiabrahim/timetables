@@ -87,10 +87,10 @@ const ScheduleTable = ({
         "h-full w-full flex flex-col justify-center items-center text-center relative group/card transition-transform",
         isPrint ? "p-0.5 text-black bg-white" : cn("text-white shadow-sm rounded-lg p-1 hover:scale-[1.01]", colorClass)
       )}>
-        <p className={cn("font-black leading-tight break-words whitespace-normal w-full", isPrint ? "text-[7.5px] mb-0" : "text-[10px] md:text-[11px] mb-0")}>
+        <p className={cn("font-black leading-none break-words whitespace-normal w-full", isPrint ? "text-[7px] mb-0" : "text-[9px] md:text-[10px] mb-0")}>
           {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
         </p>
-        <p className={cn("font-medium leading-tight break-words whitespace-normal w-full", isPrint ? "text-[6.5px] mb-0 text-black/80" : "text-[8px] md:text-[9px] mb-0 opacity-90")}>
+        <p className={cn("font-medium leading-none break-words whitespace-normal w-full", isPrint ? "text-[6px] mb-0 text-black/80" : "text-[8px] mb-0 opacity-90")}>
           {viewMode === "class" 
             ? (() => {
                 const e = employees.find(emp => emp.id === assignment.employeeId);
@@ -100,17 +100,17 @@ const ScheduleTable = ({
           }
         </p>
         {assignment.room && (
-          <div className={cn(isPrint ? "border border-black px-1 mt-0.5" : "bg-white/20 rounded-sm px-1 py-0.5 mt-0.5")}>
-            <p className={cn("font-bold leading-none", isPrint ? "text-[6.5px]" : "text-[8px]")}>{assignment.room}</p>
+          <div className={cn(isPrint ? "border border-black px-0.5 mt-0.5" : "bg-white/20 rounded-sm px-1 py-0 mt-0.5")}>
+            <p className={cn("font-bold leading-none", isPrint ? "text-[6px]" : "text-[8px]")}>{assignment.room}</p>
           </div>
         )}
         {!isPrint && (
           <Button 
             variant="ghost" size="icon" 
-            className="absolute -top-1 -right-1 h-5 w-5 bg-white text-red-500 rounded-full shadow-md opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-50"
+            className="absolute -top-1 -right-1 h-4 w-4 bg-white text-red-500 rounded-full shadow-md opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-50"
             onClick={(e) => { e.stopPropagation(); onDeleteClick(assignment.id); }}
           >
-            <Trash2 size={10} />
+            <Trash2 size={8} />
           </Button>
         )}
       </div>
@@ -124,10 +124,10 @@ const ScheduleTable = ({
   const renderStandard = () => (
     <table className={tableStyles}>
       <thead className={cn(!isPrint && "sticky top-0 bg-white z-10 shadow-sm")}>
-        <tr className={isPrint ? "h-6" : "h-8"}>
+        <tr className={isPrint ? "h-5" : "h-7"}>
           <th className={cn(
             "font-black text-center", 
-            isPrint ? "border border-black text-[7px] text-black bg-transparent px-2" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs w-14"
+            isPrint ? "border border-black text-[7px] text-black bg-transparent px-2" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs w-12"
           )}>
             {isRTL ? "الحصة" : "Period"}
           </th>
@@ -148,7 +148,7 @@ const ScheduleTable = ({
               <tr key={slot.id} className={isPrint ? "h-4" : "h-6"}>
                 <td className={cn("text-center", isPrint ? "border border-black" : "p-0.5")}>
                   <div className="flex flex-col items-center justify-center">
-                    <span className={cn("font-black", isPrint ? "text-[5px] text-black" : "text-[9px] text-amber-600")}>{slot.label}</span>
+                    <span className={cn("font-black", isPrint ? "text-[5px] text-black" : "text-[8px] text-amber-600")}>{slot.label}</span>
                   </div>
                 </td>
                 <td colSpan={days.length} className={cn(isPrint ? "border border-black" : "p-0.5")}>
@@ -163,11 +163,11 @@ const ScheduleTable = ({
             );
           }
           return (
-            <tr key={slot.id} className={cn("group", isPrint ? "h-11" : "h-14")}>
+            <tr key={slot.id} className={cn("group", isPrint ? "h-10" : "h-12")}>
               <td className={cn(isPrint ? "border border-black px-1" : "p-0.5")}>
                 <div className={cn("flex flex-col items-center justify-center h-full", !isPrint && "bg-white rounded-md border border-gray-100 shadow-sm")}>
-                  <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[11px] text-emerald-600")}>{isRTL ? "ح" : "P"}{slot.label}</span>
-                  {!isPrint && <span className="font-bold text-[8px] text-gray-400">{slot.time}</span>}
+                  <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[10px] text-emerald-600")}>{isRTL ? "ح" : "P"}{slot.label}</span>
+                  {!isPrint && <span className="font-bold text-[7px] text-gray-400">{slot.time}</span>}
                   {isPrint && <span className="text-[5px] text-black/60">{slot.time}</span>}
                 </div>
               </td>
@@ -178,7 +178,7 @@ const ScheduleTable = ({
                     {assignment ? <LessonCard assignment={assignment} /> : (
                       !isPrint && (
                         <div className="h-full w-full rounded-lg border-2 border-dashed border-gray-100 flex items-center justify-center cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/30 transition-all group/add" onClick={() => onAddClick(day.id, slot.id)}>
-                          <Plus size={14} className="text-gray-200 group-hover/add:text-emerald-400 transition-colors" />
+                          <Plus size={12} className="text-gray-200 group-hover/add:text-emerald-400 transition-colors" />
                         </div>
                       )
                     )}
@@ -195,7 +195,7 @@ const ScheduleTable = ({
   const renderTransposed = () => (
     <table className={tableStyles}>
       <thead className={cn(!isPrint && "sticky top-0 bg-white z-10 shadow-sm")}>
-        <tr className={isPrint ? "h-6" : "h-8"}>
+        <tr className={isPrint ? "h-5" : "h-7"}>
           <th className={cn(
             "font-black text-center px-4", 
             isPrint ? "border border-black text-[7px] text-black bg-transparent" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs"
@@ -209,7 +209,7 @@ const ScheduleTable = ({
             )}>
               <div className="flex flex-col items-center">
                 <span>{slot.label}</span>
-                {!slot.isBreak && <span className={cn("opacity-60", isPrint ? "text-[5px]" : "text-[8px]")}>{slot.time}</span>}
+                {!slot.isBreak && <span className={cn("opacity-60", isPrint ? "text-[5px]" : "text-[7px]")}>{slot.time}</span>}
               </div>
             </th>
           ))}
@@ -217,10 +217,10 @@ const ScheduleTable = ({
       </thead>
       <tbody>
         {days.map(day => (
-          <tr key={day.id} className={cn("group", isPrint ? "h-11" : "h-14")}>
+          <tr key={day.id} className={cn("group", isPrint ? "h-10" : "h-12")}>
             <td className={cn(isPrint ? "border border-black px-2" : "p-0.5")}>
               <div className={cn("flex flex-col items-center justify-center h-full", !isPrint && "bg-white rounded-md border border-gray-100 shadow-sm")}>
-                <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[11px] text-emerald-600")}>{isRTL ? day.name : day.en}</span>
+                <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[10px] text-emerald-600")}>{isRTL ? day.name : day.en}</span>
               </div>
             </td>
             {timeSlots.map(slot => {
@@ -242,7 +242,7 @@ const ScheduleTable = ({
                   {assignment ? <LessonCard assignment={assignment} /> : (
                     !isPrint && (
                       <div className="h-full w-full rounded-lg border-2 border-dashed border-gray-100 flex items-center justify-center cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/30 transition-all group/add" onClick={() => onAddClick(day.id, slot.id)}>
-                        <Plus size={14} className="text-gray-200 group-hover/add:text-emerald-400 transition-colors" />
+                        <Plus size={12} className="text-gray-200 group-hover/add:text-emerald-400 transition-colors" />
                       </div>
                     )
                   )}
