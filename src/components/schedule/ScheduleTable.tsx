@@ -44,8 +44,8 @@ const ScheduleTable = ({
         <table className={cn("w-full table-fixed", isPrint ? "border-collapse" : "border-collapse")}>
           <thead className="sticky top-0 bg-white z-10">
             <tr className={cn(isPrint ? "bg-transparent border-b border-black" : "bg-gray-50/50")}>
-              <th className={cn("p-1 font-black uppercase text-right w-[45%]", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-400")}>{isRTL ? "المادة" : "Subject"}</th>
-              <th className={cn("p-1 font-black uppercase text-center w-[40%]", isPrint ? "text-[6px] text-black border-x border-black" : "text-[10px] text-gray-400")}>{isRTL ? (viewMode === "class" ? "المعلم" : "الفوج") : (viewMode === "class" ? "Teacher" : "Class")}</th>
+              <th className={cn("p-1 font-black uppercase text-right w-[45%] truncate", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-400")}>{isRTL ? "المادة" : "Subject"}</th>
+              <th className={cn("p-1 font-black uppercase text-center w-[40%] truncate", isPrint ? "text-[6px] text-black border-x border-black" : "text-[10px] text-gray-400")}>{isRTL ? (viewMode === "class" ? "المعلم" : "الفوج") : (viewMode === "class" ? "Teacher" : "Class")}</th>
               <th className={cn("p-1 font-black uppercase text-center w-[15%]", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-400")}>{isRTL ? "س" : "Hrs"}</th>
             </tr>
           </thead>
@@ -53,13 +53,15 @@ const ScheduleTable = ({
             {summaryData?.map((item, idx) => (
               <tr key={idx} className="hover:bg-gray-50/30 transition-colors">
                 <td className="p-1 overflow-hidden">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 w-full overflow-hidden">
                     {!isPrint && <div className={cn("rounded-full shrink-0 w-2 h-2", getSubjectColor(idx))}></div>}
-                    <span className={cn("font-bold break-words whitespace-normal leading-tight", isPrint ? "text-[6.5px] text-black" : "text-[11px] text-gray-700")}>{item.subject}</span>
+                    <span className={cn("font-bold truncate", isPrint ? "text-[6.5px] text-black" : "text-[11px] text-gray-700")} title={item.subject}>{item.subject}</span>
                   </div>
                 </td>
                 <td className={cn("p-1 text-center overflow-hidden", isPrint && "border-x border-black")}>
-                  <span className={cn("font-medium break-words whitespace-normal leading-tight", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-500")}>{viewMode === "class" ? item.teacher : item.branch}</span>
+                  <span className={cn("font-medium truncate block w-full", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-500")} title={viewMode === "class" ? item.teacher : item.branch}>
+                    {viewMode === "class" ? item.teacher : item.branch}
+                  </span>
                 </td>
                 <td className="p-1 text-center">
                   <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-xs text-gray-900")}>{item.count}</span>
@@ -67,7 +69,7 @@ const ScheduleTable = ({
               </tr>
             ))}
             <tr className={cn("font-black", isPrint ? "bg-transparent border-t border-black" : "bg-emerald-50/30")}>
-              <td colSpan={2} className={cn("p-1", isPrint ? "text-[7px] text-black" : "text-xs text-emerald-900")}>{isRTL ? "المجموع" : "Total"}</td>
+              <td colSpan={2} className={cn("p-1 truncate", isPrint ? "text-[7px] text-black" : "text-xs text-emerald-900")}>{isRTL ? "المجموع" : "Total"}</td>
               <td className={cn("p-1 text-center", isPrint ? "text-[8px] text-black" : "text-sm text-emerald-600")}>{totalHours}</td>
             </tr>
           </tbody>
@@ -115,7 +117,6 @@ const ScheduleTable = ({
     );
   };
 
-  // في وضع الطباعة، نلغي table-fixed ونستخدم table-auto لتقليص العرض
   const tableStyles = isPrint 
     ? "w-max border-collapse h-full table-auto border border-black mx-auto" 
     : "w-full border-separate border-spacing-1 h-full table-fixed";
