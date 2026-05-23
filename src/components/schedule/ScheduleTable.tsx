@@ -44,33 +44,33 @@ const ScheduleTable = ({
         <table className={cn("w-full table-auto", isPrint ? "border-collapse" : "border-collapse")}>
           <thead className="sticky top-0 bg-white z-10">
             <tr className={cn(isPrint ? "bg-transparent border-b border-black" : "bg-gray-50/50")}>
-              <th className={cn("p-1 font-black uppercase text-right whitespace-nowrap", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-400")}>{isRTL ? "المادة" : "Subject"}</th>
-              <th className={cn("p-1 font-black uppercase text-center whitespace-nowrap", isPrint ? "text-[6px] text-black border-x border-black px-2" : "text-[10px] text-gray-400 px-3")}>{isRTL ? (viewMode === "class" ? "المعلم" : "الفوج") : (viewMode === "class" ? "Teacher" : "Class")}</th>
-              <th className={cn("p-1 font-black uppercase text-center whitespace-nowrap", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-400")}>{isRTL ? "س" : "Hrs"}</th>
+              <th className={cn("py-0.5 px-1 font-black uppercase text-right whitespace-nowrap", isPrint ? "text-[6px] text-black" : "text-[9px] text-gray-400")}>{isRTL ? "المادة" : "Subject"}</th>
+              <th className={cn("py-0.5 px-1 font-black uppercase text-center whitespace-nowrap", isPrint ? "text-[6px] text-black border-x border-black px-2" : "text-[9px] text-gray-400 px-2")}>{isRTL ? (viewMode === "class" ? "المعلم" : "الفوج") : (viewMode === "class" ? "Teacher" : "Class")}</th>
+              <th className={cn("py-0.5 px-1 font-black uppercase text-center whitespace-nowrap", isPrint ? "text-[6px] text-black" : "text-[9px] text-gray-400")}>{isRTL ? "س" : "Hrs"}</th>
             </tr>
           </thead>
           <tbody className={cn(isPrint ? "divide-y divide-black" : "divide-y divide-gray-50")}>
             {summaryData?.map((item, idx) => (
               <tr key={idx} className="hover:bg-gray-50/30 transition-colors">
-                <td className="p-1 whitespace-nowrap">
+                <td className="py-0.5 px-1 whitespace-nowrap">
                   <div className="flex items-center gap-1">
-                    {!isPrint && <div className={cn("rounded-full shrink-0 w-2 h-2", getSubjectColor(idx))}></div>}
-                    <span className={cn("font-bold", isPrint ? "text-[6.5px] text-black" : "text-[11px] text-gray-700")}>{item.subject}</span>
+                    {!isPrint && <div className={cn("rounded-full shrink-0 w-1.5 h-1.5", getSubjectColor(idx))}></div>}
+                    <span className={cn("font-bold leading-tight", isPrint ? "text-[6.5px] text-black" : "text-[10px] text-gray-700")}>{item.subject}</span>
                   </div>
                 </td>
-                <td className={cn("p-1 text-center whitespace-nowrap", isPrint && "border-x border-black px-2")}>
-                  <span className={cn("font-medium", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-500")}>
+                <td className={cn("py-0.5 px-1 text-center whitespace-nowrap", isPrint && "border-x border-black px-2")}>
+                  <span className={cn("font-medium leading-tight", isPrint ? "text-[6px] text-black" : "text-[9px] text-gray-500")}>
                     {viewMode === "class" ? item.teacher : item.branch}
                   </span>
                 </td>
-                <td className="p-1 text-center whitespace-nowrap">
-                  <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-xs text-gray-900")}>{item.count}</span>
+                <td className="py-0.5 px-1 text-center whitespace-nowrap">
+                  <span className={cn("font-black leading-tight", isPrint ? "text-[7px] text-black" : "text-[11px] text-gray-900")}>{item.count}</span>
                 </td>
               </tr>
             ))}
             <tr className={cn("font-black", isPrint ? "bg-transparent border-t border-black" : "bg-emerald-50/30")}>
-              <td colSpan={2} className={cn("p-1 whitespace-nowrap", isPrint ? "text-[7px] text-black" : "text-xs text-emerald-900")}>{isRTL ? "المجموع" : "Total"}</td>
-              <td className={cn("p-1 text-center whitespace-nowrap", isPrint ? "text-[8px] text-black" : "text-sm text-emerald-600")}>{totalHours}</td>
+              <td colSpan={2} className={cn("py-0.5 px-1 whitespace-nowrap", isPrint ? "text-[7px] text-black" : "text-[10px] text-emerald-900")}>{isRTL ? "المجموع" : "Total"}</td>
+              <td className={cn("py-0.5 px-1 text-center whitespace-nowrap", isPrint ? "text-[8px] text-black" : "text-[12px] text-emerald-600")}>{totalHours}</td>
             </tr>
           </tbody>
         </table>
