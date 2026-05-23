@@ -254,8 +254,12 @@ const ScheduleTable = ({
   );
 
   return (
-    <div className={cn("flex w-full h-full", isRTL ? "flex-row" : "flex-row-reverse", isPrint ? "gap-1 items-stretch justify-center" : "gap-6 overflow-x-auto pb-4 relative")}>
-      <div className={cn("h-full", isPrint ? "" : "flex-1 min-w-[800px]")}>
+    <div className={cn(
+      "flex h-full", 
+      isRTL ? "flex-row" : "flex-row-reverse", 
+      isPrint ? "gap-2 items-start justify-center w-fit mx-auto" : "w-full gap-6 overflow-x-auto pb-4 relative"
+    )}>
+      <div className={cn("h-full", isPrint ? "w-fit" : "flex-1 min-w-[800px]")}>
         {isTransposed ? renderTransposed() : renderStandard()}
       </div>
       {(isPrint || summaryData) && <SummaryTable />}
