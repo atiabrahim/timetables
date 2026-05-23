@@ -117,24 +117,22 @@ const ScheduleTable = ({
     );
   };
 
-  const tableStyles = isPrint 
-    ? "w-max border-collapse h-auto table-auto border border-black mx-auto" 
-    : "w-full border-separate border-spacing-1 h-full table-fixed";
+  const tableStyles = "w-full border-collapse h-auto table-fixed border border-black mx-auto";
 
   const renderStandard = () => (
     <table className={tableStyles}>
       <thead className={cn(!isPrint && "sticky top-0 bg-white z-10 shadow-sm")}>
         <tr className={isPrint ? "h-6 md:h-8" : "h-8"}>
           <th className={cn(
-            "font-black text-center", 
-            isPrint ? "border border-black text-[7px] text-black bg-transparent px-2" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs w-12"
+            "font-black text-center w-12", 
+            isPrint ? "border border-black text-[7px] text-black bg-transparent" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs"
           )}>
             {isRTL ? "الحصة" : "Period"}
           </th>
           {days.map(day => (
             <th key={day.id} className={cn(
               "font-black text-center", 
-              isPrint ? "border border-black text-[7px] text-black bg-transparent px-3" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs"
+              isPrint ? "border border-black text-[7px] text-black bg-transparent" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs"
             )}>
               {isRTL ? day.name : day.en}
             </th>
@@ -174,7 +172,7 @@ const ScheduleTable = ({
               {days.map(day => {
                 const assignment = getAssignment(day.id, slot.id);
                 return (
-                  <td key={day.id} className={cn("relative group/cell h-full min-w-[60px]", isPrint ? "border border-black" : "p-0.5")}>
+                  <td key={day.id} className={cn("relative group/cell h-full", isPrint ? "border border-black" : "p-0.5")}>
                     {assignment ? <LessonCard assignment={assignment} /> : (
                       !isPrint && (
                         <div className="h-full w-full rounded-lg border-2 border-dashed border-gray-100 flex items-center justify-center cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/30 transition-all group/add" onClick={() => onAddClick(day.id, slot.id)}>
@@ -197,7 +195,7 @@ const ScheduleTable = ({
       <thead className={cn(!isPrint && "sticky top-0 bg-white z-10 shadow-sm")}>
         <tr className={isPrint ? "h-6 md:h-8" : "h-8"}>
           <th className={cn(
-            "font-black text-center px-4", 
+            "font-black text-center px-4 w-24", 
             isPrint ? "border border-black text-[7px] text-black bg-transparent" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs"
           )}>
             {isRTL ? "اليوم" : "Day"}
@@ -238,7 +236,7 @@ const ScheduleTable = ({
               }
               const assignment = getAssignment(day.id, slot.id);
               return (
-                <td key={slot.id} className={cn("relative group/cell h-full min-w-[60px]", isPrint ? "border border-black" : "p-0.5")}>
+                <td key={slot.id} className={cn("relative group/cell h-full", isPrint ? "border border-black" : "p-0.5")}>
                   {assignment ? <LessonCard assignment={assignment} /> : (
                     !isPrint && (
                       <div className="h-full w-full rounded-lg border-2 border-dashed border-gray-100 flex items-center justify-center cursor-pointer hover:border-emerald-200 hover:bg-emerald-50/30 transition-all group/add" onClick={() => onAddClick(day.id, slot.id)}>
