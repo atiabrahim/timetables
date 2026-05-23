@@ -124,7 +124,7 @@ const ScheduleTable = ({
   const renderStandard = () => (
     <table className={tableStyles}>
       <thead className={cn(!isPrint && "sticky top-0 bg-white z-10 shadow-sm")}>
-        <tr className={isPrint ? "h-5" : "h-7"}>
+        <tr className={isPrint ? "h-6" : "h-8"}>
           <th className={cn(
             "font-black text-center", 
             isPrint ? "border border-black text-[7px] text-black bg-transparent px-2" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs w-12"
@@ -163,7 +163,7 @@ const ScheduleTable = ({
             );
           }
           return (
-            <tr key={slot.id} className={cn("group", isPrint ? "h-10" : "h-12")}>
+            <tr key={slot.id} className={cn("group", isPrint ? "h-6 md:h-8" : "h-8 md:h-10")}>
               <td className={cn(isPrint ? "border border-black px-1" : "p-0.5")}>
                 <div className={cn("flex flex-col items-center justify-center h-full", !isPrint && "bg-white rounded-md border border-gray-100 shadow-sm")}>
                   <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[10px] text-emerald-600")}>{isRTL ? "ح" : "P"}{slot.label}</span>
@@ -195,7 +195,7 @@ const ScheduleTable = ({
   const renderTransposed = () => (
     <table className={tableStyles}>
       <thead className={cn(!isPrint && "sticky top-0 bg-white z-10 shadow-sm")}>
-        <tr className={isPrint ? "h-5" : "h-7"}>
+        <tr className={isPrint ? "h-6" : "h-8"}>
           <th className={cn(
             "font-black text-center px-4", 
             isPrint ? "border border-black text-[7px] text-black bg-transparent" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs"
@@ -217,7 +217,7 @@ const ScheduleTable = ({
       </thead>
       <tbody>
         {days.map(day => (
-          <tr key={day.id} className={cn("group", isPrint ? "h-10" : "h-12")}>
+          <tr key={day.id} className={cn("group", isPrint ? "h-6 md:h-8" : "h-8 md:h-10")}>
             <td className={cn(isPrint ? "border border-black px-2" : "p-0.5")}>
               <div className={cn("flex flex-col items-center justify-center h-full", !isPrint && "bg-white rounded-md border border-gray-100 shadow-sm")}>
                 <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[10px] text-emerald-600")}>{isRTL ? day.name : day.en}</span>
