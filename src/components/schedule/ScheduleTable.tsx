@@ -121,18 +121,18 @@ const ScheduleTable = ({
 
   const renderStandard = () => (
     <table className={tableStyles}>
-      <thead className="sticky top-0 bg-white z-10 shadow-sm">
+      <thead>
         <tr className={isPrint ? "h-6" : "h-10"}>
           <th className={cn(
             "font-black text-center", 
-            isPrint ? "border border-black text-[7px] text-black bg-transparent w-10" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs w-14"
+            isPrint ? "border border-black text-[7px] text-black bg-transparent w-[8%]" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs w-14"
           )}>
             {isRTL ? "الحصة" : "Period"}
           </th>
           {days.map(day => (
             <th key={day.id} className={cn(
               "font-black text-center", 
-              isPrint ? "border border-black text-[7px] text-black bg-transparent" : "rounded-md bg-emerald-50 text-emerald-900 p-2 text-xs"
+              isPrint ? "border border-black text-[7px] text-black bg-transparent w-[18.4%]" : "rounded-md bg-emerald-50 text-emerald-900 p-2 text-xs"
             )}>
               {isRTL ? day.name : day.en}
             </th>
@@ -196,7 +196,7 @@ const ScheduleTable = ({
         <tr className={isPrint ? "h-6" : "h-10"}>
           <th className={cn(
             "font-black", 
-            isPrint ? "border border-black text-[7px] text-black bg-transparent" : "rounded-md bg-emerald-50 text-emerald-900 p-2 text-xs"
+            isPrint ? "border border-black text-[7px] text-black bg-transparent w-[12%]" : "rounded-md bg-emerald-50 text-emerald-900 p-2 text-xs"
           )}>
             {isRTL ? "اليوم" : "Day"}
           </th>
