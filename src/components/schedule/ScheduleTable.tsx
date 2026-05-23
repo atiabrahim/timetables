@@ -87,10 +87,10 @@ const ScheduleTable = ({
         "h-full w-full flex flex-col justify-center items-center text-center relative group/card transition-transform",
         isPrint ? "p-0.5 text-black bg-white" : cn("text-white shadow-sm rounded-lg p-1 hover:scale-[1.01]", colorClass)
       )}>
-        <p className={cn("font-black leading-tight break-words whitespace-normal w-full", isPrint ? "text-[7.5px] mb-0" : "text-[10px] md:text-[11px] mb-0.5")}>
+        <p className={cn("font-black leading-tight break-words whitespace-normal w-full", isPrint ? "text-[7.5px] mb-0" : "text-[10px] md:text-[11px] mb-0")}>
           {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
         </p>
-        <p className={cn("font-medium leading-tight break-words whitespace-normal w-full", isPrint ? "text-[6.5px] mb-0 text-black/80" : "text-[8px] md:text-[9px] mb-0.5 opacity-90")}>
+        <p className={cn("font-medium leading-tight break-words whitespace-normal w-full", isPrint ? "text-[6.5px] mb-0 text-black/80" : "text-[8px] md:text-[9px] mb-0 opacity-90")}>
           {viewMode === "class" 
             ? (() => {
                 const e = employees.find(emp => emp.id === assignment.employeeId);
@@ -100,7 +100,7 @@ const ScheduleTable = ({
           }
         </p>
         {assignment.room && (
-          <div className={cn(isPrint ? "border border-black px-1 mt-0.5" : "bg-white/20 rounded-sm px-1.5 py-0.5")}>
+          <div className={cn(isPrint ? "border border-black px-1 mt-0.5" : "bg-white/20 rounded-sm px-1 py-0.5 mt-0.5")}>
             <p className={cn("font-bold leading-none", isPrint ? "text-[6.5px]" : "text-[8px]")}>{assignment.room}</p>
           </div>
         )}
@@ -124,7 +124,7 @@ const ScheduleTable = ({
   const renderStandard = () => (
     <table className={tableStyles}>
       <thead className={cn(!isPrint && "sticky top-0 bg-white z-10 shadow-sm")}>
-        <tr className={isPrint ? "h-6" : "h-10"}>
+        <tr className={isPrint ? "h-6" : "h-8"}>
           <th className={cn(
             "font-black text-center", 
             isPrint ? "border border-black text-[7px] text-black bg-transparent px-2" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs w-14"
@@ -134,7 +134,7 @@ const ScheduleTable = ({
           {days.map(day => (
             <th key={day.id} className={cn(
               "font-black text-center", 
-              isPrint ? "border border-black text-[7px] text-black bg-transparent px-3" : "rounded-md bg-emerald-50 text-emerald-900 p-2 text-xs"
+              isPrint ? "border border-black text-[7px] text-black bg-transparent px-3" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs"
             )}>
               {isRTL ? day.name : day.en}
             </th>
@@ -145,7 +145,7 @@ const ScheduleTable = ({
         {timeSlots.map(slot => {
           if (slot.isBreak) {
             return (
-              <tr key={slot.id} className={isPrint ? "h-4" : "h-8"}>
+              <tr key={slot.id} className={isPrint ? "h-4" : "h-6"}>
                 <td className={cn("text-center", isPrint ? "border border-black" : "p-0.5")}>
                   <div className="flex flex-col items-center justify-center">
                     <span className={cn("font-black", isPrint ? "text-[5px] text-black" : "text-[9px] text-amber-600")}>{slot.label}</span>
@@ -163,7 +163,7 @@ const ScheduleTable = ({
             );
           }
           return (
-            <tr key={slot.id} className={cn("group", isPrint ? "h-14" : "h-16")}>
+            <tr key={slot.id} className={cn("group", isPrint ? "h-11" : "h-14")}>
               <td className={cn(isPrint ? "border border-black px-1" : "p-0.5")}>
                 <div className={cn("flex flex-col items-center justify-center h-full", !isPrint && "bg-white rounded-md border border-gray-100 shadow-sm")}>
                   <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[11px] text-emerald-600")}>{isRTL ? "ح" : "P"}{slot.label}</span>
@@ -195,17 +195,17 @@ const ScheduleTable = ({
   const renderTransposed = () => (
     <table className={tableStyles}>
       <thead className={cn(!isPrint && "sticky top-0 bg-white z-10 shadow-sm")}>
-        <tr className={isPrint ? "h-6" : "h-10"}>
+        <tr className={isPrint ? "h-6" : "h-8"}>
           <th className={cn(
             "font-black text-center px-4", 
-            isPrint ? "border border-black text-[7px] text-black bg-transparent" : "rounded-md bg-emerald-50 text-emerald-900 p-2 text-xs"
+            isPrint ? "border border-black text-[7px] text-black bg-transparent" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs"
           )}>
             {isRTL ? "اليوم" : "Day"}
           </th>
           {timeSlots.map(slot => (
             <th key={slot.id} className={cn(
               "font-black text-center px-2", 
-              isPrint ? "border border-black text-[7px] text-black bg-transparent" : cn("rounded-md p-2 text-xs bg-emerald-50 text-emerald-900", slot.isBreak && "bg-amber-50 text-amber-700")
+              isPrint ? "border border-black text-[7px] text-black bg-transparent" : cn("rounded-md p-1 text-xs bg-emerald-50 text-emerald-900", slot.isBreak && "bg-amber-50 text-amber-700")
             )}>
               <div className="flex flex-col items-center">
                 <span>{slot.label}</span>
@@ -217,7 +217,7 @@ const ScheduleTable = ({
       </thead>
       <tbody>
         {days.map(day => (
-          <tr key={day.id} className={cn("group", isPrint ? "h-14" : "h-16")}>
+          <tr key={day.id} className={cn("group", isPrint ? "h-11" : "h-14")}>
             <td className={cn(isPrint ? "border border-black px-2" : "p-0.5")}>
               <div className={cn("flex flex-col items-center justify-center h-full", !isPrint && "bg-white rounded-md border border-gray-100 shadow-sm")}>
                 <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[11px] text-emerald-600")}>{isRTL ? day.name : day.en}</span>
