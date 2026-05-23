@@ -44,7 +44,7 @@ const ScheduleTable = ({
         <table className={cn("w-full table-auto", isPrint ? "border-collapse" : "border-collapse")}>
           <thead className="sticky top-0 bg-white z-10">
             <tr className={cn(isPrint ? "bg-transparent border-b border-black" : "bg-gray-50/50")}>
-              <th className={cn("py-0.5 px-1 font-black uppercase text-right whitespace-nowrap", isPrint ? "text-[6px] text-black" : "text-[9px] text-gray-400")}>{isRTL ? "المادة" : "Subject"}</th>
+              <th className={cn("py-0.5 px-1 font-black uppercase text-right whitespace-nowrap", isPrint ? "text-[6px] text-black" : "text-[10px] text-gray-400")}>{isRTL ? "المادة" : "Subject"}</th>
               <th className={cn("py-0.5 px-1 font-black uppercase text-center whitespace-nowrap", isPrint ? "text-[6px] text-black border-x border-black px-2" : "text-[9px] text-gray-400 px-2")}>{isRTL ? (viewMode === "class" ? "المعلم" : "الفوج") : (viewMode === "class" ? "Teacher" : "Class")}</th>
               <th className={cn("py-0.5 px-1 font-black uppercase text-center whitespace-nowrap", isPrint ? "text-[6px] text-black" : "text-[9px] text-gray-400")}>{isRTL ? "س" : "Hrs"}</th>
             </tr>
@@ -118,13 +118,13 @@ const ScheduleTable = ({
   };
 
   const tableStyles = isPrint 
-    ? "w-max border-collapse h-full table-auto border border-black mx-auto" 
+    ? "w-max border-collapse h-auto table-auto border border-black mx-auto" 
     : "w-full border-separate border-spacing-1 h-full table-fixed";
 
   const renderStandard = () => (
     <table className={tableStyles}>
       <thead className={cn(!isPrint && "sticky top-0 bg-white z-10 shadow-sm")}>
-        <tr className={isPrint ? "h-6" : "h-8"}>
+        <tr className={isPrint ? "h-6 md:h-8" : "h-8"}>
           <th className={cn(
             "font-black text-center", 
             isPrint ? "border border-black text-[7px] text-black bg-transparent px-2" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs w-12"
@@ -163,7 +163,7 @@ const ScheduleTable = ({
             );
           }
           return (
-            <tr key={slot.id} className={cn("group", isPrint ? "h-6 md:h-8" : "h-8 md:h-10")}>
+            <tr key={slot.id} className={cn("group", isPrint ? "h-12 md:h-14" : "h-8 md:h-10")}>
               <td className={cn(isPrint ? "border border-black px-1" : "p-0.5")}>
                 <div className={cn("flex flex-col items-center justify-center h-full", !isPrint && "bg-white rounded-md border border-gray-100 shadow-sm")}>
                   <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[10px] text-emerald-600")}>{isRTL ? "ح" : "P"}{slot.label}</span>
@@ -195,7 +195,7 @@ const ScheduleTable = ({
   const renderTransposed = () => (
     <table className={tableStyles}>
       <thead className={cn(!isPrint && "sticky top-0 bg-white z-10 shadow-sm")}>
-        <tr className={isPrint ? "h-6" : "h-8"}>
+        <tr className={isPrint ? "h-6 md:h-8" : "h-8"}>
           <th className={cn(
             "font-black text-center px-4", 
             isPrint ? "border border-black text-[7px] text-black bg-transparent" : "rounded-md bg-emerald-50 text-emerald-900 p-1 text-xs"
@@ -217,7 +217,7 @@ const ScheduleTable = ({
       </thead>
       <tbody>
         {days.map(day => (
-          <tr key={day.id} className={cn("group", isPrint ? "h-6 md:h-8" : "h-8 md:h-10")}>
+          <tr key={day.id} className={cn("group", isPrint ? "h-12 md:h-14" : "h-8 md:h-10")}>
             <td className={cn(isPrint ? "border border-black px-2" : "p-0.5")}>
               <div className={cn("flex flex-col items-center justify-center h-full", !isPrint && "bg-white rounded-md border border-gray-100 shadow-sm")}>
                 <span className={cn("font-black", isPrint ? "text-[7px] text-black" : "text-[10px] text-emerald-600")}>{isRTL ? day.name : day.en}</span>
