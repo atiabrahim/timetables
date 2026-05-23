@@ -120,8 +120,8 @@ const PrintPreview = ({
                 />
               </div>
 
-              {/* Footer / Signatures */}
-              <div className="mt-6 grid grid-cols-3 gap-4 text-center shrink-0">
+              {/* Footer / Signatures - Moved up by 3cm */}
+              <div className="mt-6 mb-[3cm] grid grid-cols-3 gap-4 text-center shrink-0">
                 <div><p className="font-bold text-[10px] mb-8">{isRTL ? "الأستاذ" : "Teacher"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
                 <div><p className="font-bold text-[10px] mb-8">{isRTL ? "المسؤول البيداغوجي" : "Supervisor"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
                 <div><p className="font-bold text-[10px] mb-8">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
