@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -16,27 +16,44 @@ import {
   Settings,
   ArrowUpRight,
   TrendingUp,
-  Activity
+  Activity,
+  CheckCircle2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const Index = () => {
-  const { employees, classes, subjects, assignments, rooms, isRTL, t, user } = useApp();
+  const { employees, classes, subjects, assignments, rooms, isRTL, t, user, periodConfigs } = useApp();
   const navigate = useNavigate();
 
-  const stats = [
+  // حساب الإحصائيات الحقيقية
+  const stats = useMemo(() => [
     { label: t.stats.teachers, value: employees.length, icon: Users, color: "text-blue-600", bg: "bg-blue-50", path: "/employees" },
     { label: t.stats.classes, value: classes.length, icon: GraduationCap, color: "text-emerald-600", bg: "bg-emerald-50", path: "/classes" },
     { label: t.stats.subjects, value: subjects.length, icon: BookOpen, color: "text-amber-600", bg: "bg-amber-50", path: "/subjects" },
     { label: t.stats.rooms, value: rooms.length, icon: MapPin, color: "text-rose-600", bg: "bg-rose-50", path: "/rooms" },
-  ];
+  ], [employees, classes, subjects, rooms, t]);
+
+  // حساب نسبة اكتمال الجدول (بافتراض متوسط 30 حصة لكل فرع)
+  const completionPercentage = useMemo(() => {
+    if (classes.length === 0) return 0;
+    const totalPotentialLessons = classes.length * 30; // تقديري
+    const percentage = Math.min(Math.round((assignments.length / totalPotentialLessons) * 100), 100);
+    return percentage || 0;
+  }, [assignments, classes]);
+
+  // حساب أعلى نصاب تدريسي
+  const highestLoad = useMemo(() => {
+    if (employees.length === 0) return "0";
+    const loads = employees.map(emp => assignments.filter(a => a.employeeId === emp.id).length);
+    return Math.max(...loads).toString();
+  }, [employees, assignments]);
 
   const quickActions = [
-    { label: isRTL ? "إضافة حصة" : "Add Lesson", icon: PlusCircle, path: "/schedule", color: "bg-emerald-600" },
-    { label: isRTL ? "عرض التقارير" : "View Reports", icon: TrendingUp, path: "/reports", color: "bg-blue-600" },
-    { label: isRTL ? "إعدادات النظام" : "Settings", icon: Settings, path: "/settings", color: "bg-gray-700" },
+    { label: isRTL ? "إدارة الجدول" : "Manage Schedule", icon: Calendar, path: "/schedule", color: "bg-emerald-600" },
+    { label: isRTL ? "قائمة الحصص" : "Lessons List", icon: ListChecks, path: "/lessons", color: "bg-blue-600" },
+    { label: isRTL ? "عرض التقارير" : "View Reports", icon: TrendingUp, path: "/reports", color: "bg-indigo-600" },
     { label: isRTL ? "بيانات المؤسسة" : "Institution", icon: FileText, path: "/institution", color: "bg-amber-600" },
   ];
 
@@ -61,8 +78,8 @@ const Index = () => {
             </h2>
             <p className="text-emerald-100/60 font-bold text-lg max-w-xl leading-relaxed">
               {isRTL 
-                ? "مرحباً بك في لوحة القيادة المركزية. يمكنك البدء بإدارة الموارد أو معاينة الجداول الزمنية." 
-                : "Welcome to your central dashboard. Start managing resources or preview schedules."}
+                ? "مرحباً بك في لوحة القيادة المركزية. تم تحديث كافة البيانات بناءً على آخر التغييرات في النظام." 
+                : "Welcome to your central dashboard. All data has been updated based on the latest system changes."}
             </p>
           </div>
           
@@ -72,8 +89,8 @@ const Index = () => {
               <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mt-1">{t.stats.lessons}</p>
             </div>
             <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 text-center min-w-[140px]">
-              <p className="text-3xl font-black">10</p>
-              <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mt-1">{t.stats.periods}</p>
+              <p className="text-3xl font-black">{subjects.length}</p>
+              <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mt-1">{t.stats.subjects}</p>
             </div>
           </div>
         </div>
@@ -103,7 +120,7 @@ const Index = () => {
 
           {/* Quick Actions Grid */}
           <div className="space-y-4">
-            <h3 className="text-lg font-black text-emerald-950 px-2">{isRTL ? "إجراءات سريعة" : "Quick Actions"}</h3>
+            <h3 className="text-lg font-black text-emerald-950 px-2">{isRTL ? "الوصول السريع" : "Quick Access"}</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {quickActions.map((action, idx) => (
                 <Button
@@ -129,30 +146,33 @@ const Index = () => {
             <CardHeader className="border-b border-gray-50">
               <CardTitle className="text-lg font-black text-emerald-950 flex items-center gap-2">
                 <Activity size={20} className="text-emerald-500" />
-                {isRTL ? "نظرة عامة على النظام" : "System Overview"}
+                {isRTL ? "حالة النظام" : "System Status"}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-8 space-y-8">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    <span className="text-sm font-bold text-gray-700">{isRTL ? "اكتمال الجدول" : "Schedule Progress"}</span>
+                    <div className={cn("w-2 h-2 rounded-full", completionPercentage > 80 ? "bg-emerald-500" : "bg-amber-500")}></div>
+                    <span className="text-sm font-bold text-gray-700">{isRTL ? "جاهزية الجداول" : "Schedule Readiness"}</span>
                   </div>
-                  <span className="text-sm font-black text-emerald-600">85%</span>
+                  <span className="text-sm font-black text-emerald-600">{completionPercentage}%</span>
                 </div>
                 <div className="w-full h-3 bg-gray-50 rounded-full overflow-hidden border border-gray-100">
-                  <div className="h-full bg-emerald-500 shadow-lg shadow-emerald-200" style={{ width: '85%' }}></div>
+                  <div 
+                    className="h-full bg-emerald-500 shadow-lg shadow-emerald-200 transition-all duration-1000" 
+                    style={{ width: `${completionPercentage}%` }}
+                  ></div>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isRTL ? "مؤشرات سريعة" : "Quick Insights"}</p>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isRTL ? "مؤشرات بيداغوجية" : "Pedagogical Insights"}</p>
                 <div className="space-y-3">
                   {[
-                    { label: isRTL ? "أعلى نصاب تدريس" : "Highest Load", value: "24 س/أ", icon: TrendingUp, color: "text-blue-500" },
-                    { label: isRTL ? "القاعات المشغولة" : "Occupied Rooms", value: "12 / 15", icon: MapPin, color: "text-amber-500" },
-                    { label: isRTL ? "آخر مزامنة XML" : "Last XML Sync", value: "Today", icon: Clock, color: "text-emerald-500" },
+                    { label: isRTL ? "أعلى نصاب تدريس" : "Highest Teacher Load", value: `${highestLoad} ${isRTL ? 'حصة' : 'Hrs'}`, icon: TrendingUp, color: "text-blue-500" },
+                    { label: isRTL ? "القاعات المشغولة" : "Occupied Rooms", value: `${rooms.filter(r => assignments.some(a => a.room === r)).length} / ${rooms.length}`, icon: MapPin, color: "text-rose-500" },
+                    { label: isRTL ? "مزامنة البيانات" : "Data Sync Status", value: assignments.length > 0 ? (isRTL ? "متزامن" : "Synced") : (isRTL ? "انتظار" : "Idle"), icon: CheckCircle2, color: "text-emerald-500" },
                   ].map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-50">
                       <div className="flex items-center gap-3">
@@ -167,9 +187,9 @@ const Index = () => {
 
               <Button 
                 onClick={() => navigate("/schedule")}
-                className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-bold shadow-lg shadow-emerald-100"
+                className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-bold shadow-lg shadow-emerald-100 active:scale-95 transition-all"
               >
-                {isRTL ? "الذهاب للجدول الدراسي" : "Go to Schedule"}
+                {isRTL ? "فتح الجدول الدراسي" : "Open Schedule"}
               </Button>
             </CardContent>
           </Card>
