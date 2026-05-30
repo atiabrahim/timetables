@@ -62,8 +62,7 @@ const Subjects = () => {
   
   const [newSubject, setNewSubject] = useState({ name: "", nameEn: "" });
   const [editingSubject, setEditingSubject] = useState<any>(null);
-  const [isEditDialogOpen] = useState(false); // Note: This was missing its setter in previous turn logic but used in JSX. Fixed below.
-  const [isEditDialogOpenState, setIsEditDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const isAdmin = user?.role === "Admin";
 
@@ -291,7 +290,7 @@ const Subjects = () => {
       </div>
 
       {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpenState} onOpenChange={setIsEditDialogOpen}>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-md rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-emerald-950">
