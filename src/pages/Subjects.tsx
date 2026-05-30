@@ -76,8 +76,10 @@ const Subjects = () => {
     return sortConfig.direction === "asc" ? <ChevronUp size={14} className="text-emerald-600" /> : <ChevronDown size={14} className="text-emerald-600" />;
   };
 
-  // وظيفة جلب الترجمة الذكية
-  const fetchSmartTranslation = async (text: string, target: "new" | "edit") => {
+  /**
+   * وظيفة جلب الترجمة باستخدام محرك Google Translate العام (client=gtx)
+   */
+  const fetchGoogleTranslation = async (text: string, target: "new" | "edit") => {
     if (!text.trim()) {
       showError(isRTL ? "يرجى كتابة اسم المادة بالعربي أولاً" : "Please enter Arabic name first");
       return;
@@ -85,21 +87,25 @@ const Subjects = () => {
 
     setIsTranslating(true);
     try {
-      // استخدام محرك MyMemory المجاني (بديل سريع لـ GPT في المتصفح)
-      const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=ar|en`);
+      // استخدام محرك Google Translate العام المتاح للاستخدام المباشر
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=${encodeURIComponent(text)}`;
+      
+      const response = await fetch(url);
       const data = await response.json();
       
-      if (data.responseData && data.responseData.translatedText) {
-        const translation = data.responseData.translatedText;
+      // استخراج النص المترجم من مصفوفة Google المعقدة
+      if (data && data[0] && data[0][0] && data[0][0][0]) {
+        const translation = data[0][0][0];
         if (target === "new") {
           setNewSubject({ ...newSubject, nameEn: translation });
         } else {
           setEditingSubject({ ...editingSubject, nameEn: translation });
         }
-        showSuccess(isRTL ? "تم جلب الترجمة الذكية" : "Smart translation fetched");
+        showSuccess(isRTL ? "تمت الترجمة عبر Google بنجاح" : "Translated via Google successfully");
       }
     } catch (error) {
-      showError(isRTL ? "فشل الاتصال بمحرك الترجمة" : "Failed to connect to translation engine");
+      console.error("Translation Error:", error);
+      showError(isRTL ? "فشل الاتصال بخدمة ترجمة Google" : "Failed to connect to Google Translate");
     } finally {
       setIsTranslating(false);
     }
@@ -177,9 +183,9 @@ const Subjects = () => {
                 variant="ghost" 
                 size="icon" 
                 className={cn("h-4 w-4 text-emerald-600 hover:text-emerald-700", isTranslating && "animate-spin")}
-                onClick={() => fetchSmartTranslation(newSubject.name, "new")}
+                onClick={() => fetchGoogleTranslation(newSubject.name, "new")}
                 disabled={isTranslating}
-                title={isRTL ? "ترجمة ذكية" : "Smart Translate"}
+                title={isRTL ? "ترجمة قوقل الذكية" : "Google Smart Translate"}
               >
                 {isTranslating ? <Loader2 size={12} /> : <Sparkles size={12} />}
               </Button>
@@ -289,11 +295,11 @@ const Subjects = () => {
                     variant="ghost" 
                     size="sm" 
                     className={cn("h-6 text-emerald-500 hover:text-emerald-600 gap-1 text-xs", isTranslating && "animate-spin")}
-                    onClick={() => fetchSmartTranslation(editingSubject.name, "edit")}
+                    onClick={() => fetchGoogleTranslation(editingSubject.name, "edit")}
                     disabled={isTranslating}
                   >
                     {isTranslating ? <Loader2 size={12} /> : <Sparkles size={12} />}
-                    {isRTL ? "ترجمة ذكية" : "Smart Translate"}
+                    {isRTL ? "ترجمة قوقل" : "Google Translate"}
                   </Button>
                 </div>
                 <Input 
