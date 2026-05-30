@@ -15,7 +15,8 @@ import {
   ChevronUp,
   ChevronDown,
   Languages,
-  Sparkles
+  Sparkles,
+  Loader2
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -26,29 +27,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-
-// قاموس بسيط للمواد الشائعة للاقتراح الآلي
-const SUBJECT_DICTIONARY: Record<string, string> = {
-  "الرياضيات": "Mathematics",
-  "الفيزياء": "Physics",
-  "الكيمياء": "Chemistry",
-  "العلوم الطبيعية": "Natural Sciences",
-  "اللغة العربية": "Arabic Language",
-  "اللغة الفرنسية": "French Language",
-  "اللغة الإنجليزية": "English Language",
-  "التاريخ": "History",
-  "الجغرافيا": "Geography",
-  "التربية الإسلامية": "Islamic Education",
-  "الفلسفة": "Philosophy",
-  "التربية البدنية": "Physical Education",
-  "المعلوماتية": "Informatics",
-  "التكنولوجيا": "Technology",
-  "الرسم": "Drawing",
-  "الموسيقى": "Music",
-  "الاقتصاد": "Economics",
-  "القانون": "Law",
-  "المحاسبة": "Accounting"
-};
 
 type SortConfig = {
   key: "name" | "nameEn" | null;
@@ -63,6 +41,7 @@ const Subjects = () => {
   const [newSubject, setNewSubject] = useState({ name: "", nameEn: "" });
   const [editingSubject, setEditingSubject] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   const isAdmin = user?.role === "Admin";
 
@@ -97,23 +76,32 @@ const Subjects = () => {
     return sortConfig.direction === "asc" ? <ChevronUp size={14} className="text-emerald-600" /> : <ChevronDown size={14} className="text-emerald-600" />;
   };
 
-  const suggestTranslation = (arabicName: string, isEdit: boolean = false) => {
-    const trimmedName = arabicName.trim();
-    if (!trimmedName) {
-      showError(isRTL ? "يرجى كتابة اسم المادة أولاً" : "Please enter subject name first");
+  // وظيفة جلب الترجمة الذكية
+  const fetchSmartTranslation = async (text: string, target: "new" | "edit") => {
+    if (!text.trim()) {
+      showError(isRTL ? "يرجى كتابة اسم المادة بالعربي أولاً" : "Please enter Arabic name first");
       return;
     }
 
-    const suggestion = SUBJECT_DICTIONARY[trimmedName];
-    if (suggestion) {
-      if (isEdit) {
-        setEditingSubject({ ...editingSubject, nameEn: suggestion });
-      } else {
-        setNewSubject({ ...newSubject, nameEn: suggestion });
+    setIsTranslating(true);
+    try {
+      // استخدام محرك MyMemory المجاني (بديل سريع لـ GPT في المتصفح)
+      const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=ar|en`);
+      const data = await response.json();
+      
+      if (data.responseData && data.responseData.translatedText) {
+        const translation = data.responseData.translatedText;
+        if (target === "new") {
+          setNewSubject({ ...newSubject, nameEn: translation });
+        } else {
+          setEditingSubject({ ...editingSubject, nameEn: translation });
+        }
+        showSuccess(isRTL ? "تم جلب الترجمة الذكية" : "Smart translation fetched");
       }
-      showSuccess(isRTL ? "تم العثور على ترجمة مقترحة" : "Suggested translation found");
-    } else {
-      showError(isRTL ? "عذراً، لا توجد ترجمة مقترحة لهذه المادة" : "Sorry, no suggestion found for this subject");
+    } catch (error) {
+      showError(isRTL ? "فشل الاتصال بمحرك الترجمة" : "Failed to connect to translation engine");
+    } finally {
+      setIsTranslating(false);
     }
   };
 
@@ -183,18 +171,19 @@ const Subjects = () => {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-emerald-700 uppercase px-1 flex justify-between items-center">
-              <span>{isRTL ? "التسمية بالإنجليزية" : "English Name"}</span>
+            <div className="flex justify-between items-center px-1">
+              <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "التسمية بالإنجليزية" : "English Name"}</label>
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-4 w-4 text-emerald-500 hover:text-emerald-600"
-                onClick={() => suggestTranslation(newSubject.name)}
-                type="button"
+                className={cn("h-4 w-4 text-emerald-600 hover:text-emerald-700", isTranslating && "animate-spin")}
+                onClick={() => fetchSmartTranslation(newSubject.name, "new")}
+                disabled={isTranslating}
+                title={isRTL ? "ترجمة ذكية" : "Smart Translate"}
               >
-                <Sparkles size={12} />
+                {isTranslating ? <Loader2 size={12} /> : <Sparkles size={12} />}
               </Button>
-            </label>
+            </div>
             <Input 
               value={newSubject.nameEn} 
               onChange={e => setNewSubject({...newSubject, nameEn: e.target.value})}
@@ -216,19 +205,13 @@ const Subjects = () => {
         <table className={cn("w-full border-collapse border border-gray-200", isRTL ? "text-right" : "text-left")}>
           <thead>
             <tr className="bg-[#f9f9f1]">
-              <th 
-                className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 cursor-pointer hover:bg-emerald-50/50 transition-colors"
-                onClick={() => handleSort("name")}
-              >
+              <th className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 cursor-pointer" onClick={() => handleSort("name")}>
                 <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
                   <SortIcon column="name" />
                   {isRTL ? "اسم المادة" : "Subject Name"}
                 </div>
               </th>
-              <th 
-                className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 cursor-pointer hover:bg-emerald-50/50 transition-colors"
-                onClick={() => handleSort("nameEn")}
-              >
+              <th className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 cursor-pointer" onClick={() => handleSort("nameEn")}>
                 <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
                   <SortIcon column="nameEn" />
                   {isRTL ? "التسمية بالإنجليزية" : "English Name"}
@@ -244,13 +227,13 @@ const Subjects = () => {
               <tr key={sub.id} className="hover:bg-gray-50 transition-colors group">
                 <td className="py-1 px-3 border border-gray-200 align-middle">
                   <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                    <span className="font-bold text-emerald-950 text-sm break-words">{sub.name}</span>
+                    <span className="font-bold text-emerald-950 text-sm">{sub.name}</span>
                     <BookOpen size={14} className="text-emerald-500 shrink-0" />
                   </div>
                 </td>
                 <td className="py-1 px-3 border border-gray-200 align-middle">
                   <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                    <span className="text-gray-600 font-medium text-sm break-words">{sub.nameEn || "---"}</span>
+                    <span className="text-gray-600 font-medium text-sm">{sub.nameEn || "---"}</span>
                     <Languages size={12} className="text-gray-400 shrink-0" />
                   </div>
                 </td>
@@ -281,21 +264,13 @@ const Subjects = () => {
             ))}
           </tbody>
         </table>
-
-        {sortedAndFilteredSubjects.length === 0 && (
-          <div className="text-center py-12 bg-gray-50/30">
-            <p className="text-gray-400 font-bold text-sm">{isRTL ? "لا توجد مواد مطابقة" : "No matching subjects found"}</p>
-          </div>
-        )}
       </div>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-md rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-emerald-950">
-              {isRTL ? "تعديل المادة" : "Edit Subject"}
-            </DialogTitle>
+            <DialogTitle className="text-xl font-bold text-emerald-950">{isRTL ? "تعديل المادة" : "Edit Subject"}</DialogTitle>
           </DialogHeader>
           {editingSubject && (
             <div className="space-y-4 py-4">
@@ -313,12 +288,12 @@ const Subjects = () => {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="h-6 text-emerald-500 hover:text-emerald-600 gap-1 text-xs"
-                    onClick={() => suggestTranslation(editingSubject.name, true)}
-                    type="button"
+                    className={cn("h-6 text-emerald-500 hover:text-emerald-600 gap-1 text-xs", isTranslating && "animate-spin")}
+                    onClick={() => fetchSmartTranslation(editingSubject.name, "edit")}
+                    disabled={isTranslating}
                   >
-                    <Sparkles size={12} />
-                    {isRTL ? "اقتراح" : "Suggest"}
+                    {isTranslating ? <Loader2 size={12} /> : <Sparkles size={12} />}
+                    {isRTL ? "ترجمة ذكية" : "Smart Translate"}
                   </Button>
                 </div>
                 <Input 
@@ -330,12 +305,8 @@ const Subjects = () => {
             </div>
           )}
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl">
-              {t.cancel}
-            </Button>
-            <Button onClick={handleUpdateSubject} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">
-              {isRTL ? "حفظ" : "Save"}
-            </Button>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl">{t.cancel}</Button>
+            <Button onClick={handleUpdateSubject} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">{isRTL ? "حفظ" : "Save"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
