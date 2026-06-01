@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Language, translations } from "../translations";
 import { 
   User, Institution, Employee, Assignment, 
-  AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart 
+  AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment 
 } from "../types";
 
 interface AppContextType {
@@ -21,6 +21,9 @@ interface AppContextType {
   setAssignments: React.Dispatch<React.SetStateAction<Assignment[]>>;
   templateAssignments: TemplateAssignment[];
   updateTemplateAssignment: (dayIdx: number, period: PeriodPart, employeeIds: string[]) => void;
+  dailyAssignments: DailyAssignment[];
+  saveAssignment: (date: string, periods: PeriodPart[], employeeIds: string[]) => void;
+  getEffectiveAssignment: (dateStr: string, period: PeriodPart) => string[];
   departments: string[];
   setDepartments: React.Dispatch<React.SetStateAction<string[]>>;
   rooms: string[];
@@ -71,6 +74,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [templateAssignments, setTemplateAssignments] = useState<TemplateAssignment[]>([]);
+  const [dailyAssignments, setDailyAssignments] = useState<DailyAssignment[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
   const [rooms, setRooms] = useState<string[]>([]);
   const [classes, setClasses] = useState<AcademicClass[]>([]);
@@ -94,6 +98,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setEmployees(parsed.employees || []);
         setAssignments(parsed.assignments || []);
         setTemplateAssignments(parsed.templateAssignments || []);
+        setDailyAssignments(parsed.dailyAssignments || []);
         setDepartments(parsed.departments || []);
         setRooms(parsed.rooms || []);
         setClasses(parsed.classes || []);
@@ -108,10 +113,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const dataToSave = { 
       systemUsers, institution, employees, assignments, 
-      templateAssignments, departments, rooms, classes, subjects, periodConfigs 
+      templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs 
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  }, [systemUsers, institution, employees, assignments, templateAssignments, departments, rooms, classes, subjects, periodConfigs]);
+  }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs]);
 
   const updateTemplateAssignment = (dayIdx: number, period: PeriodPart, employeeIds: string[]) => {
     setTemplateAssignments(prev => {
@@ -119,6 +124,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (employeeIds.length === 0) return filtered;
       return [...filtered, { dayIdx, period, employeeIds }];
     });
+  };
+
+  const saveAssignment = (date: string, periods: PeriodPart[], employeeIds: string[]) => {
+    setDailyAssignments(prev => {
+      // Remove existing daily assignments for this date and these periods
+      const filtered = prev.filter(a => !(a.date === date && periods.includes(a.period)));
+      
+      // Add new ones
+      const newAssignments = periods.map(period => ({
+        date,
+        period,
+        employeeIds
+      }));
+      
+      return [...filtered, ...newAssignments];
+    });
+  };
+
+  const getEffectiveAssignment = (dateStr: string, period: PeriodPart): string[] => {
+    // 1. Check daily overrides
+    const daily = dailyAssignments.find(d => d.date === dateStr && d.period === period);
+    if (daily) {
+      return daily.employeeIds;
+    }
+
+    // 2. Check template assignments (fixed work schedule)
+    const date = new Date(dateStr);
+    const dayIdx = date.getDay();
+    const template = templateAssignments.find(t => t.dayIdx === dayIdx && t.period === period);
+    if (template) {
+      return template.employeeIds;
+    }
+
+    // 3. Fallback to timetable lessons
+    return assignments
+      .filter(a => {
+        if (a.day !== dayIdx) return false;
+        const p = parseInt(a.period);
+        if (period === "Morning") return p >= 1 && p <= 4;
+        if (period === "Afternoon") return p >= 5 && p <= 8;
+        return false;
+      })
+      .map(a => a.employeeId);
   };
 
   const importAllData = (data: Partial<AppState>) => {
@@ -130,6 +178,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data.subjects) setSubjects(data.subjects);
     if (data.assignments) setAssignments(data.assignments);
     if (data.templateAssignments) setTemplateAssignments(data.templateAssignments);
+    if (data.dailyAssignments) setDailyAssignments(data.dailyAssignments);
     if (data.departments) setDepartments(data.departments);
     if (data.periodConfigs && data.periodConfigs.length > 0) setPeriodConfigs(data.periodConfigs);
     if (data.systemUsers) setSystemUsers(data.systemUsers);
@@ -156,7 +205,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider value={{ 
       language, setLanguage, user, systemUsers, setSystemUsers, login, logout, 
       institution, setInstitution, employees, setEmployees, assignments, setAssignments,
-      templateAssignments, updateTemplateAssignment,
+      templateAssignments, updateTemplateAssignment, dailyAssignments, saveAssignment, getEffectiveAssignment,
       departments, setDepartments, rooms, setRooms, classes, setClasses, subjects, setSubjects,
       periodConfigs, setPeriodConfigs, importAllData, t, isRTL 
     }}>
