@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Printer, Search, Eye, ClipboardList, Check, X } from "lucide-react";
+import { Printer, Search, Eye, ClipboardList, Check, BookOpen, ShieldAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { 
   Dialog, 
@@ -36,7 +36,8 @@ const PERIODS: PeriodPart[] = ["Morning", "Afternoon", "Evening"];
 const WeeklyWorkSchedule = () => {
   const { 
     employees, 
-    templateAssignments, 
+    assignments, // الحصص الدراسية
+    templateAssignments, // المناوبات اليدوية
     updateTemplateAssignment,
     isRTL,
     t,
@@ -54,9 +55,30 @@ const WeeklyWorkSchedule = () => {
     );
   }, [employees, searchTerm]);
 
+  // دالة للتحقق مما إذا كان الأستاذ لديه حصة في فترة معينة
+  const hasLesson = (empId: string, dayIdx: number, periodPart: PeriodPart) => {
+    return assignments.some(asgn => {
+      if (asgn.employeeId !== empId || asgn.day !== dayIdx) return false;
+      
+      const p = parseInt(asgn.period);
+      if (periodPart === "Morning") return p >= 1 && p <= 4;
+      if (periodPart === "Afternoon") return p >= 5 && p <= 8;
+      return false; // المساء عادة لا يحتوي حصص برمجية تلقائية
+    });
+  };
+
+  // دالة للتحقق من وجود تكليف يدوي (مناوبة)
+  const hasManualDuty = (empId: string, dayIdx: number, period: PeriodPart) => {
+    return templateAssignments.some(a => 
+      a.dayIdx === dayIdx && a.period === period && a.employeeIds.includes(empId)
+    );
+  };
+
   const toggleAssignment = (empId: string, dayIdx: number, period: PeriodPart) => {
     if (!isAdmin) return;
 
+    // لا نسمح بإلغاء الحصص الدراسية من هنا (يجب إلغاؤها من صفحة الجدول)
+    // لكن نسمح بإضافة/إلغاء المناوبات اليدوية فوقها
     const current = templateAssignments.find(a => a.dayIdx === dayIdx && a.period === period);
     let newIds = current ? [...current.employeeIds] : [];
     
@@ -69,23 +91,17 @@ const WeeklyWorkSchedule = () => {
     updateTemplateAssignment(dayIdx, period, newIds);
   };
 
-  const isAssigned = (empId: string, dayIdx: number, period: PeriodPart) => {
-    return templateAssignments.some(a => 
-      a.dayIdx === dayIdx && a.period === period && a.employeeIds.includes(empId)
-    );
-  };
-
   const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => (
     <div className={cn(
       "bg-white transition-all",
       isPrint ? "p-4 w-full" : "rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-50/50 overflow-hidden"
     )}>
-      <Table className={cn("border-collapse", isPrint ? "w-full border-2 border-emerald-950" : "")}>
+      <Table className={cn("border-collapse", isPrint ? "w-full border-2 border-emerald-950" : "min-w-[800px]")}>
         <TableHeader>
           <TableRow className="bg-emerald-50/50 hover:bg-emerald-50/50">
             <TableHead className={cn(
               "font-black text-emerald-900 border border-emerald-100",
-              isPrint ? "text-xs p-2" : "text-sm p-4"
+              isPrint ? "text-[10px] p-2" : "text-sm p-4"
             )} rowSpan={2}>
               {isRTL ? "اسم الأستاذ" : "Teacher Name"}
             </TableHead>
@@ -118,27 +134,39 @@ const WeeklyWorkSchedule = () => {
           {filteredEmployees.map(emp => (
             <TableRow key={emp.id} className="hover:bg-emerald-50/30 group transition-colors">
               <TableCell className={cn(
-                "font-bold text-emerald-950 border border-emerald-100 bg-white group-hover:bg-emerald-50/30",
+                "font-bold text-emerald-950 border border-emerald-100 bg-white group-hover:bg-emerald-50/30 sticky right-0 z-10 shadow-sm",
                 isPrint ? "text-[10px] p-1" : "text-xs p-4"
               )}>
                 {emp.lastName} {emp.firstName}
               </TableCell>
               {DAYS.map(day => PERIODS.map(period => {
-                const assigned = isAssigned(emp.id, day.idx, period);
+                const lessonPresent = hasLesson(emp.id, day.idx, period);
+                const manualDutyPresent = hasManualDuty(emp.id, day.idx, period);
+                const isActive = lessonPresent || manualDutyPresent;
+
                 return (
                   <TableCell
                     key={`${emp.id}-${day.idx}-${period}`}
                     onClick={() => toggleAssignment(emp.id, day.idx, period)}
                     className={cn(
-                      "text-center border border-emerald-100 p-0 transition-all",
+                      "text-center border border-emerald-100 p-0 transition-all relative",
                       !isPrint && isAdmin && "cursor-pointer",
-                      assigned ? (isPrint ? "bg-emerald-950 text-white" : "bg-emerald-600 text-white shadow-inner") : "hover:bg-emerald-50/50",
+                      isActive ? (isPrint ? "bg-emerald-950 text-white" : "bg-emerald-600 text-white shadow-inner") : "hover:bg-emerald-50/50",
                       isPrint ? "h-6 w-6" : "h-12 w-12"
                     )}
                   >
-                    {assigned && (
-                      <div className="flex items-center justify-center animate-in fade-in zoom-in duration-200">
-                        {isPrint ? <span className="font-black">X</span> : <Check size={18} strokeWidth={3} />}
+                    {isActive && (
+                      <div className="flex flex-col items-center justify-center gap-0.5 animate-in fade-in zoom-in duration-200">
+                        {isPrint ? (
+                          <span className="font-black">X</span>
+                        ) : (
+                          <>
+                            {lessonPresent ? <BookOpen size={14} className="opacity-80" /> : <ShieldAlert size={14} className="opacity-80" />}
+                            <span className="text-[8px] font-black uppercase tracking-tighter">
+                              {lessonPresent ? (isRTL ? "حصة" : "L") : (isRTL ? "عمل" : "W")}
+                            </span>
+                          </>
+                        )}
                       </div>
                     )}
                   </TableCell>
@@ -160,11 +188,15 @@ const WeeklyWorkSchedule = () => {
             {t.weeklyWorkSchedule}
           </h2>
           <p className="text-emerald-600/70 font-bold mt-1">
-            {isRTL ? "توزيع مناوبات ومهام الأساتذة خلال الأسبوع" : "Manage teacher weekly shifts and duties"}
+            {isRTL ? "مزامنة تلقائية مع جدول الحصص وتكليفات العمل" : "Auto-sync with timetable and work assignments"}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-4 bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100 text-[10px] font-bold">
+             <div className="flex items-center gap-1.5"><BookOpen size={12} className="text-emerald-600" /> {isRTL ? "حصة دراسية" : "Lesson"}</div>
+             <div className="flex items-center gap-1.5"><ShieldAlert size={12} className="text-emerald-600" /> {isRTL ? "مناوبة/عمل" : "Duty"}</div>
+          </div>
           <div className="relative flex-1 md:w-64">
             <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
             <Input 
@@ -216,17 +248,6 @@ const WeeklyWorkSchedule = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <style>
-        {`
-          @media print {
-            body * { visibility: hidden; }
-            #printable-area, #printable-area * { visibility: visible; }
-            #printable-area { position: absolute; left: 0; top: 0; width: 100%; }
-            .print\\:hidden { display: none !important; }
-          }
-        `}
-      </style>
     </div>
   );
 };
