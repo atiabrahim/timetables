@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Printer, Search, Eye, ClipboardList, BookOpen, ShieldAlert } from "lucide-react";
+import { Printer, Search, Eye, ClipboardList, BookOpen, ShieldAlert, RotateCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { 
   Dialog, 
@@ -21,6 +21,13 @@ import {
   DialogTitle,
   DialogFooter
 } from "@/components/ui/dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { PeriodPart } from "../types";
 
 const DAYS = [
@@ -46,6 +53,7 @@ const WeeklyWorkSchedule = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
 
   const isAdmin = user?.role === "Admin";
 
@@ -96,7 +104,7 @@ const WeeklyWorkSchedule = () => {
           <TableRow className={cn(isPrint ? "bg-emerald-50/50 border-b border-emerald-950" : "bg-emerald-50/50 hover:bg-emerald-50/50")}>
             <TableHead className={cn(
               "font-black text-emerald-900 border border-emerald-100 text-center",
-              isPrint ? "text-[9px] p-1 border-emerald-950 w-[140px]" : "text-sm p-4"
+              isPrint ? "text-[9px] p-1 border-emerald-950 w-[130px]" : "text-sm p-4"
             )} rowSpan={2}>
               {isRTL ? "اسم الأستاذ" : "Teacher Name"}
             </TableHead>
@@ -181,12 +189,23 @@ const WeeklyWorkSchedule = () => {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-3 w-full md:w-auto">
+        <div className="flex flex-wrap gap-3 w-full md:w-auto items-center">
           <div className="flex items-center gap-4 bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100 text-[10px] font-bold">
              <div className="flex items-center gap-1.5"><BookOpen size={12} className="text-emerald-600" /> {isRTL ? "حصة دراسية" : "Lesson"}</div>
              <div className="flex items-center gap-1.5"><ShieldAlert size={12} className="text-emerald-600" /> {isRTL ? "مناوبة/عمل" : "Duty"}</div>
           </div>
-          <div className="relative flex-1 md:w-64">
+          
+          <Select value={orientation} onValueChange={(v: any) => setOrientation(v)}>
+            <SelectTrigger className="w-[140px] rounded-2xl border-emerald-100 bg-white h-11 font-bold">
+              <SelectValue placeholder={isRTL ? "اتجاه الصفحة" : "Orientation"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="landscape">{isRTL ? "عرضي (موصى به)" : "Landscape (Rec.)"}</SelectItem>
+              <SelectItem value="portrait">{isRTL ? "طولي" : "Portrait"}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <div className="relative flex-1 md:w-48">
             <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
             <Input 
               placeholder={t.search} 
@@ -210,13 +229,32 @@ const WeeklyWorkSchedule = () => {
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-0 border-none bg-emerald-50/30">
           <DialogHeader className="bg-white p-6 border-b border-emerald-100 sticky top-0 z-10">
-            <DialogTitle className="flex items-center gap-3 text-emerald-900 font-black">
-              <Printer className="text-emerald-600" />
-              {isRTL ? "معاينة جدول العمل" : "Work Schedule Preview"}
+            <DialogTitle className="flex items-center justify-between w-full text-emerald-900 font-black">
+              <div className="flex items-center gap-3">
+                <Printer className="text-emerald-600" />
+                {isRTL ? "معاينة جدول العمل" : "Work Schedule Preview"}
+              </div>
+              <div className="flex items-center gap-2 print:hidden">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")}
+                  className="rounded-xl border-emerald-100 text-emerald-700 font-bold gap-2"
+                >
+                  <RotateCw size={14} />
+                  {isRTL ? (orientation === "portrait" ? "تحويل لعرضي" : "تحويل لطولي") : "Toggle Orientation"}
+                </Button>
+              </div>
             </DialogTitle>
           </DialogHeader>
           <div className="p-4 flex justify-center">
-            <div id="printable-report" className="bg-white border border-emerald-100 rounded-lg w-full overflow-x-auto">
+            <div 
+              id="printable-report" 
+              className={cn(
+                "bg-white border border-emerald-100 rounded-lg p-8 shadow-sm transition-all",
+                orientation === "portrait" ? "w-[210mm]" : "w-[297mm]"
+              )}
+            >
               <div className="text-center mb-4 border-b-2 border-emerald-900 pb-3 pt-2">
                 <h1 className="text-lg font-black text-emerald-900 mb-1 uppercase">{t.weeklyWorkSchedule}</h1>
                 <p className="text-emerald-700 font-bold text-sm">{isRTL ? "للفترة الدراسية الحالية" : "For Current Academic Period"}</p>
@@ -253,7 +291,7 @@ const WeeklyWorkSchedule = () => {
               top: 0 !important; 
               width: 100% !important; 
               margin: 0 !important;
-              padding: 15mm !important;
+              padding: 10mm !important;
               border: none !important;
               box-shadow: none !important;
               overflow: visible !important;
@@ -262,14 +300,13 @@ const WeeklyWorkSchedule = () => {
             
             /* ضبط الجدول ليتناسب على صفحة واحدة */
             #printable-report table {
-              transform: scale(0.85);
-              transform-origin: top center;
-              width: auto !important;
+              width: 100% !important;
+              table-layout: fixed !important;
             }
             
             @page {
-              size: A4;
-              margin: 10mm !important;
+              size: A4 ${orientation};
+              margin: 8mm !important;
             }
           }
         `}
