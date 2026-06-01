@@ -131,14 +131,14 @@ export const parseXml = (xmlText: string) => {
     nameEn: getAttr(el, "name_en")
   }));
 
-  // 5. استخراج الحصص والبطاقات (الربط بينهما)
+  // 5. استخراج الحصص والبطاقات (الربط بينهما) مع دعم التسميات المفردة والجمع
   const lessonsMap = new Map();
   Array.from(xmlDoc.getElementsByTagName("lesson")).forEach(el => {
     lessonsMap.set(getAttr(el, "id"), {
-      teacherId: getAttr(el, "teacherids"),
+      teacherId: getAttr(el, "teacherids") || getAttr(el, "teacherid"),
       subjectId: getAttr(el, "subjectid"),
-      classId: getAttr(el, "classids"),
-      classroomIds: getAttr(el, "classroomids")
+      classId: getAttr(el, "classids") || getAttr(el, "classid"),
+      classroomIds: getAttr(el, "classroomids") || getAttr(el, "classroomid")
     });
   });
 
