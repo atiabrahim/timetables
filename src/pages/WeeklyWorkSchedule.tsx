@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Printer, Search, Eye, ClipboardList, BookOpen, ShieldAlert, X } from "lucide-react";
+import { Printer, Search, Eye, ClipboardList, BookOpen, ShieldAlert } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { 
   Dialog, 
@@ -83,115 +83,93 @@ const WeeklyWorkSchedule = () => {
     updateTemplateAssignment(dayIdx, period, newIds);
   };
 
-  const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => {
-    return (
-      <div className={cn(
-        "bg-white",
-        isPrint ? "p-0 w-full" : "rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-50/50 overflow-hidden"
+  const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => (
+    <div className={cn(
+      "bg-white",
+      isPrint ? "p-0 w-full" : "rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-50/50 overflow-hidden"
+    )}>
+      <Table className={cn(
+        "border-collapse border-spacing-0", 
+        isPrint ? "w-full border border-emerald-950 table-fixed" : "min-w-[800px]"
       )}>
-        <Table className={cn(
-          "border-collapse border-spacing-0", 
-          isPrint ? "w-full border border-emerald-950 table-fixed" : "min-w-[800px]"
-        )}>
-          <TableHeader>
-            <TableRow className={cn(isPrint ? "bg-emerald-50/50 border-b border-emerald-950" : "bg-emerald-50/50 hover:bg-emerald-50/50")}>
-              <TableHead className={cn(
-                "font-black text-emerald-900 border border-emerald-100 text-center",
-                isPrint ? "text-[10px] p-2 border-emerald-950 w-[150px]" : "text-sm p-4"
-              )} rowSpan={2}>
-                {isRTL ? "اسم الأستاذ" : "Teacher Name"}
+        <TableHeader>
+          <TableRow className={cn(isPrint ? "bg-emerald-50/50 border-b border-emerald-950" : "bg-emerald-50/50 hover:bg-emerald-50/50")}>
+            <TableHead className={cn(
+              "font-black text-emerald-900 border border-emerald-100 text-center",
+              isPrint ? "text-[9px] p-1 border-emerald-950 w-[140px]" : "text-sm p-4"
+            )} rowSpan={2}>
+              {isRTL ? "اسم الأستاذ" : "Teacher Name"}
+            </TableHead>
+            {DAYS.map(day => (
+              <TableHead 
+                key={day.idx} 
+                className={cn(
+                  "text-center font-black text-emerald-700 border border-emerald-100",
+                  isPrint ? "text-[9px] p-1 border-emerald-950 bg-emerald-50/30" : "text-xs p-2 bg-emerald-50/30"
+                )} 
+                colSpan={PERIODS.length}
+              >
+                {isRTL ? day.name : day.en}
               </TableHead>
-              {DAYS.map(day => (
-                <TableHead 
-                  key={day.idx} 
-                  className={cn(
-                    "text-center font-black text-emerald-700 border border-emerald-100",
-                    isPrint ? "text-[10px] p-1 border-emerald-950 bg-emerald-50/30" : "text-xs p-2 bg-emerald-50/30"
-                  )} 
-                  colSpan={PERIODS.length}
-                >
-                  {isRTL ? day.name : day.en}
-                </TableHead>
-              ))}
-            </TableRow>
-            <TableRow className={cn(isPrint ? "bg-emerald-50/20 border-b border-emerald-950" : "bg-emerald-50/20 hover:bg-emerald-50/20")}>
-              {DAYS.map(day => PERIODS.map(p => (
-                <TableHead key={`${day.idx}-${p}`} className={cn(
-                  "text-center font-bold border border-emerald-100",
-                  isPrint ? "text-[8px] p-1 border-emerald-950" : "text-[10px] p-2"
-                )}>
-                  {p === "Morning" ? (isRTL ? "ص" : "M") : p === "Afternoon" ? (isRTL ? "م" : "A") : (isRTL ? "ل" : "E")}
-                </TableHead>
-              )))}
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {filteredEmployees.map(emp => (
-              <TableRow key={emp.id} className={cn("group transition-colors", isPrint ? "border-b border-emerald-950" : "hover:bg-emerald-50/30")}>
-                <TableCell className={cn(
-                  "font-bold text-emerald-950 border border-emerald-100 bg-white",
-                  isPrint ? "text-[10px] p-2 border-emerald-950" : "text-xs p-4 group-hover:bg-emerald-50/30 sticky right-0 z-10 shadow-sm"
-                )}>
-                  {emp.lastName} {emp.firstName}
-                </TableCell>
-                {DAYS.map(day => PERIODS.map(period => {
-                  const lessonPresent = hasLesson(emp.id, day.idx, period);
-                  const manualDutyPresent = hasManualDuty(emp.id, day.idx, period);
-                  const isActive = lessonPresent || manualDutyPresent;
-
-                  return (
-                    <TableCell
-                      key={`${emp.id}-${day.idx}-${period}`}
-                      onClick={() => toggleAssignment(emp.id, day.idx, period)}
-                      className={cn(
-                        "text-center border border-emerald-100 p-0 transition-all relative",
-                        !isPrint && isAdmin && "cursor-pointer",
-                        isActive ? (isPrint ? "bg-emerald-600 text-white" : "bg-emerald-600 text-white shadow-inner") : "hover:bg-emerald-50/50",
-                        isPrint ? "h-8 border-emerald-950" : "h-12 w-12"
-                      )}
-                    >
-                      {isActive && (
-                        <div className="flex flex-col items-center justify-center gap-0.5">
-                          {lessonPresent ? <BookOpen size={isPrint ? 12 : 14} /> : <ShieldAlert size={isPrint ? 12 : 14} />}
-                          <span className={cn("font-black uppercase tracking-tighter", isPrint ? "text-[7px]" : "text-[8px]")}>
-                            {lessonPresent ? (isRTL ? "حصة" : "L") : (isRTL ? "عمل" : "W")}
-                          </span>
-                        </div>
-                      )}
-                    </TableCell>
-                  );
-                }))}
-              </TableRow>
             ))}
-          </TableBody>
-        </Table>
-      </div>
-    );
-  };
+          </TableRow>
+          <TableRow className={cn(isPrint ? "bg-emerald-50/20 border-b border-emerald-950" : "bg-emerald-50/20 hover:bg-emerald-50/20")}>
+            {DAYS.map(day => PERIODS.map(p => (
+              <TableHead key={`${day.idx}-${p}`} className={cn(
+                "text-center font-bold border border-emerald-100",
+                isPrint ? "text-[8px] p-0.5 border-emerald-950" : "text-[10px] p-2"
+              )}>
+                {p === "Morning" ? (isRTL ? "ص" : "M") : p === "Afternoon" ? (isRTL ? "م" : "A") : (isRTL ? "ل" : "E")}
+              </TableHead>
+            )))}
+          </TableRow>
+        </TableHeader>
 
-  const PrintableReport = () => (
-    <div id="printable-report" className="bg-white p-12 text-black w-full">
-      <div className="text-center mb-8 border-b-2 border-emerald-900 pb-6">
-        <h1 className="text-2xl font-black text-emerald-900 mb-2 uppercase">{t.weeklyWorkSchedule}</h1>
-        <p className="text-emerald-700 font-bold">{isRTL ? "للفترة الدراسية الحالية" : "For Current Academic Period"}</p>
-      </div>
-      <ScheduleTable isPrint={true} />
-      <div className="mt-12 grid grid-cols-3 gap-8 text-center font-black text-emerald-900 text-xs">
-        <div><p className="mb-12">{isRTL ? "توقيع الأستاذ" : "Teacher Signature"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
-        <div><p className="mb-12">{isRTL ? "المسؤول المباشر" : "Direct Supervisor"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
-        <div><p className="mb-12">{isRTL ? "ختم المؤسسة" : "Institution Stamp"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
-      </div>
+        <TableBody>
+          {filteredEmployees.map(emp => (
+            <TableRow key={emp.id} className={cn("group transition-colors", isPrint ? "border-b border-emerald-950" : "hover:bg-emerald-50/30")}>
+              <TableCell className={cn(
+                "font-bold text-emerald-950 border border-emerald-100 bg-white",
+                isPrint ? "text-[9px] p-1 border-emerald-950" : "text-xs p-4 group-hover:bg-emerald-50/30 sticky right-0 z-10 shadow-sm"
+              )}>
+                {emp.lastName} {emp.firstName}
+              </TableCell>
+              {DAYS.map(day => PERIODS.map(period => {
+                const lessonPresent = hasLesson(emp.id, day.idx, period);
+                const manualDutyPresent = hasManualDuty(emp.id, day.idx, period);
+                const isActive = lessonPresent || manualDutyPresent;
+
+                return (
+                  <TableCell
+                    key={`${emp.id}-${day.idx}-${period}`}
+                    onClick={() => toggleAssignment(emp.id, day.idx, period)}
+                    className={cn(
+                      "text-center border border-emerald-100 p-0 transition-all relative",
+                      !isPrint && isAdmin && "cursor-pointer",
+                      isActive ? (isPrint ? "bg-emerald-600 text-white" : "bg-emerald-600 text-white shadow-inner") : "hover:bg-emerald-50/50",
+                      isPrint ? "h-6 border-emerald-950" : "h-12 w-12"
+                    )}
+                  >
+                    {isActive && (
+                      <div className="flex flex-col items-center justify-center gap-0.5">
+                        {lessonPresent ? <BookOpen size={isPrint ? 10 : 14} /> : <ShieldAlert size={isPrint ? 10 : 14} />}
+                        <span className={cn("font-black uppercase tracking-tighter", isPrint ? "text-[6px]" : "text-[8px]")}>
+                          {lessonPresent ? (isRTL ? "ح" : "L") : (isRTL ? "ع" : "W")}
+                        </span>
+                      </div>
+                    )}
+                  </TableCell>
+                );
+              }))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 
   return (
     <div className="space-y-8 pb-20">
-      {/* القسم المخفي الذي يظهر فقط عند الطباعة */}
-      <div className="hidden print:block absolute inset-0 bg-white z-[9999]">
-        <PrintableReport />
-      </div>
-
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
         <div>
           <h2 className="text-3xl font-black text-emerald-950 flex items-center gap-3">
@@ -228,26 +206,32 @@ const WeeklyWorkSchedule = () => {
 
       <ScheduleTable />
 
-      {/* نافذة المعاينة */}
+      {/* Print Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-0 border-none bg-emerald-50/30">
-          <div className="sticky top-0 bg-white border-b border-emerald-100 p-4 flex justify-between items-center z-10">
-             <div className="flex items-center gap-2 font-black text-emerald-900">
-                <Printer className="text-emerald-600" />
-                {isRTL ? "معاينة التقرير" : "Report Preview"}
-             </div>
-             <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)} className="rounded-full">
-                <X size={20} />
-             </Button>
-          </div>
-          <div className="p-8 flex justify-center">
-            <div className="bg-white shadow-2xl border border-emerald-100 rounded-lg min-w-full lg:min-w-[1000px] overflow-x-auto">
-              <PrintableReport />
+          <DialogHeader className="bg-white p-6 border-b border-emerald-100 sticky top-0 z-10">
+            <DialogTitle className="flex items-center gap-3 text-emerald-900 font-black">
+              <Printer className="text-emerald-600" />
+              {isRTL ? "معاينة جدول العمل" : "Work Schedule Preview"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 flex justify-center">
+            <div id="printable-report" className="bg-white border border-emerald-100 rounded-lg w-full overflow-x-auto">
+              <div className="text-center mb-4 border-b-2 border-emerald-900 pb-3 pt-2">
+                <h1 className="text-lg font-black text-emerald-900 mb-1 uppercase">{t.weeklyWorkSchedule}</h1>
+                <p className="text-emerald-700 font-bold text-sm">{isRTL ? "للفترة الدراسية الحالية" : "For Current Academic Period"}</p>
+              </div>
+              <ScheduleTable isPrint={true} />
+              <div className="mt-6 grid grid-cols-3 gap-4 text-center font-black text-emerald-900 text-xs px-4 pb-2">
+                <div><p className="mb-8">{isRTL ? "توقيع الأستاذ" : "Teacher Signature"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
+                <div><p className="mb-8">{isRTL ? "المسؤول المباشر" : "Direct Supervisor"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
+                <div><p className="mb-8">{isRTL ? "ختم المؤسسة" : "Institution Stamp"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
+              </div>
             </div>
           </div>
-          <DialogFooter className="bg-white p-6 border-t border-emerald-100 flex gap-3">
-            <Button variant="outline" onClick={() => setIsPreviewOpen(false)} className="rounded-xl flex-1 md:flex-none">{t.cancel}</Button>
-            <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-10 font-bold flex-1 md:flex-none">
+          <DialogFooter className="bg-white p-4 border-t border-emerald-100">
+            <Button variant="outline" onClick={() => setIsPreviewOpen(false)} className="rounded-xl">{t.cancel}</Button>
+            <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-10 font-bold">
               <Printer size={18} className="mr-2" /> {t.print}
             </Button>
           </DialogFooter>
@@ -257,21 +241,35 @@ const WeeklyWorkSchedule = () => {
       <style>
         {`
           @media print {
-            /* إخفاء كل شيء في الصفحة */
-            body > * { display: none !important; }
-            /* إظهار فقط حاوية الطباعة الخاصة بنا */
-            .print\\:block { display: block !important; position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; }
-            
-            @page {
-              size: A4 landscape;
-              margin: 1cm;
-            }
-            
-            #printable-report { 
+            body * { visibility: hidden !important; }
+            #printable-report, #printable-report * { 
               visibility: visible !important; 
               -webkit-print-color-adjust: exact !important; 
               print-color-adjust: exact !important;
-              width: 100% !important;
+            }
+            #printable-report { 
+              position: absolute !important; 
+              left: 0 !important; 
+              top: 0 !important; 
+              width: 100% !important; 
+              margin: 0 !important;
+              padding: 15mm !important;
+              border: none !important;
+              box-shadow: none !important;
+              overflow: visible !important;
+            }
+            .print\\:hidden { display: none !important; }
+            
+            /* ضبط الجدول ليتناسب على صفحة واحدة */
+            #printable-report table {
+              transform: scale(0.85);
+              transform-origin: top center;
+              width: auto !important;
+            }
+            
+            @page {
+              size: A4;
+              margin: 10mm !important;
             }
           }
         `}
