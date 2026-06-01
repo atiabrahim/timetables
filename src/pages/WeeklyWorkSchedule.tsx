@@ -83,89 +83,92 @@ const WeeklyWorkSchedule = () => {
     updateTemplateAssignment(dayIdx, period, newIds);
   };
 
-  const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => (
-    <div className={cn(
-      "bg-white",
-      isPrint ? "p-0 w-full" : "rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-50/50 overflow-hidden"
-    )}>
-      <Table className={cn(
-        "border-collapse border-spacing-0", 
-        isPrint ? "w-full border border-emerald-950 table-fixed" : "min-w-[800px]"
+  const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => {
+    return (
+      <div className={cn(
+        "bg-white",
+        isPrint ? "p-0 w-full" : "rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-50/50 overflow-hidden"
       )}>
-        <TableHeader>
-          <TableRow className={cn(isPrint ? "bg-emerald-50/50 border-b border-emerald-950" : "bg-emerald-50/50 hover:bg-emerald-50/50")}>
-            <TableHead className={cn(
-              "font-black text-emerald-900 border border-emerald-100 text-center",
-              isPrint ? "text-[10px] p-2 border-emerald-950 w-[150px]" : "text-sm p-4"
-            )} rowSpan={2}>
-              {isRTL ? "اسم الأستاذ" : "Teacher Name"}
-            </TableHead>
-            {DAYS.map(day => (
-              <TableHead 
-                key={day.idx} 
-                className={cn(
-                  "text-center font-black text-emerald-700 border border-emerald-100",
-                  isPrint ? "text-[10px] p-1 border-emerald-950 bg-emerald-50/30" : "text-xs p-2 bg-emerald-50/30"
-                )} 
-                colSpan={PERIODS.length}
-              >
-                {isRTL ? day.name : day.en}
+        <Table className={cn(
+          "border-collapse border-spacing-0", 
+          isPrint ? "w-full border border-emerald-950 table-fixed" : "min-w-[800px]"
+        )}>
+          <TableHeader>
+            <TableRow className={cn(isPrint ? "bg-emerald-50/50 border-b border-emerald-950" : "bg-emerald-50/50 hover:bg-emerald-50/50")}>
+              <TableHead className={cn(
+                "font-black text-emerald-900 border border-emerald-100 text-center",
+                isPrint ? "text-[10px] p-2 border-emerald-950 w-[150px]" : "text-sm p-4"
+              )} rowSpan={2}>
+                {isRTL ? "اسم الأستاذ" : "Teacher Name"}
               </TableHead>
-            ))}
-          </TableRow>
-          <TableRow className={cn(isPrint ? "bg-emerald-50/20 border-b border-emerald-950" : "bg-emerald-50/20 hover:bg-emerald-50/20")}>
-            {DAYS.map(day => PERIODS.map(p => (
-              <TableHead key={`${day.idx}-${p}`} className={cn(
-                "text-center font-bold border border-emerald-100",
-                isPrint ? "text-[8px] p-1 border-emerald-950" : "text-[10px] p-2"
-              )}>
-                {p === "Morning" ? (isRTL ? "ص" : "M") : p === "Afternoon" ? (isRTL ? "م" : "A") : (isRTL ? "ل" : "E")}
-              </TableHead>
-            )))}
-          </TableRow>
-        </TableHeader>
-
-        <TableBody>
-          {filteredEmployees.map(emp => (
-            <TableRow key={emp.id} className={cn("group transition-colors", isPrint ? "border-b border-emerald-950" : "hover:bg-emerald-50/30")}>
-              <TableCell className={cn(
-                "font-bold text-emerald-950 border border-emerald-100 bg-white",
-                isPrint ? "text-[10px] p-2 border-emerald-950" : "text-xs p-4 group-hover:bg-emerald-50/30 sticky right-0 z-10 shadow-sm"
-              )}>
-                {emp.lastName} {emp.firstName}
-              </TableCell>
-              {DAYS.map(day => PERIODS.map(period => {
-                const lessonPresent = hasLesson(emp.id, day.idx, period);
-                const manualDutyPresent = hasManualDuty(emp.id, day.idx, period);
-                const isActive = lessonPresent || manualDutyPresent;
-
-                return (
-                  <TableCell
-                    key={`${emp.id}-${day.idx}-${period}`}
-                    onClick={() => toggleAssignment(emp.id, day.idx, period)}
-                    className={cn(
-                      "text-center border border-emerald-100 p-0 transition-all relative",
-                      !isPrint && isAdmin && "cursor-pointer",
-                      isActive ? (isPrint ? "bg-emerald-600 text-white" : "bg-emerald-600 text-white shadow-inner") : "hover:bg-emerald-50/50",
-                      isPrint ? "h-8 border-emerald-950" : "h-12 w-12"
-                    )}
-                  >
-                    {isActive && (
-                      <div className="flex flex-col items-center justify-center gap-0.5">
-                        {lessonPresent ? <BookOpen size={isPrint ? 12 : 14} /> : <ShieldAlert size={isPrint ? 12 : 14} />}
-                        <span className={cn("font-black uppercase tracking-tighter", isPrint ? "text-[7px]" : "text-[8px]")}>
-                          {lessonPresent ? (isRTL ? "حصة" : "L") : (isRTL ? "عمل" : "W")}
-                        </span>
-                      </div>
-                    )}
-                  </TableCell>
-                );
-              }))}
+              {DAYS.map(day => (
+                <TableHead 
+                  key={day.idx} 
+                  className={cn(
+                    "text-center font-black text-emerald-700 border border-emerald-100",
+                    isPrint ? "text-[10px] p-1 border-emerald-950 bg-emerald-50/30" : "text-xs p-2 bg-emerald-50/30"
+                  )} 
+                  colSpan={PERIODS.length}
+                >
+                  {isRTL ? day.name : day.en}
+                </TableHead>
+              ))}
             </TableRow>
+            <TableRow className={cn(isPrint ? "bg-emerald-50/20 border-b border-emerald-950" : "bg-emerald-50/20 hover:bg-emerald-50/20")}>
+              {DAYS.map(day => PERIODS.map(p => (
+                <TableHead key={`${day.idx}-${p}`} className={cn(
+                  "text-center font-bold border border-emerald-100",
+                  isPrint ? "text-[8px] p-1 border-emerald-950" : "text-[10px] p-2"
+                )}>
+                  {p === "Morning" ? (isRTL ? "ص" : "M") : p === "Afternoon" ? (isRTL ? "م" : "A") : (isRTL ? "ل" : "E")}
+                </TableHead>
+              )))}
+            </TableRow>
+          </TableHeader>
+
+          <TableBody>
+            {filteredEmployees.map(emp => (
+              <TableRow key={emp.id} className={cn("group transition-colors", isPrint ? "border-b border-emerald-950" : "hover:bg-emerald-50/30")}>
+                <TableCell className={cn(
+                  "font-bold text-emerald-950 border border-emerald-100 bg-white",
+                  isPrint ? "text-[10px] p-2 border-emerald-950" : "text-xs p-4 group-hover:bg-emerald-50/30 sticky right-0 z-10 shadow-sm"
+                )}>
+                  {emp.lastName} {emp.firstName}
+                </TableCell>
+                {DAYS.map(day => PERIODS.map(period => {
+                  const lessonPresent = hasLesson(emp.id, day.idx, period);
+                  const manualDutyPresent = hasManualDuty(emp.id, day.idx, period);
+                  const isActive = lessonPresent || manualDutyPresent;
+
+                  return (
+                    <TableCell
+                      key={`${emp.id}-${day.idx}-${period}`}
+                      onClick={() => toggleAssignment(emp.id, day.idx, period)}
+                      className={cn(
+                        "text-center border border-emerald-100 p-0 transition-all relative",
+                        !isPrint && isAdmin && "cursor-pointer",
+                        isActive ? (isPrint ? "bg-emerald-600 text-white" : "bg-emerald-600 text-white shadow-inner") : "hover:bg-emerald-50/50",
+                        isPrint ? "h-8 border-emerald-950" : "h-12 w-12"
+                      )}
+                    >
+                      {isActive && (
+                        <div className="flex flex-col items-center justify-center gap-0.5">
+                          {lessonPresent ? <BookOpen size={isPrint ? 12 : 14} /> : <ShieldAlert size={isPrint ? 12 : 14} />}
+                          <span className={cn("font-black uppercase tracking-tighter", isPrint ? "text-[7px]" : "text-[8px]")}>
+                            {lessonPresent ? (isRTL ? "حصة" : "L") : (isRTL ? "عمل" : "W")}
+                          </span>
+                        </div>
+                      )}
+                    </TableCell>
+                  );
+                }))}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
-  );
+    );
+  };
 
   const PrintableReport = () => (
     <div id="printable-report" className="bg-white p-12 text-black w-full">
