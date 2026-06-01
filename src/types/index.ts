@@ -49,6 +49,12 @@ export interface TemplateAssignment {
   employeeIds: string[];
 }
 
+export interface DailyAssignment {
+  date: string;
+  period: PeriodPart;
+  employeeIds: string[];
+}
+
 export interface PeriodConfig {
   day: number;
   period: string;
@@ -74,6 +80,7 @@ export interface AppState {
   employees: Employee[];
   assignments: Assignment[];
   templateAssignments: TemplateAssignment[];
+  dailyAssignments: DailyAssignment[];
   departments: string[];
   rooms: string[];
   classes: AcademicClass[];
