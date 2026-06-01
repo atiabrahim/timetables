@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Language, translations } from "../translations";
 import { 
@@ -62,10 +64,9 @@ const DEFAULT_INSTITUTION: Institution = {
   academicYear: "2023/2024"
 };
 
-// توليد الإعدادات الافتراضية للحصص (الأحد إلى الخميس - صباحاً ومساءً)
 const generateDefaultPeriodConfigs = (): PeriodConfig[] => {
   const configs: PeriodConfig[] = [];
-  const days = [0, 1, 2, 3, 4]; // الأحد إلى الخميس
+  const days = [0, 1, 2, 3, 4];
   days.forEach(d => {
     configs.push({ day: d, period: "Morning", isActive: true });
     configs.push({ day: d, period: "Afternoon", isActive: true });
@@ -136,34 +137,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setTemplateAssignments(prev => {
       const filtered = prev.filter(a => !(a.dayIdx === dayIdx && a.period === period));
       if (employeeIds.length === 0) return filtered;
-      return [...filtered, { dayIdx, period, employeeIds }];
+      return [...filtered, { dayIdx, period, employeeIds: Array.from(new Set(employeeIds)) }];
     });
   };
 
   const saveAssignment = (date: string, periods: PeriodPart[], employeeIds: string[]) => {
     setDailyAssignments(prev => {
-      // Remove existing daily assignments for this date and these periods
       const filtered = prev.filter(a => !(a.date === date && periods.includes(a.period)));
-      
-      // Add new ones
+      const uniqueIds = Array.from(new Set(employeeIds));
       const newAssignments = periods.map(period => ({
         date,
         period,
-        employeeIds
+        employeeIds: uniqueIds
       }));
-      
       return [...filtered, ...newAssignments];
     });
   };
 
   const getEffectiveAssignment = (dateStr: string, period: PeriodPart): string[] => {
-    // 1. Check daily overrides
     const daily = dailyAssignments.find(d => d.date === dateStr && d.period === period);
     if (daily) {
       return daily.employeeIds;
     }
 
-    // 2. Check template assignments (fixed work schedule)
     const date = new Date(dateStr);
     const dayIdx = date.getDay();
     const template = templateAssignments.find(t => t.dayIdx === dayIdx && t.period === period);
@@ -171,8 +167,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return template.employeeIds;
     }
 
-    // 3. Fallback to timetable lessons
-    return assignments
+    const timetableIds = assignments
       .filter(a => {
         if (a.day !== dayIdx) return false;
         const p = parseInt(a.period);
@@ -181,6 +176,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return false;
       })
       .map(a => a.employeeId);
+
+    return Array.from(new Set(timetableIds));
   };
 
   const importAllData = (data: Partial<AppState>) => {

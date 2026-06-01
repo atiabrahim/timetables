@@ -48,7 +48,7 @@ const ReportsNew = () => {
   const { 
     employees, 
     periodConfigs, 
-    assignments,
+    getEffectiveAssignment,
     departments,
     isRTL,
     t,
@@ -72,9 +72,8 @@ const ReportsNew = () => {
   const currentLocale = language === "ar" ? ar : enUS;
 
   const supervisors = useMemo(() => {
-    const allSupervisors = employees.map(e => `${e.lastName} ${e.firstName}`);
-    return [isRTL ? "رئيس مصلحة التكوين" : "Head of Training Department", ...allSupervisors];
-  }, [employees, isRTL]);
+    return [isRTL ? "رئيس مصلحة التكوين" : "Head of Training Department"];
+  }, [isRTL]);
 
   const handlePrint = () => {
     window.print();
@@ -90,28 +89,14 @@ const ReportsNew = () => {
     setReportStyles({ ...reportStyles, orientation: val });
   };
 
-  const getEffectiveAssignment = (dateStr: string, period: PeriodPart): string[] => {
-    const date = parseISO(dateStr);
-    const dayIdx = getDay(date);
-    
-    return assignments
-      .filter(a => {
-        if (a.day !== dayIdx) return false;
-        const p = parseInt(a.period);
-        if (period === "Morning") return p >= 1 && p <= 4;
-        if (period === "Afternoon") return p >= 5 && p <= 8;
-        return false;
-      })
-      .map(a => a.employeeId);
-  };
-
   const reportContainerStyle = {
     fontFamily: reportStyles.fontFamily
   };
 
   const renderAttendanceSheet = (date: Date, period: PeriodPart, isLast: boolean) => {
     const dateStr = format(date, "yyyy-MM-dd");
-    const assignedIds = Array.from(new Set(getEffectiveAssignment(dateStr, period)));
+    // Use context function which now returns unique IDs
+    const assignedIds = getEffectiveAssignment(dateStr, period);
     
     const assignedEmployees = assignedIds
       .map(id => employees.find(e => e.id === id))
@@ -124,7 +109,6 @@ const ReportsNew = () => {
     
     if (assignedEmployees.length === 0) return null;
 
-    // تحديد عدد الأسطر الفارغة لملء الصفحة بشكل مثالي دون تجاوزها
     const maxRows = 15;
     const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
 
@@ -138,7 +122,6 @@ const ReportsNew = () => {
         dir={isRTL ? "rtl" : "ltr"}
         style={reportContainerStyle}
       >
-        {/* الترويسة الرسمية */}
         <div className="text-center mb-4 space-y-1" style={{ fontSize: `${reportStyles.headerSize}px` }}>
           <p className="font-black text-slate-900 leading-tight">{t.republic}</p>
           <p className="font-bold text-slate-800 leading-tight">{t.centerName}</p>
@@ -154,7 +137,6 @@ const ReportsNew = () => {
           </p>
         </div>
 
-        {/* عنوان التقرير */}
         <div className="text-center mb-4">
           <h1 className="font-black text-slate-900 mb-2" style={{ fontSize: `${reportStyles.titleSize}px` }}>{t.attendanceSheet}</h1>
           <div className="flex justify-center items-center gap-4 bg-slate-50 py-2 px-4 rounded-xl inline-flex mx-auto border border-slate-100">
@@ -168,7 +150,6 @@ const ReportsNew = () => {
           </div>
         </div>
         
-        {/* جدول الحضور */}
         <div className="flex-1 overflow-visible">
           <Table className="w-full border-collapse border-2 border-slate-900" style={{ fontSize: `${reportStyles.tableSize}px` }}>
             <TableHeader>
@@ -202,7 +183,6 @@ const ReportsNew = () => {
           </Table>
         </div>
 
-        {/* التوقيعات أسفل الصفحة */}
         <div className="mt-6 grid grid-cols-2 gap-12 pt-4 border-t border-dashed border-slate-200" style={{ fontSize: `${reportStyles.footerSize}px` }}>
           <div className="text-center">
             <p className="font-black text-slate-900 mb-12">{supervisors[0]}</p>
@@ -437,7 +417,8 @@ const ReportsNew = () => {
         </TabsContent>
       </Tabs>
 
-      <div className="print-only print-content">{currentReportContent()}</div>
+      {/* Hidden print-only container used ONLY when dialog is closed or as the primary source */}
+      <div className="print-only print-content">{!isPreviewOpen && currentReportContent()}</div>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto bg-slate-100 print:hidden">
@@ -473,12 +454,20 @@ const ReportsNew = () => {
       <style>
         {`
           @media print {
-            body * { visibility: hidden !important; }
+            body > div:not([role="dialog"]):not(.print-content), 
+            header, 
+            aside, 
+            main,
+            .print\\:hidden { 
+              display: none !important; 
+            }
+            
             .print-content, .print-content * { 
               visibility: visible !important; 
               -webkit-print-color-adjust: exact !important; 
               print-color-adjust: exact !important;
             }
+            
             .print-content { 
               position: absolute !important; 
               left: 0 !important; 
@@ -487,17 +476,14 @@ const ReportsNew = () => {
               margin: 0 !important;
               padding: 0 !important;
             }
+
             .page-break-container {
               page-break-after: always !important;
               break-after: page !important;
-              height: 297mm !important; /* ارتفاع صفحة A4 كاملة */
+              min-height: 290mm !important;
               box-sizing: border-box !important;
-              padding: 15mm !important;
-              display: flex !important;
-              flex-direction: column !important;
-              justify-content: space-between !important;
+              padding: 10mm !important;
             }
-            .print\\:hidden { display: none !important; }
             
             @page {
               size: A4 ${reportStyles.orientation};
