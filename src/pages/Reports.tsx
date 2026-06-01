@@ -3,15 +3,14 @@
 import React, { useMemo, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Button } from "@/components/ui/button";
-import { Printer, Eye, X, RotateCw, Maximize2, Home } from "lucide-react";
+import { Printer, Eye, X, RotateCw, Home } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import TeacherLoadChart from "../components/reports/TeacherLoadChart";
 import RoomUsageChart from "../components/reports/RoomUsageChart";
 
 const Reports = () => {
-  const { employees, assignments, classes, rooms, subjects, isRTL, t } = useApp();
+  const { employees, assignments, classes, rooms, isRTL, t } = useApp();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [printScale, setPrintScale] = useState(100);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
@@ -87,8 +86,8 @@ const Reports = () => {
       <ReportContent />
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-[95vw] w-full h-[90vh] overflow-y-auto rounded-3xl p-0 border-none">
-          <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center z-10">
+        <DialogContent className="max-w-[95vw] w-full h-[90vh] overflow-y-auto rounded-3xl p-0 border-none bg-zinc-900/95 flex flex-col">
+          <div className="sticky top-0 bg-white border-b p-4 flex justify-between items-center z-10 print:hidden">
             <div className="flex items-center gap-3"><Eye className="text-emerald-600" /><h3 className="font-bold">{isRTL ? "معاينة التقرير" : "Report Preview"}</h3></div>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")} className="rounded-xl">
@@ -98,13 +97,89 @@ const Reports = () => {
               <Button variant="ghost" onClick={() => setIsPreviewOpen(false)}><X size={18} /></Button>
             </div>
           </div>
-          <div className="p-8 bg-gray-50 min-h-full flex justify-center">
-            <div className={cn("bg-white shadow-2xl p-10 border transition-all origin-top", orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]")} style={{ transform: `scale(${printScale / 100})` }}>
+          <div className="p-8 bg-gray-50 min-h-full flex justify-center print:p-0 print:bg-white">
+            <div 
+              id="printable-report-area"
+              className={cn(
+                "bg-white shadow-2xl p-10 border transition-all origin-top print:shadow-none print:border-0 print:p-0", 
+                orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
+              )} 
+              style={{ transform: `scale(${printScale / 100})` }}
+            >
               <ReportContent isPreview={true} />
             </div>
           </div>
         </DialogContent>
       </Dialog>
+
+      <style>
+        {`
+          @media print {
+            body > div:not([data-radix-portal]),
+            #root,
+            header,
+            aside,
+            main,
+            .print\\:hidden {
+              display: none !important;
+            }
+
+            div[data-radix-portal] {
+              display: block !important;
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 100% !important;
+              height: 100% !important;
+              background: white !important;
+            }
+
+            div[role="dialog"] {
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 100% !important;
+              height: 100% !important;
+              background: white !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              box-shadow: none !important;
+              border: none !important;
+              overflow: visible !important;
+            }
+
+            div[role="dialog"] > button,
+            div[role="dialog"] .sticky,
+            div[role="dialog"] [class*="DialogHeader"],
+            div[role="dialog"] [class*="DialogFooter"] {
+              display: none !important;
+            }
+
+            #printable-report-area {
+              visibility: visible !important;
+              display: block !important;
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 100% !important;
+              height: 100% !important;
+              margin: 0 !important;
+              padding: 15mm !important;
+              border: none !important;
+              box-shadow: none !important;
+              background: white !important;
+              transform: none !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+
+            @page {
+              size: A4 ${orientation};
+              margin: 0 !important;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
