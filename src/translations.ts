@@ -4,6 +4,7 @@ export const translations = {
   ar: {
     dashboard: "لوحة التحكم",
     schedule: "الجدول",
+    weeklyWorkSchedule: "جدول العمل الأسبوعي",
     employees: "المعلمون",
     classes: "الفروع",
     subjects: "المواد",
@@ -22,6 +23,12 @@ export const translations = {
     settings: "الإعدادات",
     cancel: "إلغاء",
     save: "حفظ",
+    morning: "صباحاً",
+    afternoon: "مساءً",
+    evening: "ليلاً",
+    search: "بحث...",
+    preview: "معاينة",
+    print: "طباعة",
     stats: {
       teachers: "المعلمون",
       classes: "الفروع",
@@ -50,6 +57,7 @@ export const translations = {
   en: {
     dashboard: "Dashboard",
     schedule: "Schedule",
+    weeklyWorkSchedule: "Weekly Work Schedule",
     employees: "Teachers",
     classes: "Branches",
     subjects: "Subjects",
@@ -68,6 +76,12 @@ export const translations = {
     settings: "Settings",
     cancel: "Cancel",
     save: "Save",
+    morning: "Morning",
+    afternoon: "Afternoon",
+    evening: "Evening",
+    search: "Search...",
+    preview: "Preview",
+    print: "Print",
     stats: {
       teachers: "Teachers",
       classes: "Branches",

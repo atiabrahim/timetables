@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Language, translations } from "../translations";
 import { 
   User, Institution, Employee, Assignment, 
-  AcademicClass, Subject, PeriodConfig, AppState 
+  AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart 
 } from "../types";
 
 interface AppContextType {
@@ -19,6 +19,8 @@ interface AppContextType {
   setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
   assignments: Assignment[];
   setAssignments: React.Dispatch<React.SetStateAction<Assignment[]>>;
+  templateAssignments: TemplateAssignment[];
+  updateTemplateAssignment: (dayIdx: number, period: PeriodPart, employeeIds: string[]) => void;
   departments: string[];
   setDepartments: React.Dispatch<React.SetStateAction<string[]>>;
   rooms: string[];
@@ -68,6 +70,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [institution, setInstitution] = useState<Institution>(DEFAULT_INSTITUTION);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [templateAssignments, setTemplateAssignments] = useState<TemplateAssignment[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
   const [rooms, setRooms] = useState<string[]>([]);
   const [classes, setClasses] = useState<AcademicClass[]>([]);
@@ -90,6 +93,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (parsed.institution) setInstitution(parsed.institution);
         setEmployees(parsed.employees || []);
         setAssignments(parsed.assignments || []);
+        setTemplateAssignments(parsed.templateAssignments || []);
         setDepartments(parsed.departments || []);
         setRooms(parsed.rooms || []);
         setClasses(parsed.classes || []);
@@ -102,9 +106,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   useEffect(() => {
-    const dataToSave = { systemUsers, institution, employees, assignments, departments, rooms, classes, subjects, periodConfigs };
+    const dataToSave = { 
+      systemUsers, institution, employees, assignments, 
+      templateAssignments, departments, rooms, classes, subjects, periodConfigs 
+    };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  }, [systemUsers, institution, employees, assignments, departments, rooms, classes, subjects, periodConfigs]);
+  }, [systemUsers, institution, employees, assignments, templateAssignments, departments, rooms, classes, subjects, periodConfigs]);
+
+  const updateTemplateAssignment = (dayIdx: number, period: PeriodPart, employeeIds: string[]) => {
+    setTemplateAssignments(prev => {
+      const filtered = prev.filter(a => !(a.dayIdx === dayIdx && a.period === period));
+      if (employeeIds.length === 0) return filtered;
+      return [...filtered, { dayIdx, period, employeeIds }];
+    });
+  };
 
   const importAllData = (data: Partial<AppState>) => {
     if (!data) return;
@@ -114,6 +129,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data.classes) setClasses(data.classes);
     if (data.subjects) setSubjects(data.subjects);
     if (data.assignments) setAssignments(data.assignments);
+    if (data.templateAssignments) setTemplateAssignments(data.templateAssignments);
     if (data.departments) setDepartments(data.departments);
     if (data.periodConfigs && data.periodConfigs.length > 0) setPeriodConfigs(data.periodConfigs);
     if (data.systemUsers) setSystemUsers(data.systemUsers);
@@ -140,6 +156,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     <AppContext.Provider value={{ 
       language, setLanguage, user, systemUsers, setSystemUsers, login, logout, 
       institution, setInstitution, employees, setEmployees, assignments, setAssignments,
+      templateAssignments, updateTemplateAssignment,
       departments, setDepartments, rooms, setRooms, classes, setClasses, subjects, setSubjects,
       periodConfigs, setPeriodConfigs, importAllData, t, isRTL 
     }}>

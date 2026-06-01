@@ -16,7 +16,8 @@ import {
   ListChecks,
   BarChart3,
   Languages,
-  Building2
+  Building2,
+  ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const menuItems = [
     { icon: LayoutDashboard, label: t.dashboard, path: "/" },
     { icon: Calendar, label: t.schedule, path: "/schedule" },
+    { icon: ClipboardList, label: t.weeklyWorkSchedule, path: "/work-schedule" },
     { icon: ListChecks, label: t.lessons, path: "/lessons" },
     { icon: Users, label: t.employees, path: "/employees" },
     { icon: Home, label: t.classes, path: "/classes" },

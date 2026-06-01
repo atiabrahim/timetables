@@ -17,6 +17,7 @@ import Lessons from "./pages/Lessons";
 import Login from "./pages/Login";
 import Rooms from "./pages/Rooms";
 import Institution from "./pages/Institution";
+import WeeklyWorkSchedule from "./pages/WeeklyWorkSchedule";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const AppRoutes = () => (
     <Route path="/rooms" element={<ProtectedRoute><Layout><Rooms /></Layout></ProtectedRoute>} />
     <Route path="/lessons" element={<ProtectedRoute><Layout><Lessons /></Layout></ProtectedRoute>} />
     <Route path="/schedule" element={<ProtectedRoute><Layout><Schedule /></Layout></ProtectedRoute>} />
+    <Route path="/work-schedule" element={<ProtectedRoute><Layout><WeeklyWorkSchedule /></Layout></ProtectedRoute>} />
     <Route path="/reports" element={<ProtectedRoute><Layout><Reports /></Layout></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Layout><Settings /></Layout></ProtectedRoute>} />
     <Route path="/users" element={<ProtectedRoute><Layout><Users /></Layout></ProtectedRoute>} />

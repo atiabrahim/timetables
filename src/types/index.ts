@@ -1,5 +1,6 @@
 export type Role = "Admin" | "Teacher" | "Student";
 export type Language = "ar" | "en";
+export type PeriodPart = "Morning" | "Afternoon" | "Evening";
 
 export interface User {
   id: string;
@@ -42,6 +43,12 @@ export interface Assignment {
   room?: string;
 }
 
+export interface TemplateAssignment {
+  dayIdx: number;
+  period: PeriodPart;
+  employeeIds: string[];
+}
+
 export interface PeriodConfig {
   day: number;
   period: string;
@@ -66,6 +73,7 @@ export interface AppState {
   institution: Institution;
   employees: Employee[];
   assignments: Assignment[];
+  templateAssignments: TemplateAssignment[];
   departments: string[];
   rooms: string[];
   classes: AcademicClass[];
