@@ -143,33 +143,82 @@ export const parseXml = (xmlText: string) => {
   });
 
   const cardElements = Array.from(xmlDoc.getElementsByTagName("card"));
-  const assignments = cardElements.map(el => {
-    const lessonId = getAttr(el, "lessonid");
-    const lesson = lessonsMap.get(lessonId);
-    
-    if (!lesson) return null;
+  let assignments: any[] = [];
 
-    let dayStr = getAttr(el, "days") || getAttr(el, "day");
-    let day = 0;
-    if (dayStr.length > 1 && dayStr.includes("1")) {
-      day = dayStr.indexOf("1");
-    } else {
-      day = parseInt(dayStr) || 0;
-    }
+  if (cardElements.length > 0) {
+    assignments = cardElements.map(el => {
+      const lessonId = getAttr(el, "lessonid");
+      const lesson = lessonsMap.get(lessonId);
+      
+      if (!lesson) return null;
 
-    const roomName = classroomsMap.get(lesson.classroomIds) || "";
+      let dayStr = getAttr(el, "days") || getAttr(el, "day");
+      let day = 0;
+      if (dayStr.length > 1 && dayStr.includes("1")) {
+        day = dayStr.indexOf("1");
+      } else {
+        day = parseInt(dayStr) || 0;
+      }
 
-    return {
-      id: Math.random().toString(36).substr(2, 9),
-      employeeId: lesson.teacherId,
-      day: day,
-      period: getAttr(el, "period"),
-      subjectId: lesson.subjectId,
-      classId: lesson.classId,
-      department: "",
-      room: roomName
-    };
-  }).filter(a => a !== null);
+      const roomName = classroomsMap.get(lesson.classroomIds) || "";
+
+      return {
+        id: Math.random().toString(36).substr(2, 9),
+        employeeId: lesson.teacherId,
+        day: day,
+        period: getAttr(el, "period"),
+        subjectId: lesson.subjectId,
+        classId: lesson.classId,
+        department: "",
+        room: roomName
+      };
+    }).filter(a => a !== null);
+  } else {
+    // Fallback: Parse directly from <lesson> elements if they have day and period attributes
+    const lessonElements = Array.from(xmlDoc.getElementsByTagName("lesson"));
+    assignments = lessonElements.map(el => {
+      const dayStr = getAttr(el, "day") || getAttr(el, "days");
+      const periodStr = getAttr(el, "period");
+      
+      if (!dayStr || !periodStr) return null;
+
+      let day = 0;
+      if (dayStr.length > 1 && dayStr.includes("1")) {
+        day = dayStr.indexOf("1");
+      } else {
+        day = parseInt(dayStr) || 0;
+      }
+
+      const teacherId = getAttr(el, "teacherids") || getAttr(el, "teacherid");
+      const subjectId = getAttr(el, "subjectid");
+      const classId = getAttr(el, "classids") || getAttr(el, "classid");
+      const classroomIds = getAttr(el, "classroomids") || getAttr(el, "classroomid");
+      const roomName = classroomsMap.get(classroomIds) || "";
+
+      return {
+        id: Math.random().toString(36).substr(2, 9),
+        employeeId: teacherId,
+        day: day,
+        period: periodStr,
+        subjectId: subjectId,
+        classId: classId,
+        department: "",
+        room: roomName
+      };
+    }).filter(a => a !== null && a.employeeId && a.subjectId && a.classId);
+  }
+
+  // توليد إعدادات الحصص تلقائياً بناءً على الحصص المستوردة لضمان تفعيلها في صفحة التكليفات
+  const periodConfigs: any[] = [];
+  const days = [0, 1, 2, 3, 4]; // من الأحد إلى الخميس
+  days.forEach(d => {
+    const hasMorning = assignments.some(a => a && a.day === d && parseInt(a.period) >= 1 && parseInt(a.period) <= 4);
+    const hasAfternoon = assignments.some(a => a && a.day === d && parseInt(a.period) >= 5 && parseInt(a.period) <= 8);
+
+    periodConfigs.push({ day: d, period: "Morning", isActive: hasMorning || true });
+    periodConfigs.push({ day: d, period: "Afternoon", isActive: hasAfternoon || true });
+    periodConfigs.push({ day: d, period: "Evening", isActive: false });
+  });
 
   return { 
     institution,
@@ -178,7 +227,7 @@ export const parseXml = (xmlText: string) => {
     rooms, 
     classes, 
     subjects, 
-    periodConfigs: [], 
+    periodConfigs, 
     assignments 
   };
 };

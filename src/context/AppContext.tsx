@@ -62,6 +62,18 @@ const DEFAULT_INSTITUTION: Institution = {
   academicYear: "2023/2024"
 };
 
+// توليد الإعدادات الافتراضية للحصص (الأحد إلى الخميس - صباحاً ومساءً)
+const generateDefaultPeriodConfigs = (): PeriodConfig[] => {
+  const configs: PeriodConfig[] = [];
+  const days = [0, 1, 2, 3, 4]; // الأحد إلى الخميس
+  days.forEach(d => {
+    configs.push({ day: d, period: "Morning", isActive: true });
+    configs.push({ day: d, period: "Afternoon", isActive: true });
+    configs.push({ day: d, period: "Evening", isActive: false });
+  });
+  return configs;
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguage] = useState<Language>("ar");
   const [user, setUser] = useState<User | null>(() => {
@@ -79,7 +91,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [rooms, setRooms] = useState<string[]>([]);
   const [classes, setClasses] = useState<AcademicClass[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>([]);
+  const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>(generateDefaultPeriodConfigs);
 
   const isRTL = language === "ar";
 
@@ -103,7 +115,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setRooms(parsed.rooms || []);
         setClasses(parsed.classes || []);
         setSubjects(parsed.subjects || []);
-        setPeriodConfigs(parsed.periodConfigs || []);
+        if (parsed.periodConfigs && parsed.periodConfigs.length > 0) {
+          setPeriodConfigs(parsed.periodConfigs);
+        }
       } catch (e) {
         console.error("Failed to parse saved data", e);
       }
