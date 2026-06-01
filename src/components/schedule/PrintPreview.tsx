@@ -137,29 +137,72 @@ const PrintPreview = ({
         <style>
           {`
             @media print {
-              @page { 
-                size: A4 ${orientation}; 
-                margin: 0 !important; 
+              /* Hide everything except the portal containing the dialog */
+              body > div:not([data-radix-portal]),
+              #root,
+              header,
+              aside,
+              main,
+              .print\\:hidden {
+                display: none !important;
               }
-              html, body { 
-                width: 100% !important; 
-                height: 100% !important; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                background: white; 
-                overflow: hidden !important;
-              }
-              #printable-area {
-                width: 100% !important;
-                height: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                transform: none !important;
+
+              /* Ensure the portal is visible and positioned at the top-left */
+              div[data-radix-portal] {
+                display: block !important;
                 position: absolute !important;
                 top: 0 !important;
                 left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: white !important;
               }
-              .print\\:hidden { display: none !important; }
+
+              /* Reset dialog content styles for printing */
+              div[role="dialog"] {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                overflow: visible !important;
+              }
+
+              /* Hide dialog header/footer/close button */
+              div[role="dialog"] > button,
+              div[role="dialog"] .print\\:hidden {
+                display: none !important;
+              }
+
+              /* Make sure the printable area fills the page and has no transform scale */
+              #printable-area {
+                visibility: visible !important;
+                display: flex !important;
+                flex-direction: column !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 15mm !important;
+                border: none !important;
+                box-shadow: none !important;
+                background: white !important;
+                transform: none !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+
+              @page {
+                size: A4 ${orientation};
+                margin: 0 !important;
+              }
             }
           `}
         </style>
