@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Printer, Search, Eye, ClipboardList, BookOpen, ShieldAlert } from "lucide-react";
+import { Printer, Search, Eye, ClipboardList, BookOpen, ShieldAlert, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { 
   Dialog, 
@@ -162,14 +162,33 @@ const WeeklyWorkSchedule = () => {
                 );
               }))}
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableBody>
+        </Table>
+      </div>
+  );
+
+  const PrintableReport = () => (
+    <div id="printable-report" className="bg-white p-12 text-black w-full">
+      <div className="text-center mb-8 border-b-2 border-emerald-900 pb-6">
+        <h1 className="text-2xl font-black text-emerald-900 mb-2 uppercase">{t.weeklyWorkSchedule}</h1>
+        <p className="text-emerald-700 font-bold">{isRTL ? "للفترة الدراسية الحالية" : "For Current Academic Period"}</p>
+      </div>
+      <ScheduleTable isPrint={true} />
+      <div className="mt-12 grid grid-cols-3 gap-8 text-center font-black text-emerald-900 text-xs">
+        <div><p className="mb-12">{isRTL ? "توقيع الأستاذ" : "Teacher Signature"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
+        <div><p className="mb-12">{isRTL ? "المسؤول المباشر" : "Direct Supervisor"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
+        <div><p className="mb-12">{isRTL ? "ختم المؤسسة" : "Institution Stamp"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
+      </div>
     </div>
   );
 
   return (
     <div className="space-y-8 pb-20">
+      {/* القسم المخفي الذي يظهر فقط عند الطباعة */}
+      <div className="hidden print:block absolute inset-0 bg-white z-[9999]">
+        <PrintableReport />
+      </div>
+
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
         <div>
           <h2 className="text-3xl font-black text-emerald-950 flex items-center gap-3">
@@ -206,33 +225,26 @@ const WeeklyWorkSchedule = () => {
 
       <ScheduleTable />
 
-      {/* Print Preview Dialog */}
+      {/* نافذة المعاينة */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-0 border-none bg-emerald-50/30">
-          <DialogHeader className="bg-white p-6 border-b border-emerald-100 sticky top-0 z-10">
-            <DialogTitle className="flex items-center gap-3 text-emerald-900 font-black">
-              <Printer className="text-emerald-600" />
-              {isRTL ? "معاينة جدول العمل" : "Work Schedule Preview"}
-            </DialogTitle>
-          </DialogHeader>
+          <div className="sticky top-0 bg-white border-b border-emerald-100 p-4 flex justify-between items-center z-10">
+             <div className="flex items-center gap-2 font-black text-emerald-900">
+                <Printer className="text-emerald-600" />
+                {isRTL ? "معاينة التقرير" : "Report Preview"}
+             </div>
+             <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)} className="rounded-full">
+                <X size={20} />
+             </Button>
+          </div>
           <div className="p-8 flex justify-center">
-            {/* هذا القسم هو ما سيتم طباعته تماماً */}
-            <div id="printable-report" className="bg-white shadow-2xl p-12 border border-emerald-100 rounded-lg min-w-full lg:min-w-[1000px] overflow-x-auto text-black">
-              <div className="text-center mb-8 border-b-2 border-emerald-900 pb-6">
-                <h1 className="text-2xl font-black text-emerald-900 mb-2 uppercase">{t.weeklyWorkSchedule}</h1>
-                <p className="text-emerald-700 font-bold">{isRTL ? "للفترة الدراسية الحالية" : "For Current Academic Period"}</p>
-              </div>
-              <ScheduleTable isPrint={true} />
-              <div className="mt-12 grid grid-cols-3 gap-8 text-center font-black text-emerald-900 text-xs">
-                <div><p className="mb-12">{isRTL ? "توقيع الأستاذ" : "Teacher Signature"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
-                <div><p className="mb-12">{isRTL ? "المسؤول المباشر" : "Direct Supervisor"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
-                <div><p className="mb-12">{isRTL ? "ختم المؤسسة" : "Institution Stamp"}</p><div className="border-t border-black w-32 mx-auto"></div></div>
-              </div>
+            <div className="bg-white shadow-2xl border border-emerald-100 rounded-lg min-w-full lg:min-w-[1000px] overflow-x-auto">
+              <PrintableReport />
             </div>
           </div>
-          <DialogFooter className="bg-white p-6 border-t border-emerald-100">
-            <Button variant="outline" onClick={() => setIsPreviewOpen(false)} className="rounded-xl">{t.cancel}</Button>
-            <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-10 font-bold">
+          <DialogFooter className="bg-white p-6 border-t border-emerald-100 flex gap-3">
+            <Button variant="outline" onClick={() => setIsPreviewOpen(false)} className="rounded-xl flex-1 md:flex-none">{t.cancel}</Button>
+            <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-10 font-bold flex-1 md:flex-none">
               <Printer size={18} className="mr-2" /> {t.print}
             </Button>
           </DialogFooter>
@@ -242,23 +254,22 @@ const WeeklyWorkSchedule = () => {
       <style>
         {`
           @media print {
-            body * { visibility: hidden !important; }
-            #printable-report, #printable-report * { 
+            /* إخفاء كل شيء في الصفحة */
+            body > * { display: none !important; }
+            /* إظهار فقط حاوية الطباعة الخاصة بنا */
+            .print\\:block { display: block !important; position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; }
+            
+            @page {
+              size: A4 landscape;
+              margin: 1cm;
+            }
+            
+            #printable-report { 
               visibility: visible !important; 
               -webkit-print-color-adjust: exact !important; 
               print-color-adjust: exact !important;
+              width: 100% !important;
             }
-            #printable-report { 
-              position: absolute !important; 
-              left: 0 !important; 
-              top: 0 !important; 
-              width: 100% !important; 
-              margin: 0 !important;
-              padding: 40px !important;
-              border: none !important;
-              box-shadow: none !important;
-            }
-            .print\\:hidden { display: none !important; }
           }
         `}
       </style>
