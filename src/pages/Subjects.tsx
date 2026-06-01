@@ -16,7 +16,8 @@ import {
   ChevronDown,
   Languages,
   Sparkles,
-  Loader2
+  Loader2,
+  Printer
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -139,11 +140,11 @@ const Subjects = () => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 print:hidden">
         <div className="flex items-center gap-4 w-full md:w-auto order-2 md:order-1">
-          <Button variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700">
-            <Download size={18} />
-            {isRTL ? "تصدير PDF" : "Export PDF"}
+          <Button onClick={() => window.print()} variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700">
+            <Printer size={18} />
+            {isRTL ? "طباعة القائمة" : "Print List"}
           </Button>
           <div className="relative flex-1 md:w-80">
             <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
@@ -166,7 +167,7 @@ const Subjects = () => {
 
       {/* Add Section (Admin Only) */}
       {isAdmin && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm items-end">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm items-end print:hidden">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-emerald-700 uppercase px-1">{isRTL ? "اسم المادة" : "Subject Name"}</label>
             <Input 
@@ -207,43 +208,49 @@ const Subjects = () => {
       )}
 
       {/* Table Section */}
-      <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
-        <table className={cn("w-full border-collapse border border-gray-200", isRTL ? "text-right" : "text-left")}>
+      <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm print:border-0 print:shadow-none">
+        {/* Print Header */}
+        <div className="hidden print:block text-center mb-6 border-b-2 border-emerald-950 pb-4">
+          <h1 className="text-2xl font-black text-emerald-950">{isRTL ? "قائمة المواد الدراسية" : "Subjects List"}</h1>
+          <p className="text-sm text-gray-600 mt-1">{isRTL ? "نظام EduSchedule لإدارة الجداول" : "EduSchedule Management System"}</p>
+        </div>
+
+        <table className={cn("w-full border-collapse border border-gray-200 print:border-0", isRTL ? "text-right" : "text-left")}>
           <thead>
-            <tr className="bg-[#f9f9f1]">
-              <th className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 cursor-pointer" onClick={() => handleSort("name")}>
+            <tr className="bg-[#f9f9f1] print:bg-transparent print:border-b-2 print:border-emerald-950">
+              <th className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 cursor-pointer print:p-2 print:text-black print:border-b-2 print:border-emerald-950" onClick={() => handleSort("name")}>
                 <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
                   <SortIcon column="name" />
                   {isRTL ? "اسم المادة" : "Subject Name"}
                 </div>
               </th>
-              <th className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 cursor-pointer" onClick={() => handleSort("nameEn")}>
+              <th className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 cursor-pointer print:p-2 print:text-black print:border-b-2 print:border-emerald-950" onClick={() => handleSort("nameEn")}>
                 <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
                   <SortIcon column="nameEn" />
                   {isRTL ? "التسمية بالإنجليزية" : "English Name"}
                 </div>
               </th>
-              <th className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 text-center w-24">
+              <th className="py-1.5 px-3 text-gray-700 font-bold text-xs border border-gray-200 text-center w-24 print:hidden">
                 {isRTL ? "إجراءات" : "Actions"}
               </th>
             </tr>
           </thead>
           <tbody>
             {sortedAndFilteredSubjects.map((sub) => (
-              <tr key={sub.id} className="hover:bg-gray-50 transition-colors group">
-                <td className="py-1 px-3 border border-gray-200 align-middle">
+              <tr key={sub.id} className="hover:bg-gray-50 transition-colors group print:border-b print:border-gray-300">
+                <td className="py-1 px-3 border border-gray-200 align-middle print:p-2 print:text-black">
                   <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                    <span className="font-bold text-emerald-950 text-sm">{sub.name}</span>
-                    <BookOpen size={14} className="text-emerald-500 shrink-0" />
+                    <span className="font-bold text-emerald-950 text-sm print:text-black">{sub.name}</span>
+                    <BookOpen size={14} className="text-emerald-500 shrink-0 print:hidden" />
                   </div>
                 </td>
-                <td className="py-1 px-3 border border-gray-200 align-middle">
+                <td className="py-1 px-3 border border-gray-200 align-middle print:p-2 print:text-black">
                   <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                    <span className="text-gray-600 font-medium text-sm">{sub.nameEn || "---"}</span>
-                    <Languages size={12} className="text-gray-400 shrink-0" />
+                    <span className="text-gray-600 font-medium text-sm print:text-black">{sub.nameEn || "---"}</span>
+                    <Languages size={12} className="text-gray-400 shrink-0 print:hidden" />
                   </div>
                 </td>
-                <td className="py-1 px-3 border border-gray-200 text-center align-middle">
+                <td className="py-1 px-3 border border-gray-200 text-center align-middle print:hidden">
                   <div className="flex justify-center gap-1">
                     <Button 
                       variant="ghost" 
@@ -259,7 +266,7 @@ const Subjects = () => {
                         variant="ghost" 
                         size="sm" 
                         className="h-7 w-7 p-0 text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => deleteSubject(sub.id)}
+                        onClick={() => deleteSubject(id => deleteSubject(sub.id))}
                       >
                         <Trash2 size={12} />
                       </Button>
@@ -316,6 +323,40 @@ const Subjects = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <style>
+        {`
+          @media print {
+            body > div:not([role="dialog"]), 
+            header, 
+            aside, 
+            form,
+            .print\\:hidden {
+              display: none !important;
+            }
+            main {
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            .max-w-6xl {
+              max-width: 100% !important;
+            }
+            table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+            }
+            th, td {
+              border: 1px solid #000 !important;
+              padding: 8px !important;
+              color: #000 !important;
+            }
+            @page {
+              size: A4 portrait;
+              margin: 15mm !important;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };

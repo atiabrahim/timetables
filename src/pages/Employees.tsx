@@ -16,7 +16,8 @@ import {
   ChevronDown,
   Mail,
   Phone,
-  Briefcase
+  Briefcase,
+  Printer
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -123,11 +124,11 @@ const Employees = () => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 print:hidden">
         <div className="flex items-center gap-4 w-full md:w-auto order-2 md:order-1">
-          <Button variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700">
-            <Download size={18} />
-            {isRTL ? "تصدير القائمة" : "Export List"}
+          <Button onClick={() => window.print()} variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700">
+            <Printer size={18} />
+            {isRTL ? "طباعة القائمة" : "Print List"}
           </Button>
           <div className="relative flex-1 md:w-80">
             <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
@@ -150,7 +151,7 @@ const Employees = () => {
 
       {/* Add Section (Admin Only) */}
       {isAdmin && (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm items-end">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm items-end print:hidden">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-emerald-700 uppercase px-1">{isRTL ? "الاسم" : "First Name"}</label>
             <Input 
@@ -190,56 +191,62 @@ const Employees = () => {
       )}
 
       {/* Table Section */}
-      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm print:border-0 print:shadow-none">
+        {/* Print Header */}
+        <div className="hidden print:block text-center mb-6 border-b-2 border-emerald-950 pb-4">
+          <h1 className="text-2xl font-black text-emerald-950">{isRTL ? "قائمة الأساتذة والمعلمين" : "Teachers & Instructors List"}</h1>
+          <p className="text-sm text-gray-600 mt-1">{isRTL ? "نظام EduSchedule لإدارة الجداول" : "EduSchedule Management System"}</p>
+        </div>
+
         <div className="overflow-x-auto">
           <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
             <thead>
-              <tr className="bg-[#f9f9f1]">
-                <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer" onClick={() => handleSort("lastName")}>
+              <tr className="bg-[#f9f9f1] print:bg-transparent print:border-b-2 print:border-emerald-950">
+                <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer print:p-2 print:text-black print:border-b-2 print:border-emerald-950" onClick={() => handleSort("lastName")}>
                   <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
                     <SortIcon column="lastName" />
                     {isRTL ? "الاسم الكامل" : "Full Name"}
                   </div>
                 </th>
-                <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer" onClick={() => handleSort("category")}>
+                <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer print:p-2 print:text-black print:border-b-2 print:border-emerald-950" onClick={() => handleSort("category")}>
                   <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
                     <SortIcon column="category" />
                     {isRTL ? "الفئة" : "Category"}
                   </div>
                 </th>
-                <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100">{isRTL ? "معلومات التواصل" : "Contact Info"}</th>
-                <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 text-center">{isRTL ? "إجراءات" : "Actions"}</th>
+                <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 print:p-2 print:text-black print:border-b-2 print:border-emerald-950">{isRTL ? "معلومات التواصل" : "Contact Info"}</th>
+                <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 text-center print:hidden">{isRTL ? "إجراءات" : "Actions"}</th>
               </tr>
             </thead>
             <tbody>
               {sortedAndFilteredEmployees.map((emp) => (
-                <tr key={emp.id} className="hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group">
-                  <td className="p-5">
+                <tr key={emp.id} className="hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group print:border-b print:border-gray-300">
+                  <td className="p-5 print:p-2">
                     <div className={cn("flex items-center gap-3", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                      <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 font-black">
+                      <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-700 font-black print:hidden">
                         {emp.lastName[0]}{emp.firstName[0]}
                       </div>
                       <div>
-                        <p className="font-bold text-emerald-950">{emp.lastName} {emp.firstName}</p>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">{emp.id}</p>
+                        <p className="font-bold text-emerald-950 print:text-black">{emp.lastName} {emp.firstName}</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest print:text-gray-600">{emp.id}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="p-5">
-                    <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter", 
+                  <td className="p-5 print:p-2">
+                    <div className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter print:p-0 print:text-black", 
                       emp.category === "Full-time" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"
                     )}>
-                      <Briefcase size={12} />
+                      <Briefcase size={12} className="print:hidden" />
                       {emp.category}
                     </div>
                   </td>
-                  <td className="p-5">
+                  <td className="p-5 print:p-2">
                     <div className="space-y-1">
-                      {emp.email && <div className={cn("flex items-center gap-2 text-xs text-gray-500", isRTL ? "flex-row" : "flex-row-reverse")}><Mail size={12} /> {emp.email}</div>}
-                      {emp.phone && <div className={cn("flex items-center gap-2 text-xs text-gray-500", isRTL ? "flex-row" : "flex-row-reverse")}><Phone size={12} /> {emp.phone}</div>}
+                      {emp.email && <div className={cn("flex items-center gap-2 text-xs text-gray-500 print:text-black", isRTL ? "flex-row" : "flex-row-reverse")}><Mail size={12} className="print:hidden" /> {emp.email}</div>}
+                      {emp.phone && <div className={cn("flex items-center gap-2 text-xs text-gray-500 print:text-black", isRTL ? "flex-row" : "flex-row-reverse")}><Phone size={12} className="print:hidden" /> {emp.phone}</div>}
                     </div>
                   </td>
-                  <td className="p-5 text-center">
+                  <td className="p-5 text-center print:hidden">
                     <div className="flex justify-center gap-2">
                       <Button 
                         variant="ghost" 
@@ -321,6 +328,40 @@ const Employees = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <style>
+        {`
+          @media print {
+            body > div:not([role="dialog"]), 
+            header, 
+            aside, 
+            form,
+            .print\\:hidden {
+              display: none !important;
+            }
+            main {
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            .max-w-6xl {
+              max-width: 100% !important;
+            }
+            table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+            }
+            th, td {
+              border: 1px solid #000 !important;
+              padding: 8px !important;
+              color: #000 !important;
+            }
+            @page {
+              size: A4 portrait;
+              margin: 15mm !important;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };

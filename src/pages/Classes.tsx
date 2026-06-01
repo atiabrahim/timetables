@@ -15,7 +15,8 @@ import {
   ChevronUp,
   ChevronDown,
   X,
-  Check
+  Check,
+  Printer
 } from "lucide-react";
 import { showSuccess } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -109,11 +110,11 @@ const Classes = () => {
   return (
     <div className="space-y-6">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 print:hidden">
         <div className="flex items-center gap-4 w-full md:w-auto order-2 md:order-1">
-          <Button variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700">
-            <Download size={18} />
-            {isRTL ? "تصدير PDF" : "Export PDF"}
+          <Button onClick={() => window.print()} variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700">
+            <Printer size={18} />
+            {isRTL ? "طباعة القائمة" : "Print List"}
           </Button>
           <div className="relative flex-1 md:w-80">
             <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
@@ -136,7 +137,7 @@ const Classes = () => {
 
       {/* Add Section (Admin Only) */}
       {isAdmin && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white p-6 rounded-3xl border border-gray-100 shadow-sm print:hidden">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-emerald-700 uppercase px-1">{isRTL ? "اسم الفرع" : "Branch Name"}</label>
             <Input 
@@ -174,12 +175,18 @@ const Classes = () => {
       )}
 
       {/* Table Section */}
-      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm print:border-0 print:shadow-none">
+        {/* Print Header */}
+        <div className="hidden print:block text-center mb-6 border-b-2 border-emerald-950 pb-4">
+          <h1 className="text-2xl font-black text-emerald-950">{isRTL ? "قائمة الفروع والأفواج" : "Branches & Classes List"}</h1>
+          <p className="text-sm text-gray-600 mt-1">{isRTL ? "نظام EduSchedule لإدارة الجداول" : "EduSchedule Management System"}</p>
+        </div>
+
         <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
           <thead>
-            <tr className="bg-[#f9f9f1]">
+            <tr className="bg-[#f9f9f1] print:bg-transparent print:border-b-2 print:border-emerald-950">
               <th 
-                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors print:p-2 print:text-black print:border-b-2 print:border-emerald-950"
                 onClick={() => handleSort("name")}
               >
                 <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
@@ -188,7 +195,7 @@ const Classes = () => {
                 </div>
               </th>
               <th 
-                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors print:p-2 print:text-black print:border-b-2 print:border-emerald-950"
                 onClick={() => handleSort("code")}
               >
                 <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
@@ -197,7 +204,7 @@ const Classes = () => {
                 </div>
               </th>
               <th 
-                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors"
+                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors print:p-2 print:text-black print:border-b-2 print:border-emerald-950"
                 onClick={() => handleSort("qualificationLevel")}
               >
                 <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
@@ -205,27 +212,27 @@ const Classes = () => {
                   {isRTL ? "مستوى التأهيل" : "Qualification Level"}
                 </div>
               </th>
-              <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 text-center">
+              <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 text-center print:hidden">
                 {isRTL ? "إجراءات" : "Actions"}
               </th>
             </tr>
           </thead>
           <tbody>
             {sortedAndFilteredClasses.map((cls) => (
-              <tr key={cls.id} className="hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group">
-                <td className="p-5">
+              <tr key={cls.id} className="hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group print:border-b print:border-gray-300">
+                <td className="p-5 print:p-2">
                   <div className={cn("flex items-center gap-3", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                    <span className="font-bold text-emerald-950">{cls.name}</span>
-                    <GraduationCap size={16} className="text-emerald-500" />
+                    <span className="font-bold text-emerald-950 print:text-black">{cls.name}</span>
+                    <GraduationCap size={16} className="text-emerald-500 print:hidden" />
                   </div>
                 </td>
-                <td className="p-5">
-                  <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-xs font-black uppercase">
+                <td className="p-5 print:p-2">
+                  <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-xs font-black uppercase print:bg-transparent print:p-0 print:text-black">
                     {cls.code || "---"}
                   </span>
                 </td>
-                <td className="p-5 text-gray-600 font-medium">{cls.qualificationLevel || "---"}</td>
-                <td className="p-5 text-center">
+                <td className="p-5 text-gray-600 font-medium print:p-2 print:text-black">{cls.qualificationLevel || "---"}</td>
+                <td className="p-5 text-center print:hidden">
                   <div className="flex justify-center gap-2">
                     <Button 
                       variant="ghost" 
@@ -306,6 +313,40 @@ const Classes = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <style>
+        {`
+          @media print {
+            body > div:not([role="dialog"]), 
+            header, 
+            aside, 
+            form,
+            .print\\:hidden {
+              display: none !important;
+            }
+            main {
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            .max-w-6xl {
+              max-width: 100% !important;
+            }
+            table {
+              width: 100% !important;
+              border-collapse: collapse !important;
+            }
+            th, td {
+              border: 1px solid #000 !important;
+              padding: 8px !important;
+              color: #000 !important;
+            }
+            @page {
+              size: A4 portrait;
+              margin: 15mm !important;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
