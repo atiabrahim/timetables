@@ -98,13 +98,13 @@ const WeeklyWorkSchedule = () => {
     )}>
       <Table className={cn(
         "border-collapse border-spacing-0", 
-        isPrint ? "w-full border border-emerald-950 table-fixed" : "min-w-[800px]"
+        isPrint ? "w-full border-2 border-emerald-950 table-fixed" : "min-w-[800px]"
       )}>
         <TableHeader>
-          <TableRow className={cn(isPrint ? "bg-emerald-50/50 border-b border-emerald-950" : "bg-emerald-50/50 hover:bg-emerald-50/50")}>
+          <TableRow className={cn(isPrint ? "bg-emerald-50/50 border-b-2 border-emerald-950" : "bg-emerald-50/50 hover:bg-emerald-50/50")}>
             <TableHead className={cn(
-              "font-black text-emerald-900 border border-emerald-100 text-center",
-              isPrint ? "text-[9px] p-1 border-emerald-950 w-[130px]" : "text-sm p-4"
+              "font-black text-emerald-900 border text-center",
+              isPrint ? "text-[10px] p-1.5 border-emerald-950 w-[140px] text-black" : "text-sm p-4 border-emerald-100"
             )} rowSpan={2}>
               {isRTL ? "اسم الأستاذ" : "Teacher Name"}
             </TableHead>
@@ -112,8 +112,8 @@ const WeeklyWorkSchedule = () => {
               <TableHead 
                 key={day.idx} 
                 className={cn(
-                  "text-center font-black text-emerald-700 border border-emerald-100",
-                  isPrint ? "text-[9px] p-1 border-emerald-950 bg-emerald-50/30" : "text-xs p-2 bg-emerald-50/30"
+                  "text-center font-black border",
+                  isPrint ? "text-[10px] p-1 border-emerald-950 bg-emerald-50/30 text-black" : "text-xs p-2 bg-emerald-50/30 border-emerald-100 text-emerald-700"
                 )} 
                 colSpan={PERIODS.length}
               >
@@ -121,11 +121,11 @@ const WeeklyWorkSchedule = () => {
               </TableHead>
             ))}
           </TableRow>
-          <TableRow className={cn(isPrint ? "bg-emerald-50/20 border-b border-emerald-950" : "bg-emerald-50/20 hover:bg-emerald-50/20")}>
+          <TableRow className={cn(isPrint ? "bg-emerald-50/20 border-b-2 border-emerald-950" : "bg-emerald-50/20 hover:bg-emerald-50/20")}>
             {DAYS.map(day => PERIODS.map(p => (
               <TableHead key={`${day.idx}-${p}`} className={cn(
-                "text-center font-bold border border-emerald-100",
-                isPrint ? "text-[8px] p-0.5 border-emerald-950" : "text-[10px] p-2"
+                "text-center font-bold border",
+                isPrint ? "text-[9px] p-1 border-emerald-950 text-black" : "text-[10px] p-2 border-emerald-100"
               )}>
                 {p === "Morning" ? (isRTL ? "ص" : "M") : p === "Afternoon" ? (isRTL ? "م" : "A") : (isRTL ? "ل" : "E")}
               </TableHead>
@@ -137,8 +137,8 @@ const WeeklyWorkSchedule = () => {
           {filteredEmployees.map(emp => (
             <TableRow key={emp.id} className={cn("group transition-colors", isPrint ? "border-b border-emerald-950" : "hover:bg-emerald-50/30")}>
               <TableCell className={cn(
-                "font-bold text-emerald-950 border border-emerald-100 bg-white",
-                isPrint ? "text-[9px] p-1 border-emerald-950" : "text-xs p-4 group-hover:bg-emerald-50/30 sticky right-0 z-10 shadow-sm"
+                "font-bold border bg-white",
+                isPrint ? "text-[10px] p-1.5 border-emerald-950 text-black" : "text-xs p-4 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30 sticky right-0 z-10 shadow-sm"
               )}>
                 {emp.lastName} {emp.firstName}
               </TableCell>
@@ -152,16 +152,16 @@ const WeeklyWorkSchedule = () => {
                     key={`${emp.id}-${day.idx}-${period}`}
                     onClick={() => toggleAssignment(emp.id, day.idx, period)}
                     className={cn(
-                      "text-center border border-emerald-100 p-0 transition-all relative",
+                      "text-center border p-0 transition-all relative",
                       !isPrint && isAdmin && "cursor-pointer",
-                      isActive ? (isPrint ? "bg-emerald-600 text-white" : "bg-emerald-600 text-white shadow-inner") : "hover:bg-emerald-50/50",
-                      isPrint ? "h-6 border-emerald-950" : "h-12 w-12"
+                      isActive ? (isPrint ? "bg-emerald-800 text-white" : "bg-emerald-600 text-white shadow-inner") : "hover:bg-emerald-50/50",
+                      isPrint ? "h-8 border-emerald-950" : "h-12 w-12 border-emerald-100"
                     )}
                   >
                     {isActive && (
                       <div className="flex flex-col items-center justify-center gap-0.5">
-                        {lessonPresent ? <BookOpen size={isPrint ? 10 : 14} /> : <ShieldAlert size={isPrint ? 10 : 14} />}
-                        <span className={cn("font-black uppercase tracking-tighter", isPrint ? "text-[6px]" : "text-[8px]")}>
+                        {lessonPresent ? <BookOpen size={isPrint ? 11 : 14} /> : <ShieldAlert size={isPrint ? 11 : 14} />}
+                        <span className={cn("font-black uppercase tracking-tighter", isPrint ? "text-[7px]" : "text-[8px]")}>
                           {lessonPresent ? (isRTL ? "ح" : "L") : (isRTL ? "ع" : "W")}
                         </span>
                       </div>
@@ -279,34 +279,57 @@ const WeeklyWorkSchedule = () => {
       <style>
         {`
           @media print {
-            body * { visibility: hidden !important; }
-            #printable-report, #printable-report * { 
-              visibility: visible !important; 
-              -webkit-print-color-adjust: exact !important; 
-              print-color-adjust: exact !important;
+            /* Hide everything in the body */
+            body > div:not([role="dialog"]), 
+            header, 
+            aside, 
+            main,
+            .print\\:hidden {
+              display: none !important;
             }
-            #printable-report { 
-              position: absolute !important; 
-              left: 0 !important; 
-              top: 0 !important; 
-              width: 100% !important; 
+            
+            /* Ensure the dialog and printable report are visible and positioned correctly */
+            div[role="dialog"] {
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 100% !important;
+              height: 100% !important;
+              background: white !important;
+              padding: 0 !important;
               margin: 0 !important;
-              padding: 10mm !important;
-              border: none !important;
-              box-shadow: none !important;
               overflow: visible !important;
             }
-            .print\\:hidden { display: none !important; }
-            
-            /* ضبط الجدول ليتناسب على صفحة واحدة */
-            #printable-report table {
-              width: 100% !important;
-              table-layout: fixed !important;
+
+            /* Hide dialog header, footer, and close button during print */
+            div[role="dialog"] > button,
+            div[role="dialog"] .sticky,
+            div[role="dialog"] footer,
+            div[role="dialog"] [class*="DialogHeader"],
+            div[role="dialog"] [class*="DialogFooter"] {
+              display: none !important;
             }
-            
+
+            #printable-report {
+              visibility: visible !important;
+              display: block !important;
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 100% !important;
+              height: 100% !important;
+              margin: 0 !important;
+              padding: 15mm !important;
+              border: none !important;
+              box-shadow: none !important;
+              background: white !important;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+
             @page {
               size: A4 ${orientation};
-              margin: 8mm !important;
+              margin: 0 !important;
             }
           }
         `}
