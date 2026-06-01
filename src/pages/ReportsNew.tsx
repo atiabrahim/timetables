@@ -93,9 +93,8 @@ const ReportsNew = () => {
     fontFamily: reportStyles.fontFamily
   };
 
-  const renderAttendanceSheet = (date: Date, period: PeriodPart, isLast: boolean) => {
+  const renderAttendanceSheet = (date: Date, period: PeriodPart) => {
     const dateStr = format(date, "yyyy-MM-dd");
-    // Use context function which now returns unique IDs
     const assignedIds = getEffectiveAssignment(dateStr, period);
     
     const assignedEmployees = assignedIds
@@ -208,7 +207,7 @@ const ReportsNew = () => {
     );
     return (
       <div className="space-y-8 print:space-y-0">
-        {activePeriods.map((period, idx) => renderAttendanceSheet(date, period, idx === activePeriods.length - 1))}
+        {activePeriods.map((period) => renderAttendanceSheet(date, period))}
       </div>
     );
   };
@@ -223,12 +222,11 @@ const ReportsNew = () => {
     const periods: PeriodPart[] = ["Morning", "Afternoon", "Evening"];
     const sheets: React.ReactNode[] = [];
     
-    days.forEach((day, dayIdx) => {
+    days.forEach((day) => {
       const currentDayIdx = getDay(day);
-      periods.forEach((period, pIdx) => {
+      periods.forEach((period) => {
         if (selectedPeriods.includes(period) && periodConfigs.find(c => c.day === currentDayIdx && c.period === period)?.isActive) {
-          const isLast = dayIdx === days.length - 1 && pIdx === periods.length - 1;
-          const sheet = renderAttendanceSheet(day, period, isLast);
+          const sheet = renderAttendanceSheet(day, period);
           if (sheet) sheets.push(sheet);
         }
       });
@@ -417,8 +415,10 @@ const ReportsNew = () => {
         </TabsContent>
       </Tabs>
 
-      {/* Hidden print-only container used ONLY when dialog is closed or as the primary source */}
-      <div className="print-only print-content">{!isPreviewOpen && currentReportContent()}</div>
+      {/* Main printable content area. This is hidden in normal UI and only visible in print. */}
+      <div className="print-content-master hidden print:block print:absolute print:inset-0">
+        {currentReportContent()}
+      </div>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto bg-slate-100 print:hidden">
@@ -443,7 +443,8 @@ const ReportsNew = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="py-8 px-4 flex flex-col items-center">
-            <div className="print-content w-full">{currentReportContent()}</div>
+            {/* The report content for visual preview */}
+            <div className="w-full">{currentReportContent()}</div>
           </div>
           <DialogFooter className="bg-white p-4 border-t sticky bottom-0 z-10">
             <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>{t.cancel}</Button>
@@ -454,7 +455,8 @@ const ReportsNew = () => {
       <style>
         {`
           @media print {
-            body > div:not([role="dialog"]):not(.print-content), 
+            /* Hide EVERYTHING including root and all dialogs by default */
+            body > div, 
             header, 
             aside, 
             main,
@@ -462,19 +464,23 @@ const ReportsNew = () => {
               display: none !important; 
             }
             
-            .print-content, .print-content * { 
+            /* Show ONLY the master print content container */
+            .print-content-master { 
+              display: block !important;
               visibility: visible !important; 
-              -webkit-print-color-adjust: exact !important; 
-              print-color-adjust: exact !important;
-            }
-            
-            .print-content { 
               position: absolute !important; 
               left: 0 !important; 
               top: 0 !important; 
               width: 100% !important; 
+              height: auto !important;
               margin: 0 !important;
               padding: 0 !important;
+              -webkit-print-color-adjust: exact !important; 
+              print-color-adjust: exact !important;
+            }
+
+            .print-content-master * {
+              visibility: visible !important;
             }
 
             .page-break-container {
@@ -483,6 +489,9 @@ const ReportsNew = () => {
               min-height: 290mm !important;
               box-sizing: border-box !important;
               padding: 10mm !important;
+              display: flex !important;
+              flex-direction: column !important;
+              justify-content: space-between !important;
             }
             
             @page {
