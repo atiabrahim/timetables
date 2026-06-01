@@ -17,7 +17,8 @@ import {
   BarChart3,
   Languages,
   Building2,
-  ClipboardList
+  ClipboardList,
+  FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     { icon: BookOpen, label: t.subjects, path: "/subjects" },
     { icon: MapPin, label: t.rooms, path: "/rooms" },
     { icon: BarChart3, label: t.reports, path: "/reports" },
+    { icon: FileText, label: "تقارير الحضور", path: "/reports-new" },
     { icon: Building2, label: t.institution, path: "/institution" },
     { icon: SettingsIcon, label: t.settings, path: "/settings" },
     ...(isAdmin ? [{ icon: UserCog, label: t.users, path: "/users" }] : []),
