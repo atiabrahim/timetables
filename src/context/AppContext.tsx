@@ -173,6 +173,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const p = parseInt(a.period);
         if (period === "Morning") return p >= 1 && p <= 4;
         if (period === "Afternoon") return p >= 5 && p <= 8;
+        if (period === "Evening") return p >= 9 && p <= 12;
         return false;
       })
       .map(a => a.employeeId);

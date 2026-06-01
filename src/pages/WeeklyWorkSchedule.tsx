@@ -69,6 +69,7 @@ const WeeklyWorkSchedule = () => {
       const p = parseInt(asgn.period);
       if (periodPart === "Morning") return p >= 1 && p <= 4;
       if (periodPart === "Afternoon") return p >= 5 && p <= 8;
+      if (periodPart === "Evening") return p >= 9 && p <= 12;
       return false;
     });
   };
