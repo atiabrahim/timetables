@@ -100,11 +100,19 @@ const WeeklyWorkSchedule = () => {
         "border-collapse border-spacing-0", 
         isPrint ? "w-full border-2 border-emerald-950 table-fixed" : "min-w-[800px]"
       )}>
+        {isPrint && (
+          <colgroup>
+            <col className="w-[16%]" />
+            {Array.from({ length: 15 }).map((_, i) => (
+              <col key={i} className="w-[5.6%]" />
+            ))}
+          </colgroup>
+        )}
         <TableHeader>
           <TableRow className={cn(isPrint ? "bg-emerald-50/50 border-b-2 border-emerald-950" : "bg-emerald-50/50 hover:bg-emerald-50/50")}>
             <TableHead className={cn(
               "font-black text-emerald-900 border text-center",
-              isPrint ? "text-[10px] p-1.5 border-emerald-950 w-[140px] text-black" : "text-sm p-4 border-emerald-100"
+              isPrint ? "text-[9px] p-1 border-emerald-950 text-black" : "text-sm p-4 border-emerald-100"
             )} rowSpan={2}>
               {isRTL ? "اسم الأستاذ" : "Teacher Name"}
             </TableHead>
@@ -113,7 +121,7 @@ const WeeklyWorkSchedule = () => {
                 key={day.idx} 
                 className={cn(
                   "text-center font-black border",
-                  isPrint ? "text-[10px] p-1 border-emerald-950 bg-emerald-50/30 text-black" : "text-xs p-2 bg-emerald-50/30 border-emerald-100 text-emerald-700"
+                  isPrint ? "text-[9px] p-0.5 border-emerald-950 bg-emerald-50/30 text-black" : "text-xs p-2 bg-emerald-50/30 border-emerald-100 text-emerald-700"
                 )} 
                 colSpan={PERIODS.length}
               >
@@ -125,7 +133,7 @@ const WeeklyWorkSchedule = () => {
             {DAYS.map(day => PERIODS.map(p => (
               <TableHead key={`${day.idx}-${p}`} className={cn(
                 "text-center font-bold border",
-                isPrint ? "text-[9px] p-1 border-emerald-950 text-black" : "text-[10px] p-2 border-emerald-100"
+                isPrint ? "text-[8px] p-0.5 border-emerald-950 text-black" : "text-[10px] p-2 border-emerald-100"
               )}>
                 {p === "Morning" ? (isRTL ? "ص" : "M") : p === "Afternoon" ? (isRTL ? "م" : "A") : (isRTL ? "ل" : "E")}
               </TableHead>
@@ -137,8 +145,8 @@ const WeeklyWorkSchedule = () => {
           {filteredEmployees.map(emp => (
             <TableRow key={emp.id} className={cn("group transition-colors", isPrint ? "border-b border-emerald-950" : "hover:bg-emerald-50/30")}>
               <TableCell className={cn(
-                "font-bold border bg-white",
-                isPrint ? "text-[10px] p-1.5 border-emerald-950 text-black" : "text-xs p-4 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30 sticky right-0 z-10 shadow-sm"
+                "font-bold border bg-white truncate",
+                isPrint ? "text-[8px] p-1 border-emerald-950 text-black" : "text-xs p-4 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30 sticky right-0 z-10 shadow-sm"
               )}>
                 {emp.lastName} {emp.firstName}
               </TableCell>
@@ -155,13 +163,13 @@ const WeeklyWorkSchedule = () => {
                       "text-center border p-0 transition-all relative",
                       !isPrint && isAdmin && "cursor-pointer",
                       isActive ? (isPrint ? "bg-emerald-800 text-white" : "bg-emerald-600 text-white shadow-inner") : "hover:bg-emerald-50/50",
-                      isPrint ? "h-8 border-emerald-950" : "h-12 w-12 border-emerald-100"
+                      isPrint ? "h-6 border-emerald-950" : "h-12 w-12 border-emerald-100"
                     )}
                   >
                     {isActive && (
                       <div className="flex flex-col items-center justify-center gap-0.5">
-                        {lessonPresent ? <BookOpen size={isPrint ? 11 : 14} /> : <ShieldAlert size={isPrint ? 11 : 14} />}
-                        <span className={cn("font-black uppercase tracking-tighter", isPrint ? "text-[7px]" : "text-[8px]")}>
+                        {lessonPresent ? <BookOpen size={isPrint ? 9 : 14} /> : <ShieldAlert size={isPrint ? 9 : 14} />}
+                        <span className={cn("font-black uppercase tracking-tighter", isPrint ? "text-[6px]" : "text-[8px]")}>
                           {lessonPresent ? (isRTL ? "ح" : "L") : (isRTL ? "ع" : "W")}
                         </span>
                       </div>
@@ -319,12 +327,14 @@ const WeeklyWorkSchedule = () => {
               width: 100% !important;
               height: 100% !important;
               margin: 0 !important;
-              padding: 15mm !important;
+              padding: 10mm !important;
               border: none !important;
               box-shadow: none !important;
               background: white !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
+              transform: scale(0.92);
+              transform-origin: top center;
             }
 
             @page {
