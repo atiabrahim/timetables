@@ -285,12 +285,13 @@ const ReportsNew = () => {
               page-break-after: always !important; 
               break-after: page !important; 
               width: 100% !important; 
-              padding: 0 !important;
+              padding: 20mm 15mm !important;
               transform: none !important;
               margin: 0 auto !important;
               box-shadow: none !important;
               border: none !important;
               max-width: none !important;
+              box-sizing: border-box !important;
             }
             .page-break-container:last-child {
               page-break-after: avoid !important;
@@ -298,7 +299,7 @@ const ReportsNew = () => {
             }
             @page { 
               size: A4 ${reportStyles.orientation}; 
-              margin: 15mm 12mm !important; 
+              margin: 0 !important; 
             }
           }
         `}
