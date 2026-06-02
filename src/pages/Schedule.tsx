@@ -2,13 +2,14 @@
 
 import React, { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
-import { Settings2, ArrowLeftRight, Trash2, Share2 } from "lucide-react";
+import { Settings2, ArrowLeftRight, Trash2 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import ScheduleHeader from "../components/schedule/ScheduleHeader";
 import ScheduleTable from "../components/schedule/ScheduleTable";
 import AddLessonDialog from "../components/schedule/AddLessonDialog";
 import PrintPreview from "../components/schedule/PrintPreview";
 import { Button } from "@/components/ui/button";
+import { DAYS, PERIOD_MAP, PERIODS } from "../constants/schedule";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,30 +20,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
-const DAYS = [
-  { id: 0, name: "الأحد", en: "Sunday" },
-  { id: 1, name: "الاثنين", en: "Monday" },
-  { id: 2, name: "الثلاثاء", en: "Tuesday" },
-  { id: 3, name: "الأربعاء", en: "Wednesday" },
-  { id: 4, name: "الخميس", en: "Thursday" },
-];
-
-// التعديل المطلوب: 1-4 ص، 5-7 م، 8-10 ل
-const PERIOD_MAP: Record<string, "Morning" | "Afternoon" | "Evening"> = {
-  "1": "Morning",
-  "2": "Morning",
-  "3": "Morning",
-  "4": "Morning",
-  "5": "Afternoon",
-  "6": "Afternoon",
-  "7": "Afternoon",
-  "8": "Evening",
-  "9": "Evening",
-  "10": "Evening",
-  "11": "Evening",
-  "12": "Evening",
-};
 
 const Schedule = () => {
   const { 
@@ -72,13 +49,12 @@ const Schedule = () => {
 
   // توليد خانات الحصص (1-12)
   const periodSlots = useMemo(() => {
-    const rawPeriods = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
-    return rawPeriods.map(id => ({
+    return PERIODS.map(id => ({
       id,
       label: id,
       periodPart: PERIOD_MAP[id] as "Morning" | "Afternoon" | "Evening",
       isBreak: false,
-      time: "" // يمكن إضافة توقيتات محددة لاحقاً
+      time: ""
     }));
   }, []);
 
