@@ -3,7 +3,7 @@
 import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Eye, Printer, RotateCw, X, Info } from "lucide-react";
+import { Eye, Printer, RotateCw, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PrintPreviewDialogProps {
@@ -27,7 +27,7 @@ const PrintPreviewDialog = ({
 }: PrintPreviewDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[98vw] w-full h-[95vh] overflow-hidden bg-zinc-900/95 border-none p-0 rounded-none flex flex-col">
+      <DialogContent className="max-w-[98vw] w-full h-[95vh] overflow-hidden bg-zinc-900/95 border-none p-0 rounded-none flex flex-col z-[9999]">
         <div className="bg-black/40 p-4 border-b border-white/10 flex justify-between items-center shrink-0 print:hidden">
           <div className="flex items-center gap-3 text-white">
             <Eye className="text-emerald-500" />
@@ -54,11 +54,22 @@ const PrintPreviewDialog = ({
             </Button>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto p-12 bg-zinc-950/50 flex flex-col items-center print:bg-white print:p-0">
+        <div className="flex-1 overflow-y-auto p-12 bg-zinc-950/50 flex flex-col items-center print:bg-white print:p-0 print:block">
           <div className="w-full flex flex-col items-center gap-12 print:gap-0 print:block">
             {children}
           </div>
         </div>
+        <style>
+          {`
+            @page {
+              size: A4 ${orientation};
+              margin: 0;
+            }
+            @media print {
+              #root { display: none !important; }
+            }
+          `}
+        </style>
       </DialogContent>
     </Dialog>
   );

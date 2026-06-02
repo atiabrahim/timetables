@@ -46,7 +46,7 @@ const PrintPreview = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 flex flex-col rounded-none">
+      <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 flex flex-col rounded-none z-[9999]">
         <div className="h-16 bg-black/40 border-b border-white/10 flex items-center justify-between px-8 shrink-0 print:hidden">
           <div className="flex items-center gap-4 text-white">
             <FileText size={20} />
@@ -69,11 +69,11 @@ const PrintPreview = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white">
+        <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white print:block">
           <div 
             id="printable-area"
             className={cn(
-              "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0 print:overflow-hidden",
+              "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0 print:overflow-visible print:w-full",
               orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
             )}
             style={{ transform: `scale(${printScale / 100})` }}
@@ -136,68 +136,12 @@ const PrintPreview = ({
 
         <style>
           {`
+            @page {
+              size: A4 ${orientation};
+              margin: 0;
+            }
             @media print {
-              body > div:not([data-radix-portal]),
-              #root,
-              header,
-              aside,
-              main,
-              .print\\:hidden {
-                display: none !important;
-              }
-
-              div[data-radix-portal] {
-                display: block !important;
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                background: white !important;
-              }
-
-              div[role="dialog"] {
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                background: white !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                box-shadow: none !important;
-                border: none !important;
-                overflow: visible !important;
-              }
-
-              div[role="dialog"] > button,
-              div[role="dialog"] .print\\:hidden {
-                display: none !important;
-              }
-
-              #printable-area {
-                visibility: visible !important;
-                display: flex !important;
-                flex-direction: column !important;
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                border: none !important;
-                box-shadow: none !important;
-                background: white !important;
-                transform: none !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-
-              @page {
-                size: A4 ${orientation};
-                margin: 0 !important;
-              }
+              #root { display: none !important; }
             }
           `}
         </style>
