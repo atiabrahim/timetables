@@ -208,16 +208,18 @@ export const parseXml = (xmlText: string) => {
     }).filter(a => a !== null && a.employeeId && a.subjectId && a.classId);
   }
 
-  // توليد إعدادات الحصص تلقائياً بناءً على الحصص المستوردة لضمان تفعيلها في صفحة التكليفات
+  // توليد إعدادات الحصص تلقائياً بناءً على الحصص المستوردة
   const periodConfigs: any[] = [];
   const days = [0, 1, 2, 3, 4]; // من الأحد إلى الخميس
   days.forEach(d => {
     const hasMorning = assignments.some(a => a && a.day === d && parseInt(a.period) >= 1 && parseInt(a.period) <= 4);
-    const hasAfternoon = assignments.some(a => a && a.day === d && parseInt(a.period) >= 5 && parseInt(a.period) <= 8);
+    // التعديل الجديد للفترات
+    const hasAfternoon = assignments.some(a => a && a.day === d && parseInt(a.period) >= 5 && parseInt(a.period) <= 7);
+    const hasEvening = assignments.some(a => a && a.day === d && parseInt(a.period) >= 8 && parseInt(a.period) <= 10);
 
     periodConfigs.push({ day: d, period: "Morning", isActive: hasMorning || true });
     periodConfigs.push({ day: d, period: "Afternoon", isActive: hasAfternoon || true });
-    periodConfigs.push({ day: d, period: "Evening", isActive: false });
+    periodConfigs.push({ day: d, period: "Evening", isActive: hasEvening || false });
   });
 
   return { 

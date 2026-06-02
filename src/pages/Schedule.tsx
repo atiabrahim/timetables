@@ -28,7 +28,7 @@ const DAYS = [
   { id: 4, name: "الخميس", en: "Thursday" },
 ];
 
-// 1‑4 → "Morning", 5‑8 → "Afternoon", 9‑12 → "Evening"
+// التعديل المطلوب: 1-4 ص، 5-7 م، 8-10 ل
 const PERIOD_MAP: Record<string, "Morning" | "Afternoon" | "Evening"> = {
   "1": "Morning",
   "2": "Morning",
@@ -37,7 +37,7 @@ const PERIOD_MAP: Record<string, "Morning" | "Afternoon" | "Evening"> = {
   "5": "Afternoon",
   "6": "Afternoon",
   "7": "Afternoon",
-  "8": "Afternoon",
+  "8": "Evening",
   "9": "Evening",
   "10": "Evening",
   "11": "Evening",
@@ -62,47 +62,183 @@ const Schedule = () => {
     employeeId: "", subjectId: "", classId: "", room: "", department: ""
   });
 
-  // Generate period slots based on numeric IDs 1‑12 and map them to time‑of‑day labels
+  // تصفية الحصص بناءً على الاختيار
+  const filteredAssignments = useMemo(() => {
+    if (!selectedId) return [];
+    return assignments.filter(a => 
+      viewMode === "class" ? a.classId === selectedId : a.employeeId === selectedId
+    );
+  }, [assignments, selectedId, viewMode]);
+
+  // توليد خانات الحصص (1-12)
   const periodSlots = useMemo(() => {
-    // Create an array of 12 period objects (IDs 1‑12)
     const rawPeriods = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
-    return rawPeriods.map(id => {
-      const label = rawPeriods.find(p => p === id) ?? "";
-      return {
-        id,
-        label: rawPeriods.find(p => p === id) ?? "",
-        // Map numeric ID to the correct time‑of‑day term
-        periodPart: PERIOD_MAP[id as keyof typeof PERIOD_MAP] as "Morning" | "Afternoon" | "Evening",
-        isBreak: false,
-        after: "" // Not used for mapping; kept for backward compatibility
-      };
-    });
+    return rawPeriods.map(id => ({
+      id,
+      label: id,
+      periodPart: PERIOD_MAP[id] as "Morning" | "Afternoon" | "Evening",
+      isBreak: false,
+      time: "" // يمكن إضافة توقيتات محددة لاحقاً
+    }));
   }, []);
 
+  // الحصص النشطة فقط (التي بها بيانات أو حتى الحصة 10)
   const activeTimeSlots = useMemo(() => {
-    // Keep only slots whose mapped period part is active according to periodConfigs    const usedPeriodIds = new Set(filteredAssignments.map(a => a.period));
-    if (usedPeriodIds.size === 0) return periodSlots.filter(p => !p.isBreak);
-    
-    // Determine the highest period number that appears in the schedule
-    const maxPeriod = Math.max(...Array.from(usedPeriodIds).map(id => parseInt(id)));
-    return periodSlots.filter(p => {
-      if (p.isBreak) {
-        // Break periods are allowed only if their "after" reference is below maxPeriod
-        return parseInt(p.after ?? "0") < maxPeriod;
-      }
-      return parseInt(p.id) <= maxPeriod;
-    });
+    const usedIds = filteredAssignments.map(a => parseInt(a.period));
+    const maxUsed = usedIds.length > 0 ? Math.max(...usedIds) : 10;
+    const limit = Math.max(maxUsed, 10); // عرض 10 حصص على الأقل
+    return periodSlots.filter(p => parseInt(p.id) <= limit);
   }, [filteredAssignments, periodSlots]);
 
-  const getAssignment = (day: number, period: string) => filteredAssignments.find(a => a.day === day && a.period === period);
+  const getAssignment = (day: number, period: string) => 
+    filteredAssignments.find(a => a.day === day && a.period === period);
 
-  // ... rest of component remains unchanged (UI, dialogs, etc.) ...
-  // Only the period‑generation logic above has been updated to reflect the new mapping.
-  // All other functionality (adding lessons, editing, printing, etc.) stays the same.
+  const handleAddClick = (day: number, period: string) => {
+    if (viewMode === "class") {
+      setNewAssignment({ ...newAssignment, classId: selectedId, employeeId: "", subjectId: "", room: "", department: "" });
+    } else {
+      setNewAssignment({ ...newAssignment, employeeId: selectedId, classId: "", subjectId: "", room: "", department: "" });
+    }
+    setEditingCell({ day, period });
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveLesson = () => {
+    if (!editingCell) return;
+    if (!newAssignment.subjectId || (viewMode === "class" ? !newAssignment.employeeId : !newAssignment.classId)) {
+      showError(isRTL ? "يرجى إكمال البيانات" : "Please complete data");
+      return;
+    }
+
+    const id = Math.random().toString(36).substr(2, 9);
+    setAssignments([...assignments, {
+      id,
+      ...newAssignment,
+      day: editingCell.day,
+      period: editingCell.period
+    }]);
+    
+    setIsDialogOpen(false);
+    showSuccess(isRTL ? "تمت إضافة الحصة" : "Lesson added");
+  };
+
+  const handleDeleteLesson = (id: string) => {
+    setAssignments(assignments.filter(a => a.id !== id));
+    showSuccess(isRTL ? "تم حذف الحصة" : "Lesson deleted");
+  };
+
+  // بيانات التقرير الجانبي (Summary)
+  const summaryData = useMemo(() => {
+    const data: any[] = [];
+    filteredAssignments.forEach(asgn => {
+      const sub = subjects.find(s => s.id === asgn.subjectId)?.name || "---";
+      const teacher = employees.find(e => e.id === asgn.employeeId);
+      const teacherName = teacher ? `${teacher.lastName} ${teacher.firstName}` : "---";
+      const className = classes.find(c => c.id === asgn.classId)?.name || "---";
+      
+      const existing = data.find(d => d.subject === sub && (viewMode === "class" ? d.teacher === teacherName : d.branch === className));
+      if (existing) {
+        existing.count++;
+      } else {
+        data.push({
+          subject: sub,
+          teacher: teacherName,
+          branch: className,
+          count: 1
+        });
+      }
+    });
+    return data;
+  }, [filteredAssignments, subjects, employees, classes, viewMode]);
 
   return (
     <div className="space-y-6">
-      {/* ... existing UI (header, filters, table, dialogs, etc.) ... */}
+      <ScheduleHeader 
+        isRTL={isRTL} 
+        viewMode={viewMode} setViewMode={setViewMode}
+        selectedId={selectedId} setSelectedId={setSelectedId}
+        classes={classes} employees={employees}
+        onPreview={() => setIsPreviewOpen(true)}
+      />
+
+      {selectedId ? (
+        <div className="space-y-4">
+          <div className="flex justify-end gap-2 print:hidden">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsTransposed(!isTransposed)}
+              className="rounded-xl border-emerald-100 text-emerald-700 font-bold gap-2"
+            >
+              <ArrowLeftRight size={14} />
+              {isRTL ? "تبديل المحاور" : "Transpose"}
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 rounded-xl gap-2 font-bold">
+                  <Trash2 size={14} />
+                  {isRTL ? "مسح الجدول" : "Clear Schedule"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-3xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{isRTL ? "هل أنت متأكد؟" : "Are you sure?"}</AlertDialogTitle>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={() => setAssignments(assignments.filter(a => viewMode === "class" ? a.classId !== selectedId : a.employeeId !== selectedId))}
+                    className="bg-red-600 rounded-xl"
+                  >
+                    {isRTL ? "نعم، امسح" : "Yes, Clear"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+
+          <ScheduleTable 
+            isRTL={isRTL} 
+            days={DAYS} 
+            timeSlots={activeTimeSlots} 
+            getAssignment={getAssignment}
+            onAddClick={handleAddClick}
+            onDeleteClick={handleDeleteLesson}
+            subjects={subjects}
+            employees={employees}
+            classes={classes}
+            viewMode={viewMode}
+            summaryData={summaryData}
+            totalHours={filteredAssignments.length}
+            isTransposed={isTransposed}
+          />
+        </div>
+      ) : (
+        <div className="text-center py-32 bg-white rounded-[3rem] border border-dashed border-emerald-200">
+          <Settings2 size={48} className="mx-auto text-emerald-100 mb-4" />
+          <p className="text-emerald-900/40 font-bold">{isRTL ? "يرجى اختيار فرع أو معلم لعرض الجدول" : "Please select a branch or teacher to view schedule"}</p>
+        </div>
+      )}
+
+      <AddLessonDialog 
+        isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}
+        isRTL={isRTL} cancelText={t.cancel}
+        subjects={subjects} employees={employees} classes={classes}
+        rooms={rooms} viewMode={viewMode}
+        newAssignment={newAssignment} setNewAssignment={setNewAssignment}
+        onSave={handleSaveLesson}
+      />
+
+      <PrintPreview 
+        isOpen={isPreviewOpen} onOpenChange={setIsPreviewOpen}
+        isRTL={isRTL} orientation={orientation} setOrientation={setOrientation}
+        printScale={printScale} setPrintScale={setPrintScale}
+        viewMode={viewMode} selectedId={selectedId}
+        employees={employees} classes={classes} subjects={subjects}
+        days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment}
+        summaryData={summaryData} totalHours={filteredAssignments.length}
+        isTransposed={isTransposed}
+      />
     </div>
   );
 };

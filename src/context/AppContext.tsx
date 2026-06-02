@@ -171,9 +171,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .filter(a => {
         if (a.day !== dayIdx) return false;
         const p = parseInt(a.period);
+        // التعديل الجديد:
         if (period === "Morning") return p >= 1 && p <= 4;
-        if (period === "Afternoon") return p >= 5 && p <= 8;
-        if (period === "Evening") return p >= 9 && p <= 12;
+        if (period === "Afternoon") return p >= 5 && p <= 7;
+        if (period === "Evening") return p >= 8 && p <= 10;
         return false;
       })
       .map(a => a.employeeId);
