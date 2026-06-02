@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FileText, RotateCw, Printer, X } from "lucide-react";
+import { FileText, RotateCw, Printer, X, Calendar as CalendarIcon, User, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { 
@@ -10,8 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import ScheduleTable from "./ScheduleTable";
-import logo from "@/assets/logo.png";
-import { useApp } from "../../context/AppContext";
+import OfficialPrintWrapper from "../shared/OfficialPrintWrapper";
 
 interface PrintPreviewProps {
   isOpen: boolean;
@@ -38,11 +37,32 @@ const PrintPreview = ({
   isOpen, onOpenChange, isRTL, orientation, setOrientation, printScale, setPrintScale, 
   viewMode, selectedId, employees, classes, subjects, days, timeSlots, getAssignment, summaryData, totalHours, isTransposed = false 
 }: PrintPreviewProps) => {
-  const { institution } = useApp();
   
   const selectedEntity = viewMode === "teacher" 
     ? employees.find(e => e.id === selectedId) 
     : classes.find(c => c.id === selectedId);
+
+  const entityName = viewMode === "teacher"
+    ? (selectedEntity ? `${selectedEntity.lastName} ${selectedEntity.firstName}` : "---")
+    : (selectedEntity ? selectedEntity.name : "---");
+
+  const title = viewMode === "teacher"
+    ? (isRTL ? `جدول توقيت الأستاذ: ${entityName}` : `Teacher Timetable: ${entityName}`)
+    : (isRTL ? `جدول توقيت الفوج: ${entityName}` : `Class Timetable: ${entityName}`);
+
+  const subtitle = (
+    <div className="flex items-center gap-4 text-xs md:text-sm font-bold text-emerald-800">
+      <div className="flex items-center gap-1.5">
+        {viewMode === "teacher" ? <User size={14} /> : <GraduationCap size={14} />}
+        <span>{entityName}</span>
+      </div>
+      <span className="text-emerald-200 h-4 w-px bg-emerald-200"></span>
+      <div className="flex items-center gap-1.5">
+        <CalendarIcon size={14} />
+        <span>{isRTL ? "الجدول الأسبوعي" : "Weekly Schedule"}</span>
+      </div>
+    </div>
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -72,46 +92,17 @@ const PrintPreview = ({
         <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white print:block">
           <div 
             id="printable-area"
-            className={cn(
-              "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0 print:overflow-visible print:w-full",
-              orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
-            )}
+            className="transition-all duration-300 origin-top print:m-0 print:overflow-visible print:w-full"
             style={{ transform: `scale(${printScale / 100})` }}
           >
-            <div className="p-10 flex-1 flex flex-col print:p-[10mm] overflow-hidden h-full border-2 border-transparent">
-              {/* Header */}
-              <div className="flex justify-between items-center mb-6 shrink-0">
-                <div className="w-16 h-16 flex items-center justify-center">
-                  <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
-                </div>
-                <div className="text-center flex-1 mx-4">
-                  <h1 className="text-sm md:text-xl font-black text-emerald-950 leading-tight uppercase">{institution.name}</h1>
-                  <h2 className="text-xs md:text-base font-bold text-emerald-800 mt-1">{institution.subName}</h2>
-                </div>
-                <div className="w-16 h-16 flex items-center justify-center">
-                  <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
-                </div>
-              </div>
-
-              {/* Info Bar */}
-              <div className="grid grid-cols-3 gap-4 mb-4 text-[10px] md:text-[12px] font-black border-y-2 border-emerald-950 py-3 shrink-0 bg-emerald-50/20">
-                <div className={isRTL ? "text-right px-2" : "text-left px-2"}>
-                  {viewMode === "teacher" ? (
-                    <p>{isRTL ? "الأستاذ(ة):" : "Teacher:"} <span className="text-emerald-900">{selectedEntity?.lastName} {selectedEntity?.firstName}</span></p>
-                  ) : (
-                    <p>{isRTL ? "الفرع:" : "Branch:"} <span className="text-emerald-900">{selectedEntity?.name}</span></p>
-                  )}
-                </div>
-                <div className="text-center border-x border-emerald-950/20">
-                  <p>{isRTL ? "السنة الدراسية:" : "Academic Year:"} {institution.academicYear || "---"}</p>
-                </div>
-                <div className={isRTL ? "text-left px-2" : "text-right px-2"}>
-                  <p>{isRTL ? "الرتبة:" : "Rank:"} {viewMode === "teacher" ? selectedEntity?.category : "---"}</p>
-                </div>
-              </div>
-
-              {/* Table Area */}
-              <div className="flex-1 min-h-0 w-full">
+            <OfficialPrintWrapper
+              title={title}
+              subtitle={subtitle}
+              orientation={orientation}
+              leftSignatureTitle={isRTL ? "توقيع الأستاذ" : "Teacher Signature"}
+              rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+            >
+              <div className="w-full">
                 <ScheduleTable 
                   isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
                   onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
@@ -119,18 +110,7 @@ const PrintPreview = ({
                   isTransposed={isTransposed}
                 />
               </div>
-
-              {/* Footer / Signatures */}
-              <div className="mt-8 mb-[2cm] grid grid-cols-3 gap-8 text-center shrink-0">
-                <div><p className="font-black text-xs mb-10">{isRTL ? "توقيع الأستاذ" : "Teacher Signature"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
-                <div><p className="font-black text-xs mb-10">{isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
-                <div><p className="font-black text-xs mb-10">{isRTL ? "ختم وتوقيع المدير" : "Director Signature"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
-              </div>
-
-              <div className="mt-auto pt-4 text-center text-[8px] text-gray-400 border-t border-emerald-100 shrink-0 font-bold">
-                تم إنشاء هذا الجدول آلياً بواسطة نظام EduSchedule — {new Date().toLocaleDateString('ar-DZ')}
-              </div>
-            </div>
+            </OfficialPrintWrapper>
           </div>
         </div>
 

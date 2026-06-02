@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Printer, Search, Eye, ClipboardList, BookOpen, ShieldAlert, RotateCw } from "lucide-react";
+import { Printer, Search, Eye, ClipboardList, BookOpen, ShieldAlert, RotateCw, Calendar } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { 
   Dialog, 
@@ -31,6 +31,7 @@ import {
 import { PeriodPart } from "../types";
 import PageHeader from "../components/shared/PageHeader";
 import { DAYS } from "../constants/schedule";
+import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
 
 const PERIODS: PeriodPart[] = ["Morning", "Afternoon", "Evening"];
 
@@ -179,6 +180,13 @@ const WeeklyWorkSchedule = () => {
     </div>
   );
 
+  const subtitle = (
+    <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-emerald-800">
+      <Calendar size={14} />
+      <span>{isRTL ? "للفترة الدراسية الحالية" : "For Current Academic Period"}</span>
+    </div>
+  );
+
   return (
     <div className="space-y-8 pb-20">
       <PageHeader
@@ -247,26 +255,19 @@ const WeeklyWorkSchedule = () => {
             <div 
               id="printable-report" 
               className={cn(
-                "bg-white border border-emerald-100 rounded-lg p-10 shadow-sm transition-all origin-top print:m-0 print:p-[10mm]",
+                "transition-all origin-top print:m-0 print:p-0",
                 orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
               )}
             >
-              <div className="text-center mb-8 border-b-4 border-emerald-950 pb-4 pt-2">
-                <h1 className="text-2xl font-black text-emerald-950 mb-1 uppercase tracking-tight">{t.weeklyWorkSchedule}</h1>
-                <p className="text-emerald-800 font-black text-sm">{isRTL ? "للفترة الدراسية الحالية" : "For Current Academic Period"}</p>
-              </div>
-              
-              <ScheduleTable isPrint={true} />
-              
-              <div className="mt-12 grid grid-cols-3 gap-8 text-center font-black text-emerald-950 text-xs px-4 pb-4">
-                <div><p className="mb-12 underline underline-offset-4">{isRTL ? "توقيع الأستاذ" : "Teacher Signature"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
-                <div><p className="mb-12 underline underline-offset-4">{isRTL ? "المسؤول المباشر" : "Direct Supervisor"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
-                <div><p className="mb-12 underline underline-offset-4">{isRTL ? "ختم المؤسسة" : "Institution Stamp"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
-              </div>
-              
-              <div className="mt-auto pt-4 text-center text-[8px] text-gray-400 border-t border-gray-100 shrink-0 font-bold">
-                تم الاستخراج من نظام EduSchedule بتاريخ: {new Date().toLocaleDateString('ar-DZ')}
-              </div>
+              <OfficialPrintWrapper
+                title={t.weeklyWorkSchedule}
+                subtitle={subtitle}
+                orientation={orientation}
+                leftSignatureTitle={isRTL ? "توقيع الأستاذ" : "Teacher Signature"}
+                rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+              >
+                <ScheduleTable isPrint={true} />
+              </OfficialPrintWrapper>
             </div>
           </div>
           <DialogFooter className="bg-white p-6 border-t border-emerald-100 shrink-0">

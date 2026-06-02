@@ -3,12 +3,13 @@
 import React, { useMemo, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Button } from "@/components/ui/button";
-import { Printer, Eye, X, RotateCw, Home, BarChart3 } from "lucide-react";
+import { Printer, Eye, X, RotateCw, Home, BarChart3, Calendar } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import TeacherLoadChart from "../components/reports/TeacherLoadChart";
 import RoomUsageChart from "../components/reports/RoomUsageChart";
 import PageHeader from "../components/shared/PageHeader";
+import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
 
 const Reports = () => {
   const { employees, assignments, classes, rooms, isRTL, t } = useApp();
@@ -65,6 +66,13 @@ const Reports = () => {
     </div>
   );
 
+  const subtitle = (
+    <div className="flex items-center gap-2 text-xs md:text-sm font-bold text-emerald-800">
+      <Calendar size={14} />
+      <span>{isRTL ? "تحليل شامل لتوزيع الموارد والمهام" : "Comprehensive analysis"}</span>
+    </div>
+  );
+
   return (
     <div className="space-y-8 pb-20">
       <PageHeader
@@ -101,12 +109,20 @@ const Reports = () => {
             <div 
               id="printable-report-area"
               className={cn(
-                "bg-white shadow-2xl p-10 border transition-all origin-top print:shadow-none print:border-0 print:p-0", 
+                "transition-all origin-top print:m-0 print:p-0", 
                 orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
               )} 
               style={{ transform: `scale(${printScale / 100})` }}
             >
-              <ReportContent isPreview={true} />
+              <OfficialPrintWrapper
+                title={t.reports_page.title}
+                subtitle={subtitle}
+                orientation={orientation}
+                leftSignatureTitle={isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}
+                rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+              >
+                <ReportContent isPreview={true} />
+              </OfficialPrintWrapper>
             </div>
           </div>
         </DialogContent>
@@ -125,7 +141,7 @@ const Reports = () => {
               width: 100% !important;
               height: auto !important;
               margin: 0 !important;
-              padding: 15mm !important;
+              padding: 10mm !important;
               border: none !important;
               box-shadow: none !important;
               background: white !important;
