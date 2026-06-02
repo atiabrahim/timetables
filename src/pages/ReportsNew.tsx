@@ -24,7 +24,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Printer, Calendar, FileText, Eye, BarChart2, Layout as LayoutIcon } from "lucide-react";
+import { Printer, Calendar, FileText, Eye, BarChart2, Layout as LayoutIcon, Clock, Info } from "lucide-react";
 import { 
   Table, 
   TableBody, 
@@ -63,8 +63,8 @@ const ReportsNew = () => {
   const [reportStyles, setReportStyles] = useState({
     fontFamily: "'Cairo', sans-serif",
     headerSize: 14,
-    titleSize: 20,
-    tableSize: 12,
+    titleSize: 22,
+    tableSize: 13,
     footerSize: 14,
     orientation: "portrait" as "portrait" | "landscape"
   });
@@ -89,6 +89,13 @@ const ReportsNew = () => {
     setReportStyles({ ...reportStyles, orientation: val });
   };
 
+  const getPeriodRangeHint = (period: PeriodPart) => {
+    if (period === "Morning") return isRTL ? "(1 - 4)" : "(1 - 4)";
+    if (period === "Afternoon") return isRTL ? "(5 - 7)" : "(5 - 7)";
+    if (period === "Evening") return isRTL ? "(8 - 10)" : "(8 - 10)";
+    return "";
+  };
+
   const reportContainerStyle = {
     fontFamily: reportStyles.fontFamily
   };
@@ -108,73 +115,91 @@ const ReportsNew = () => {
     
     if (assignedEmployees.length === 0) return null;
 
-    const maxRows = 15;
+    const maxRows = 16;
     const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
 
     return (
       <div 
         key={`${dateStr}-${period}`}
         className={cn(
-          "bg-white p-8 mb-8 mx-auto shadow-sm border border-slate-100 rounded-2xl page-break-container",
-          "print:shadow-none print:border-0 print:m-0 print:p-0 print:w-full print:h-full print:flex print:flex-col print:justify-between"
+          "bg-white p-10 mb-12 mx-auto shadow-2xl border border-slate-100 rounded-[2rem] page-break-container max-w-[210mm]",
+          "print:shadow-none print:border-0 print:m-0 print:p-0 print:w-full print:h-full print:flex print:flex-col print:justify-between print:rounded-none"
         )}
         dir={isRTL ? "rtl" : "ltr"}
         style={reportContainerStyle}
       >
-        <div className="text-center mb-4 space-y-1" style={{ fontSize: `${reportStyles.headerSize}px` }}>
-          <p className="font-black text-slate-900 leading-tight">{t.republic}</p>
-          <p className="font-bold text-slate-800 leading-tight">{t.centerName}</p>
-          <p className="font-bold text-slate-700 leading-tight">{t.centerLocation}</p>
+        {/* Header Section */}
+        <div className="flex flex-col items-center text-center mb-6 space-y-1" style={{ fontSize: `${reportStyles.headerSize}px` }}>
+          <p className="font-black text-slate-900 tracking-tight">{t.republic}</p>
+          <p className="font-bold text-slate-800">{t.centerName}</p>
+          <p className="font-bold text-slate-700">{t.centerLocation}</p>
         </div>
 
-        <div className={cn("mb-3 flex justify-between items-center border-b pb-2", isRTL ? "flex-row" : "flex-row-reverse")} style={{ fontSize: `${reportStyles.headerSize}px` }}>
-          <p className="font-bold text-slate-900">
-            {t.department}: <span className="font-normal">{departments[0] || (isRTL ? "مصلحة التكوين" : "Training Dept")}</span>
-          </p>
-          <p className="font-bold text-slate-900">
-            {isRTL ? "السنة الدراسية:" : "Academic Year:"} <span className="font-normal">2023/2024</span>
-          </p>
-        </div>
-
-        <div className="text-center mb-4">
-          <h1 className="font-black text-slate-900 mb-2" style={{ fontSize: `${reportStyles.titleSize}px` }}>{t.attendanceSheet}</h1>
-          <div className="flex justify-center items-center gap-4 bg-slate-50 py-2 px-4 rounded-xl inline-flex mx-auto border border-slate-100">
-            <p className="text-slate-800 font-black" style={{ fontSize: `${reportStyles.headerSize}px` }}>
-              {format(date, "EEEE, d MMMM yyyy", { locale: currentLocale })}
+        <div className={cn("mb-6 flex justify-between items-center border-b-2 border-slate-900 pb-3", isRTL ? "flex-row" : "flex-row-reverse")} style={{ fontSize: `${reportStyles.headerSize}px` }}>
+          <div className="flex flex-col gap-1">
+            <p className="font-black text-slate-950">
+              {t.department}: <span className="font-bold text-emerald-800">{departments[0] || (isRTL ? "مصلحة التكوين" : "Training Dept")}</span>
             </p>
-            <span className="text-slate-300 h-4 w-px bg-slate-300"></span>
-            <p className="font-black text-emerald-700" style={{ fontSize: `${reportStyles.headerSize}px` }}>
-              {period === "Morning" ? t.morning : period === "Afternoon" ? t.afternoon : t.evening}
+          </div>
+          <div className="text-end">
+            <p className="font-black text-slate-950">
+              {isRTL ? "السنة الدراسية:" : "Academic Year:"}: <span className="font-bold text-emerald-800">2023/2024</span>
             </p>
           </div>
         </div>
+
+        {/* Title Section */}
+        <div className="text-center mb-8">
+          <h1 className="font-black text-slate-900 mb-4 underline underline-offset-8 decoration-2" style={{ fontSize: `${reportStyles.titleSize}px` }}>
+            {t.attendanceSheet}
+          </h1>
+          <div className="flex justify-center items-center gap-6 bg-emerald-50/50 py-3 px-8 rounded-2xl inline-flex mx-auto border border-emerald-100 shadow-sm">
+            <div className="flex items-center gap-2">
+              <Calendar size={18} className="text-emerald-600" />
+              <p className="text-slate-900 font-black" style={{ fontSize: `${reportStyles.headerSize + 2}px` }}>
+                {format(date, "EEEE, d MMMM yyyy", { locale: currentLocale })}
+              </p>
+            </div>
+            <span className="text-emerald-200 h-6 w-px bg-emerald-200"></span>
+            <div className="flex items-center gap-2">
+              <Clock size={18} className="text-emerald-600" />
+              <p className="font-black text-emerald-800" style={{ fontSize: `${reportStyles.headerSize + 2}px` }}>
+                {period === "Morning" ? t.morning : period === "Afternoon" ? t.afternoon : t.evening}
+                <span className="mx-2 opacity-50 text-[10px]">{getPeriodRangeHint(period)}</span>
+              </p>
+            </div>
+          </div>
+        </div>
         
+        {/* Table Section */}
         <div className="flex-1 overflow-visible">
-          <Table className="w-full border-collapse border-2 border-slate-900" style={{ fontSize: `${reportStyles.tableSize}px` }}>
+          <Table className="w-full border-collapse border-2 border-slate-950" style={{ fontSize: `${reportStyles.tableSize}px` }}>
             <TableHeader>
-              <TableRow className="bg-slate-100 hover:bg-slate-100 border-b-2 border-slate-900 h-10">
-                <TableHead className={cn("w-[50px] text-center font-black text-slate-900 border-e-2 border-slate-900 py-1")}>{t.number}</TableHead>
-                <TableHead className={cn("text-center font-black text-slate-900 border-e-2 border-slate-900 py-1", isRTL ? "text-right px-4" : "text-left px-4")}>{t.employeeName}</TableHead>
-                <TableHead className={cn("w-[150px] text-center font-black text-slate-900 border-e-2 border-slate-900 py-1")}>{t.signature}</TableHead>
-                <TableHead className="text-center font-black text-slate-900 py-1 w-[200px]">{t.notes}</TableHead>
+              <TableRow className="bg-slate-50 hover:bg-slate-50 border-b-2 border-slate-950 h-12">
+                <TableHead className={cn("w-[60px] text-center font-black text-slate-950 border-e-2 border-slate-950 py-1")}>{t.number}</TableHead>
+                <TableHead className={cn("text-center font-black text-slate-950 border-e-2 border-slate-950 py-1 px-6", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
+                <TableHead className={cn("w-[160px] text-center font-black text-slate-950 border-e-2 border-slate-950 py-1")}>{t.signature}</TableHead>
+                <TableHead className="text-center font-black text-slate-950 py-1 w-[220px]">{t.notes}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {assignedEmployees.map((emp, idx) => (
-                <TableRow key={emp?.id} className="hover:bg-transparent border-b border-slate-900 h-10">
-                  <TableCell className="text-center font-bold border-e-2 border-slate-900 p-1">{idx + 1}</TableCell>
-                  <TableCell className={cn("font-bold border-e-2 border-slate-900 p-1 px-4", isRTL ? "text-right" : "text-left")}>
+                <TableRow key={emp?.id} className="hover:bg-transparent border-b-2 border-slate-950 h-11">
+                  <TableCell className="text-center font-black border-e-2 border-slate-950 p-1 bg-slate-50/30">{idx + 1}</TableCell>
+                  <TableCell className={cn("font-black border-e-2 border-slate-950 p-1 px-6 text-slate-900", isRTL ? "text-right" : "text-left")}>
                     {emp?.lastName} {emp?.firstName}
                   </TableCell>
-                  <TableCell className="border-e-2 border-slate-900 p-1"></TableCell>
+                  <TableCell className="border-e-2 border-slate-950 p-1"></TableCell>
                   <TableCell className="p-1"></TableCell>
                 </TableRow>
               ))}
               {Array.from({ length: emptyRowsCount }).map((_, i) => (
-                <TableRow key={`empty-${i}`} className="hover:bg-transparent border-b border-slate-900 h-10">
-                  <TableCell className="text-center border-e-2 border-slate-900 p-1">{assignedEmployees.length + i + 1}</TableCell>
-                  <TableCell className="border-e-2 border-slate-900 p-1"></TableCell>
-                  <TableCell className="border-e-2 border-slate-900 p-1"></TableCell>
+                <TableRow key={`empty-${i}`} className="hover:bg-transparent border-b-2 border-slate-950 h-11">
+                  <TableCell className="text-center border-e-2 border-slate-950 p-1 font-bold text-slate-400 bg-slate-50/10">
+                    {assignedEmployees.length + i + 1}
+                  </TableCell>
+                  <TableCell className="border-e-2 border-slate-950 p-1"></TableCell>
+                  <TableCell className="border-e-2 border-slate-950 p-1"></TableCell>
                   <TableCell className="p-1"></TableCell>
                 </TableRow>
               ))}
@@ -182,15 +207,20 @@ const ReportsNew = () => {
           </Table>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-12 pt-4 border-t border-dashed border-slate-200" style={{ fontSize: `${reportStyles.footerSize}px` }}>
+        {/* Footer Section */}
+        <div className="mt-10 grid grid-cols-2 gap-16 pt-6 border-t border-dashed border-slate-300" style={{ fontSize: `${reportStyles.footerSize}px` }}>
           <div className="text-center">
-            <p className="font-black text-slate-900 mb-12">{supervisors[0]}</p>
-            <div className="border-t border-slate-400 w-32 mx-auto"></div>
+            <p className="font-black text-slate-950 mb-16 underline underline-offset-4">{supervisors[0]}</p>
+            <div className="border-t-2 border-slate-900 w-40 mx-auto"></div>
           </div>
           <div className="text-center">
-            <p className="font-black text-slate-900 mb-12">{t.managerSignature}</p>
-            <div className="border-t border-slate-400 w-32 mx-auto"></div>
+            <p className="font-black text-slate-950 mb-16 underline underline-offset-4">{t.managerSignature}</p>
+            <div className="border-t-2 border-slate-900 w-40 mx-auto"></div>
           </div>
+        </div>
+
+        <div className="mt-8 pt-4 text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest border-t border-slate-50">
+          Generated via EduSchedule Pro v2.5 — {format(new Date(), "yyyy-MM-dd HH:mm")}
         </div>
       </div>
     );
@@ -206,7 +236,7 @@ const ReportsNew = () => {
       periodConfigs.find(c => c.day === dayIdx && c.period === p)?.isActive
     );
     return (
-      <div className="space-y-8 print:space-y-0">
+      <div className="space-y-12 print:space-y-0">
         {activePeriods.map((period) => renderAttendanceSheet(date, period))}
       </div>
     );
@@ -233,9 +263,12 @@ const ReportsNew = () => {
     });
     
     return (
-      <div className="space-y-8 print:space-y-0">
+      <div className="space-y-12 print:space-y-0">
         {sheets.length > 0 ? sheets : (
-          <div className="text-center p-12 text-slate-400 italic print:hidden">{t.noAssignments}</div>
+          <div className="text-center p-20 bg-white rounded-[2rem] border border-dashed border-slate-200">
+            <Info className="mx-auto text-slate-200 mb-4" size={48} />
+            <p className="text-slate-400 font-bold">{t.noAssignments}</p>
+          </div>
         )}
       </div>
     );
@@ -268,29 +301,32 @@ const ReportsNew = () => {
     }).sort((a, b) => b.total - a.total);
 
     return (
-      <div className="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm mx-auto w-full max-w-full print:border-0 print:p-0" dir={isRTL ? "rtl" : "ltr"} style={reportContainerStyle}>
-        <div className="text-center mb-6">
-          <h3 className="text-xl font-black text-slate-900 mb-1">{t.monthlyStats}</h3>
-          <p className="text-emerald-600 font-bold">{format(date, "MMMM yyyy", { locale: currentLocale })}</p>
+      <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-xl mx-auto w-full max-w-4xl print:border-0 print:shadow-none print:p-0" dir={isRTL ? "rtl" : "ltr"} style={reportContainerStyle}>
+        <div className="text-center mb-8 border-b-2 border-emerald-900 pb-4">
+          <h3 className="text-2xl font-black text-slate-950 mb-2">{t.monthlyStats}</h3>
+          <div className="inline-flex items-center gap-2 bg-emerald-50 px-4 py-1 rounded-full text-emerald-700 font-bold">
+            <Calendar size={16} />
+            {format(date, "MMMM yyyy", { locale: currentLocale })}
+          </div>
         </div>
-        <Table className="border-2 border-slate-900 w-full">
+        <Table className="border-2 border-slate-950 w-full">
           <TableHeader>
-            <TableRow className="bg-slate-50 border-b-2 border-slate-900">
-              <TableHead className={cn("font-bold text-slate-900 border-e-2 border-slate-900 py-2", isRTL ? "text-right px-4" : "text-left px-4")}>{t.employeeName}</TableHead>
-              <TableHead className="text-center font-bold text-slate-900 border-e-2 border-slate-900 py-2">{t.morning}</TableHead>
-              <TableHead className="text-center font-bold text-slate-900 border-e-2 border-slate-900 py-2">{t.afternoon}</TableHead>
-              <TableHead className="text-center font-bold text-slate-900 border-e-2 border-slate-900 py-2">{t.evening}</TableHead>
-              <TableHead className="text-center font-bold text-slate-900 py-2">{t.total}</TableHead>
+            <TableRow className="bg-slate-100 border-b-2 border-slate-950">
+              <TableHead className={cn("font-black text-slate-950 border-e-2 border-slate-950 py-3 px-6", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
+              <TableHead className="text-center font-black text-slate-950 border-e-2 border-slate-950 py-3">{t.morning} (1-4)</TableHead>
+              <TableHead className="text-center font-black text-slate-950 border-e-2 border-slate-950 py-3">{t.afternoon} (5-7)</TableHead>
+              <TableHead className="text-center font-black text-slate-950 border-e-2 border-slate-950 py-3">{t.evening} (8-10)</TableHead>
+              <TableHead className="text-center font-black text-white bg-slate-900 py-3">{t.total}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {stats.map(s => (
-              <TableRow key={s.id} className="hover:bg-slate-50/50 border-b border-slate-900">
-                <TableCell className={cn("font-bold text-slate-700 border-e-2 border-slate-900 p-2 px-4", isRTL ? "text-right" : "text-left")}>{s.lastName} {s.firstName}</TableCell>
-                <TableCell className="text-center font-medium border-e-2 border-slate-900 p-2">{s.morning}</TableCell>
-                <TableCell className="text-center font-medium border-e-2 border-slate-900 p-2">{s.afternoon}</TableCell>
-                <TableCell className="text-center font-medium border-e-2 border-slate-900 p-2">{s.evening}</TableCell>
-                <TableCell className="text-center font-black p-2">{s.total}</TableCell>
+              <TableRow key={s.id} className="hover:bg-emerald-50/30 border-b-2 border-slate-950">
+                <TableCell className={cn("font-bold text-slate-900 border-e-2 border-slate-950 p-3 px-6", isRTL ? "text-right" : "text-left")}>{s.lastName} {s.firstName}</TableCell>
+                <TableCell className="text-center font-bold border-e-2 border-slate-950 p-3">{s.morning}</TableCell>
+                <TableCell className="text-center font-bold border-e-2 border-slate-950 p-3">{s.afternoon}</TableCell>
+                <TableCell className="text-center font-bold border-e-2 border-slate-950 p-3">{s.evening}</TableCell>
+                <TableCell className="text-center font-black p-3 bg-slate-50">{s.total}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -306,24 +342,33 @@ const ReportsNew = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between print:hidden">
-        <h2 className="text-2xl font-bold text-slate-800">{t.reports}</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setIsPreviewOpen(true)}><Eye className="h-4 w-4 me-2" />{t.preview}</Button>
-          <Button onClick={handlePrint} className="bg-emerald-600 hover:bg-emerald-700 text-white"><Printer className="h-4 w-4 me-2" />{t.print}</Button>
+    <div className="space-y-8 pb-20">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 print:hidden">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-black text-slate-950 tracking-tight">{t.reports}</h2>
+          <p className="text-slate-500 font-medium">إصدار أوراق حضور وجداول إحصائية رسمية</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="outline" size="lg" className="rounded-2xl border-slate-200 hover:bg-slate-50 font-bold gap-2 h-12 px-6" onClick={() => setIsPreviewOpen(true)}>
+            <Eye className="h-5 w-5 text-emerald-600" />
+            {t.preview}
+          </Button>
+          <Button size="lg" onClick={handlePrint} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black gap-2 h-12 px-8 shadow-lg shadow-emerald-100">
+            <Printer className="h-5 w-5" />
+            {t.print}
+          </Button>
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2">
-          <Label className="text-xs font-bold text-slate-500 uppercase">{t.orientation}</Label>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 print:hidden">
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+          <Label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <LayoutIcon size={14} />
+            {t.orientation}
+          </Label>
           <Select value={reportStyles.orientation} onValueChange={(v: any) => updateOrientation(v)}>
-            <SelectTrigger className="h-10">
-              <div className="flex items-center gap-2">
-                <LayoutIcon className="h-4 w-4" />
-                <SelectValue />
-              </div>
+            <SelectTrigger className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 font-bold">
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="portrait">{t.portrait}</SelectItem>
@@ -331,19 +376,30 @@ const ReportsNew = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2 md:col-span-2">
-          <Label className="text-xs font-bold text-slate-500 uppercase">{t.applyToPeriods}</Label>
-          <div className="flex gap-4 pt-1">
-            {["Morning", "Afternoon", "Evening"].map(p => (
-              <div key={p} className="flex items-center gap-2">
+        
+        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3 md:col-span-3">
+          <Label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <Clock size={14} />
+            {t.applyToPeriods}
+          </Label>
+          <div className="flex flex-wrap gap-8 pt-2">
+            {[
+              { id: "Morning", label: t.morning, range: "1-4" },
+              { id: "Afternoon", label: t.afternoon, range: "5-7" },
+              { id: "Evening", label: t.evening, range: "8-10" }
+            ].map(p => (
+              <div key={p.id} className="flex items-center gap-3 cursor-pointer group" onClick={() => togglePeriod(p.id as PeriodPart)}>
                 <Checkbox 
-                  id={`filter-${p}`} 
-                  checked={selectedPeriods.includes(p as PeriodPart)} 
-                  onCheckedChange={() => togglePeriod(p as PeriodPart)} 
+                  id={`filter-${p.id}`} 
+                  checked={selectedPeriods.includes(p.id as PeriodPart)} 
+                  className="rounded-md border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                 />
-                <Label htmlFor={`filter-${p}`} className="text-[10px] font-bold cursor-pointer">
-                  {p === "Morning" ? t.morning : p === "Afternoon" ? t.afternoon : t.evening}
-                </Label>
+                <div className="flex flex-col">
+                  <Label htmlFor={`filter-${p.id}`} className="text-sm font-black text-slate-700 cursor-pointer group-hover:text-emerald-600 transition-colors">
+                    {p.label}
+                  </Label>
+                  <span className="text-[10px] font-bold text-slate-400">{p.range}</span>
+                </div>
               </div>
             ))}
           </div>
@@ -351,112 +407,136 @@ const ReportsNew = () => {
       </div>
 
       <Tabs defaultValue="daily" onValueChange={setActiveTab} className="w-full print:hidden">
-        <TabsList className="grid w-full grid-cols-3 mb-8 h-12 bg-white border">
-          <TabsTrigger value="daily" className="flex items-center gap-2 font-bold">
-            <Calendar className="h-4 w-4" />
+        <TabsList className="grid w-full grid-cols-3 mb-10 h-16 bg-white border border-slate-200 p-2 rounded-3xl shadow-sm">
+          <TabsTrigger value="daily" className="flex items-center gap-2 font-black rounded-2xl data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+            <Calendar className="h-5 w-5" />
             {t.dailyReport}
           </TabsTrigger>
-          <TabsTrigger value="monthly" className="flex items-center gap-2 font-bold">
-            <FileText className="h-4 w-4" />
+          <TabsTrigger value="monthly" className="flex items-center gap-2 font-black rounded-2xl data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+            <FileText className="h-5 w-5" />
             {t.monthlyReport}
           </TabsTrigger>
-          <TabsTrigger value="stats" className="flex items-center gap-2 font-bold">
-            <BarChart2 className="h-4 w-4" />
+          <TabsTrigger value="stats" className="flex items-center gap-2 font-black rounded-2xl data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+            <BarChart2 className="h-5 w-5" />
             {t.monthlyStats}
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="daily" className="space-y-6">
-          <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <Label htmlFor="daily-date" className="font-bold">{t.selectDate}</Label>
-            <Input 
-              id="daily-date" 
-              type="date" 
-              className="w-auto h-10" 
-              value={dailyDate} 
-              onChange={(e) => setDailyDate(e.target.value)} 
-            />
+        <TabsContent value="daily" className="space-y-8 animate-in fade-in duration-500">
+          <div className="flex items-center gap-6 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm max-w-md">
+            <div className="bg-emerald-50 p-3 rounded-2xl">
+              <Calendar className="text-emerald-600" size={24} />
+            </div>
+            <div className="space-y-1.5 flex-1">
+              <Label htmlFor="daily-date" className="text-xs font-black text-slate-400 uppercase tracking-widest">{t.selectDate}</Label>
+              <Input 
+                id="daily-date" 
+                type="date" 
+                className="h-10 border-none bg-transparent p-0 font-black text-lg focus-visible:ring-0" 
+                value={dailyDate} 
+                onChange={(e) => setDailyDate(e.target.value)} 
+              />
+            </div>
           </div>
-          <div className="bg-slate-50 p-4 md:p-8 rounded-2xl border border-slate-100">
+          <div className="bg-slate-50/50 p-8 md:p-12 rounded-[3rem] border border-slate-100 shadow-inner min-h-[600px] flex flex-col items-center">
             {renderDailyReport()}
           </div>
         </TabsContent>
         
-        <TabsContent value="monthly" className="space-y-6">
-          <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <Label htmlFor="monthly-date" className="font-bold">{t.selectMonth}</Label>
-            <Input 
-              id="monthly-date" 
-              type="month" 
-              className="w-auto h-10" 
-              value={monthlyDate} 
-              onChange={(e) => setMonthlyDate(e.target.value)} 
-            />
+        <TabsContent value="monthly" className="space-y-8 animate-in fade-in duration-500">
+          <div className="flex items-center gap-6 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm max-w-md">
+            <div className="bg-emerald-50 p-3 rounded-2xl">
+              <FileText className="text-emerald-600" size={24} />
+            </div>
+            <div className="space-y-1.5 flex-1">
+              <Label htmlFor="monthly-date" className="text-xs font-black text-slate-400 uppercase tracking-widest">{t.selectMonth}</Label>
+              <Input 
+                id="monthly-date" 
+                type="month" 
+                className="h-10 border-none bg-transparent p-0 font-black text-lg focus-visible:ring-0" 
+                value={monthlyDate} 
+                onChange={(e) => setMonthlyDate(e.target.value)} 
+              />
+            </div>
           </div>
-          <div className="bg-slate-50 p-4 md:p-8 rounded-2xl border border-slate-100">
+          <div className="bg-slate-50/50 p-8 md:p-12 rounded-[3rem] border border-slate-100 shadow-inner min-h-[600px] flex flex-col items-center">
             {renderMonthlyReport()}
           </div>
         </TabsContent>
         
-        <TabsContent value="stats" className="space-y-6">
-          <div className="flex items-center gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <Label htmlFor="stats-date" className="font-bold">{t.selectMonth}</Label>
-            <Input 
-              id="stats-date" 
-              type="month" 
-              className="w-auto h-10" 
-              value={monthlyDate} 
-              onChange={(e) => setMonthlyDate(e.target.value)} 
-            />
+        <TabsContent value="stats" className="space-y-8 animate-in fade-in duration-500">
+          <div className="flex items-center gap-6 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm max-w-md">
+            <div className="bg-emerald-50 p-3 rounded-2xl">
+              <BarChart2 className="text-emerald-600" size={24} />
+            </div>
+            <div className="space-y-1.5 flex-1">
+              <Label htmlFor="stats-date" className="text-xs font-black text-slate-400 uppercase tracking-widest">{t.selectMonth}</Label>
+              <Input 
+                id="stats-date" 
+                type="month" 
+                className="h-10 border-none bg-transparent p-0 font-black text-lg focus-visible:ring-0" 
+                value={monthlyDate} 
+                onChange={(e) => setMonthlyDate(e.target.value)} 
+              />
+            </div>
           </div>
-          <div className="bg-slate-50 p-4 md:p-8 rounded-2xl border border-slate-100">
+          <div className="bg-slate-50/50 p-8 md:p-12 rounded-[3rem] border border-slate-100 shadow-inner min-h-[600px] flex flex-col items-center">
             {renderStatsReport()}
           </div>
         </TabsContent>
       </Tabs>
 
-      {/* Main printable content area. This is hidden in normal UI and only visible in print. */}
       <div className="print-content-master hidden print:block print:absolute print:inset-0">
         {currentReportContent()}
       </div>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto bg-slate-100 print:hidden">
-          <DialogHeader className="bg-white p-4 border-b sticky top-0 z-10">
-            <DialogTitle className="flex items-center justify-between">
-              <span className="font-bold">{t.printPreview}</span>
-              <div className="flex items-center gap-3">
-                <Select value={reportStyles.orientation} onValueChange={(v: any) => updateOrientation(v)}>
-                  <SelectTrigger className="w-32 h-9 bg-slate-50">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="portrait">{t.portrait}</SelectItem>
-                    <SelectItem value="landscape">{t.landscape}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button onClick={handlePrint} size="sm" className="bg-emerald-600 text-white font-bold">
-                  <Printer className="h-4 w-4 me-2" />
-                  {t.print}
+        <DialogContent className="max-w-[98vw] w-full h-[95vh] overflow-hidden bg-zinc-900/95 border-none p-0 rounded-none flex flex-col">
+          <div className="bg-black/40 p-4 border-b border-white/10 flex justify-between items-center shrink-0 print:hidden">
+            <div className="flex items-center gap-3 text-white">
+              <Eye className="text-emerald-500" />
+              <h3 className="font-black text-lg">{t.printPreview}</h3>
+            </div>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-2 bg-white/5 p-1 rounded-xl">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setOrientation("portrait")}
+                  className={cn("text-white font-bold h-9 px-4 rounded-lg", reportStyles.orientation === "portrait" && "bg-emerald-600")}
+                >
+                  {t.portrait}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setOrientation("landscape")}
+                  className={cn("text-white font-bold h-9 px-4 rounded-lg", reportStyles.orientation === "landscape" && "bg-emerald-600")}
+                >
+                  {t.landscape}
                 </Button>
               </div>
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-8 px-4 flex flex-col items-center">
-            {/* The report content for visual preview */}
-            <div className="w-full">{currentReportContent()}</div>
+              <Button onClick={handlePrint} size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white font-black px-10 rounded-xl h-11">
+                <Printer className="h-5 w-5 me-2" />
+                {t.print}
+              </Button>
+              <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="text-white/50 hover:text-white">
+                <Info size={24} />
+              </Button>
+            </div>
           </div>
-          <DialogFooter className="bg-white p-4 border-t sticky bottom-0 z-10">
-            <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>{t.cancel}</Button>
-          </DialogFooter>
+          <div className="flex-1 overflow-y-auto p-12 bg-zinc-950/50 flex flex-col items-center print:bg-white print:p-0">
+            <div className="w-full flex flex-col items-center gap-12 print:gap-0">
+              {currentReportContent()}
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
       <style>
         {`
           @media print {
-            /* Hide EVERYTHING including root and all dialogs by default */
-            body > div, 
+            body > div:not([data-radix-portal]), 
             header, 
             aside, 
             main,
@@ -464,8 +544,7 @@ const ReportsNew = () => {
               display: none !important; 
             }
             
-            /* Show ONLY the master print content container */
-            .print-content-master { 
+            div[data-radix-portal] { 
               display: block !important;
               visibility: visible !important; 
               position: absolute !important; 
@@ -475,11 +554,11 @@ const ReportsNew = () => {
               height: auto !important;
               margin: 0 !important;
               padding: 0 !important;
-              -webkit-print-color-adjust: exact !important; 
-              print-color-adjust: exact !important;
+              background: white !important;
             }
 
-            .print-content-master * {
+            .print-content-master { 
+              display: block !important;
               visibility: visible !important;
             }
 
@@ -487,11 +566,12 @@ const ReportsNew = () => {
               page-break-after: always !important;
               break-after: page !important;
               min-height: 290mm !important;
-              box-sizing: border-box !important;
-              padding: 10mm !important;
-              display: flex !important;
-              flex-direction: column !important;
-              justify-content: space-between !important;
+              width: 100% !important;
+              max-width: 100% !important;
+              margin: 0 !important;
+              padding: 10mm 15mm !important;
+              box-shadow: none !important;
+              border: none !important;
             }
             
             @page {
