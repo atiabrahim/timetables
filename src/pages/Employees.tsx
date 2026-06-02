@@ -5,8 +5,8 @@ import { useApp } from "../context/AppContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
-  Search, Plus, Edit2, ArrowUpDown, Trash2, UserCheck, 
-  ChevronUp, ChevronDown, Mail, Phone, Briefcase, Printer 
+  Search, Plus, Edit2, ArrowUpDown, Trash2, 
+  ChevronUp, ChevronDown, Mail, Phone, Briefcase, Printer, Info 
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -90,6 +90,26 @@ const Employees = () => {
   const deleteEmployee = (id: string) => {
     setEmployees(employees.filter(e => e.id !== id));
     showSuccess(isRTL ? "تم الحذف" : "Deleted");
+  };
+
+  const handleEditClick = (emp: any) => {
+    setEditingEmployee({
+      ...emp,
+      email: emp.email || "",
+      phone: emp.phone || "",
+      observation: emp.observation || ""
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateEmployee = () => {
+    if (!editingEmployee.firstName.trim() || !editingEmployee.lastName.trim()) {
+      showError(isRTL ? "يرجى إدخال الاسم واللقب" : "Name is required");
+      return;
+    }
+    setEmployees(employees.map(e => e.id === editingEmployee.id ? editingEmployee : e));
+    setIsEditDialogOpen(false);
+    showSuccess(isRTL ? "تم تحديث البيانات بنجاح" : "Updated successfully");
   };
 
   return (
@@ -183,7 +203,7 @@ const Employees = () => {
                 </td>
                 <td className="p-5 text-center print:hidden">
                   <div className="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" onClick={() => {setEditingEmployee({...emp}); setIsEditDialogOpen(true);}} className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 rounded-lg"><Edit2 size={14} /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleEditClick(emp)} className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 rounded-lg"><Edit2 size={14} /></Button>
                     {isAdmin && <Button variant="ghost" size="icon" onClick={() => deleteEmployee(emp.id)} className="h-8 w-8 text-red-400 hover:bg-red-50 rounded-lg"><Trash2 size={14} /></Button>}
                   </div>
                 </td>
@@ -193,24 +213,90 @@ const Employees = () => {
         </table>
       </div>
       
-      {/* Edit Dialog (Kept simple for this refinement) */}
+      {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="rounded-3xl">
-          <DialogHeader><DialogTitle>{isRTL ? "تعديل البيانات" : "Edit Data"}</DialogTitle></DialogHeader>
-          <div className="py-4 space-y-4">
-             <div className="grid grid-cols-2 gap-4">
-                <Input value={editingEmployee?.firstName} onChange={e => setEditingEmployee({...editingEmployee, firstName: e.target.value})} className="rounded-xl" />
-                <Input value={editingEmployee?.lastName} onChange={e => setEditingEmployee({...editingEmployee, lastName: e.target.value})} className="rounded-xl" />
-             </div>
-             <Input value={editingEmployee?.email} onChange={e => setEditingEmployee({...editingEmployee, email: e.target.value})} className="rounded-xl" placeholder="Email" />
-          </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl">{t.cancel}</Button>
-            <Button onClick={() => {
-              setEmployees(employees.map(e => e.id === editingEmployee.id ? editingEmployee : e));
-              setIsEditDialogOpen(false);
-              showSuccess(isRTL ? "تم التحديث" : "Updated");
-            }} className="bg-emerald-600 rounded-xl px-8">{isRTL ? "حفظ" : "Save"}</Button>
+        <DialogContent className="rounded-3xl sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-emerald-950 flex items-center gap-2">
+              <Edit2 size={20} className="text-emerald-600" />
+              {isRTL ? "تعديل بيانات المعلم" : "Edit Teacher Details"}
+            </DialogTitle>
+          </DialogHeader>
+          {editingEmployee && (
+            <div className="py-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-emerald-800">{isRTL ? "الاسم" : "First Name"}</label>
+                  <Input 
+                    value={editingEmployee.firstName} 
+                    onChange={e => setEditingEmployee({...editingEmployee, firstName: e.target.value})} 
+                    className="rounded-xl" 
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-emerald-800">{isRTL ? "اللقب" : "Last Name"}</label>
+                  <Input 
+                    value={editingEmployee.lastName} 
+                    onChange={e => setEditingEmployee({...editingEmployee, lastName: e.target.value})} 
+                    className="rounded-xl" 
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-emerald-800">{isRTL ? "الفئة" : "Category"}</label>
+                  <Select 
+                    value={editingEmployee.category} 
+                    onValueChange={v => setEditingEmployee({...editingEmployee, category: v})}
+                  >
+                    <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Full-time">{isRTL ? "دوام كامل" : "Full-time"}</SelectItem>
+                      <SelectItem value="Part-time">{isRTL ? "دوام جزئي" : "Part-time"}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-emerald-800">{isRTL ? "رقم الهاتف" : "Phone Number"}</label>
+                  <Input 
+                    value={editingEmployee.phone} 
+                    onChange={e => setEditingEmployee({...editingEmployee, phone: e.target.value})} 
+                    className="rounded-xl" 
+                    placeholder="0555xxxxxx"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-emerald-800">{isRTL ? "البريد الإلكتروني" : "Email"}</label>
+                <Input 
+                  type="email"
+                  value={editingEmployee.email} 
+                  onChange={e => setEditingEmployee({...editingEmployee, email: e.target.value})} 
+                  className="rounded-xl" 
+                  placeholder="teacher@edu.com"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-emerald-800">{isRTL ? "ملاحظات" : "Observation"}</label>
+                <Input 
+                  value={editingEmployee.observation} 
+                  onChange={e => setEditingEmployee({...editingEmployee, observation: e.target.value})} 
+                  className="rounded-xl" 
+                  placeholder="..."
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl">
+              {t.cancel}
+            </Button>
+            <Button onClick={handleUpdateEmployee} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-8 text-white">
+              {isRTL ? "حفظ التغييرات" : "Save Changes"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
