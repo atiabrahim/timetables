@@ -284,18 +284,22 @@ const ReportsNew = () => {
             .page-break-container { 
               page-break-after: always !important; 
               break-after: page !important; 
-              min-height: 280mm !important; 
               width: 100% !important; 
-              padding: 10mm 15mm !important;
+              padding: 0 !important;
               transform: none !important;
-              margin: 10mm auto !important;
+              margin: 0 auto !important;
               box-shadow: none !important;
+              border: none !important;
+              max-width: none !important;
             }
             .page-break-container:last-child {
               page-break-after: avoid !important;
               break-after: avoid !important;
             }
-            @page { size: A4 ${reportStyles.orientation}; margin: 0 !important; }
+            @page { 
+              size: A4 ${reportStyles.orientation}; 
+              margin: 15mm 12mm !important; 
+            }
           }
         `}
       </style>
