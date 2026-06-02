@@ -3,11 +3,12 @@
 import React, { useMemo, useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Button } from "@/components/ui/button";
-import { Printer, Eye, X, RotateCw, Home } from "lucide-react";
+import { Printer, Eye, X, RotateCw, Home, BarChart3 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import TeacherLoadChart from "../components/reports/TeacherLoadChart";
 import RoomUsageChart from "../components/reports/RoomUsageChart";
+import PageHeader from "../components/shared/PageHeader";
 
 const Reports = () => {
   const { employees, assignments, classes, rooms, isRTL, t } = useApp();
@@ -66,22 +67,21 @@ const Reports = () => {
 
   return (
     <div className="space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
-        <div>
-          <h2 className="text-3xl font-bold text-emerald-950">{t.reports_page.title}</h2>
-          <p className="text-emerald-600/70 mt-1">{isRTL ? "تحليل شامل لتوزيع الموارد والمهام" : "Comprehensive analysis"}</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl border-emerald-100 text-emerald-700">
-            <Eye size={18} className={isRTL ? "ml-2" : "mr-2"} />
-            {isRTL ? "معاينة الطباعة" : "Print Preview"}
-          </Button>
-          <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">
-            <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
-            {t.reports_page.print_report}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t.reports_page.title}
+        subtitle={isRTL ? "تحليل شامل لتوزيع الموارد والمهام" : "Comprehensive analysis"}
+        icon={BarChart3}
+        isRTL={isRTL}
+      >
+        <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl border-emerald-100 text-emerald-700 bg-white h-11">
+          <Eye size={18} className={isRTL ? "ml-2" : "mr-2"} />
+          {isRTL ? "معاينة الطباعة" : "Print Preview"}
+        </Button>
+        <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white h-11 px-6">
+          <Printer size={18} className={isRTL ? "ml-2" : "mr-2"} />
+          {t.reports_page.print_report}
+        </Button>
+      </PageHeader>
 
       <ReportContent />
 
@@ -93,7 +93,7 @@ const Reports = () => {
               <Button variant="outline" onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")} className="rounded-xl">
                 <RotateCw size={18} className="mr-2" /> {orientation}
               </Button>
-              <Button onClick={() => window.print()} className="bg-emerald-600 rounded-xl"><Printer size={18} className="mr-2" /> {isRTL ? "طباعة" : "Print"}</Button>
+              <Button onClick={() => window.print()} className="bg-emerald-600 rounded-xl text-white"><Printer size={18} className="mr-2" /> {isRTL ? "طباعة" : "Print"}</Button>
               <Button variant="ghost" onClick={() => setIsPreviewOpen(false)}><X size={18} /></Button>
             </div>
           </div>

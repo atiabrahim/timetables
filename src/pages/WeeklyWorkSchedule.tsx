@@ -29,14 +29,8 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { PeriodPart } from "../types";
-
-const DAYS = [
-  { idx: 0, name: "الأحد", en: "Sunday" },
-  { idx: 1, name: "الاثنين", en: "Monday" },
-  { idx: 2, name: "الثلاثاء", en: "Tuesday" },
-  { idx: 3, name: "الأربعاء", en: "Wednesday" },
-  { idx: 4, name: "الخميس", en: "Thursday" },
-];
+import PageHeader from "../components/shared/PageHeader";
+import { DAYS } from "../constants/schedule";
 
 const PERIODS: PeriodPart[] = ["Morning", "Afternoon", "Evening"];
 
@@ -119,7 +113,7 @@ const WeeklyWorkSchedule = () => {
             </TableHead>
             {DAYS.map(day => (
               <TableHead 
-                key={day.idx} 
+                key={day.id} 
                 className={cn(
                   "text-center font-black border",
                   isPrint ? "text-[9px] p-0.5 border-emerald-950 bg-emerald-50/30 text-black" : "text-xs p-2 bg-emerald-50/30 border-emerald-100 text-emerald-700"
@@ -132,7 +126,7 @@ const WeeklyWorkSchedule = () => {
           </TableRow>
           <TableRow className={cn(isPrint ? "bg-emerald-50/20 border-b-2 border-emerald-950" : "bg-emerald-50/20 hover:bg-emerald-50/20")}>
             {DAYS.map(day => PERIODS.map(p => (
-              <TableHead key={`${day.idx}-${p}`} className={cn(
+              <TableHead key={`${day.id}-${p}`} className={cn(
                 "text-center font-bold border",
                 isPrint ? "text-[8px] p-0.5 border-emerald-950 text-black" : "text-[10px] p-2 border-emerald-100"
               )}>
@@ -152,14 +146,14 @@ const WeeklyWorkSchedule = () => {
                 {emp.lastName} {emp.firstName}
               </TableCell>
               {DAYS.map(day => PERIODS.map(period => {
-                const lessonPresent = hasLesson(emp.id, day.idx, period);
-                const manualDutyPresent = hasManualDuty(emp.id, day.idx, period);
+                const lessonPresent = hasLesson(emp.id, day.id, period);
+                const manualDutyPresent = hasManualDuty(emp.id, day.id, period);
                 const isActive = lessonPresent || manualDutyPresent;
 
                 return (
                   <TableCell
-                    key={`${emp.id}-${day.idx}-${period}`}
-                    onClick={() => toggleAssignment(emp.id, day.idx, period)}
+                    key={`${emp.id}-${day.id}-${period}`}
+                    onClick={() => toggleAssignment(emp.id, day.id, period)}
                     className={cn(
                       "text-center border p-0 transition-all relative",
                       !isPrint && isAdmin && "cursor-pointer",
@@ -187,50 +181,43 @@ const WeeklyWorkSchedule = () => {
 
   return (
     <div className="space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
-        <div>
-          <h2 className="text-3xl font-black text-emerald-950 flex items-center gap-3">
-            <ClipboardList className="text-emerald-600" />
-            {t.weeklyWorkSchedule}
-          </h2>
-          <p className="text-emerald-600/70 font-bold mt-1">
-            {isRTL ? "مزامنة تلقائية مع جدول الحصص وتكليفات العمل" : "Auto-sync with timetable and work assignments"}
-          </p>
+      <PageHeader
+        title={t.weeklyWorkSchedule}
+        subtitle={isRTL ? "مزامنة تلقائية مع جدول الحصص وتكليفات العمل" : "Auto-sync with timetable and work assignments"}
+        icon={ClipboardList}
+        isRTL={isRTL}
+      >
+        <div className="flex items-center gap-4 bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100 text-[10px] font-bold h-11">
+          <div className="flex items-center gap-1.5"><BookOpen size={12} className="text-emerald-600" /> {isRTL ? "حصة دراسية" : "Lesson"}</div>
+          <div className="flex items-center gap-1.5"><ShieldAlert size={12} className="text-emerald-600" /> {isRTL ? "مناوبة/عمل" : "Duty"}</div>
         </div>
+        
+        <Select value={orientation} onValueChange={(v: any) => setOrientation(v)}>
+          <SelectTrigger className="w-[140px] rounded-2xl border-emerald-100 bg-white h-11 font-bold">
+            <SelectValue placeholder={isRTL ? "اتجاه الصفحة" : "Orientation"} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="landscape">{isRTL ? "عرضي (موصى به)" : "Landscape (Rec.)"}</SelectItem>
+            <SelectItem value="portrait">{isRTL ? "طولي" : "Portrait"}</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <div className="flex flex-wrap gap-3 w-full md:w-auto items-center">
-          <div className="flex items-center gap-4 bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100 text-[10px] font-bold">
-             <div className="flex items-center gap-1.5"><BookOpen size={12} className="text-emerald-600" /> {isRTL ? "حصة دراسية" : "Lesson"}</div>
-             <div className="flex items-center gap-1.5"><ShieldAlert size={12} className="text-emerald-600" /> {isRTL ? "مناوبة/عمل" : "Duty"}</div>
-          </div>
-          
-          <Select value={orientation} onValueChange={(v: any) => setOrientation(v)}>
-            <SelectTrigger className="w-[140px] rounded-2xl border-emerald-100 bg-white h-11 font-bold">
-              <SelectValue placeholder={isRTL ? "اتجاه الصفحة" : "Orientation"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="landscape">{isRTL ? "عرضي (موصى به)" : "Landscape (Rec.)"}</SelectItem>
-              <SelectItem value="portrait">{isRTL ? "طولي" : "Portrait"}</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <div className="relative flex-1 md:w-48">
-            <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
-            <Input 
-              placeholder={t.search} 
-              className={cn("rounded-2xl border-emerald-100 bg-white h-11", isRTL ? "pr-10" : "pl-10")}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Button variant="outline" className="rounded-2xl border-emerald-200 text-emerald-700 gap-2 font-bold px-6 h-11" onClick={() => setIsPreviewOpen(true)}>
-            <Eye size={18} /> {t.preview}
-          </Button>
-          <Button className="bg-emerald-600 hover:bg-emerald-700 rounded-2xl gap-2 font-bold px-8 h-11 shadow-lg shadow-emerald-100" onClick={() => window.print()}>
-            <Printer size={18} /> {t.print}
-          </Button>
+        <div className="relative w-full md:w-48">
+          <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
+          <Input 
+            placeholder={t.search} 
+            className={cn("rounded-2xl border-emerald-100 bg-white h-11", isRTL ? "pr-10" : "pl-10")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
-      </div>
+        <Button variant="outline" className="rounded-2xl border-emerald-200 text-emerald-700 gap-2 font-bold px-6 h-11 bg-white" onClick={() => setIsPreviewOpen(true)}>
+          <Eye size={18} /> {t.preview}
+        </Button>
+        <Button className="bg-emerald-600 hover:bg-emerald-700 rounded-2xl gap-2 font-bold px-8 h-11 shadow-lg shadow-emerald-100 text-white" onClick={() => window.print()}>
+          <Printer size={18} /> {t.print}
+        </Button>
+      </PageHeader>
 
       <ScheduleTable />
 
@@ -284,7 +271,7 @@ const WeeklyWorkSchedule = () => {
           </div>
           <DialogFooter className="bg-white p-6 border-t border-emerald-100 shrink-0">
             <Button variant="outline" onClick={() => setIsPreviewOpen(false)} className="rounded-xl px-8 h-12 font-bold">{t.cancel}</Button>
-            <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-12 h-12 font-black shadow-lg shadow-emerald-100">
+            <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-12 h-12 font-black shadow-lg shadow-emerald-100 text-white">
               <Printer size={20} className="mr-2" /> {t.print}
             </Button>
           </DialogFooter>

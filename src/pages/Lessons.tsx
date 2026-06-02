@@ -5,22 +5,15 @@ import { useApp } from "../context/AppContext";
 import { Button } from "@/components/ui/button";
 import { 
   Download, 
-  FilterX
+  FilterX,
+  ListChecks
 } from "lucide-react";
 import { showSuccess } from "../utils/toast";
 import LessonFilters from "../components/lessons/LessonFilters";
 import LessonTable from "../components/lessons/LessonTable";
 import EditLessonDialog from "../components/lessons/EditLessonDialog";
-
-const DAYS = [
-  { id: 0, name: "الأحد", en: "Sunday" },
-  { id: 1, name: "الاثنين", en: "Monday" },
-  { id: 2, name: "الثلاثاء", en: "Tuesday" },
-  { id: 3, name: "الأربعاء", en: "Wednesday" },
-  { id: 4, name: "الخميس", en: "Thursday" },
-];
-
-const PERIODS = Array.from({ length: 8 }, (_, i) => (i + 1).toString());
+import PageHeader from "../components/shared/PageHeader";
+import { DAYS, PERIODS } from "../constants/schedule";
 
 const Lessons = () => {
   const { 
@@ -87,32 +80,25 @@ const Lessons = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div className="text-right">
-          <h2 className="text-3xl font-black text-gray-900">
-            {isRTL ? "قائمة الحصص" : "Lessons List"} 
-            <span className="text-gray-400 text-xl mr-2">({filteredLessons.length})</span>
-          </h2>
-          <p className="text-gray-500 text-sm font-bold mt-1">
-            {isRTL ? "تصفح وإدارة جميع التوزيعات الزمنية" : "Browse and manage all time assignments"}
-          </p>
-        </div>
-
-        <div className="flex gap-2 w-full md:w-auto">
-          <Button variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700 flex-1 md:flex-none">
-            <Download size={18} />
-            {isRTL ? "تصدير" : "Export"}
-          </Button>
-          <Button 
-            variant="ghost" 
-            onClick={resetFilters}
-            className="rounded-xl text-gray-500 hover:text-red-500 gap-2 font-bold"
-          >
-            <FilterX size={18} />
-            {isRTL ? "إعادة ضبط" : "Reset"}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={isRTL ? "قائمة الحصص" : "Lessons List"}
+        subtitle={isRTL ? `تصفح وإدارة جميع التوزيعات الزمنية (${filteredLessons.length})` : `Browse and manage all time assignments (${filteredLessons.length})`}
+        icon={ListChecks}
+        isRTL={isRTL}
+      >
+        <Button variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700 bg-white h-11">
+          <Download size={18} />
+          {isRTL ? "تصدير" : "Export"}
+        </Button>
+        <Button 
+          variant="ghost" 
+          onClick={resetFilters}
+          className="rounded-xl text-gray-500 hover:text-red-500 gap-2 font-bold h-11"
+        >
+          <FilterX size={18} />
+          {isRTL ? "إعادة ضبط" : "Reset"}
+        </Button>
+      </PageHeader>
 
       <LessonFilters 
         isRTL={isRTL}

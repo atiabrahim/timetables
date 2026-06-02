@@ -30,6 +30,7 @@ import { PeriodPart } from "@/types";
 import AttendanceSheet from "@/components/reports/AttendanceSheet";
 import ReportControls from "@/components/reports/ReportControls";
 import PrintPreviewDialog from "@/components/reports/PrintPreviewDialog";
+import PageHeader from "../components/shared/PageHeader";
 
 const ReportsNew = () => {
   const { 
@@ -201,22 +202,21 @@ const ReportsNew = () => {
 
   return (
     <div className="space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 print:hidden">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-black text-slate-950 tracking-tight">{t.reports}</h2>
-          <p className="text-slate-500 font-medium">إصدار أوراق حضور وجداول إحصائية رسمية</p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="outline" size="lg" className="rounded-2xl border-slate-200 font-bold gap-2 h-12 px-6" onClick={() => setIsPreviewOpen(true)}>
-            <Eye className="h-5 w-5 text-emerald-600" />
-            {t.preview}
-          </Button>
-          <Button size="lg" onClick={() => window.print()} className="bg-emerald-600 text-white rounded-2xl font-black gap-2 h-12 px-8 shadow-lg shadow-emerald-100">
-            <Printer className="h-5 w-5" />
-            {t.print}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t.reports}
+        subtitle="إصدار أوراق حضور وجداول إحصائية رسمية"
+        icon={FileText}
+        isRTL={isRTL}
+      >
+        <Button variant="outline" size="lg" className="rounded-2xl border-slate-200 font-bold gap-2 h-12 px-6 bg-white" onClick={() => setIsPreviewOpen(true)}>
+          <Eye className="h-5 w-5 text-emerald-600" />
+          {t.preview}
+        </Button>
+        <Button size="lg" onClick={() => window.print()} className="bg-emerald-600 text-white rounded-2xl font-black gap-2 h-12 px-8 shadow-lg shadow-emerald-100">
+          <Printer className="h-5 w-5" />
+          {t.print}
+        </Button>
+      </PageHeader>
       
       <ReportControls 
         t={t}

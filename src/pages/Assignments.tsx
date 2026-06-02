@@ -13,11 +13,12 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, ChevronRight, UserPlus, History } from "lucide-react";
+import { ChevronLeft, ChevronRight, UserPlus, History, UserCheck } from "lucide-react";
 import { PeriodPart } from "../types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess } from "../utils/toast";
+import PageHeader from "../components/shared/PageHeader";
 
 const Assignments = () => {
   const { employees, periodConfigs, saveAssignment, getEffectiveAssignment, templateAssignments, t, isRTL } = useApp();
@@ -74,24 +75,24 @@ const Assignments = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1 text-right">
-          <h2 className="text-2xl font-bold text-slate-800">{t.assignments}</h2>
-          <p className="text-xs text-slate-500">{isRTL ? "تعديل التكليفات اليومية (الاستثناءات)" : "Edit daily assignments (exceptions)"}</p>
-        </div>
-        
-        <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm">
-          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(addDays(currentDate, -7))}>
+      <PageHeader
+        title={t.assignments}
+        subtitle={isRTL ? "تعديل التكليفات اليومية (الاستثناءات)" : "Edit daily assignments (exceptions)"}
+        icon={UserCheck}
+        isRTL={isRTL}
+      >
+        <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm h-11">
+          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(addDays(currentDate, -7))} className="rounded-lg">
             {isRTL ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
-          <span className="px-4 font-medium text-slate-700 min-w-[180px] text-center">
+          <span className="px-4 font-bold text-slate-700 min-w-[180px] text-center text-xs">
             {format(weekStart, "MMM d")} - {format(addDays(weekStart, 6), "MMM d, yyyy")}
           </span>
-          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(addDays(currentDate, 7))}>
+          <Button variant="ghost" size="icon" onClick={() => setCurrentDate(addDays(currentDate, 7))} className="rounded-lg">
             {isRTL ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </Button>
         </div>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4">
         {weekDays.map((day) => {
