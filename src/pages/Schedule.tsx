@@ -151,6 +151,13 @@ const Schedule = () => {
     </div>
   );
 
+  // تحديد مسميات التوقيعات بناءً على نوع الجدول
+  const leftSignatureTitle = viewMode === "teacher"
+    ? (isRTL ? "توقيع الأستاذ" : "Teacher Signature")
+    : (isRTL ? "رئيس مصلحة التكوين" : "Head of Training");
+
+  const rightSignatureTitle = isRTL ? "ختم وتوقيع المدير" : "Director Signature";
+
   return (
     <div className="space-y-6">
       <ScheduleHeader 
@@ -228,8 +235,8 @@ const Schedule = () => {
             title={title}
             subtitle={subtitle}
             orientation={orientation}
-            leftSignatureTitle={isRTL ? "توقيع الأستاذ" : "Teacher Signature"}
-            rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+            leftSignatureTitle={leftSignatureTitle}
+            rightSignatureTitle={rightSignatureTitle}
           >
             <ScheduleTable 
               isRTL={isRTL} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment} 

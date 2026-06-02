@@ -64,6 +64,13 @@ const PrintPreview = ({
     </div>
   );
 
+  // تحديد مسميات التوقيعات بناءً على نوع الجدول
+  const leftSignatureTitle = viewMode === "teacher"
+    ? (isRTL ? "توقيع الأستاذ" : "Teacher Signature")
+    : (isRTL ? "رئيس مصلحة التكوين" : "Head of Training");
+
+  const rightSignatureTitle = isRTL ? "ختم وتوقيع المدير" : "Director Signature";
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 flex flex-col rounded-none z-[9999]">
@@ -99,8 +106,8 @@ const PrintPreview = ({
               title={title}
               subtitle={subtitle}
               orientation={orientation}
-              leftSignatureTitle={isRTL ? "توقيع الأستاذ" : "Teacher Signature"}
-              rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+              leftSignatureTitle={leftSignatureTitle}
+              rightSignatureTitle={rightSignatureTitle}
             >
               <div className="w-full">
                 <ScheduleTable 
