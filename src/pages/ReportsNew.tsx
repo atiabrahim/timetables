@@ -288,6 +288,8 @@ const ReportsNew = () => {
               width: 100% !important; 
               padding: 10mm 15mm !important;
               transform: none !important;
+              margin: 10mm auto !important;
+              box-shadow: none !important;
             }
             .page-break-container:last-child {
               page-break-after: avoid !important;
