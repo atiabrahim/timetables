@@ -11,21 +11,48 @@ import {
   ListChecks,
   Clock,
   GraduationCap,
-  PlusCircle,
   FileText,
-  Settings,
   ArrowUpRight,
   TrendingUp,
   Activity,
-  CheckCircle2
+  CheckCircle2,
+  UserCheck
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { ar, enUS } from "date-fns/locale";
 
 const Index = () => {
-  const { employees, classes, subjects, assignments, rooms, isRTL, t, user, periodConfigs } = useApp();
+  const { 
+    employees, classes, subjects, assignments, rooms, isRTL, t, user, 
+    getEffectiveAssignment, language 
+  } = useApp();
   const navigate = useNavigate();
+
+  const todayDateStr = useMemo(() => format(new Date(), "yyyy-MM-dd"), []);
+  const todayFriendlyName = useMemo(() => {
+    const locale = language === "ar" ? ar : enUS;
+    return format(new Date(), "EEEE, d MMMM yyyy", { locale });
+  }, [language]);
+
+  // جلب المكلفين لليوم الحالي في الفترات الثلاث
+  const todayDuties = useMemo(() => {
+    const periods: ("Morning" | "Afternoon" | "Evening")[] = ["Morning", "Afternoon", "Evening"];
+    return periods.map(period => {
+      const ids = getEffectiveAssignment(todayDateStr, period);
+      const assignedEmployees = ids
+        .map(id => employees.find(e => e.id === id))
+        .filter(Boolean);
+      return {
+        period,
+        label: period === "Morning" ? t.morning : period === "Afternoon" ? t.afternoon : t.evening,
+        employees: assignedEmployees,
+        count: assignedEmployees.length
+      };
+    });
+  }, [todayDateStr, employees, getEffectiveAssignment, t, language]);
 
   // حساب الإحصائيات الحقيقية
   const stats = useMemo(() => [
@@ -118,6 +145,59 @@ const Index = () => {
             ))}
           </div>
 
+          {/* Today's Active Duties Section */}
+          <Card className="border-none shadow-xl shadow-emerald-100/10 rounded-[2.5rem] bg-white overflow-hidden">
+            <CardHeader className="border-b border-gray-50 bg-emerald-50/20 p-8">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <CardTitle className="text-xl font-black text-emerald-950 flex items-center gap-2">
+                    <UserCheck size={22} className="text-emerald-600" />
+                    {isRTL ? "تكليفات حضور اليوم" : "Today's Active Duties"}
+                  </CardTitle>
+                  <p className="text-xs font-bold text-emerald-600/70 mt-1">{todayFriendlyName}</p>
+                </div>
+                <Button 
+                  onClick={() => navigate("/assignments")} 
+                  variant="outline" 
+                  className="rounded-xl border-emerald-100 text-emerald-700 hover:bg-emerald-50 font-bold text-xs h-9"
+                >
+                  {isRTL ? "تعديل التكليفات" : "Edit Assignments"}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {todayDuties.map((duty, idx) => (
+                  <div key={idx} className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100 flex flex-col h-full">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-xs font-black text-emerald-900 bg-emerald-50 px-3 py-1 rounded-full">
+                        {duty.label}
+                      </span>
+                      <span className="text-xs font-black text-slate-400">
+                        {duty.count} {isRTL ? "مكلف" : "Staff"}
+                      </span>
+                    </div>
+                    
+                    <div className="flex-1 space-y-2">
+                      {duty.employees.length > 0 ? (
+                        duty.employees.map((emp: any) => (
+                          <div key={emp.id} className="text-xs font-bold text-slate-700 flex items-center gap-2 bg-white p-2.5 rounded-xl border border-slate-100">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                            <span className="truncate">{emp.lastName} {emp.firstName}</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-slate-400 text-xs italic">
+                          {isRTL ? "لا توجد تكليفات مسجلة" : "No duties assigned"}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Quick Actions Grid */}
           <div className="space-y-4">
             <h3 className="text-lg font-black text-emerald-950 px-2">{isRTL ? "الوصول السريع" : "Quick Access"}</h3>
@@ -187,7 +267,7 @@ const Index = () => {
 
               <Button 
                 onClick={() => navigate("/schedule")}
-                className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-bold shadow-lg shadow-emerald-100 active:scale-95 transition-all"
+                className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-bold shadow-lg shadow-emerald-100 active:scale-95 transition-all text-white"
               >
                 {isRTL ? "فتح الجدول الدراسي" : "Open Schedule"}
               </Button>
