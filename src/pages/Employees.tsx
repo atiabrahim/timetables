@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   Search, Plus, Edit2, ArrowUpDown, Trash2, 
-  ChevronUp, ChevronDown, Mail, Phone, Briefcase, Printer, Info 
+  ChevronUp, ChevronDown, Mail, Phone, Briefcase, Printer, Info,
+  Users, UserCheck, Clock, Award
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
 
 type SortConfig = {
   key: "firstName" | "lastName" | "email" | "phone" | "category" | null;
@@ -32,7 +34,7 @@ type SortConfig = {
 };
 
 const Employees = () => {
-  const { employees, setEmployees, isRTL, user, t } = useApp();
+  const { employees, setEmployees, assignments, isRTL, user, t } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: "asc" });
   
@@ -43,6 +45,16 @@ const Employees = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const isAdmin = user?.role === "Admin";
+
+  // حساب الإحصائيات البيداغوجية للأساتذة
+  const employeeStats = useMemo(() => {
+    const total = employees.length;
+    const fullTime = employees.filter(e => e.category === "Full-time").length;
+    const partTime = employees.filter(e => e.category === "Part-time").length;
+    const active = employees.filter(e => assignments.some(a => a.employeeId === e.id)).length;
+
+    return { total, fullTime, partTime, active };
+  }, [employees, assignments]);
 
   const handleSort = (key: SortConfig["key"]) => {
     let direction: "asc" | "desc" = "asc";
@@ -134,6 +146,57 @@ const Employees = () => {
           />
         </div>
       </PageHeader>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
+        <Card className="border-none shadow-sm rounded-2xl bg-white">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <Users size={20} />
+            </div>
+            <div>
+              <p className="text-xl font-black text-slate-900">{employeeStats.total}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isRTL ? "إجمالي الأساتذة" : "Total Teachers"}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-sm rounded-2xl bg-white">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <UserCheck size={20} />
+            </div>
+            <div>
+              <p className="text-xl font-black text-slate-900">{employeeStats.active}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isRTL ? "الأساتذة النشطون" : "Active Teachers"}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-sm rounded-2xl bg-white">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+              <Award size={20} />
+            </div>
+            <div>
+              <p className="text-xl font-black text-slate-900">{employeeStats.fullTime}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isRTL ? "دوام كامل" : "Full-time"}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-sm rounded-2xl bg-white">
+          <CardContent className="p-5 flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+              <Clock size={20} />
+            </div>
+            <div>
+              <p className="text-xl font-black text-slate-900">{employeeStats.partTime}</p>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isRTL ? "دوام جزئي" : "Part-time"}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {isAdmin && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-50 items-end print:hidden">
