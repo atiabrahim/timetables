@@ -24,7 +24,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Printer, Calendar, FileText, Eye, BarChart2, Layout as LayoutIcon, Clock, Info } from "lucide-react";
+import { Printer, Calendar, FileText, Eye, BarChart2, Layout as LayoutIcon, Clock, Info, AlertCircle } from "lucide-react";
 import { 
   Table, 
   TableBody, 
@@ -113,10 +113,8 @@ const ReportsNew = () => {
         return nameA.localeCompare(nameB, language === "ar" ? "ar" : "en");
       });
     
-    if (assignedEmployees.length === 0) return null;
-
-    const maxRows = 16;
-    const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
+    // إذا لم تكن هناك بيانات، نظهر إطاراً مع تنبيه بدلاً من null
+    const isEmpty = assignedEmployees.length === 0;
 
     return (
       <div 
@@ -173,38 +171,46 @@ const ReportsNew = () => {
         
         {/* Table Section */}
         <div className="flex-1 overflow-visible">
-          <Table className="w-full border-collapse border-2 border-slate-950" style={{ fontSize: `${reportStyles.tableSize}px` }}>
-            <TableHeader>
-              <TableRow className="bg-slate-50 hover:bg-slate-50 border-b-2 border-slate-950 h-12">
-                <TableHead className={cn("w-[60px] text-center font-black text-slate-950 border-e-2 border-slate-950 py-1")}>{t.number}</TableHead>
-                <TableHead className={cn("text-center font-black text-slate-950 border-e-2 border-slate-950 py-1 px-6", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
-                <TableHead className={cn("w-[160px] text-center font-black text-slate-950 border-e-2 border-slate-950 py-1")}>{t.signature}</TableHead>
-                <TableHead className="text-center font-black text-slate-950 py-1 w-[220px]">{t.notes}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {assignedEmployees.map((emp, idx) => (
-                <TableRow key={emp?.id} className="hover:bg-transparent border-b-2 border-slate-950 h-11">
-                  <TableCell className="text-center font-black border-e-2 border-slate-950 p-1 bg-slate-50/30">{idx + 1}</TableCell>
-                  <TableCell className={cn("font-black border-e-2 border-slate-950 p-1 px-6 text-slate-900", isRTL ? "text-right" : "text-left")}>
-                    {emp?.lastName} {emp?.firstName}
-                  </TableCell>
-                  <TableCell className="border-e-2 border-slate-950 p-1"></TableCell>
-                  <TableCell className="p-1"></TableCell>
+          {isEmpty ? (
+            <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50 print:border-slate-950 print:bg-white">
+               <AlertCircle className="text-amber-500 mb-3 print:hidden" size={32} />
+               <p className="font-bold text-slate-400 print:text-slate-950">{isRTL ? "لا توجد تكليفات حضور لهذه الفترة" : "No attendance assignments for this period"}</p>
+               <p className="text-[10px] text-slate-400 mt-1 print:hidden">{isRTL ? "يرجى استيراد البيانات أو التكليف اليدوي" : "Please import data or assign manually"}</p>
+            </div>
+          ) : (
+            <Table className="w-full border-collapse border-2 border-slate-950" style={{ fontSize: `${reportStyles.tableSize}px` }}>
+              <TableHeader>
+                <TableRow className="bg-slate-50 hover:bg-slate-50 border-b-2 border-slate-950 h-12">
+                  <TableHead className={cn("w-[60px] text-center font-black text-slate-950 border-e-2 border-slate-950 py-1")}>{t.number}</TableHead>
+                  <TableHead className={cn("text-center font-black text-slate-950 border-e-2 border-slate-950 py-1 px-6", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
+                  <TableHead className={cn("w-[160px] text-center font-black text-slate-950 border-e-2 border-slate-950 py-1")}>{t.signature}</TableHead>
+                  <TableHead className="text-center font-black text-slate-950 py-1 w-[220px]">{t.notes}</TableHead>
                 </TableRow>
-              ))}
-              {Array.from({ length: emptyRowsCount }).map((_, i) => (
-                <TableRow key={`empty-${i}`} className="hover:bg-transparent border-b-2 border-slate-950 h-11">
-                  <TableCell className="text-center border-e-2 border-slate-950 p-1 font-bold text-slate-400 bg-slate-50/10">
-                    {assignedEmployees.length + i + 1}
-                  </TableCell>
-                  <TableCell className="border-e-2 border-slate-950 p-1"></TableCell>
-                  <TableCell className="border-e-2 border-slate-950 p-1"></TableCell>
-                  <TableCell className="p-1"></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {assignedEmployees.map((emp, idx) => (
+                  <TableRow key={emp?.id} className="hover:bg-transparent border-b-2 border-slate-950 h-11">
+                    <TableCell className="text-center font-black border-e-2 border-slate-950 p-1 bg-slate-50/30">{idx + 1}</TableCell>
+                    <TableCell className={cn("font-black border-e-2 border-slate-950 p-1 px-6 text-slate-900", isRTL ? "text-right" : "text-left")}>
+                      {emp?.lastName} {emp?.firstName}
+                    </TableCell>
+                    <TableCell className="border-e-2 border-slate-950 p-1"></TableCell>
+                    <TableCell className="p-1"></TableCell>
+                  </TableRow>
+                ))}
+                {Array.from({ length: emptyRowsCount }).map((_, i) => (
+                  <TableRow key={`empty-${i}`} className="hover:bg-transparent border-b-2 border-slate-950 h-11">
+                    <TableCell className="text-center border-e-2 border-slate-950 p-1 font-bold text-slate-400 bg-slate-50/10">
+                      {assignedEmployees.length + i + 1}
+                    </TableCell>
+                    <TableCell className="border-e-2 border-slate-950 p-1"></TableCell>
+                    <TableCell className="border-e-2 border-slate-950 p-1"></TableCell>
+                    <TableCell className="p-1"></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </div>
 
         {/* Footer Section */}
@@ -236,7 +242,7 @@ const ReportsNew = () => {
       periodConfigs.find(c => c.day === dayIdx && c.period === p)?.isActive
     );
     return (
-      <div className="space-y-12 print:space-y-0">
+      <div className="space-y-12 print:space-y-0 w-full flex flex-col items-center">
         {activePeriods.map((period) => renderAttendanceSheet(date, period))}
       </div>
     );
@@ -263,9 +269,9 @@ const ReportsNew = () => {
     });
     
     return (
-      <div className="space-y-12 print:space-y-0">
+      <div className="space-y-12 print:space-y-0 w-full flex flex-col items-center">
         {sheets.length > 0 ? sheets : (
-          <div className="text-center p-20 bg-white rounded-[2rem] border border-dashed border-slate-200">
+          <div className="text-center p-20 bg-white rounded-[2rem] border border-dashed border-slate-200 w-full max-w-4xl">
             <Info className="mx-auto text-slate-200 mb-4" size={48} />
             <p className="text-slate-400 font-bold">{t.noAssignments}</p>
           </div>
@@ -486,7 +492,8 @@ const ReportsNew = () => {
         </TabsContent>
       </Tabs>
 
-      <div className="print-content-master hidden print:block print:absolute print:inset-0">
+      {/* Hidden container for direct printing */}
+      <div className="print-content-master hidden print:block">
         {currentReportContent()}
       </div>
 
@@ -526,7 +533,7 @@ const ReportsNew = () => {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto p-12 bg-zinc-950/50 flex flex-col items-center print:bg-white print:p-0">
-            <div className="w-full flex flex-col items-center gap-12 print:gap-0">
+            <div className="w-full flex flex-col items-center gap-12 print:gap-0 print:block">
               {currentReportContent()}
             </div>
           </div>
@@ -536,6 +543,7 @@ const ReportsNew = () => {
       <style>
         {`
           @media print {
+            /* Hide UI components during print */
             body > div:not([data-radix-portal]), 
             header, 
             aside, 
@@ -544,6 +552,7 @@ const ReportsNew = () => {
               display: none !important; 
             }
             
+            /* Show portal (preview dialog) content if it exists */
             div[data-radix-portal] { 
               display: block !important;
               visibility: visible !important; 
@@ -551,17 +560,17 @@ const ReportsNew = () => {
               left: 0 !important; 
               top: 0 !important; 
               width: 100% !important; 
-              height: auto !important;
-              margin: 0 !important;
-              padding: 0 !important;
               background: white !important;
             }
 
+            /* Show our print-content-master if we're not using the dialog */
             .print-content-master { 
               display: block !important;
               visibility: visible !important;
+              width: 100% !important;
             }
 
+            /* Fix report container for A4 printing */
             .page-break-container {
               page-break-after: always !important;
               break-after: page !important;
@@ -572,6 +581,7 @@ const ReportsNew = () => {
               padding: 10mm 15mm !important;
               box-shadow: none !important;
               border: none !important;
+              background: white !important;
             }
             
             @page {
