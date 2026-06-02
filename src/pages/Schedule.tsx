@@ -59,12 +59,15 @@ const Schedule = () => {
     }));
   }, []);
 
-  // الحصص النشطة فقط (التي بها بيانات أو حتى الحصة 10)
+  // الحصص النشطة فقط (التي تحتوي على حصص بالفعل لتجنب الأسطر الفارغة)
   const activeTimeSlots = useMemo(() => {
-    const usedIds = filteredAssignments.map(a => parseInt(a.period));
-    const maxUsed = usedIds.length > 0 ? Math.max(...usedIds) : 10;
-    const limit = Math.max(maxUsed, 10); // عرض 10 حصص على الأقل
-    return periodSlots.filter(p => parseInt(p.id) <= limit);
+    const usedIds = filteredAssignments.map(a => a.period);
+    if (usedIds.length === 0) {
+      // إذا لم تكن هناك حصص مسجلة بعد، نعرض أول 4 حصص كافتراضي
+      return periodSlots.filter(p => parseInt(p.id) <= 4);
+    }
+    // إرجاع الحصص التي تحتوي على دروس فقط لمنع ظهور الأسطر الفارغة
+    return periodSlots.filter(p => usedIds.includes(p.id));
   }, [filteredAssignments, periodSlots]);
 
   const getAssignment = (day: number, period: string) => 
