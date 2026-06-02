@@ -277,45 +277,23 @@ const ReportsNew = () => {
       <style>
         {`
           @media print {
-            body > div:not([data-radix-portal]), header, aside, main, .print\\:hidden { display: none !important; }
-            div[data-radix-portal] { 
-              display: block !important; 
-              position: absolute !important; 
-              left: 0 !important; 
-              top: 0 !important; 
-              width: 100% !important; 
-              height: 100% !important;
-              background: white !important; 
-            }
-            div[role="dialog"] {
-              position: absolute !important;
-              top: 0 !important;
-              left: 0 !important;
-              width: 100% !important;
-              height: 100% !important;
-              background: white !important;
-              padding: 0 !important;
-              margin: 0 !important;
-              box-shadow: none !important;
-              border: none !important;
-              overflow: visible !important;
-            }
-            div[role="dialog"] > button,
-            div[role="dialog"] .print\\:hidden,
-            div[role="dialog"] [class*="bg-black/40"] {
+            body:has(div[role="dialog"]) #root {
               display: none !important;
             }
             .print-content-master { display: block !important; }
             .page-break-container { 
               page-break-after: always !important; 
               break-after: page !important; 
-              min-height: 290mm !important; 
+              min-height: 280mm !important; 
               width: 100% !important; 
               padding: 10mm 15mm !important;
               transform: none !important;
             }
+            .page-break-container:last-child {
+              page-break-after: avoid !important;
+              break-after: avoid !important;
+            }
             @page { size: A4 ${reportStyles.orientation}; margin: 0 !important; }
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           }
         `}
       </style>

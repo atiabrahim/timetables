@@ -141,47 +141,15 @@ const PrintPreview = ({
               margin: 0;
             }
             @media print {
-              body > div:not([data-radix-portal]), 
-              header, 
-              aside, 
-              main,
-              #root,
-              .print\:hidden {
+              body:has(div[role="dialog"]) #root {
                 display: none !important;
               }
-              
-              div[data-radix-portal] {
-                display: block !important;
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                background: white !important;
-              }
-
-              div[role="dialog"] {
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-                background: white !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                overflow: visible !important;
-                border: none !important;
-                box-shadow: none !important;
-              }
-
               #printable-area {
                 visibility: visible !important;
                 display: block !important;
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
+                position: static !important;
                 width: 100% !important;
-                height: 100% !important;
+                height: auto !important;
                 margin: 0 !important;
                 padding: 10mm !important;
                 border: none !important;
