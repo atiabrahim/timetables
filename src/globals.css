@@ -60,15 +60,29 @@
 /* Global Print Fixes */
 @media print {
   /* Hide UI elements by default */
-  header, aside, .print\:hidden, button, [role="tablist"], .fixed, .sticky {
+  header, aside, .print\:hidden, button, [role="tablist"], .fixed, .sticky, [class*="DialogHeader"], [class*="DialogFooter"] {
     display: none !important;
   }
 
-  /* Ensure the body and root don't collapse */
+  /* Ensure the body and root don't collapse and allow multi-page printing */
   html, body, #root {
     height: auto !important;
     overflow: visible !important;
     background: white !important;
+  }
+
+  /* Reset layout wrappers for printing */
+  .flex, .grid {
+    display: block !important;
+  }
+
+  main, .overflow-y-auto, .overflow-x-auto {
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* Target all printable containers used in the app */
@@ -84,6 +98,12 @@
     margin: 0 !important;
     padding: 0 !important;
     transform: none !important;
+  }
+
+  /* Ensure table rows don't break awkwardly across pages */
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
   /* Force background colors to print */

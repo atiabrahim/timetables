@@ -66,7 +66,38 @@ const PrintPreviewDialog = ({
               margin: 0;
             }
             @media print {
-              #root { display: none !important; }
+              body > div:not([data-radix-portal]), 
+              header, 
+              aside, 
+              main,
+              #root,
+              .print\:hidden {
+                display: none !important;
+              }
+              
+              div[data-radix-portal] {
+                display: block !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: white !important;
+              }
+
+              div[role="dialog"] {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: visible !important;
+                border: none !important;
+                box-shadow: none !important;
+              }
             }
           `}
         </style>
