@@ -16,11 +16,14 @@ import {
   Languages,
   Sparkles,
   Loader2,
-  Printer
+  Printer,
+  Eye,
+  X
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
 import PageHeader from "../components/shared/PageHeader";
+import OfficialPrintWrapper from "../shared/OfficialPrintWrapper";
 import {
   Dialog,
   DialogContent,
@@ -43,6 +46,7 @@ const Subjects = () => {
   const [editingSubject, setEditingSubject] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const isAdmin = user?.role === "Admin";
 
@@ -131,6 +135,27 @@ const Subjects = () => {
     showSuccess(isRTL ? "تم حذف المادة" : "Subject deleted");
   };
 
+  const PrintableTable = () => (
+    <table className="w-full border-collapse border-2 border-slate-950 text-sm">
+      <thead>
+        <tr className="bg-slate-100 border-b-2 border-slate-950">
+          <th className="p-3 border-e-2 border-slate-950 text-center font-black w-12">#</th>
+          <th className={cn("p-3 border-e-2 border-slate-950 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "اسم المادة" : "Subject Name"}</th>
+          <th className={cn("p-3 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "التسمية بالإنجليزية" : "English Name"}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {sortedAndFilteredSubjects.map((sub, idx) => (
+          <tr key={sub.id} className="border-b border-slate-950">
+            <td className="p-3 border-e border-slate-950 text-center font-bold">{idx + 1}</td>
+            <td className="p-3 border-e border-slate-950 font-bold text-slate-900">{sub.name}</td>
+            <td className="p-3 text-slate-700">{sub.nameEn || "---"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -139,6 +164,10 @@ const Subjects = () => {
         icon={BookOpen}
         isRTL={isRTL}
       >
+        <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white">
+          <Eye size={18} />
+          {isRTL ? "معاينة الطباعة" : "Print Preview"}
+        </Button>
         <Button onClick={() => window.print()} variant="outline" className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white">
           <Printer size={18} />
           {isRTL ? "طباعة القائمة" : "Print List"}
@@ -197,7 +226,7 @@ const Subjects = () => {
       )}
 
       {/* Table Section */}
-      <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm print:border-0 print:shadow-none">
+      <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm print:hidden">
         <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
           <thead className="bg-slate-50/50">
             <tr>
@@ -263,6 +292,20 @@ const Subjects = () => {
         </table>
       </div>
 
+      {/* Print Content Master */}
+      <div className="print-content-master hidden print:block">
+        <OfficialPrintWrapper
+          title={isRTL ? "قائمة المواد الدراسية" : "Subjects List"}
+          subtitle={
+            <div className="flex items-center gap-2 text-xs font-bold text-emerald-800">
+              <span>{isRTL ? `إجمالي المواد: ${subjects.length}` : `Total Subjects: ${subjects.length}`}</span>
+            </div>
+          }
+        >
+          <PrintableTable />
+        </OfficialPrintWrapper>
+      </div>
+
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="rounded-3xl">
@@ -304,6 +347,39 @@ const Subjects = () => {
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl">{t.cancel}</Button>
             <Button onClick={handleUpdateSubject} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">{isRTL ? "حفظ" : "Save"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Print Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-[95vw] w-full max-h-[95vh] overflow-hidden rounded-[2.5rem] p-0 border-none bg-emerald-50/30 flex flex-col">
+          <div className="bg-white p-6 border-b border-emerald-100 flex items-center justify-between sticky top-0 z-10 shrink-0">
+            <div className="flex items-center gap-3">
+              <Printer className="text-emerald-600" />
+              <h3 className="font-black text-emerald-900">{isRTL ? "معاينة طباعة قائمة المواد" : "Subjects List Print Preview"}</h3>
+            </div>
+            <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="text-slate-500"><X size={20} /></Button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-zinc-950/10 print:bg-white print:p-0">
+            <div className="w-[210mm] min-h-[297mm]">
+              <OfficialPrintWrapper
+                title={isRTL ? "قائمة المواد الدراسية" : "Subjects List"}
+                subtitle={
+                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-800">
+                    <span>{isRTL ? `إجمالي المواد: ${subjects.length}` : `Total Subjects: ${subjects.length}`}</span>
+                  </div>
+                }
+              >
+                <PrintableTable />
+              </OfficialPrintWrapper>
+            </div>
+          </div>
+          <DialogFooter className="bg-white p-6 border-t border-emerald-100 shrink-0">
+            <Button variant="outline" onClick={() => setIsPreviewOpen(false)} className="rounded-xl px-8 h-12 font-bold">{t.cancel}</Button>
+            <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-12 h-12 font-black shadow-lg shadow-emerald-100 text-white">
+              <Printer size={20} className="mr-2" /> {t.print}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
