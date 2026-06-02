@@ -91,7 +91,22 @@ const Reports = () => {
         </Button>
       </PageHeader>
 
-      <ReportContent />
+      <div className="print:hidden">
+        <ReportContent />
+      </div>
+
+      {/* Print Content Master */}
+      <div className="print-content-master hidden print:block">
+        <OfficialPrintWrapper
+          title={t.reports_page.title}
+          subtitle={subtitle}
+          orientation={orientation}
+          leftSignatureTitle={isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}
+          rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+        >
+          <ReportContent isPreview={true} />
+        </OfficialPrintWrapper>
+      </div>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[95vw] w-full h-[90vh] overflow-y-auto rounded-3xl p-0 border-none bg-zinc-900/95 flex flex-col">
@@ -106,14 +121,7 @@ const Reports = () => {
             </div>
           </div>
           <div className="p-8 bg-gray-50 min-h-full flex justify-center print:p-0 print:bg-white">
-            <div 
-              id="printable-report-area"
-              className={cn(
-                "transition-all origin-top print:m-0 print:p-0", 
-                orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
-              )} 
-              style={{ transform: `scale(${printScale / 100})` }}
-            >
+            <div className="w-full">
               <OfficialPrintWrapper
                 title={t.reports_page.title}
                 subtitle={subtitle}
@@ -133,19 +141,6 @@ const Reports = () => {
           @media print {
             body:has(div[role="dialog"]) #root {
               display: none !important;
-            }
-            #printable-report-area {
-              visibility: visible !important;
-              display: block !important;
-              position: static !important;
-              width: 100% !important;
-              height: auto !important;
-              margin: 0 !important;
-              padding: 10mm !important;
-              border: none !important;
-              box-shadow: none !important;
-              background: white !important;
-              transform: none !important;
             }
             @page {
               size: A4 ${orientation};

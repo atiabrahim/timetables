@@ -63,6 +63,8 @@
   header, 
   aside, 
   button, 
+  input,
+  select,
   [role="tablist"], 
   .print\:hidden,
   .print-hidden {
@@ -117,9 +119,12 @@
     visibility: visible !important;
     position: static !important;
     width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0 auto !important;
+    padding: 20mm 15mm !important;
     transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    box-sizing: border-box !important;
   }
 
   /* Avoid trailing blank pages */
@@ -145,4 +150,9 @@
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
+
+  @page {
+    margin: 0 !important;
+  }
 }
+</dyad-css>

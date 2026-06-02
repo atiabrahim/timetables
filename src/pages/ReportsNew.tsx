@@ -31,6 +31,7 @@ import AttendanceSheet from "@/components/reports/AttendanceSheet";
 import ReportControls from "@/components/reports/ReportControls";
 import PrintPreviewDialog from "@/components/reports/PrintPreviewDialog";
 import PageHeader from "../components/shared/PageHeader";
+import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
 
 const ReportsNew = () => {
   const { 
@@ -159,15 +160,21 @@ const ReportsNew = () => {
       return { ...emp, m, a, e, total: m + a + e };
     }).sort((a, b) => b.total - a.total);
 
+    const subtitle = (
+      <div className="inline-flex items-center gap-2 text-emerald-700 font-bold">
+        <Calendar size={16} />
+        {format(new Date(year, month - 1, 1), "MMMM yyyy", { locale: currentLocale })}
+      </div>
+    );
+
     return (
-      <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-xl mx-auto w-full max-w-4xl print:border-0 print:shadow-none print:p-0" dir={isRTL ? "rtl" : "ltr"}>
-        <div className="text-center mb-8 border-b-4 border-emerald-950 pb-4">
-          <h3 className="text-2xl font-black text-slate-950 mb-2">{t.monthlyStats}</h3>
-          <div className="inline-flex items-center gap-2 bg-emerald-50 px-4 py-1 rounded-full text-emerald-700 font-bold">
-            <Calendar size={16} />
-            {format(new Date(year, month - 1, 1), "MMMM yyyy", { locale: currentLocale })}
-          </div>
-        </div>
+      <OfficialPrintWrapper
+        title={t.monthlyStats}
+        subtitle={subtitle}
+        orientation={reportStyles.orientation}
+        leftSignatureTitle={isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}
+        rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+      >
         <Table className="border-4 border-slate-950 w-full">
           <TableHeader>
             <TableRow className="bg-slate-100 border-b-4 border-slate-950">
@@ -190,7 +197,7 @@ const ReportsNew = () => {
             ))}
           </TableBody>
         </Table>
-      </div>
+      </OfficialPrintWrapper>
     );
   };
 

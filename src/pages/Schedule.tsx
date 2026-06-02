@@ -8,6 +8,7 @@ import ScheduleHeader from "../components/schedule/ScheduleHeader";
 import ScheduleTable from "../components/schedule/ScheduleTable";
 import AddLessonDialog from "../components/schedule/AddLessonDialog";
 import PrintPreview from "../components/schedule/PrintPreview";
+import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
 import { Button } from "@/components/ui/button";
 import { DAYS, PERIOD_MAP, PERIODS } from "../constants/schedule";
 import {
@@ -127,6 +128,26 @@ const Schedule = () => {
     return data;
   }, [filteredAssignments, subjects, employees, classes, viewMode]);
 
+  const selectedEntity = viewMode === "teacher" 
+    ? employees.find(e => e.id === selectedId) 
+    : classes.find(c => c.id === selectedId);
+
+  const entityName = viewMode === "teacher"
+    ? (selectedEntity ? `${selectedEntity.lastName} ${selectedEntity.firstName}` : "---")
+    : (selectedEntity ? selectedEntity.name : "---");
+
+  const title = viewMode === "teacher"
+    ? (isRTL ? `جدول توقيت الأستاذ: ${entityName}` : `Teacher Timetable: ${entityName}`)
+    : (isRTL ? `جدول توقيت الفوج: ${entityName}` : `Class Timetable: ${entityName}`);
+
+  const subtitle = (
+    <div className="flex items-center gap-4 text-xs md:text-sm font-bold text-emerald-800">
+      <span>{entityName}</span>
+      <span className="text-emerald-200 h-4 w-px bg-emerald-200"></span>
+      <span>{isRTL ? "الجدول الأسبوعي" : "Weekly Schedule"}</span>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <ScheduleHeader 
@@ -173,26 +194,47 @@ const Schedule = () => {
             </AlertDialog>
           </div>
 
-          <ScheduleTable 
-            isRTL={isRTL} 
-            days={DAYS} 
-            timeSlots={activeTimeSlots} 
-            getAssignment={getAssignment}
-            onAddClick={handleAddClick}
-            onDeleteClick={handleDeleteLesson}
-            subjects={subjects}
-            employees={employees}
-            classes={classes}
-            viewMode={viewMode}
-            summaryData={summaryData}
-            totalHours={filteredAssignments.length}
-            isTransposed={isTransposed}
-          />
+          <div className="print:hidden">
+            <ScheduleTable 
+              isRTL={isRTL} 
+              days={DAYS} 
+              timeSlots={activeTimeSlots} 
+              getAssignment={getAssignment}
+              onAddClick={handleAddClick}
+              onDeleteClick={handleDeleteLesson}
+              subjects={subjects}
+              employees={employees}
+              classes={classes}
+              viewMode={viewMode}
+              summaryData={summaryData}
+              totalHours={filteredAssignments.length}
+              isTransposed={isTransposed}
+            />
+          </div>
         </div>
       ) : (
-        <div className="text-center py-32 bg-white rounded-[3rem] border border-dashed border-emerald-200">
+        <div className="text-center py-32 bg-white rounded-[3rem] border border-dashed border-emerald-200 print:hidden">
           <Settings2 size={48} className="mx-auto text-emerald-100 mb-4" />
           <p className="text-emerald-900/40 font-bold">{isRTL ? "يرجى اختيار فرع أو معلم لعرض الجدول" : "Please select a branch or teacher to view schedule"}</p>
+        </div>
+      )}
+
+      {selectedId && (
+        <div className="print-content-master hidden print:block">
+          <OfficialPrintWrapper
+            title={title}
+            subtitle={subtitle}
+            orientation={orientation}
+            leftSignatureTitle={isRTL ? "توقيع الأستاذ" : "Teacher Signature"}
+            rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+          >
+            <ScheduleTable 
+              isRTL={isRTL} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment} 
+              onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
+              classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={filteredAssignments.length}
+              isTransposed={isTransposed}
+            />
+          </OfficialPrintWrapper>
         </div>
       )}
 

@@ -227,7 +227,22 @@ const WeeklyWorkSchedule = () => {
         </Button>
       </PageHeader>
 
-      <ScheduleTable />
+      <div className="print:hidden">
+        <ScheduleTable />
+      </div>
+
+      {/* Print Content Master */}
+      <div className="print-content-master hidden print:block">
+        <OfficialPrintWrapper
+          title={t.weeklyWorkSchedule}
+          subtitle={subtitle}
+          orientation={orientation}
+          leftSignatureTitle={isRTL ? "توقيع الأستاذ" : "Teacher Signature"}
+          rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+        >
+          <ScheduleTable isPrint={true} />
+        </OfficialPrintWrapper>
+      </div>
 
       {/* Print Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
@@ -252,13 +267,7 @@ const WeeklyWorkSchedule = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-zinc-950/10 print:bg-white print:p-0">
-            <div 
-              id="printable-report" 
-              className={cn(
-                "transition-all origin-top print:m-0 print:p-0",
-                orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
-              )}
-            >
+            <div className="w-full">
               <OfficialPrintWrapper
                 title={t.weeklyWorkSchedule}
                 subtitle={subtitle}
@@ -284,19 +293,6 @@ const WeeklyWorkSchedule = () => {
           @media print {
             body:has(div[role="dialog"]) #root {
               display: none !important;
-            }
-            #printable-report {
-              visibility: visible !important;
-              display: block !important;
-              position: static !important;
-              width: 100% !important;
-              height: auto !important;
-              margin: 0 !important;
-              padding: 10mm !important;
-              border: none !important;
-              box-shadow: none !important;
-              background: white !important;
-              transform: none !important;
             }
             @page {
               size: A4 ${orientation};
