@@ -46,7 +46,7 @@ const PrintPreview = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 flex flex-col">
+      <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 flex flex-col rounded-none">
         <div className="h-16 bg-black/40 border-b border-white/10 flex items-center justify-between px-8 shrink-0 print:hidden">
           <div className="flex items-center gap-4 text-white">
             <FileText size={20} />
@@ -57,11 +57,11 @@ const PrintPreview = ({
               <Slider value={[printScale]} onValueChange={(v) => setPrintScale(v[0])} min={30} max={150} className="w-32" />
               <span className="text-white text-xs font-bold">{printScale}%</span>
             </div>
-            <Button variant="outline" onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")} className="text-white border-white/20 bg-transparent">
+            <Button variant="outline" onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")} className="text-white border-white/20 bg-transparent rounded-xl">
               <RotateCw size={16} className="mr-2" />
               {isRTL ? (orientation === "portrait" ? "عرضي" : "طولي") : "Orientation"}
             </Button>
-            <Button onClick={() => window.print()} className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl">
+            <Button onClick={() => window.print()} className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold px-8">
               <Printer size={16} className="mr-2" />
               {isRTL ? "طباعة" : "Print"}
             </Button>
@@ -74,44 +74,44 @@ const PrintPreview = ({
             id="printable-area"
             className={cn(
               "bg-white shadow-2xl transition-all duration-300 origin-top flex flex-col print:shadow-none print:m-0 print:overflow-hidden",
-              orientation === "portrait" ? "w-[210mm] h-[297mm]" : "w-[297mm] h-[210mm]"
+              orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
             )}
             style={{ transform: `scale(${printScale / 100})` }}
           >
-            <div className="p-8 md:p-10 flex-1 flex flex-col print:p-6 overflow-hidden h-full">
+            <div className="p-10 flex-1 flex flex-col print:p-[10mm] overflow-hidden h-full border-2 border-transparent">
               {/* Header */}
-              <div className="flex justify-between items-center mb-4 shrink-0">
-                <div className="w-14 h-14 flex items-center justify-center">
+              <div className="flex justify-between items-center mb-6 shrink-0">
+                <div className="w-16 h-16 flex items-center justify-center">
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
                 </div>
-                <div className="text-center flex-1">
-                  <h1 className="text-sm md:text-lg font-bold text-emerald-900 leading-tight">{institution.name}</h1>
-                  <h2 className="text-xs md:text-sm font-bold text-emerald-800">{institution.subName}</h2>
+                <div className="text-center flex-1 mx-4">
+                  <h1 className="text-sm md:text-xl font-black text-emerald-950 leading-tight uppercase">{institution.name}</h1>
+                  <h2 className="text-xs md:text-base font-bold text-emerald-800 mt-1">{institution.subName}</h2>
                 </div>
-                <div className="w-14 h-14 flex items-center justify-center">
+                <div className="w-16 h-16 flex items-center justify-center">
                   <img src={logo} alt="Logo" className="max-w-full max-h-full object-contain" />
                 </div>
               </div>
 
               {/* Info Bar */}
-              <div className="grid grid-cols-3 gap-2 mb-3 text-[9px] md:text-[11px] font-bold border-y border-black py-1.5 shrink-0">
-                <div className={isRTL ? "text-right" : "text-left"}>
+              <div className="grid grid-cols-3 gap-4 mb-4 text-[10px] md:text-[12px] font-black border-y-2 border-emerald-950 py-3 shrink-0 bg-emerald-50/20">
+                <div className={isRTL ? "text-right px-2" : "text-left px-2"}>
                   {viewMode === "teacher" ? (
-                    <p>{isRTL ? "الأستاذ(ة):" : "Teacher:"} {selectedEntity?.lastName} {selectedEntity?.firstName}</p>
+                    <p>{isRTL ? "الأستاذ(ة):" : "Teacher:"} <span className="text-emerald-900">{selectedEntity?.lastName} {selectedEntity?.firstName}</span></p>
                   ) : (
-                    <p>{isRTL ? "الفرع:" : "Branch:"} {selectedEntity?.name}</p>
+                    <p>{isRTL ? "الفرع:" : "Branch:"} <span className="text-emerald-900">{selectedEntity?.name}</span></p>
                   )}
                 </div>
-                <div className="text-center">
+                <div className="text-center border-x border-emerald-950/20">
                   <p>{isRTL ? "السنة الدراسية:" : "Academic Year:"} {institution.academicYear || "---"}</p>
                 </div>
-                <div className={isRTL ? "text-left" : "text-right"}>
+                <div className={isRTL ? "text-left px-2" : "text-right px-2"}>
                   <p>{isRTL ? "الرتبة:" : "Rank:"} {viewMode === "teacher" ? selectedEntity?.category : "---"}</p>
                 </div>
               </div>
 
-              {/* Table Area - Forced to fill space but not overflow */}
-              <div className="flex-1 min-h-0 w-full overflow-hidden">
+              {/* Table Area */}
+              <div className="flex-1 min-h-0 w-full">
                 <ScheduleTable 
                   isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
                   onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
@@ -120,15 +120,15 @@ const PrintPreview = ({
                 />
               </div>
 
-              {/* Footer / Signatures - Moved up by 3cm */}
-              <div className="mt-6 mb-[3cm] grid grid-cols-3 gap-4 text-center shrink-0">
-                <div><p className="font-bold text-[10px] mb-8">{isRTL ? "الأستاذ" : "Teacher"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
-                <div><p className="font-bold text-[10px] mb-8">{isRTL ? "المسؤول البيداغوجي" : "Supervisor"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
-                <div><p className="font-bold text-[10px] mb-8">{isRTL ? "المدير" : "Director"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
+              {/* Footer / Signatures */}
+              <div className="mt-8 mb-[2cm] grid grid-cols-3 gap-8 text-center shrink-0">
+                <div><p className="font-black text-xs mb-10">{isRTL ? "توقيع الأستاذ" : "Teacher Signature"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
+                <div><p className="font-black text-xs mb-10">{isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
+                <div><p className="font-black text-xs mb-10">{isRTL ? "ختم وتوقيع المدير" : "Director Signature"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
               </div>
 
-              <div className="mt-3 pt-1.5 text-center text-[7px] text-gray-400 border-t border-gray-100 shrink-0">
-                تم إنشاء الجدول بتاريخ: {new Date().toLocaleDateString()} - نظام EduSchedule v2.0
+              <div className="mt-auto pt-4 text-center text-[8px] text-gray-400 border-t border-emerald-100 shrink-0 font-bold">
+                تم إنشاء هذا الجدول آلياً بواسطة نظام EduSchedule — {new Date().toLocaleDateString('ar-DZ')}
               </div>
             </div>
           </div>
@@ -137,7 +137,6 @@ const PrintPreview = ({
         <style>
           {`
             @media print {
-              /* Hide everything except the portal containing the dialog */
               body > div:not([data-radix-portal]),
               #root,
               header,
@@ -147,7 +146,6 @@ const PrintPreview = ({
                 display: none !important;
               }
 
-              /* Ensure the portal is visible and positioned at the top-left */
               div[data-radix-portal] {
                 display: block !important;
                 position: absolute !important;
@@ -158,7 +156,6 @@ const PrintPreview = ({
                 background: white !important;
               }
 
-              /* Reset dialog content styles for printing */
               div[role="dialog"] {
                 position: absolute !important;
                 top: 0 !important;
@@ -173,13 +170,11 @@ const PrintPreview = ({
                 overflow: visible !important;
               }
 
-              /* Hide dialog header/footer/close button */
               div[role="dialog"] > button,
               div[role="dialog"] .print\\:hidden {
                 display: none !important;
               }
 
-              /* Make sure the printable area fills the page and has no transform scale */
               #printable-area {
                 visibility: visible !important;
                 display: flex !important;
@@ -190,7 +185,7 @@ const PrintPreview = ({
                 width: 100% !important;
                 height: 100% !important;
                 margin: 0 !important;
-                padding: 15mm !important;
+                padding: 0 !important;
                 border: none !important;
                 box-shadow: none !important;
                 background: white !important;

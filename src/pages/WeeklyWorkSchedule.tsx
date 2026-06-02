@@ -236,8 +236,8 @@ const WeeklyWorkSchedule = () => {
 
       {/* Print Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-[95vw] w-full max-h-[90vh] overflow-y-auto rounded-[2.5rem] p-0 border-none bg-emerald-50/30">
-          <DialogHeader className="bg-white p-6 border-b border-emerald-100 sticky top-0 z-10">
+        <DialogContent className="max-w-[95vw] w-full max-h-[95vh] overflow-hidden rounded-[2.5rem] p-0 border-none bg-emerald-50/30 flex flex-col">
+          <DialogHeader className="bg-white p-6 border-b border-emerald-100 sticky top-0 z-10 shrink-0">
             <DialogTitle className="flex items-center justify-between w-full text-emerald-900 font-black">
               <div className="flex items-center gap-3">
                 <Printer className="text-emerald-600" />
@@ -256,30 +256,36 @@ const WeeklyWorkSchedule = () => {
               </div>
             </DialogTitle>
           </DialogHeader>
-          <div className="p-4 flex justify-center">
+          <div className="flex-1 overflow-y-auto p-8 flex justify-center bg-zinc-950/10 print:bg-white print:p-0">
             <div 
               id="printable-report" 
               className={cn(
-                "bg-white border border-emerald-100 rounded-lg p-8 shadow-sm transition-all",
-                orientation === "portrait" ? "w-[210mm]" : "w-[297mm]"
+                "bg-white border border-emerald-100 rounded-lg p-10 shadow-sm transition-all origin-top print:m-0 print:p-[10mm]",
+                orientation === "portrait" ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"
               )}
             >
-              <div className="text-center mb-4 border-b-2 border-emerald-900 pb-3 pt-2">
-                <h1 className="text-lg font-black text-emerald-900 mb-1 uppercase">{t.weeklyWorkSchedule}</h1>
-                <p className="text-emerald-700 font-bold text-sm">{isRTL ? "للفترة الدراسية الحالية" : "For Current Academic Period"}</p>
+              <div className="text-center mb-8 border-b-4 border-emerald-950 pb-4 pt-2">
+                <h1 className="text-2xl font-black text-emerald-950 mb-1 uppercase tracking-tight">{t.weeklyWorkSchedule}</h1>
+                <p className="text-emerald-800 font-black text-sm">{isRTL ? "للفترة الدراسية الحالية" : "For Current Academic Period"}</p>
               </div>
+              
               <ScheduleTable isPrint={true} />
-              <div className="mt-6 grid grid-cols-3 gap-4 text-center font-black text-emerald-900 text-xs px-4 pb-2">
-                <div><p className="mb-8">{isRTL ? "توقيع الأستاذ" : "Teacher Signature"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
-                <div><p className="mb-8">{isRTL ? "المسؤول المباشر" : "Direct Supervisor"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
-                <div><p className="mb-8">{isRTL ? "ختم المؤسسة" : "Institution Stamp"}</p><div className="border-t border-black w-24 mx-auto"></div></div>
+              
+              <div className="mt-12 grid grid-cols-3 gap-8 text-center font-black text-emerald-950 text-xs px-4 pb-4">
+                <div><p className="mb-12 underline underline-offset-4">{isRTL ? "توقيع الأستاذ" : "Teacher Signature"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
+                <div><p className="mb-12 underline underline-offset-4">{isRTL ? "المسؤول المباشر" : "Direct Supervisor"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
+                <div><p className="mb-12 underline underline-offset-4">{isRTL ? "ختم المؤسسة" : "Institution Stamp"}</p><div className="border-t-2 border-emerald-950 w-32 mx-auto"></div></div>
+              </div>
+              
+              <div className="mt-auto pt-4 text-center text-[8px] text-gray-400 border-t border-gray-100 shrink-0 font-bold">
+                تم الاستخراج من نظام EduSchedule بتاريخ: {new Date().toLocaleDateString('ar-DZ')}
               </div>
             </div>
           </div>
-          <DialogFooter className="bg-white p-4 border-t border-emerald-100">
-            <Button variant="outline" onClick={() => setIsPreviewOpen(false)} className="rounded-xl">{t.cancel}</Button>
-            <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-10 font-bold">
-              <Printer size={18} className="mr-2" /> {t.print}
+          <DialogFooter className="bg-white p-6 border-t border-emerald-100 shrink-0">
+            <Button variant="outline" onClick={() => setIsPreviewOpen(false)} className="rounded-xl px-8 h-12 font-bold">{t.cancel}</Button>
+            <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-12 h-12 font-black shadow-lg shadow-emerald-100">
+              <Printer size={20} className="mr-2" /> {t.print}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -288,8 +294,7 @@ const WeeklyWorkSchedule = () => {
       <style>
         {`
           @media print {
-            /* Hide everything in the body */
-            body > div:not([role="dialog"]), 
+            body > div:not([data-radix-portal]), 
             header, 
             aside, 
             main,
@@ -297,7 +302,16 @@ const WeeklyWorkSchedule = () => {
               display: none !important;
             }
             
-            /* Ensure the dialog and printable report are visible and positioned correctly */
+            div[data-radix-portal] {
+              display: block !important;
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 100% !important;
+              height: 100% !important;
+              background: white !important;
+            }
+
             div[role="dialog"] {
               position: absolute !important;
               top: 0 !important;
@@ -308,12 +322,12 @@ const WeeklyWorkSchedule = () => {
               padding: 0 !important;
               margin: 0 !important;
               overflow: visible !important;
+              border: none !important;
+              box-shadow: none !important;
             }
 
-            /* Hide dialog header, footer, and close button during print */
             div[role="dialog"] > button,
             div[role="dialog"] .sticky,
-            div[role="dialog"] footer,
             div[role="dialog"] [class*="DialogHeader"],
             div[role="dialog"] [class*="DialogFooter"] {
               display: none !important;
@@ -334,8 +348,7 @@ const WeeklyWorkSchedule = () => {
               background: white !important;
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
-              transform: scale(0.92);
-              transform-origin: top center;
+              transform: none !important;
             }
 
             @page {

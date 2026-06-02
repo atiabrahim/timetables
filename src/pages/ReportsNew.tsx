@@ -160,31 +160,31 @@ const ReportsNew = () => {
 
     return (
       <div className="bg-white p-10 rounded-[2.5rem] border border-slate-200 shadow-xl mx-auto w-full max-w-4xl print:border-0 print:shadow-none print:p-0" dir={isRTL ? "rtl" : "ltr"}>
-        <div className="text-center mb-8 border-b-2 border-emerald-900 pb-4">
+        <div className="text-center mb-8 border-b-4 border-emerald-950 pb-4">
           <h3 className="text-2xl font-black text-slate-950 mb-2">{t.monthlyStats}</h3>
           <div className="inline-flex items-center gap-2 bg-emerald-50 px-4 py-1 rounded-full text-emerald-700 font-bold">
             <Calendar size={16} />
             {format(new Date(year, month - 1, 1), "MMMM yyyy", { locale: currentLocale })}
           </div>
         </div>
-        <Table className="border-2 border-slate-950 w-full">
+        <Table className="border-4 border-slate-950 w-full">
           <TableHeader>
-            <TableRow className="bg-slate-100 border-b-2 border-slate-950">
-              <TableHead className={cn("font-black text-slate-950 border-e-2 border-slate-950 p-3", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
-              <TableHead className="text-center font-black text-slate-950 border-e-2 border-slate-950 p-3">ص</TableHead>
-              <TableHead className="text-center font-black text-slate-950 border-e-2 border-slate-950 p-3">م</TableHead>
-              <TableHead className="text-center font-black text-slate-950 border-e-2 border-slate-950 p-3">ل</TableHead>
-              <TableHead className="text-center font-black text-white bg-slate-900 p-3">{t.total}</TableHead>
+            <TableRow className="bg-slate-100 border-b-4 border-slate-950">
+              <TableHead className={cn("font-black text-slate-950 border-e-4 border-slate-950 p-4", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
+              <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-4">ص</TableHead>
+              <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-4">م</TableHead>
+              <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-4">ل</TableHead>
+              <TableHead className="text-center font-black text-white bg-slate-950 p-4">{t.total}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {stats.map(s => (
               <TableRow key={s.id} className="border-b-2 border-slate-950">
-                <TableCell className={cn("font-bold border-e-2 border-slate-950 p-3", isRTL ? "text-right" : "text-left")}>{s.lastName} {s.firstName}</TableCell>
-                <TableCell className="text-center border-e-2 border-slate-950 p-3">{s.m}</TableCell>
-                <TableCell className="text-center border-e-2 border-slate-950 p-3">{s.a}</TableCell>
-                <TableCell className="text-center border-e-2 border-slate-950 p-3">{s.e}</TableCell>
-                <TableCell className="text-center font-black p-3 bg-slate-50">{s.total}</TableCell>
+                <TableCell className={cn("font-bold border-e-2 border-slate-950 p-4", isRTL ? "text-right" : "text-left")}>{s.lastName} {s.firstName}</TableCell>
+                <TableCell className="text-center border-e-2 border-slate-950 p-4">{s.m}</TableCell>
+                <TableCell className="text-center border-e-2 border-slate-950 p-4">{s.a}</TableCell>
+                <TableCell className="text-center border-e-2 border-slate-950 p-4">{s.e}</TableCell>
+                <TableCell className="text-center font-black p-4 bg-slate-50">{s.total}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -278,10 +278,44 @@ const ReportsNew = () => {
         {`
           @media print {
             body > div:not([data-radix-portal]), header, aside, main, .print\\:hidden { display: none !important; }
-            div[data-radix-portal] { display: block !important; position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; background: white !important; }
+            div[data-radix-portal] { 
+              display: block !important; 
+              position: absolute !important; 
+              left: 0 !important; 
+              top: 0 !important; 
+              width: 100% !important; 
+              height: 100% !important;
+              background: white !important; 
+            }
+            div[role="dialog"] {
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              width: 100% !important;
+              height: 100% !important;
+              background: white !important;
+              padding: 0 !important;
+              margin: 0 !important;
+              box-shadow: none !important;
+              border: none !important;
+              overflow: visible !important;
+            }
+            div[role="dialog"] > button,
+            div[role="dialog"] .print\\:hidden,
+            div[role="dialog"] [class*="bg-black/40"] {
+              display: none !important;
+            }
             .print-content-master { display: block !important; }
-            .page-break-container { page-break-after: always !important; break-after: page !important; min-height: 290mm !important; width: 100% !important; padding: 10mm 15mm !important; }
+            .page-break-container { 
+              page-break-after: always !important; 
+              break-after: page !important; 
+              min-height: 290mm !important; 
+              width: 100% !important; 
+              padding: 10mm 15mm !important;
+              transform: none !important;
+            }
             @page { size: A4 ${reportStyles.orientation}; margin: 0 !important; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           }
         `}
       </style>
