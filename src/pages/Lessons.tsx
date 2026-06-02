@@ -78,6 +78,46 @@ const Lessons = () => {
     showSuccess(isRTL ? "تم تحديث بيانات الحصة" : "Lesson updated successfully");
   };
 
+  const handleExportCSV = () => {
+    if (filteredLessons.length === 0) {
+      showSuccess(isRTL ? "لا توجد حصص لتصديرها" : "No lessons to export");
+      return;
+    }
+
+    // تعريف الأعمدة
+    const headers = isRTL 
+      ? ["المادة", "الأستاذ", "الفوج", "القاعة", "اليوم", "الحصة"]
+      : ["Subject", "Teacher", "Class", "Room", "Day", "Period"];
+
+    // تحويل البيانات إلى أسطر
+    const rows = filteredLessons.map(asgn => [
+      getSubjectName(asgn.subjectId),
+      getTeacherName(asgn.employeeId),
+      getClassName(asgn.classId),
+      asgn.room || "---",
+      getDayName(asgn.day),
+      asgn.period
+    ]);
+
+    // دمج العناوين والأسطر مع استخدام الفاصلة المنقوطة لتجنب مشاكل التنسيق في إكسل العربي
+    const csvContent = [
+      headers.join(";"),
+      ...rows.map(e => e.map(val => `"${val.replace(/"/g, '""')}"`).join(";"))
+    ].join("\n");
+
+    // إضافة UTF-8 BOM لضمان قراءة الحروف العربية بشكل صحيح في Excel
+    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `EduSchedule_Lessons_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showSuccess(isRTL ? "تم تصدير قائمة الحصص بنجاح" : "Lessons list exported successfully");
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -86,9 +126,13 @@ const Lessons = () => {
         icon={ListChecks}
         isRTL={isRTL}
       >
-        <Button variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700 bg-white h-11">
+        <Button 
+          variant="outline" 
+          onClick={handleExportCSV}
+          className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700 bg-white h-11"
+        >
           <Download size={18} />
-          {isRTL ? "تصدير" : "Export"}
+          {isRTL ? "تصدير CSV" : "Export CSV"}
         </Button>
         <Button 
           variant="ghost" 
