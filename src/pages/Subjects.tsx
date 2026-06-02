@@ -23,7 +23,7 @@ import {
 import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
 import PageHeader from "../components/shared/PageHeader";
-import OfficialPrintWrapper from "../shared/OfficialPrintWrapper";
+import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
 import {
   Dialog,
   DialogContent,
