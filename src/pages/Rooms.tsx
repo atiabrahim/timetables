@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   Search, 
-  Download, 
   Plus, 
   Edit2, 
   ArrowUpDown,
@@ -18,6 +17,7 @@ import {
 } from "lucide-react";
 import { showSuccess } from "../utils/toast";
 import { cn } from "@/lib/utils";
+import PageHeader from "../components/shared/PageHeader";
 import {
   Dialog,
   DialogContent,
@@ -97,101 +97,94 @@ const Rooms = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 print:hidden">
-        <div className="flex items-center gap-4 w-full md:w-auto order-2 md:order-1">
-          <Button onClick={() => window.print()} variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700">
-            <Printer size={18} />
-            {isRTL ? "طباعة القائمة" : "Print List"}
-          </Button>
-          <div className="relative flex-1 md:w-80">
-            <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
-            <Input 
-              placeholder={isRTL ? "بحث عن قاعة..." : "Search room..."} 
-              className={cn("rounded-xl border-gray-200 bg-white h-11", isRTL ? "pr-10 text-right" : "pl-10 text-left")}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+      <PageHeader
+        title={isRTL ? "القاعات والورشات" : "Rooms & Workshops"}
+        subtitle={isRTL ? "إدارة القاعات الدراسية والورشات التطبيقية" : "Manage classrooms and practical workshops"}
+        icon={MapPin}
+        isRTL={isRTL}
+      >
+        <Button onClick={() => window.print()} variant="outline" className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white">
+          <Printer size={18} />
+          {isRTL ? "طباعة القائمة" : "Print List"}
+        </Button>
+        <div className="relative w-full md:w-64">
+          <Search className={cn("absolute top-1/2 -translate-y-1/2 text-slate-400", isRTL ? "right-3" : "left-3")} size={16} />
+          <Input 
+            placeholder={isRTL ? "بحث عن قاعة..." : "Search room..."} 
+            className={cn("rounded-xl border-slate-200 bg-white h-10", isRTL ? "pr-10" : "pl-10")}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
-
-        <div className={cn("order-1 md:order-2 w-full md:w-auto", isRTL ? "text-right" : "text-left")}>
-          <h2 className="text-3xl font-black text-gray-900">
-            {isRTL ? "القاعات" : "Rooms"} 
-            <span className="text-gray-400 text-xl mx-2">({sortedAndFilteredRooms.length})</span>
-          </h2>
-        </div>
-      </div>
+      </PageHeader>
 
       {/* Add Section (Admin Only) */}
       {isAdmin && (
-        <div className="flex gap-3 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm print:hidden">
-          <Input 
-            value={newRoomName} 
-            onChange={e => setNewRoomName(e.target.value)}
-            placeholder={isRTL ? "اسم القاعة الجديدة..." : "New room name..."}
-            className={cn("rounded-xl border-gray-200 h-11", isRTL ? "text-right" : "text-left")}
-          />
-          <Button onClick={handleAddRoom} className="bg-[#064e3b] hover:bg-[#053a2c] rounded-xl px-6 h-11 font-bold">
-            <Plus size={18} className={isRTL ? "ml-2" : "mr-2"} />
+        <div className="flex gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-50 items-end print:hidden">
+          <div className="flex-1 space-y-2">
+            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "اسم القاعة الجديدة" : "New Room Name"}</label>
+            <Input 
+              value={newRoomName} 
+              onChange={e => setNewRoomName(e.target.value)}
+              placeholder={isRTL ? "اسم القاعة الجديدة..." : "New room name..."}
+              className="rounded-xl h-12"
+            />
+          </div>
+          <Button onClick={handleAddRoom} className="bg-emerald-950 hover:bg-black text-white rounded-xl h-12 px-8 font-black shadow-lg shadow-emerald-100">
+            <Plus size={18} className="me-2" />
             {isRTL ? "إضافة" : "Add"}
           </Button>
         </div>
       )}
 
       {/* Table Section */}
-      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm print:border-0 print:shadow-none">
-        {/* Print Header */}
-        <div className="hidden print:block text-center mb-6 border-b-2 border-emerald-950 pb-4">
-          <h1 className="text-2xl font-black text-emerald-950">{isRTL ? "قائمة القاعات والورشات" : "Rooms & Workshops List"}</h1>
-          <p className="text-sm text-gray-600 mt-1">{isRTL ? "نظام EduSchedule لإدارة الجداول" : "EduSchedule Management System"}</p>
-        </div>
-
+      <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm print:border-0 print:shadow-none">
         <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
-          <thead>
-            <tr className="bg-[#f9f9f1] print:bg-transparent print:border-b-2 print:border-emerald-950">
+          <thead className="bg-slate-50/50">
+            <tr>
               <th 
-                className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 cursor-pointer hover:bg-emerald-50/50 transition-colors print:p-2 print:text-black print:border-b-2 print:border-emerald-950"
+                className="p-5 text-slate-900 font-black text-xs uppercase tracking-widest border-b border-slate-100 cursor-pointer"
                 onClick={() => handleSort("name")}
               >
-                <div className={cn("flex items-center gap-2", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                  <SortIcon column="name" />
+                <div className="flex items-center gap-2">
                   {isRTL ? "اسم القاعة" : "Room Name"}
+                  <SortIcon column="name" />
                 </div>
               </th>
-              <th className="p-5 text-gray-700 font-bold text-sm border-b border-gray-100 text-center print:hidden">
+              <th className="p-5 text-slate-900 font-black text-xs uppercase tracking-widest border-b border-slate-100 text-center print:hidden">
                 {isRTL ? "إجراءات" : "Actions"}
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-50">
             {sortedAndFilteredRooms.map((room, idx) => (
-              <tr key={idx} className="hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 group print:border-b print:border-gray-300">
-                <td className="p-5 print:p-2">
-                  <div className={cn("flex items-center gap-3", isRTL ? "justify-start" : "flex-row-reverse justify-end")}>
-                    <span className="font-bold text-emerald-950 print:text-black">{room}</span>
-                    <MapPin size={16} className="text-emerald-500 print:hidden" />
+              <tr key={idx} className="group hover:bg-emerald-50/30 transition-colors">
+                <td className="p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors">
+                      <MapPin size={18} />
+                    </div>
+                    <span className="font-black text-slate-900">{room}</span>
                   </div>
                 </td>
                 <td className="p-5 text-center print:hidden">
-                  <div className="flex justify-center gap-2">
+                  <div className="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button 
                       variant="ghost" 
-                      size="sm" 
-                      className="text-emerald-700 font-bold gap-2 hover:bg-emerald-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                      size="icon" 
+                      className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 rounded-lg"
                       onClick={() => handleEditClick(room)}
                     >
-                      <Edit2 size={16} />
-                      {isRTL ? "تعديل" : "Edit"}
+                      <Edit2 size={14} />
                     </Button>
                     {isAdmin && (
                       <Button 
                         variant="ghost" 
-                        size="sm" 
-                        className="text-red-500 hover:bg-red-50 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                        size="icon" 
+                        className="h-8 w-8 text-red-400 hover:bg-red-50 rounded-lg"
                         onClick={() => deleteRoom(room)}
                       >
-                        <Trash2 size={16} />
+                        <Trash2 size={14} />
                       </Button>
                     )}
                   </div>
@@ -202,15 +195,15 @@ const Rooms = () => {
         </table>
 
         {sortedAndFilteredRooms.length === 0 && (
-          <div className="text-center py-24 bg-gray-50/30">
-            <p className="text-gray-400 font-bold">{isRTL ? "لا توجد قاعات مطابقة" : "No matching rooms found"}</p>
+          <div className="text-center py-24 bg-slate-50/30">
+            <p className="text-slate-400 font-bold">{isRTL ? "لا توجد قاعات مطابقة" : "No matching rooms found"}</p>
           </div>
         )}
       </div>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-md rounded-3xl">
+        <DialogContent className="rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-emerald-950">
               {isRTL ? "تعديل القاعة" : "Edit Room"}
@@ -238,40 +231,6 @@ const Rooms = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <style>
-        {`
-          @media print {
-            body > div:not([role="dialog"]), 
-            header, 
-            aside, 
-            form,
-            .print\\:hidden {
-              display: none !important;
-            }
-            main {
-              padding: 0 !important;
-              margin: 0 !important;
-            }
-            .max-w-6xl {
-              max-width: 100% !important;
-            }
-            table {
-              width: 100% !important;
-              border-collapse: collapse !important;
-            }
-            th, td {
-              border: 1px solid #000 !important;
-              padding: 8px !important;
-              color: #000 !important;
-            }
-            @page {
-              size: A4 portrait;
-              margin: 15mm !important;
-            }
-          }
-        `}
-      </style>
     </div>
   );
 };

@@ -10,16 +10,16 @@ import {
   Plus, 
   Trash2, 
   Users2, 
-  UserCog, 
   Shield, 
   User, 
   Mail, 
   Info, 
   Power, 
   PowerOff,
-  ShieldAlert
+  UserCog
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
+import PageHeader from "../components/shared/PageHeader";
 import { 
   Select, 
   SelectContent, 
@@ -44,7 +44,6 @@ const Users = () => {
     observation: ""
   });
 
-  // حماية الصفحة: إذا لم يكن المستخدم مديراً، يتم توجيهه للرئيسية
   if (currentUser?.role !== "Admin") {
     return <Navigate to="/" replace />;
   }
@@ -88,12 +87,12 @@ const Users = () => {
 
   return (
     <div className="space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-bold text-emerald-950">{isRTL ? "إدارة المستخدمين" : "User Management"}</h2>
-          <p className="text-emerald-600/70 mt-1">{isRTL ? "التحكم في حسابات النظام وصلاحيات الوصول" : "Control system accounts and access permissions"}</p>
-        </div>
-      </div>
+      <PageHeader
+        title={isRTL ? "إدارة المستخدمين" : "User Management"}
+        subtitle={isRTL ? "التحكم في حسابات النظام وصلاحيات الوصول" : "Control system accounts and access permissions"}
+        icon={UserCog}
+        isRTL={isRTL}
+      />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Add User Form */}

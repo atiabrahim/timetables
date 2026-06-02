@@ -9,6 +9,7 @@ import { Building2, Save, Mail, Phone, MapPin, Info, Calendar, FileCode } from "
 import { showSuccess } from "../utils/toast";
 import { cn } from "@/lib/utils";
 import { exportToXml } from "../lib/export-utils";
+import PageHeader from "../components/shared/PageHeader";
 
 const Institution = () => {
   const { 
@@ -36,29 +37,28 @@ const Institution = () => {
 
   return (
     <div className="space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-black text-gray-900">{t.institution_page.title}</h2>
-          <p className="text-gray-500 font-bold mt-1">{t.institution_page.subtitle}</p>
-        </div>
-        <div className="flex gap-3">
-          <Button 
-            variant="outline" 
-            onClick={handleExportXml} 
-            className="rounded-xl border-emerald-200 text-emerald-700 gap-2 font-bold px-6 h-12"
-          >
-            <FileCode size={20} />
-            {isRTL ? "تصدير XML المحدث" : "Export Updated XML"}
-          </Button>
-          <Button 
-            onClick={handleSave} 
-            className="bg-emerald-600 hover:bg-emerald-700 rounded-xl gap-2 font-bold px-8 h-12 shadow-lg shadow-emerald-100"
-          >
-            <Save size={20} />
-            {t.save}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t.institution_page.title}
+        subtitle={t.institution_page.subtitle}
+        icon={Building2}
+        isRTL={isRTL}
+      >
+        <Button 
+          variant="outline" 
+          onClick={handleExportXml} 
+          className="rounded-xl border-emerald-200 text-emerald-700 gap-2 font-bold px-6 h-11 bg-white"
+        >
+          <FileCode size={18} />
+          {isRTL ? "تصدير XML المحدث" : "Export Updated XML"}
+        </Button>
+        <Button 
+          onClick={handleSave} 
+          className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold px-8 h-11 shadow-lg shadow-emerald-100"
+        >
+          <Save size={18} />
+          {t.save}
+        </Button>
+      </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">

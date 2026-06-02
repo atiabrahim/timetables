@@ -1,29 +1,20 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { 
-  Plus, 
-  Trash2, 
-  Download, 
-  Database, 
-  MapPin, 
   AlertTriangle, 
-  Users2, 
-  BookOpen,
   Clock,
   FileCode,
-  Sparkles,
-  School,
-  ArrowUpDown,
-  Edit2
+  Settings as SettingsIcon
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { parseXml } from "../lib/export-utils";
+import PageHeader from "../components/shared/PageHeader";
+import { DAYS, PERIODS } from "../constants/schedule";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -35,16 +26,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
-const DAYS = [
-  { id: 0, name: "الأحد", en: "Sunday" },
-  { id: 1, name: "الاثنين", en: "Monday" },
-  { id: 2, name: "الثلاثاء", en: "Tuesday" },
-  { id: 3, name: "الأربعاء", en: "Wednesday" },
-  { id: 4, name: "الخميس", en: "Thursday" },
-];
-
-const PERIODS = Array.from({ length: 8 }, (_, i) => (i + 1).toString());
 
 const Settings = () => {
   const { 
@@ -107,20 +88,22 @@ const Settings = () => {
 
   return (
     <div className="space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 className="text-3xl font-black text-gray-900">{t.settings}</h2>
-          <p className="text-gray-500 font-bold mt-1">{isRTL ? "تخصيص النظام والبيانات الأساسية" : "System customization and core data"}</p>
-        </div>
-        
-        <div className="flex flex-wrap gap-3 w-full md:w-auto">
-          <input type="file" ref={xmlInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
-          <Button variant="outline" className="rounded-xl border-gray-200 gap-2 font-bold text-gray-700" onClick={() => xmlInputRef.current?.click()}>
-            <FileCode size={18} />
-            {isRTL ? "استيراد XML" : "Import XML"}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title={t.settings}
+        subtitle={isRTL ? "تخصيص النظام والبيانات الأساسية" : "System customization and core data"}
+        icon={SettingsIcon}
+        isRTL={isRTL}
+      >
+        <input type="file" ref={xmlInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
+        <Button 
+          variant="outline" 
+          className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white h-11" 
+          onClick={() => xmlInputRef.current?.click()}
+        >
+          <FileCode size={18} />
+          {isRTL ? "استيراد XML" : "Import XML"}
+        </Button>
+      </PageHeader>
 
       {/* Schedule Config */}
       <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
