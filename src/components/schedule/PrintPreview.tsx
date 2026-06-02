@@ -97,11 +97,32 @@ const PrintPreview = ({
         </div>
 
         <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white print:block">
+          {/* 1. حاوية المعاينة البصرية على الشاشة فقط (تختفي عند الطباعة) */}
           <div 
             id="printable-area"
-            className="transition-all duration-300 origin-top print:m-0 print:overflow-visible print:w-full"
+            className="transition-all duration-300 origin-top print:hidden"
             style={{ transform: `scale(${printScale / 100})` }}
           >
+            <OfficialPrintWrapper
+              title={title}
+              subtitle={subtitle}
+              orientation={orientation}
+              leftSignatureTitle={leftSignatureTitle}
+              rightSignatureTitle={rightSignatureTitle}
+            >
+              <div className="w-full">
+                <ScheduleTable 
+                  isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
+                  onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
+                  classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={totalHours}
+                  isTransposed={isTransposed}
+                />
+              </div>
+            </OfficialPrintWrapper>
+          </div>
+
+          {/* 2. حاوية الطباعة الفعلية (تظهر عند الطباعة فقط وتكون غير مقلصة وبأعلى جودة) */}
+          <div className="hidden print:block w-full">
             <OfficialPrintWrapper
               title={title}
               subtitle={subtitle}
@@ -130,19 +151,6 @@ const PrintPreview = ({
             @media print {
               body:has(div[role="dialog"]) #root {
                 display: none !important;
-              }
-              #printable-area {
-                visibility: visible !important;
-                display: block !important;
-                position: static !important;
-                width: 100% !important;
-                height: auto !important;
-                margin: 0 !important;
-                padding: 10mm !important;
-                border: none !important;
-                box-shadow: none !important;
-                background: white !important;
-                transform: none !important;
               }
             }
           `}
