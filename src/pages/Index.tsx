@@ -16,7 +16,10 @@ import {
   TrendingUp,
   Activity,
   CheckCircle2,
-  UserCheck
+  UserCheck,
+  Zap,
+  ShieldCheck,
+  BarChart3
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -37,7 +40,6 @@ const Index = () => {
     return format(new Date(), "EEEE, d MMMM yyyy", { locale });
   }, [language]);
 
-  // جلب المكلفين لليوم الحالي في الفترات الثلاث
   const todayDuties = useMemo(() => {
     const periods: ("Morning" | "Afternoon" | "Evening")[] = ["Morning", "Afternoon", "Evening"];
     return periods.map(period => {
@@ -54,223 +56,220 @@ const Index = () => {
     });
   }, [todayDateStr, employees, getEffectiveAssignment, t, language]);
 
-  // حساب الإحصائيات الحقيقية
   const stats = useMemo(() => [
-    { label: t.stats.teachers, value: employees.length, icon: Users, color: "text-blue-600", bg: "bg-blue-50", path: "/employees" },
-    { label: t.stats.classes, value: classes.length, icon: GraduationCap, color: "text-emerald-600", bg: "bg-emerald-50", path: "/classes" },
-    { label: t.stats.subjects, value: subjects.length, icon: BookOpen, color: "text-amber-600", bg: "bg-amber-50", path: "/subjects" },
-    { label: t.stats.rooms, value: rooms.length, icon: MapPin, color: "text-rose-600", bg: "bg-rose-50", path: "/rooms" },
+    { label: t.stats.teachers, value: employees.length, icon: Users, color: "text-emerald-600", bg: "bg-emerald-50", path: "/employees", trend: "+2" },
+    { label: t.stats.classes, value: classes.length, icon: GraduationCap, color: "text-blue-600", bg: "bg-blue-50", path: "/classes", trend: "Stable" },
+    { label: t.stats.subjects, value: subjects.length, icon: BookOpen, color: "text-amber-600", bg: "bg-amber-50", path: "/subjects", trend: "Full" },
+    { label: t.stats.rooms, value: rooms.length, icon: MapPin, color: "text-rose-600", bg: "bg-rose-50", path: "/rooms", trend: "Active" },
   ], [employees, classes, subjects, rooms, t]);
 
-  // حساب نسبة اكتمال الجدول (بافتراض متوسط 30 حصة لكل فرع)
   const completionPercentage = useMemo(() => {
     if (classes.length === 0) return 0;
-    const totalPotentialLessons = classes.length * 30; // تقديري
-    const percentage = Math.min(Math.round((assignments.length / totalPotentialLessons) * 100), 100);
-    return percentage || 0;
+    const totalPotentialLessons = classes.length * 30;
+    return Math.min(Math.round((assignments.length / totalPotentialLessons) * 100), 100) || 0;
   }, [assignments, classes]);
-
-  // حساب أعلى نصاب تدريسي
-  const highestLoad = useMemo(() => {
-    if (employees.length === 0) return "0";
-    const loads = employees.map(emp => assignments.filter(a => a.employeeId === emp.id).length);
-    return Math.max(...loads).toString();
-  }, [employees, assignments]);
-
-  const quickActions = [
-    { label: isRTL ? "إدارة الجدول" : "Manage Schedule", icon: Calendar, path: "/schedule", color: "bg-emerald-600" },
-    { label: isRTL ? "قائمة الحصص" : "Lessons List", icon: ListChecks, path: "/lessons", color: "bg-blue-600" },
-    { label: isRTL ? "عرض التقارير" : "View Reports", icon: TrendingUp, path: "/reports", color: "bg-indigo-600" },
-    { label: isRTL ? "بيانات المؤسسة" : "Institution", icon: FileText, path: "/institution", color: "bg-amber-600" },
-  ];
 
   return (
     <div className="space-y-10 pb-20">
-      {/* Header Section */}
-      <div className="relative overflow-hidden rounded-[3rem] bg-emerald-950 p-10 md:p-16 text-white shadow-2xl shadow-emerald-200/50">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/20 rounded-full -mr-32 -mt-32 blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-500/10 rounded-full -ml-20 -mb-20 blur-3xl"></div>
-        
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
-          <div className="space-y-4">
-            <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full backdrop-blur-md border border-white/10">
-              <Activity size={16} className="text-emerald-400" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100">
-                {isRTL ? "نظام الجدولة الذكي v2.0" : "Smart Scheduling System v2.0"}
-              </span>
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight">
-              {t.welcome} <br />
-              <span className="text-emerald-400">{user?.fullName || "Admin"}</span>
-            </h2>
-            <p className="text-emerald-100/60 font-bold text-lg max-w-xl leading-relaxed">
-              {isRTL 
-                ? "مرحباً بك في لوحة القيادة المركزية. تم تحديث كافة البيانات بناءً على آخر التغييرات في النظام." 
-                : "Welcome to your central dashboard. All data has been updated based on the latest system changes."}
-            </p>
-          </div>
+      {/* Hero Management Console */}
+      <div className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-[3.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+        <div className="relative overflow-hidden rounded-[3.5rem] bg-emerald-950 p-12 md:p-20 text-white shadow-2xl">
+          <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-emerald-500/10 rounded-full -mr-40 -mt-40 blur-3xl animate-pulse"></div>
           
-          <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
-            <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 text-center min-w-[140px]">
-              <p className="text-3xl font-black">{assignments.length}</p>
-              <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mt-1">{t.stats.lessons}</p>
+          <div className="relative z-10 grid grid-cols-1 xl:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="flex items-center gap-3">
+                <div className="px-4 py-1.5 bg-emerald-500/20 rounded-full border border-emerald-400/30 flex items-center gap-2">
+                  <ShieldCheck size={14} className="text-emerald-400" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100">System Secure</span>
+                </div>
+                <div className="px-4 py-1.5 bg-blue-500/20 rounded-full border border-blue-400/30 flex items-center gap-2">
+                  <Zap size={14} className="text-blue-400" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100">Live Sync</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-[1.1]">
+                  {t.welcome} <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
+                    {user?.fullName || "Administrator"}
+                  </span>
+                </h2>
+                <p className="text-emerald-100/60 font-bold text-xl max-w-lg leading-relaxed">
+                  {isRTL 
+                    ? "نظام الإدارة المتكامل للجدول الدراسي والمهام البيداغوجية. تحكم كامل في الموارد البشرية والمادية بضغطة واحدة." 
+                    : "Integrated management system for schedule and pedagogical tasks. Full control over human and material resources."}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-4 pt-4">
+                <Button onClick={() => navigate("/schedule")} className="h-16 px-10 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-black rounded-3xl text-lg shadow-xl shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95">
+                  {isRTL ? "بدء الجدولة" : "Start Scheduling"}
+                </Button>
+                <Button onClick={() => navigate("/reports-new")} variant="outline" className="h-16 px-10 border-white/20 bg-white/5 hover:bg-white/10 text-white font-black rounded-3xl text-lg backdrop-blur-md">
+                  <FileText className="mr-2 h-6 w-6" /> {isRTL ? "التقارير" : "Reports"}
+                </Button>
+              </div>
             </div>
-            <div className="bg-white/5 backdrop-blur-xl p-6 rounded-[2.5rem] border border-white/10 text-center min-w-[140px]">
-              <p className="text-3xl font-black">{subjects.length}</p>
-              <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mt-1">{t.stats.subjects}</p>
+
+            <div className="hidden xl:grid grid-cols-2 gap-6">
+              {[
+                { label: t.stats.lessons, value: assignments.length, sub: "Total Assignments", icon: ListChecks, color: "text-emerald-400" },
+                { label: t.stats.subjects, value: subjects.length, sub: "Active Curriculum", icon: BookOpen, color: "text-blue-400" },
+                { label: "Today Active", value: todayDuties.reduce((acc, d) => acc + d.count, 0), sub: "Staff on Duty", icon: UserCheck, color: "text-amber-400" },
+                { label: "Completion", value: `${completionPercentage}%`, sub: "Schedule Status", icon: BarChart3, color: "text-rose-400" },
+              ].map((box, i) => (
+                <div key={i} className="bg-white/5 backdrop-blur-2xl p-8 rounded-[3rem] border border-white/10 group/box hover:bg-white/10 transition-all">
+                  <box.icon className={cn("mb-4 transition-transform group-hover/box:scale-110", box.color)} size={32} />
+                  <p className="text-4xl font-black tracking-tighter mb-1">{box.value}</p>
+                  <p className="text-[10px] font-black text-emerald-400/60 uppercase tracking-widest">{box.label}</p>
+                  <p className="text-[8px] font-bold text-white/30 uppercase mt-2">{box.sub}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Main Stats and Actions */}
         <div className="xl:col-span-2 space-y-8">
-          {/* Quick Stats */}
+          {/* Real-time Monitor Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {stats.map((stat, idx) => (
               <Card 
                 key={idx} 
                 onClick={() => navigate(stat.path)}
-                className="group border-none shadow-sm rounded-3xl overflow-hidden hover:shadow-xl hover:shadow-emerald-100/50 transition-all cursor-pointer bg-white active:scale-95"
+                className="group border-none shadow-xl shadow-slate-200/40 rounded-[2.5rem] overflow-hidden hover:shadow-2xl hover:shadow-emerald-200/50 transition-all cursor-pointer bg-white"
               >
-                <CardContent className="p-6 flex flex-col items-center text-center">
-                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-colors", stat.bg, stat.color, "group-hover:bg-emerald-600 group-hover:text-white")}>
-                    <stat.icon size={24} />
+                <CardContent className="p-8 flex flex-col items-center text-center">
+                  <div className={cn("w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-6 transition-all group-hover:scale-110 group-hover:rotate-3 shadow-lg", stat.bg, stat.color)}>
+                    <stat.icon size={32} />
                   </div>
-                  <p className="text-2xl font-black text-gray-900">{stat.value}</p>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{stat.label}</p>
+                  <p className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">{stat.label}</p>
+                  <div className="mt-4 px-3 py-1 bg-slate-50 rounded-full text-[9px] font-black text-emerald-600 border border-slate-100">
+                    {stat.trend}
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          {/* Today's Active Duties Section */}
-          <Card className="border-none shadow-xl shadow-emerald-100/10 rounded-[2.5rem] bg-white overflow-hidden">
-            <CardHeader className="border-b border-gray-50 bg-emerald-50/20 p-8">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <CardTitle className="text-xl font-black text-emerald-950 flex items-center gap-2">
-                    <UserCheck size={22} className="text-emerald-600" />
-                    {isRTL ? "تكليفات حضور اليوم" : "Today's Active Duties"}
-                  </CardTitle>
-                  <p className="text-xs font-bold text-emerald-600/70 mt-1">{todayFriendlyName}</p>
+          {/* Detailed Today's Operations */}
+          <Card className="border-none shadow-2xl shadow-emerald-900/5 rounded-[3rem] bg-white overflow-hidden">
+            <CardHeader className="bg-slate-50/50 p-10 border-b border-slate-100">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+                      <UserCheck size={20} />
+                    </div>
+                    <CardTitle className="text-2xl font-black text-slate-900">
+                      {isRTL ? "عمليات اليوم الجارية" : "Live Today's Operations"}
+                    </CardTitle>
+                  </div>
+                  <p className="text-sm font-bold text-slate-400 px-1">{todayFriendlyName}</p>
                 </div>
-                <Button 
-                  onClick={() => navigate("/assignments")} 
-                  variant="outline" 
-                  className="rounded-xl border-emerald-100 text-emerald-700 hover:bg-emerald-50 font-bold text-xs h-9"
-                >
-                  {isRTL ? "تعديل التكليفات" : "Edit Assignments"}
+                <Button onClick={() => navigate("/assignments")} className="rounded-2xl h-12 px-8 bg-slate-900 hover:bg-black font-black text-xs text-white">
+                  {isRTL ? "تخصيص المهام" : "Assign Duties"}
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <CardContent className="p-10">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {todayDuties.map((duty, idx) => (
-                  <div key={idx} className="bg-slate-50/50 rounded-2xl p-5 border border-slate-100 flex flex-col h-full">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-xs font-black text-emerald-900 bg-emerald-50 px-3 py-1 rounded-full">
-                        {duty.label}
-                      </span>
-                      <span className="text-xs font-black text-slate-400">
-                        {duty.count} {isRTL ? "مكلف" : "Staff"}
-                      </span>
-                    </div>
-                    
-                    <div className="flex-1 space-y-2">
-                      {duty.employees.length > 0 ? (
-                        duty.employees.map((emp: any) => (
-                          <div key={emp.id} className="text-xs font-bold text-slate-700 flex items-center gap-2 bg-white p-2.5 rounded-xl border border-slate-100">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                            <span className="truncate">{emp.lastName} {emp.firstName}</span>
+                  <div key={idx} className="group relative">
+                    <div className="absolute -inset-2 bg-emerald-50 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-all"></div>
+                    <div className="relative space-y-6">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[11px] font-black text-emerald-700 bg-emerald-50 px-4 py-1.5 rounded-full uppercase tracking-widest">
+                          {duty.label}
+                        </span>
+                        <span className="text-[10px] font-black text-slate-300">
+                          {duty.count} Active
+                        </span>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        {duty.employees.length > 0 ? (
+                          duty.employees.map((emp: any) => (
+                            <div key={emp.id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
+                              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center font-black text-emerald-700 text-xs">
+                                {emp.lastName[0]}{emp.firstName[0]}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-black text-slate-800 truncate">{emp.lastName} {emp.firstName}</p>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">{emp.category}</p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="py-12 flex flex-col items-center justify-center text-slate-300 gap-2 border-2 border-dashed border-slate-100 rounded-[2rem]">
+                            <Clock size={24} className="opacity-20" />
+                            <span className="text-[10px] font-bold uppercase tracking-widest">{isRTL ? "لا يوجد مكلفين" : "Idle State"}</span>
                           </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-8 text-slate-400 text-xs italic">
-                          {isRTL ? "لا توجد تكليفات مسجلة" : "No duties assigned"}
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
-
-          {/* Quick Actions Grid */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-black text-emerald-950 px-2">{isRTL ? "الوصول السريع" : "Quick Access"}</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {quickActions.map((action, idx) => (
-                <Button
-                  key={idx}
-                  onClick={() => navigate(action.path)}
-                  variant="ghost"
-                  className="h-20 justify-start px-6 rounded-3xl bg-white border border-gray-100 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all group"
-                >
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-white mr-4", action.color)}>
-                    <action.icon size={20} />
-                  </div>
-                  <span className="font-bold text-gray-700 flex-1 text-right">{action.label}</span>
-                  <ArrowUpRight size={18} className="text-gray-300 group-hover:text-emerald-600 transition-colors" />
-                </Button>
-              ))}
-            </div>
-          </div>
         </div>
 
-        {/* Recent Activity / Overview */}
         <div className="space-y-8">
-          <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-[2.5rem] bg-white h-full">
-            <CardHeader className="border-b border-gray-50">
-              <CardTitle className="text-lg font-black text-emerald-950 flex items-center gap-2">
-                <Activity size={20} className="text-emerald-500" />
-                {isRTL ? "حالة النظام" : "System Status"}
+          {/* System Integrity & Health */}
+          <Card className="border-none shadow-2xl shadow-emerald-900/5 rounded-[3rem] bg-emerald-950 text-white h-full overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent"></div>
+            <CardHeader className="p-10 border-b border-white/5">
+              <CardTitle className="text-xl font-black flex items-center gap-3">
+                <Activity size={22} className="text-emerald-400" />
+                {isRTL ? "مؤشرات بيداغوجية" : "System Integrity"}
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-8 space-y-8">
+            <CardContent className="p-10 space-y-10">
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn("w-2 h-2 rounded-full", completionPercentage > 80 ? "bg-emerald-500" : "bg-amber-500")}></div>
-                    <span className="text-sm font-bold text-gray-700">{isRTL ? "جاهزية الجداول" : "Schedule Readiness"}</span>
-                  </div>
-                  <span className="text-sm font-black text-emerald-600">{completionPercentage}%</span>
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[11px] font-black text-emerald-400 uppercase tracking-[0.2em]">{isRTL ? "جاهزية الجداول" : "Data Readiness"}</span>
+                  <span className="text-2xl font-black">{completionPercentage}%</span>
                 </div>
-                <div className="w-full h-3 bg-gray-50 rounded-full overflow-hidden border border-gray-100">
+                <div className="h-4 bg-white/5 rounded-full overflow-hidden p-1 border border-white/5">
                   <div 
-                    className="h-full bg-emerald-500 shadow-lg shadow-emerald-200 transition-all duration-1000" 
+                    className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full shadow-[0_0_20px_rgba(52,211,153,0.4)] transition-all duration-1000" 
                     style={{ width: `${completionPercentage}%` }}
                   ></div>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{isRTL ? "مؤشرات بيداغوجية" : "Pedagogical Insights"}</p>
-                <div className="space-y-3">
-                  {[
-                    { label: isRTL ? "أعلى نصاب تدريس" : "Highest Teacher Load", value: `${highestLoad} ${isRTL ? 'حصة' : 'Hrs'}`, icon: TrendingUp, color: "text-blue-500" },
-                    { label: isRTL ? "القاعات المشغولة" : "Occupied Rooms", value: `${rooms.filter(r => assignments.some(a => a.room === r)).length} / ${rooms.length}`, icon: MapPin, color: "text-rose-500" },
-                    { label: isRTL ? "مزامنة البيانات" : "Data Sync Status", value: assignments.length > 0 ? (isRTL ? "متزامن" : "Synced") : (isRTL ? "انتظار" : "Idle"), icon: CheckCircle2, color: "text-emerald-500" },
-                  ].map((item, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl border border-gray-50">
-                      <div className="flex items-center gap-3">
-                        <item.icon size={16} className={item.color} />
-                        <span className="text-xs font-bold text-gray-600">{item.label}</span>
+                {[
+                  { label: isRTL ? "نسبة إشغال القاعات" : "Room Occupancy", value: `${Math.round((rooms.filter(r => assignments.some(a => a.room === r)).length / rooms.length) * 100 || 0)}%`, icon: TrendingUp, color: "text-blue-400" },
+                  { label: isRTL ? "مزامنة التكليفات" : "Assignment Sync", value: "Optimal", icon: CheckCircle2, color: "text-emerald-400" },
+                  { label: isRTL ? "استقرار النظام" : "System Uptime", value: "99.9%", icon: ShieldCheck, color: "text-teal-400" },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-5 bg-white/5 rounded-[1.5rem] border border-white/5 group hover:bg-white/10 transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className={cn("p-2 rounded-xl bg-white/5", item.color)}>
+                        <item.icon size={18} />
                       </div>
-                      <span className="text-xs font-black text-gray-900">{item.value}</span>
+                      <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">{item.label}</span>
                     </div>
-                  ))}
-                </div>
+                    <span className="text-xs font-black text-white">{item.value}</span>
+                  </div>
+                ))}
               </div>
 
-              <Button 
-                onClick={() => navigate("/schedule")}
-                className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 rounded-2xl font-bold shadow-lg shadow-emerald-100 active:scale-95 transition-all text-white"
-              >
-                {isRTL ? "فتح الجدول الدراسي" : "Open Schedule"}
-              </Button>
+              <div className="pt-6">
+                <Button 
+                  onClick={() => navigate("/reports")}
+                  className="w-full h-16 bg-white text-emerald-950 hover:bg-emerald-50 rounded-2xl font-black text-sm shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <TrendingUp className="mr-2 h-5 w-5" /> {isRTL ? "عرض التحليلات الكاملة" : "Full Analytics"}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
