@@ -11,6 +11,7 @@ interface OfficialPrintWrapperProps {
   orientation?: "portrait" | "landscape";
   children: React.ReactNode;
   showSignatures?: boolean;
+  showSystemFooter?: boolean; // خيار جديد للتحكم في تذييل النظام
   leftSignatureTitle?: string;
   rightSignatureTitle?: string;
 }
@@ -21,6 +22,7 @@ const OfficialPrintWrapper = ({
   orientation = "portrait",
   children,
   showSignatures = true,
+  showSystemFooter = false, // اجعلها خاطئة افتراضياً للتقارير الرسمية
   leftSignatureTitle,
   rightSignatureTitle
 }: OfficialPrintWrapperProps) => {
@@ -34,20 +36,20 @@ const OfficialPrintWrapper = ({
       className={cn(
         "bg-white mx-auto page-break-container",
         orientation === "portrait" ? "w-[210mm]" : "w-[297mm]",
-        "print:p-6 p-8 shadow-sm border border-slate-100 print:border-none print:shadow-none"
+        "print:p-10 p-8 shadow-sm border border-slate-100 print:border-none print:shadow-none"
       )}
       dir={isRTL ? "rtl" : "ltr"}
       style={{ fontFamily: "'Cairo', sans-serif" }}
     >
-      {/* Official Algerian Header - More compact and formal */}
-      <div className="flex flex-col items-center text-center mb-4 space-y-0.5">
-        <p className="font-black text-slate-950 text-sm tracking-tight">{t.republic}</p>
-        <p className="font-bold text-slate-900 text-xs">{t.centerName}</p>
-        <p className="font-bold text-slate-800 text-xs">{institution.name || t.centerLocation}</p>
+      {/* Official Algerian Header */}
+      <div className="flex flex-col items-center text-center mb-6 space-y-1">
+        <p className="font-black text-black text-sm tracking-tight uppercase">{t.republic}</p>
+        <p className="font-bold text-black text-xs">{t.centerName}</p>
+        <p className="font-bold text-black text-xs">{institution.name || t.centerLocation}</p>
       </div>
 
-      {/* Info Bar - Split between Department and Academic Year */}
-      <div className="flex justify-between items-center border-y border-black py-1.5 mb-4 text-[11px] font-bold">
+      {/* Info Bar */}
+      <div className="flex justify-between items-center border-y-2 border-black py-2 mb-6 text-[12px] font-bold">
         <p className="text-black">
           {isRTL ? "المصلحة:" : "Department:"} <span className="font-black">{departments[0] || (isRTL ? "مصلحة التكوين" : "Training Dept")}</span>
         </p>
@@ -56,13 +58,13 @@ const OfficialPrintWrapper = ({
         </p>
       </div>
 
-      {/* Main Title - Centered and Bold */}
-      <div className="text-center mb-4">
-        <h1 className="font-black text-black text-xl mb-2">
+      {/* Main Title */}
+      <div className="text-center mb-6">
+        <h1 className="font-black text-black text-2xl mb-2">
           {title}
         </h1>
         {subtitle && (
-          <div className="inline-block border border-black px-4 py-1 rounded-md text-[11px] font-black bg-slate-50">
+          <div className="inline-block border border-black px-6 py-1 rounded-md text-[12px] font-black bg-slate-50">
             {subtitle}
           </div>
         )}
@@ -73,28 +75,30 @@ const OfficialPrintWrapper = ({
         {children}
       </div>
 
-      {/* Official Signatures - Placed at the bottom */}
+      {/* Official Signatures */}
       {showSignatures && (
-        <div className="mt-8 grid grid-cols-2 gap-10 pt-4 border-t border-dashed border-slate-300">
+        <div className="mt-12 grid grid-cols-2 gap-20 pt-6 border-t-2 border-black">
           <div className="text-center">
-            <p className="font-black text-black text-xs mb-12 underline underline-offset-4">
+            <p className="font-black text-black text-sm mb-16 underline underline-offset-8 decoration-2">
               {leftSignatureTitle || defaultLeftSignature}
             </p>
-            <div className="border-t border-black w-32 mx-auto"></div>
+            <div className="border-t-2 border-black w-40 mx-auto opacity-20"></div>
           </div>
           <div className="text-center">
-            <p className="font-black text-black text-xs mb-12 underline underline-offset-4">
+            <p className="font-black text-black text-sm mb-16 underline underline-offset-8 decoration-2">
               {rightSignatureTitle || defaultRightSignature}
             </p>
-            <div className="border-t border-black w-32 mx-auto"></div>
+            <div className="border-t-2 border-black w-40 mx-auto opacity-20"></div>
           </div>
         </div>
       )}
 
-      {/* Footer Meta */}
-      <div className="mt-4 pt-2 text-center text-[8px] text-slate-400 font-bold uppercase tracking-widest border-t border-slate-50">
-        EduSchedule Pro — Generated on {format(new Date(), "yyyy-MM-dd HH:mm")}
-      </div>
+      {/* System Footer - Hidden if not explicitly requested */}
+      {showSystemFooter && (
+        <div className="mt-6 pt-2 text-center text-[8px] text-slate-400 font-bold uppercase tracking-widest border-t border-slate-50 print:hidden">
+          EduSchedule Pro — Generated on {format(new Date(), "yyyy-MM-dd HH:mm")}
+        </div>
+      )}
     </div>
   );
 };
