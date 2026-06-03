@@ -20,6 +20,9 @@ export interface Institution {
   email: string;
   academicYear?: string;
   logo?: string;
+  // مسميات التواقيع
+  pedagogicalManagerTitle?: string;
+  generalManagerTitle?: string;
 }
 
 export interface Employee {

@@ -11,7 +11,7 @@ interface OfficialPrintWrapperProps {
   orientation?: "portrait" | "landscape";
   children: React.ReactNode;
   showSignatures?: boolean;
-  showSystemFooter?: boolean; // خيار جديد للتحكم في تذييل النظام
+  showSystemFooter?: boolean;
   leftSignatureTitle?: string;
   rightSignatureTitle?: string;
 }
@@ -22,14 +22,14 @@ const OfficialPrintWrapper = ({
   orientation = "portrait",
   children,
   showSignatures = true,
-  showSystemFooter = false, // اجعلها خاطئة افتراضياً للتقارير الرسمية
+  showSystemFooter = false,
   leftSignatureTitle,
   rightSignatureTitle
 }: OfficialPrintWrapperProps) => {
   const { t, isRTL, institution, departments } = useApp();
 
-  const defaultLeftSignature = isRTL ? "رئيس مصلحة التكوين" : "Head of Training";
-  const defaultRightSignature = t.managerSignature || (isRTL ? "توقيع وإمضاء المدير" : "Director Signature");
+  const finalLeftTitle = leftSignatureTitle || institution.pedagogicalManagerTitle || (isRTL ? "المسؤول البيداغوجي" : "Pedagogical Manager");
+  const finalRightTitle = rightSignatureTitle || institution.generalManagerTitle || (isRTL ? "مدير المؤسسة" : "General Manager");
 
   return (
     <div 
@@ -41,7 +41,7 @@ const OfficialPrintWrapper = ({
       dir={isRTL ? "rtl" : "ltr"}
       style={{ fontFamily: "'Cairo', sans-serif" }}
     >
-      {/* Official Algerian Header */}
+      {/* Official Header */}
       <div className="flex flex-col items-center text-center mb-6 space-y-1">
         <p className="font-black text-black text-sm tracking-tight uppercase">{t.republic}</p>
         <p className="font-bold text-black text-xs">{t.centerName}</p>
@@ -58,7 +58,7 @@ const OfficialPrintWrapper = ({
         </p>
       </div>
 
-      {/* Main Title */}
+      {/* Title */}
       <div className="text-center mb-6">
         <h1 className="font-black text-black text-2xl mb-2">
           {title}
@@ -70,30 +70,28 @@ const OfficialPrintWrapper = ({
         )}
       </div>
 
-      {/* Main Content Area */}
       <div className="flex-1 w-full overflow-hidden">
         {children}
       </div>
 
-      {/* Official Signatures */}
+      {/* Signatures */}
       {showSignatures && (
         <div className="mt-12 grid grid-cols-2 gap-20 pt-6 border-t-2 border-black">
           <div className="text-center">
             <p className="font-black text-black text-sm mb-16 underline underline-offset-8 decoration-2">
-              {leftSignatureTitle || defaultLeftSignature}
+              {finalLeftTitle}
             </p>
             <div className="border-t-2 border-black w-40 mx-auto opacity-20"></div>
           </div>
           <div className="text-center">
             <p className="font-black text-black text-sm mb-16 underline underline-offset-8 decoration-2">
-              {rightSignatureTitle || defaultRightSignature}
+              {finalRightTitle}
             </p>
             <div className="border-t-2 border-black w-40 mx-auto opacity-20"></div>
           </div>
         </div>
       )}
 
-      {/* System Footer - Hidden if not explicitly requested */}
       {showSystemFooter && (
         <div className="mt-6 pt-2 text-center text-[8px] text-slate-400 font-bold uppercase tracking-widest border-t border-slate-50 print:hidden">
           EduSchedule Pro — Generated on {format(new Date(), "yyyy-MM-dd HH:mm")}

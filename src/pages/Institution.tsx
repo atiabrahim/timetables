@@ -5,7 +5,7 @@ import { useApp } from "../context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Building2, Save, Mail, Phone, MapPin, Info, Calendar, FileCode } from "lucide-react";
+import { Building2, Save, Mail, Phone, MapPin, Info, Calendar, FileCode, PenTool } from "lucide-react";
 import { showSuccess } from "../utils/toast";
 import { cn } from "@/lib/utils";
 import { exportToXml } from "../lib/export-utils";
@@ -101,17 +101,32 @@ const Institution = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
-                  {t.institution_page.subName}
-                </label>
-                <div className="relative">
-                  <Info className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
-                  <Input 
-                    value={institution.subName}
-                    onChange={(e) => setInstitution({...institution, subName: e.target.value})}
-                    className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all font-bold", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
+                    {isRTL ? "مسمى المسؤول البيداغوجي" : "Pedagogical Manager Title"}
+                  </label>
+                  <div className="relative">
+                    <PenTool className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
+                    <Input 
+                      value={institution.pedagogicalManagerTitle || ""}
+                      onChange={(e) => setInstitution({...institution, pedagogicalManagerTitle: e.target.value})}
+                      className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
+                    {isRTL ? "مسمى المدير العام" : "General Manager Title"}
+                  </label>
+                  <div className="relative">
+                    <PenTool className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
+                    <Input 
+                      value={institution.generalManagerTitle || ""}
+                      onChange={(e) => setInstitution({...institution, generalManagerTitle: e.target.value})}
+                      className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -143,20 +158,6 @@ const Institution = () => {
                   </div>
                 </div>
               </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
-                  {t.institution_page.address}
-                </label>
-                <div className="relative">
-                  <MapPin className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
-                  <Input 
-                    value={institution.address}
-                    onChange={(e) => setInstitution({...institution, address: e.target.value})}
-                    className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
-                  />
-                </div>
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -173,9 +174,9 @@ const Institution = () => {
               <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center space-y-2">
                 <h3 className="text-lg font-black text-emerald-900">{institution.name || "---"}</h3>
                 <p className="text-sm font-bold text-emerald-700">{institution.subName || "---"}</p>
-                <p className="text-xs font-medium text-gray-500">{institution.academicYear || "---"}</p>
-                <div className="pt-4 border-t border-gray-100 mt-4 text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                  {isRTL ? "ستظهر هذه البيانات في أعلى كل جدول مطبوع" : "This data will appear at the top of every printed schedule"}
+                <div className="flex justify-between mt-4 pt-4 border-t border-gray-100 text-[10px] font-black uppercase text-gray-400">
+                  <span>{institution.pedagogicalManagerTitle}</span>
+                  <span>{institution.generalManagerTitle}</span>
                 </div>
               </div>
             </CardContent>

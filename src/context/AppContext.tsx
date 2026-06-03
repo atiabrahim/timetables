@@ -61,7 +61,9 @@ const DEFAULT_INSTITUTION: Institution = {
   address: "الدبيلة، الوادي",
   phone: "",
   email: "",
-  academicYear: "2023/2024"
+  academicYear: "2023/2024",
+  pedagogicalManagerTitle: "المسؤول البيداغوجي",
+  generalManagerTitle: "مدير المركز"
 };
 
 const generateDefaultPeriodConfigs = (): PeriodConfig[] => {
@@ -70,7 +72,7 @@ const generateDefaultPeriodConfigs = (): PeriodConfig[] => {
   days.forEach(d => {
     configs.push({ day: d, period: "Morning", isActive: true });
     configs.push({ day: d, period: "Afternoon", isActive: true });
-    configs.push({ day: d, period: "Evening", isActive: true }); // تم التعديل لتكون نشطة افتراضياً
+    configs.push({ day: d, period: "Evening", isActive: true });
   });
   return configs;
 };
@@ -107,7 +109,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         const parsed = JSON.parse(savedData);
         if (parsed.systemUsers?.length > 0) setSystemUsers(parsed.systemUsers);
-        if (parsed.institution) setInstitution(parsed.institution);
+        if (parsed.institution) setInstitution({ ...DEFAULT_INSTITUTION, ...parsed.institution });
         setEmployees(parsed.employees || []);
         setAssignments(parsed.assignments || []);
         setTemplateAssignments(parsed.templateAssignments || []);
@@ -183,7 +185,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const importAllData = (data: Partial<AppState>) => {
     if (!data) return;
-    if (data.institution) setInstitution(data.institution);
+    if (data.institution) setInstitution({ ...DEFAULT_INSTITUTION, ...data.institution });
     if (data.employees) setEmployees(data.employees);
     if (data.rooms) setRooms(data.rooms);
     if (data.classes) setClasses(data.classes);
@@ -228,8 +230,4 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   );
 };
 
-export const useApp = () => {
-  const context = useContext(AppContext);
-  if (!context) throw new Error("useApp must be used within AppProvider");
-  return context;
-};
+export default AppProvider;
