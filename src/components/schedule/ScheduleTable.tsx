@@ -61,7 +61,7 @@ const ScheduleTable = ({
       const type = conflicts[0].employeeId === asgn.employeeId ? "Teacher" : "Room";
       return {
         type,
-        with: type === "Teacher" ? "Same teacher in another class" : "Room already occupied"
+        with: type === "Teacher" ? (isRTL ? "الأستاذ مشغول في قسم آخر" : "Teacher occupied in another class") : (isRTL ? "القاعة مشغولة حالياً" : "Room already occupied")
       };
     }
     return null;
@@ -142,7 +142,7 @@ const ScheduleTable = ({
         </p>
         
         {/* Secondary Info */}
-        <p className={cn("font-bold leading-tight break-words w-full", isPrint ? "text-[7px] mb-0.5" : "text-[9px] mb-1 opacity-90")}>
+        <p className={cn("font-bold leading-tight break-words w-full", isPrint ? "text-[7px] mb-0.5" : "text-[7px] mb-1 opacity-90")}>
           {viewMode === "class" 
             ? (() => {
                 const e = employees.find(emp => emp.id === assignment.employeeId);
@@ -216,7 +216,7 @@ const ScheduleTable = ({
                 !isPrint && "bg-slate-50 group-hover:bg-emerald-50 transition-colors"
               )}>
                 <span className={cn("font-black", isPrint ? "text-[9px] text-black" : "text-sm text-slate-400 group-hover:text-emerald-600")}>{slot.label}</span>
-                {!isPrint && <Clock size={10} className="text-slate-200 mt-1" />}
+                {!isPrint && <Info size={10} className="text-slate-200 mt-1" />}
               </div>
             </td>
             {days.map(day => {
