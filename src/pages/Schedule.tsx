@@ -48,16 +48,16 @@ const Schedule = () => {
     );
   }, [assignments, selectedId, viewMode]);
 
-  // توليد خانات الحصص (1-12)
+  // توليد خانات الحصص (1-12) مع تغيير التسمية للعربية
   const periodSlots = useMemo(() => {
     return PERIODS.map(id => ({
       id,
-      label: id,
+      label: isRTL ? `ح${id}` : id, // هنا يتم تغيير التسمية إلى ح1، ح2...
       periodPart: PERIOD_MAP[id] as "Morning" | "Afternoon" | "Evening",
       isBreak: false,
       time: ""
     }));
-  }, []);
+  }, [isRTL]);
 
   // الحصص النشطة فقط
   const activeTimeSlots = useMemo(() => {
@@ -189,7 +189,7 @@ const Schedule = () => {
               summaryData={summaryData}
               totalHours={filteredAssignments.length}
               isTransposed={isTransposed}
-              allAssignments={assignments} // تمرير كافة الحصص لكشف التعارضات
+              allAssignments={assignments}
             />
           </div>
         </div>
@@ -200,7 +200,6 @@ const Schedule = () => {
         </div>
       )}
 
-      {/* ... Rest of the component (Dialogs/Previews) stays the same */}
       <AddLessonDialog 
         isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}
         isRTL={isRTL} cancelText={t.cancel}
