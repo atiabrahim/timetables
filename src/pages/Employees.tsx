@@ -44,6 +44,7 @@ const Employees = () => {
   });
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const isAdmin = user?.role === "Admin";
@@ -97,6 +98,7 @@ const Employees = () => {
     const id = Math.random().toString(36).substr(2, 9);
     setEmployees([...employees, { id, ...newEmployee }]);
     setNewEmployee({ firstName: "", lastName: "", category: "Full-time", email: "", phone: "", observation: "" });
+    setIsAddDialogOpen(false);
     showSuccess(isRTL ? "تمت الإضافة بنجاح" : "Added successfully");
   };
 
@@ -158,13 +160,22 @@ const Employees = () => {
         icon={Briefcase}
         isRTL={isRTL}
       >
+        {isAdmin && (
+          <Button 
+            onClick={() => setIsAddDialogOpen(true)} 
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold"
+          >
+            <Plus size={18} />
+            {isRTL ? "إضافة معلم جديد" : "Add New Teacher"}
+          </Button>
+        )}
         <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white">
           <Eye size={18} />
           {isRTL ? "معاينة الطباعة" : "Print Preview"}
         </Button>
-        <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold">
+        <Button onClick={() => window.print()} variant="outline" className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white">
           <Printer size={18} />
-          {isRTL ? "طباعة" : "Print"}
+          {isRTL ? "طباعة القائمة" : "Print List"}
         </Button>
         <div className="relative w-full md:w-64">
           <Search className={cn("absolute top-1/2 -translate-y-1/2 text-slate-400", isRTL ? "right-3" : "left-3")} size={16} />
@@ -227,32 +238,6 @@ const Employees = () => {
           </CardContent>
         </Card>
       </div>
-
-      {isAdmin && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-50 items-end print:hidden">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "الاسم" : "First Name"}</label>
-            <Input value={newEmployee.firstName} onChange={e => setNewEmployee({...newEmployee, firstName: e.target.value})} className="rounded-xl h-12" />
-          </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "اللقب" : "Last Name"}</label>
-            <Input value={newEmployee.lastName} onChange={e => setNewEmployee({...newEmployee, lastName: e.target.value})} className="rounded-xl h-12" />
-          </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "الفئة" : "Category"}</label>
-            <Select value={newEmployee.category} onValueChange={v => setNewEmployee({...newEmployee, category: v})}>
-              <SelectTrigger className="rounded-xl h-12"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Full-time">{isRTL ? "دوام كامل" : "Full-time"}</SelectItem>
-                <SelectItem value="Part-time">{isRTL ? "دوام جزئي" : "Part-time"}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Button onClick={handleAddEmployee} className="w-full bg-emerald-950 hover:bg-black text-white rounded-xl h-12 font-black shadow-lg shadow-emerald-100">
-            <Plus size={18} className="me-2" /> {isRTL ? "إضافة" : "Add"}
-          </Button>
-        </div>
-      )}
 
       <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm print:hidden">
         <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
@@ -319,6 +304,92 @@ const Employees = () => {
           <PrintableTable />
         </OfficialPrintWrapper>
       </div>
+
+      {/* Add Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="rounded-3xl sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-emerald-950 flex items-center gap-2">
+              <Plus size={20} className="text-emerald-600" />
+              {isRTL ? "إضافة معلم جديد" : "Add New Teacher"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-emerald-800">{isRTL ? "الاسم" : "First Name"}</label>
+                <Input 
+                  value={newEmployee.firstName} 
+                  onChange={e => setNewEmployee({...newEmployee, firstName: e.target.value})} 
+                  className="rounded-xl" 
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-emerald-800">{isRTL ? "اللقب" : "Last Name"}</label>
+                <Input 
+                  value={newEmployee.lastName} 
+                  onChange={e => setNewEmployee({...newEmployee, lastName: e.target.value})} 
+                  className="rounded-xl" 
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-emerald-800">{isRTL ? "الفئة" : "Category"}</label>
+                <Select 
+                  value={newEmployee.category} 
+                  onValueChange={v => setNewEmployee({...newEmployee, category: v})}
+                >
+                  <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Full-time">{isRTL ? "دوام كامل" : "Full-time"}</SelectItem>
+                    <SelectItem value="Part-time">{isRTL ? "دوام جزئي" : "Part-time"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-emerald-800">{isRTL ? "رقم الهاتف" : "Phone Number"}</label>
+                <Input 
+                  value={newEmployee.phone} 
+                  onChange={e => setNewEmployee({...newEmployee, phone: e.target.value})} 
+                  className="rounded-xl" 
+                  placeholder="0555xxxxxx"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-emerald-800">{isRTL ? "البريد الإلكتروني" : "Email"}</label>
+              <Input 
+                type="email"
+                value={newEmployee.email} 
+                onChange={e => setNewEmployee({...newEmployee, email: e.target.value})} 
+                className="rounded-xl" 
+                placeholder="teacher@edu.com"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-emerald-800">{isRTL ? "ملاحظات" : "Observation"}</label>
+              <Input 
+                value={newEmployee.observation} 
+                onChange={e => setNewEmployee({...newEmployee, observation: e.target.value})} 
+                className="rounded-xl" 
+                placeholder="..."
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="rounded-xl">
+              {t.cancel}
+            </Button>
+            <Button onClick={handleAddEmployee} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-8 text-white">
+              {isRTL ? "إضافة" : "Add"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

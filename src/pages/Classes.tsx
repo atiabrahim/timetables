@@ -42,6 +42,7 @@ const Classes = () => {
   const [newBranch, setNewBranch] = useState({ name: "", code: "", qualificationLevel: "" });
   const [editingBranch, setEditingBranch] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const isAdmin = user?.role === "Admin";
@@ -88,6 +89,7 @@ const Classes = () => {
     const id = Math.random().toString(36).substr(2, 9);
     setClasses([...classes, { id, ...newBranch }]);
     setNewBranch({ name: "", code: "", qualificationLevel: "" });
+    setIsAddDialogOpen(false);
     showSuccess(isRTL ? "تم إضافة الفرع بنجاح" : "Branch added successfully");
   };
 
@@ -139,6 +141,15 @@ const Classes = () => {
         icon={GraduationCap}
         isRTL={isRTL}
       >
+        {isAdmin && (
+          <Button 
+            onClick={() => setIsAddDialogOpen(true)} 
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold"
+          >
+            <Plus size={18} />
+            {isRTL ? "إضافة فرع جديد" : "Add New Branch"}
+          </Button>
+        )}
         <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white">
           <Eye size={18} />
           {isRTL ? "معاينة الطباعة" : "Print Preview"}
@@ -157,43 +168,6 @@ const Classes = () => {
           />
         </div>
       </PageHeader>
-
-      {/* Add Section (Admin Only) */}
-      {isAdmin && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-50 items-end print:hidden">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "اسم الفرع" : "Branch Name"}</label>
-            <Input 
-              value={newBranch.name} 
-              onChange={e => setNewBranch({...newBranch, name: e.target.value})}
-              placeholder={isRTL ? "مثلاً: تقني رياضي" : "e.g. Technical Math"}
-              className="rounded-xl h-12"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "الرمز" : "Code"}</label>
-            <Input 
-              value={newBranch.code} 
-              onChange={e => setNewBranch({...newBranch, code: e.target.value})}
-              placeholder={isRTL ? "مثلاً: TM" : "e.g. TM"}
-              className="rounded-xl h-12"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "مستوى التأهيل" : "Qualification Level"}</label>
-            <Input 
-              value={newBranch.qualificationLevel} 
-              onChange={e => setNewBranch({...newBranch, qualificationLevel: e.target.value})}
-              placeholder={isRTL ? "مثلاً: تقني سامي" : "e.g. Senior Tech"}
-              className="rounded-xl h-12"
-            />
-          </div>
-          <Button onClick={handleAddBranch} className="w-full bg-emerald-950 hover:bg-black text-white rounded-xl h-12 font-black shadow-lg shadow-emerald-100">
-            <Plus size={18} className="me-2" />
-            {isRTL ? "إضافة فرع" : "Add Branch"}
-          </Button>
-        </div>
-      )}
 
       {/* Table Section */}
       <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm print:hidden">
@@ -296,6 +270,51 @@ const Classes = () => {
           <PrintableTable />
         </OfficialPrintWrapper>
       </div>
+
+      {/* Add Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-emerald-950 flex items-center gap-2">
+              <Plus size={20} className="text-emerald-600" />
+              {isRTL ? "إضافة فرع جديد" : "Add New Branch"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-emerald-800">{isRTL ? "اسم الفرع" : "Branch Name"}</label>
+              <Input 
+                value={newBranch.name} 
+                onChange={e => setNewBranch({...newBranch, name: e.target.value})}
+                placeholder={isRTL ? "مثلاً: تقني رياضي" : "e.g. Technical Math"}
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-emerald-800">{isRTL ? "الرمز" : "Code"}</label>
+              <Input 
+                value={newBranch.code} 
+                onChange={e => setNewBranch({...newBranch, code: e.target.value})}
+                placeholder={isRTL ? "مثلاً: TM" : "e.g. TM"}
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-emerald-800">{isRTL ? "مستوى التأهيل" : "Qualification Level"}</label>
+              <Input 
+                value={newBranch.qualificationLevel} 
+                onChange={e => setNewBranch({...newBranch, qualificationLevel: e.target.value})}
+                placeholder={isRTL ? "مثلاً: تقني سامي" : "e.g. Senior Tech"}
+                className="rounded-xl"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="rounded-xl">{t.cancel}</Button>
+            <Button onClick={handleAddBranch} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white">{isRTL ? "إضافة" : "Add"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
