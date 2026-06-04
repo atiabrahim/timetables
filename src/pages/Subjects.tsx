@@ -45,6 +45,7 @@ const Subjects = () => {
   const [newSubject, setNewSubject] = useState({ name: "", nameEn: "" });
   const [editingSubject, setEditingSubject] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
@@ -111,10 +112,14 @@ const Subjects = () => {
   };
 
   const handleAddSubject = () => {
-    if (!newSubject.name.trim()) return;
+    if (!newSubject.name.trim()) {
+      showError(isRTL ? "يرجى إدخال اسم المادة" : "Please enter subject name");
+      return;
+    }
     const id = Math.random().toString(36).substr(2, 9);
     setSubjects([...subjects, { id, ...newSubject }]);
     setNewSubject({ name: "", nameEn: "" });
+    setIsAddDialogOpen(false);
     showSuccess(isRTL ? "تم إضافة المادة بنجاح" : "Subject added successfully");
   };
 
@@ -164,6 +169,15 @@ const Subjects = () => {
         icon={BookOpen}
         isRTL={isRTL}
       >
+        {isAdmin && (
+          <Button 
+            onClick={() => setIsAddDialogOpen(true)} 
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold"
+          >
+            <Plus size={18} />
+            {isRTL ? "إضافة مادة جديدة" : "Add New Subject"}
+          </Button>
+        )}
         <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white">
           <Eye size={18} />
           {isRTL ? "معاينة الطباعة" : "Print Preview"}
@@ -182,48 +196,6 @@ const Subjects = () => {
           />
         </div>
       </PageHeader>
-
-      {/* Add Section (Admin Only) */}
-      {isAdmin && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-xl shadow-slate-50 items-end print:hidden">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "اسم المادة" : "Subject Name"}</label>
-            <Input 
-              value={newSubject.name} 
-              onChange={e => setNewSubject({...newSubject, name: e.target.value})}
-              placeholder={isRTL ? "مثلاً: الرياضيات" : "e.g. Mathematics"}
-              className="rounded-xl h-12"
-            />
-          </div>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center px-1">
-              <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">{isRTL ? "التسمية بالإنجليزية" : "English Name"}</label>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className={cn("h-4 w-4 text-emerald-600 hover:text-emerald-700", isTranslating && "animate-spin")}
-                onClick={() => fetchGoogleTranslation(newSubject.name, "new")}
-                disabled={isTranslating}
-                title={isRTL ? "ترجمة قوقل الذكية" : "Google Smart Translate"}
-              >
-                {isTranslating ? <Loader2 size={12} /> : <Sparkles size={12} />}
-              </Button>
-            </div>
-            <Input 
-              value={newSubject.nameEn} 
-              onChange={e => setNewSubject({...newSubject, nameEn: e.target.value})}
-              placeholder="English Name"
-              className="rounded-xl h-12"
-            />
-          </div>
-          <div className="md:col-span-2">
-            <Button onClick={handleAddSubject} className="w-full bg-emerald-950 hover:bg-black text-white rounded-xl h-12 font-black shadow-lg shadow-emerald-100">
-              <Plus size={18} className="me-2" />
-              {isRTL ? "إضافة مادة" : "Add Subject"}
-            </Button>
-          </div>
-        </div>
-      )}
 
       {/* Table Section */}
       <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm print:hidden">
@@ -306,6 +278,54 @@ const Subjects = () => {
         </OfficialPrintWrapper>
       </div>
 
+      {/* Add Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="rounded-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-emerald-950 flex items-center gap-2">
+              <Plus size={20} className="text-emerald-600" />
+              {isRTL ? "إضافة مادة جديدة" : "Add New Subject"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-emerald-800">{isRTL ? "اسم المادة" : "Subject Name"}</label>
+              <Input 
+                value={newSubject.name} 
+                onChange={e => setNewSubject({...newSubject, name: e.target.value})}
+                placeholder={isRTL ? "مثلاً: الرياضيات" : "e.g. Mathematics"}
+                className="rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-medium text-emerald-800">{isRTL ? "التسمية بالإنجليزية" : "English Name"}</label>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className={cn("h-6 text-emerald-500 hover:text-emerald-600 gap-1 text-xs", isTranslating && "animate-spin")}
+                  onClick={() => fetchGoogleTranslation(newSubject.name, "new")}
+                  disabled={isTranslating}
+                >
+                  {isTranslating ? <Loader2 size={12} /> : <Sparkles size={12} />}
+                  {isRTL ? "ترجمة قوقل" : "Google Translate"}
+                </Button>
+              </div>
+              <Input 
+                value={newSubject.nameEn} 
+                onChange={e => setNewSubject({...newSubject, nameEn: e.target.value})}
+                placeholder="English Name"
+                className="rounded-xl"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="rounded-xl">{t.cancel}</Button>
+            <Button onClick={handleAddSubject} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white">{isRTL ? "إضافة" : "Add"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="rounded-3xl">
@@ -346,7 +366,7 @@ const Subjects = () => {
           )}
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl">{t.cancel}</Button>
-            <Button onClick={handleUpdateSubject} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">{isRTL ? "حفظ" : "Save"}</Button>
+            <Button onClick={handleUpdateSubject} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white">{isRTL ? "حفظ" : "Save"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
