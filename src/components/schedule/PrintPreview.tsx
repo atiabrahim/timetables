@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { FileText, RotateCw, Printer, X, Calendar as CalendarIcon, GraduationCap, User } from "lucide-react";
+import { FileText, RotateCw, Printer, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { 
@@ -29,11 +29,12 @@ interface PrintPreviewProps {
   getAssignment: (day: number, period: string) => any;
   summaryData: any[];
   totalHours: number;
+  isTransposed: boolean;
 }
 
 const PrintPreview = ({ 
   isOpen, onOpenChange, isRTL, orientation, setOrientation, printScale, setPrintScale, 
-  viewMode, selectedId, employees, classes, subjects, days, timeSlots, getAssignment, summaryData, totalHours
+  viewMode, selectedId, employees, classes, subjects, days, timeSlots, getAssignment, summaryData, totalHours, isTransposed
 }: PrintPreviewProps) => {
   
   const selectedEntity = viewMode === "teacher" 
@@ -48,18 +49,9 @@ const PrintPreview = ({
     ? (isRTL ? `جدول توقيت الأستاذ: ${entityName}` : `Teacher Timetable: ${entityName}`)
     : (isRTL ? `جدول توقيت الفوج: ${entityName}` : `Class Timetable: ${entityName}`);
 
-  // تصميم الـ Pill (البطاقة أسفل العنوان)
   const subtitle = (
-    <div className="inline-flex items-center gap-4 bg-white border-2 border-black rounded-full px-8 py-2 font-black text-emerald-800">
-      <div className="flex items-center gap-2">
-        {viewMode === "teacher" ? <User size={18} /> : <GraduationCap size={18} />}
-        <span className="text-lg">{entityName}</span>
-      </div>
-      <div className="w-0.5 h-6 bg-emerald-100 mx-2"></div>
-      <div className="flex items-center gap-2">
-        <CalendarIcon size={18} />
-        <span className="text-lg">{isRTL ? "الجدول الأسبوعي" : "Weekly Schedule"}</span>
-      </div>
+    <div className="flex items-center justify-center gap-2 text-emerald-800 font-bold">
+      <span>{isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Time Schedule"}</span>
     </div>
   );
 
@@ -102,6 +94,7 @@ const PrintPreview = ({
                 isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
                 onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
                 classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={totalHours}
+                isTransposed={isTransposed}
               />
             </OfficialPrintWrapper>
           </div>
