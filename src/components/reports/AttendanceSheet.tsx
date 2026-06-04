@@ -80,7 +80,7 @@ const AttendanceSheet = ({
       {/* Main Document Title */}
       <div className="text-center mb-6">
         <div className="inline-block relative">
-          <h1 className="font-black text-black text-lg px-8 py-1.5 border-2 border-black relative z-10 bg-white">
+          <h1 className="font-black text-black text-base px-8 py-1.5 border-2 border-black relative z-10 bg-white">
             {t.attendanceSheet}
           </h1>
           <div className="absolute -bottom-1 -right-1 w-full h-full bg-black -z-0"></div>
