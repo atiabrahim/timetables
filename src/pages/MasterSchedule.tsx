@@ -53,8 +53,8 @@ const MasterSchedule = () => {
   };
 
   const MasterTable = ({ isPrint = false }: { isPrint?: boolean }) => {
-    const classColWidth = isPrint ? "w-[12%]" : "w-[15%]";
-    const periodColWidth = `w-[${((100 - (isPrint ? 12 : 15)) / visiblePeriods.length).toFixed(2)}%]`;
+    // تقليص العرض للحد الأدنى
+    const classColWidth = isPrint ? "w-[75px]" : "w-[90px]";
 
     return (
       <div className={cn(
@@ -64,20 +64,20 @@ const MasterSchedule = () => {
         <table className="w-full border-collapse table-fixed">
           <colgroup>
             <col className={classColWidth} />
-            {visiblePeriods.map(p => <col key={p} className={periodColWidth} />)}
+            {visiblePeriods.map(p => <col key={p} className="w-auto" />)}
           </colgroup>
           <thead>
             <tr className="bg-emerald-950 text-white">
               <th className={cn(
-                "p-3 border-e border-white/10 text-center sticky left-0 z-20 bg-emerald-950",
-                isPrint ? "text-[9px]" : "text-[11px] uppercase tracking-widest font-black"
+                "p-2 border-e border-white/10 text-center sticky left-0 z-20 bg-emerald-950",
+                isPrint ? "text-[8px]" : "text-[10px] uppercase tracking-tighter font-black"
               )}>
                 {isRTL ? "الفوج" : "Class"}
               </th>
               {visiblePeriods.map(p => (
                 <th key={p} className={cn(
-                  "p-3 border-e border-white/10 text-center font-black",
-                  isPrint ? "text-[9px]" : "text-[11px]"
+                  "p-2 border-e border-white/10 text-center font-black",
+                  isPrint ? "text-[8px]" : "text-[10px]"
                 )}>
                   {isRTL ? `ح${p}` : `P${p}`}
                 </th>
@@ -87,14 +87,118 @@ const MasterSchedule = () => {
           <tbody>
             {visibleClasses.map((cls, idx) => (
               <tr key={cls.id} className={cn(
-                "group transition-colors",
-                idx % 2 === 0 ? "bg-white" : "bg-emerald-50/20",
+                "group transition-colors h-10",
+                idx % 2 === 0 ? "bg-white" : "bg-emerald-50/10",
                 !isPrint && "hover:bg-emerald-100/30"
               )}>
                 <td className={cn(
-                  "p-3 font-black border-e sticky left-0 z-10 transition-colors shadow-sm truncate",
-                  idx % 2 === 0 ? "bg-white" : "bg-[#f9fdfb]",
-                  isPrint ? "text-[9px] border-black" : "text-[11px] text-emerald-950 border-emerald-50"
+                  "p-1.5 font-black border-e sticky left-0 z-10 transition-colors shadow-sm truncate",
+                  idx % 2 === 0 ? "bg-white" : "bg-[#fcfdfd]",
+                  isPrint ? "text-[8px] border-black" : "text-[10px] text-emerald-950 border-emerald-50"
+                )}>
+                  {cls.name}
+                </td>
+                {visiblePeriods.map(p => {
+                  const lesson = getLesson(cls.id, p);
+                  const teacher = lesson ? employees.find(e => e.id === lesson.employeeId) : null;
+                  const subject<dyad-write path="src/pages/MasterSchedule.tsx" description="تحسين الجدول العام للمؤسسة من خلال تقليص عرض عمود الأفواج وضبط أعمدة الحصص لتكون متساوية تماماً وبأقل عرض ممكن، مع تقليل الحشو (padding) لضمان انضغاط الجدول.">
+"use client";
+
+import React, { useMemo, useState } from "react";
+import { useApp } from "../context/AppContext";
+import { 
+  LayoutGrid, 
+  Search, 
+  Printer, 
+  Filter,
+  Rows,
+  Columns
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import PageHeader from "../components/shared/PageHeader";
+import { DAYS, PERIODS } from "../constants/schedule";
+import { cn } from "@/lib/utils";
+import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
+
+const MasterSchedule = () => {
+  const { classes, assignments, subjects, employees, isRTL, t } = useApp();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDay, setSelectedDay] = useState(0);
+  const [hideEmptyRows, setHideEmptyRows] = useState(false);
+  const [hideEmptyPeriods, setHideEmptyPeriods] = useState(false);
+
+  // تصفية الأفواج بناءً على البحث والإخفاء الذكي للأسطر
+  const visibleClasses = useMemo(() => {
+    let list = classes.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    if (hideEmptyRows) {
+      list = list.filter(c => 
+        assignments.some(a => a.classId === c.id && a.day === selectedDay)
+      );
+    }
+    
+    return list;
+  }, [classes, searchTerm, hideEmptyRows, selectedDay, assignments]);
+
+  // تصفية الفترات الزمنية بناءً على الإخفاء الذكي للأعمدة
+  const visiblePeriods = useMemo(() => {
+    if (!hideEmptyPeriods) return PERIODS;
+    
+    return PERIODS.filter(p => 
+      assignments.some(a => a.day === selectedDay && a.period === p)
+    );
+  }, [hideEmptyPeriods, selectedDay, assignments]);
+
+  const getLesson = (classId: string, period: string) => {
+    return assignments.find(a => a.classId === classId && a.day === selectedDay && a.period === period);
+  };
+
+  const MasterTable = ({ isPrint = false }: { isPrint?: boolean }) => {
+    // تقليص العرض للحد الأدنى (90px للعرض العادي و 75px للطباعة)
+    const classColWidth = isPrint ? "w-[75px]" : "w-[90px]";
+
+    return (
+      <div className={cn(
+        "bg-white overflow-x-auto pb-4",
+        isPrint ? "p-0" : "rounded-[2rem] border border-emerald-100 shadow-xl shadow-emerald-50/50"
+      )}>
+        <table className="w-full border-collapse table-fixed">
+          <colgroup>
+            <col className={classColWidth} />
+            {visiblePeriods.map(p => <col key={p} className="w-auto" />)}
+          </colgroup>
+          <thead>
+            <tr className="bg-emerald-950 text-white">
+              <th className={cn(
+                "p-2 border-e border-white/10 text-center sticky left-0 z-20 bg-emerald-950",
+                isPrint ? "text-[8px]" : "text-[10px] uppercase tracking-tighter font-black"
+              )}>
+                {isRTL ? "الفوج" : "Class"}
+              </th>
+              {visiblePeriods.map(p => (
+                <th key={p} className={cn(
+                  "p-2 border-e border-white/10 text-center font-black",
+                  isPrint ? "text-[8px]" : "text-[10px]"
+                )}>
+                  {isRTL ? `ح${p}` : `P${p}`}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {visibleClasses.map((cls, idx) => (
+              <tr key={cls.id} className={cn(
+                "group transition-colors h-10",
+                idx % 2 === 0 ? "bg-white" : "bg-emerald-50/10",
+                !isPrint && "hover:bg-emerald-100/30"
+              )}>
+                <td className={cn(
+                  "p-1.5 font-black border-e sticky left-0 z-10 transition-colors shadow-sm truncate",
+                  idx % 2 === 0 ? "bg-white" : "bg-[#fcfdfd]",
+                  isPrint ? "text-[8px] border-black" : "text-[10px] text-emerald-950 border-emerald-50"
                 )}>
                   {cls.name}
                 </td>
@@ -105,21 +209,21 @@ const MasterSchedule = () => {
 
                   return (
                     <td key={p} className={cn(
-                      "p-1.5 text-center border-e",
+                      "p-1 text-center border-e",
                       isPrint ? "border-black" : "border-emerald-50"
                     )}>
                       {lesson ? (
                         <div className={cn(
-                          "flex flex-col gap-0.5 overflow-hidden",
-                          isPrint ? "text-[7px]" : "text-[9px]"
+                          "flex flex-col gap-0 overflow-hidden leading-none",
+                          isPrint ? "text-[7px]" : "text-[8.5px]"
                         )}>
                           <span className="font-black text-emerald-700 truncate">{subject?.name}</span>
-                          <span className="text-slate-500 font-bold truncate opacity-80">
-                            {teacher ? `${teacher.lastName} ${teacher.firstName[0]}.` : "---"}
+                          <span className="text-slate-500 font-bold truncate opacity-80 scale-[0.85] origin-center">
+                            {teacher ? `${teacher.lastName}` : "---"}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-slate-200 opacity-20 text-[8px]">---</span>
+                        <span className="text-slate-100 opacity-10 text-[7px]">---</span>
                       )}
                     </td>
                   );
@@ -159,7 +263,7 @@ const MasterSchedule = () => {
                   : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
               )}
             >
-              {isRTL ? day.name : day.en}
+              {isRTL ? day.name : day.en.substr(0, 3)}
             </Button>
           ))}
         </div>
