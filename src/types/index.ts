@@ -25,6 +25,15 @@ export interface Institution {
   generalManagerTitle?: string;
 }
 
+export interface Department {
+  id: string;
+  number: string; // الرقم
+  name: string; // التسمية
+  head: string; // الرئيس
+  code: string; // الرمز
+  observation: string; // ملاحظة
+}
+
 export interface Employee {
   id: string;
   firstName: string;
@@ -84,7 +93,7 @@ export interface AppState {
   assignments: Assignment[];
   templateAssignments: TemplateAssignment[];
   dailyAssignments: DailyAssignment[];
-  departments: string[];
+  departments: Department[];
   rooms: string[];
   classes: AcademicClass[];
   subjects: Subject[];

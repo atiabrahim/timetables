@@ -5,14 +5,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Layout as LayoutIcon, Clock, Building2 } from "lucide-react";
-import { PeriodPart } from "@/types";
+import { PeriodPart, Department } from "@/types";
 
 interface ReportControlsProps {
   t: any;
   isRTL: boolean;
   orientation: "portrait" | "landscape";
   onOrientationChange: (val: "portrait" | "landscape") => void;
-  departments: string[];
+  departments: Department[];
   selectedDepartment: string;
   onDepartmentChange: (dept: string) => void;
   selectedPeriods: PeriodPart[];
@@ -31,12 +31,14 @@ const ReportControls = ({
   onTogglePeriod 
 }: ReportControlsProps) => {
   // Fallback list of departments if empty
-  const deptList = departments.length > 0 ? departments : [
-    isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate",
-    isRTL ? "مصلحة التكوين" : "Training Department",
-    isRTL ? "مصلحة التمهين" : "Apprenticeship Department",
-    isRTL ? "مصلحة المالية" : "Finance Department"
-  ];
+  const deptList = departments.length > 0 
+    ? departments.map(d => d.name) 
+    : [
+        isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate",
+        isRTL ? "مصلحة التكوين" : "Training Department",
+        isRTL ? "مصلحة التمهين" : "Apprenticeship Department",
+        isRTL ? "مصلحة المالية" : "Finance Department"
+      ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-2 print:hidden">
@@ -68,9 +70,9 @@ const ReportControls = ({
             <SelectValue placeholder={isRTL ? "اختر المصلحة..." : "Select department..."} />
           </SelectTrigger>
           <SelectContent>
-            {deptList.map((dept, idx) => (
-              <SelectItem key={idx} value={dept}>
-                {dept}
+            {deptList.map((deptName, idx) => (
+              <SelectItem key={idx} value={deptName}>
+                {deptName}
               </SelectItem>
             ))}
           </SelectContent>

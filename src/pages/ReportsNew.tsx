@@ -64,7 +64,8 @@ const ReportsNew = () => {
   // Initialize selectedDepartment when departments are loaded
   useEffect(() => {
     if (departments && departments.length > 0) {
-      setSelectedDepartment(departments[0]);
+      const firstDept = departments[0];
+      setSelectedDepartment(typeof firstDept === 'string' ? firstDept : firstDept.name);
     } else {
       setSelectedDepartment(defaultDept);
     }
@@ -92,7 +93,7 @@ const ReportsNew = () => {
       });
   };
 
-  const activeDept = selectedDepartment || departments[0] || defaultDept;
+  const activeDept = selectedDepartment || (departments[0] ? (typeof departments[0] === 'string' ? departments[0] : departments[0].name) : defaultDept);
 
   const renderDailyReport = () => {
     const date = parseISO(dailyDate);

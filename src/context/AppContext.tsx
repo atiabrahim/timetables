@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Language, translations } from "../translations";
 import { 
-  User, Institution, Employee, Assignment, 
+  User, Institution, Employee, Assignment, Department,
   AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment 
 } from "../types";
 
@@ -26,8 +26,8 @@ interface AppContextType {
   dailyAssignments: DailyAssignment[];
   saveAssignment: (date: string, periods: PeriodPart[], employeeIds: string[]) => void;
   getEffectiveAssignment: (dateStr: string, period: PeriodPart) => string[];
-  departments: string[];
-  setDepartments: React.Dispatch<React.SetStateAction<string[]>>;
+  departments: Department[];
+  setDepartments: React.Dispatch<React.SetStateAction<Department[]>>;
   rooms: string[];
   setRooms: React.Dispatch<React.SetStateAction<string[]>>;
   classes: AcademicClass[];
@@ -90,7 +90,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [templateAssignments, setTemplateAssignments] = useState<TemplateAssignment[]>([]);
   const [dailyAssignments, setDailyAssignments] = useState<DailyAssignment[]>([]);
-  const [departments, setDepartments] = useState<string[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [rooms, setRooms] = useState<string[]>([]);
   const [classes, setClasses] = useState<AcademicClass[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
@@ -114,12 +114,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setAssignments(parsed.assignments || []);
         setTemplateAssignments(parsed.templateAssignments || []);
         setDailyAssignments(parsed.dailyAssignments || []);
-        setDepartments(parsed.departments || []);
         setRooms(parsed.rooms || []);
         setClasses(parsed.classes || []);
         setSubjects(parsed.subjects || []);
         if (parsed.periodConfigs && parsed.periodConfigs.length > 0) {
           setPeriodConfigs(parsed.periodConfigs);
+        }
+
+        // الهجرة الآمنة لبيانات المصالح القديمة (من نصوص إلى كائنات)
+        if (parsed.departments) {
+          const migratedDepts = parsed.departments.map((d: any, idx: number) => {
+            if (typeof d === 'string') {
+              return {
+                id: `dept-${idx}-${Math.random().toString(36).substr(2, 4)}`,
+                number: (idx + 1).toString(),
+                name: d,
+                head: "",
+                code: "",
+                observation: ""
+              };
+            }
+            return d;
+          });
+          setDepartments(migratedDepts);
         }
       } catch (e) {
         console.error("Failed to parse saved data", e);
@@ -193,9 +210,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data.assignments) setAssignments(data.assignments);
     if (data.templateAssignments) setTemplateAssignments(data.templateAssignments);
     if (data.dailyAssignments) setDailyAssignments(data.dailyAssignments);
-    if (data.departments) setDepartments(data.departments);
     if (data.periodConfigs && data.periodConfigs.length > 0) setPeriodConfigs(data.periodConfigs);
     if (data.systemUsers) setSystemUsers(data.systemUsers);
+    
+    if (data.departments) {
+      const migratedDepts = data.departments.map((d: any, idx: number) => {
+        if (typeof d === 'string') {
+          return {
+            id: `dept-${idx}-${Math.random().toString(36).substr(2, 4)}`,
+            number: (idx + 1).toString(),
+            name: d,
+            head: "",
+            code: "",
+            observation: ""
+          };
+        }
+        return d;
+      });
+      setDepartments(migratedDepts);
+    }
   };
 
   const login = (username: string, role: User["role"]) => {

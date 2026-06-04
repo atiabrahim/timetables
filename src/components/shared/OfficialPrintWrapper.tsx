@@ -28,6 +28,10 @@ const OfficialPrintWrapper = ({
   const finalLeftTitle = leftSignatureTitle || institution.pedagogicalManagerTitle || (isRTL ? "رئيس مصلحة التكوين" : "Head of Training");
   const finalRightTitle = rightSignatureTitle || institution.generalManagerTitle || (isRTL ? "ختم وتوقيع المدير" : "Director Signature");
 
+  const firstDeptName = departments[0] 
+    ? (typeof departments[0] === 'string' ? departments[0] : departments[0].name)
+    : (isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate");
+
   return (
     <div 
       className={cn(
@@ -51,7 +55,7 @@ const OfficialPrintWrapper = ({
       <div className="grid grid-cols-2 border-y-2 border-black py-2 mb-8 text-xs font-black">
         <div className="flex items-center gap-2">
           <span className="text-black/60">{isRTL ? "المصلحة:" : "Department:"}</span>
-          <span className="text-black">{departments[0] || (isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate")}</span>
+          <span className="text-black">{firstDeptName}</span>
         </div>
         <div className={cn("flex items-center gap-2", isRTL ? "justify-end" : "justify-start")}>
           <span className="text-black/60">{isRTL ? "السنة التكوينية:" : "Training Year:"}</span>
