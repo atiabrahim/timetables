@@ -108,14 +108,14 @@
     visibility: visible !important;
   }
 
-  /* Report Container */
+  /* Report Container with minimal margins */
   .page-break-container,
   .print-content-master {
     display: block !important;
     width: 100% !important;
     max-width: none !important;
     margin: 0 auto !important;
-    padding: 10mm !important;
+    padding: 3mm !important; /* تقليص الهوامش الداخلية إلى الحد الأدنى الممكن */
     box-sizing: border-box !important;
     page-break-after: always !important;
     break-after: page !important;
@@ -147,6 +147,6 @@
   }
 
   @page {
-    margin: 0 !important;
+    margin: 0 !important; /* تصفير هوامش الصفحة لإخفاء ترويسة وتذييل المتصفح الافتراضي */
   }
 }
