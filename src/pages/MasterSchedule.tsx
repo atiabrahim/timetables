@@ -52,92 +52,96 @@ const MasterSchedule = () => {
     return assignments.find(a => a.classId === classId && a.day === selectedDay && a.period === period);
   };
 
-  const MasterTable = ({ isPrint = false }: { isPrint?: boolean }) => (
-    <div className={cn(
-      "bg-white overflow-x-auto pb-4",
-      isPrint ? "p-0" : "rounded-[2rem] border border-emerald-100 shadow-xl shadow-emerald-50/50"
-    )}>
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-emerald-950 text-white">
-            <th className={cn(
-              "p-4 border-e border-white/10 text-center sticky left-0 z-20 bg-emerald-950",
-              isPrint ? "text-[10px] w-24" : "text-xs w-40 uppercase tracking-widest font-black"
-            )}>
-              {isRTL ? "الفوج / الفرع" : "Class / Branch"}
-            </th>
-            {visiblePeriods.map(p => (
-              <th key={p} className={cn(
-                "p-4 border-e border-white/10 text-center font-black",
-                isPrint ? "text-[10px]" : "text-xs min-w-[120px]"
-              )}>
-                {isRTL ? `الحصة ${p}` : `P. ${p}`}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {visibleClasses.map((cls, idx) => (
-            <tr key={cls.id} className={cn(
-              "group transition-colors",
-              idx % 2 === 0 ? "bg-white" : "bg-emerald-50/20",
-              !isPrint && "hover:bg-emerald-100/30"
-            )}>
-              <td className={cn(
-                "p-4 font-black border-e sticky left-0 z-10 transition-colors shadow-sm",
-                idx % 2 === 0 ? "bg-white" : "bg-[#f9fdfb]",
-                isPrint ? "text-[10px] border-black" : "text-xs text-emerald-950 border-emerald-50"
-              )}>
-                {cls.name}
-              </td>
-              {visiblePeriods.map(p => {
-                const lesson = getLesson(cls.id, p);
-                const teacher = lesson ? employees.find(e => e.id === lesson.employeeId) : null;
-                const subject = lesson ? subjects.find(s => s.id === lesson.subjectId) : null;
+  const MasterTable = ({ isPrint = false }: { isPrint?: boolean }) => {
+    const classColWidth = isPrint ? "w-[12%]" : "w-[15%]";
+    const periodColWidth = `w-[${((100 - (isPrint ? 12 : 15)) / visiblePeriods.length).toFixed(2)}%]`;
 
-                return (
-                  <td key={p} className={cn(
-                    "p-2 text-center border-e",
-                    isPrint ? "border-black" : "border-emerald-50"
-                  )}>
-                    {lesson ? (
-                      <div className={cn(
-                        "flex flex-col gap-0.5",
-                        isPrint ? "text-[8px]" : "text-[10px]"
-                      )}>
-                        <span className="font-black text-emerald-700 truncate">{subject?.name}</span>
-                        <span className="text-slate-500 font-bold truncate opacity-80">
-                          {teacher ? `${teacher.lastName} ${teacher.firstName}` : "---"}
-                        </span>
-                        {lesson.room && (
-                          <span className="text-emerald-500 font-black text-[8px] bg-emerald-50 rounded px-1 self-center">
-                            {lesson.room}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-slate-200 opacity-20">---</span>
-                    )}
-                  </td>
-                );
-              })}
+    return (
+      <div className={cn(
+        "bg-white overflow-x-auto pb-4",
+        isPrint ? "p-0" : "rounded-[2rem] border border-emerald-100 shadow-xl shadow-emerald-50/50"
+      )}>
+        <table className="w-full border-collapse table-fixed">
+          <colgroup>
+            <col className={classColWidth} />
+            {visiblePeriods.map(p => <col key={p} className={periodColWidth} />)}
+          </colgroup>
+          <thead>
+            <tr className="bg-emerald-950 text-white">
+              <th className={cn(
+                "p-3 border-e border-white/10 text-center sticky left-0 z-20 bg-emerald-950",
+                isPrint ? "text-[9px]" : "text-[11px] uppercase tracking-widest font-black"
+              )}>
+                {isRTL ? "الفوج" : "Class"}
+              </th>
+              {visiblePeriods.map(p => (
+                <th key={p} className={cn(
+                  "p-3 border-e border-white/10 text-center font-black",
+                  isPrint ? "text-[9px]" : "text-[11px]"
+                )}>
+                  {isRTL ? `ح${p}` : `P${p}`}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {visibleClasses.length === 0 && (
-        <div className="p-20 text-center text-slate-400 font-bold">
-          {isRTL ? "لا توجد بيانات لعرضها (ربما بسبب الفلاتر المطبقة)" : "No data to display (check filters)"}
-        </div>
-      )}
-    </div>
-  );
+          </thead>
+          <tbody>
+            {visibleClasses.map((cls, idx) => (
+              <tr key={cls.id} className={cn(
+                "group transition-colors",
+                idx % 2 === 0 ? "bg-white" : "bg-emerald-50/20",
+                !isPrint && "hover:bg-emerald-100/30"
+              )}>
+                <td className={cn(
+                  "p-3 font-black border-e sticky left-0 z-10 transition-colors shadow-sm truncate",
+                  idx % 2 === 0 ? "bg-white" : "bg-[#f9fdfb]",
+                  isPrint ? "text-[9px] border-black" : "text-[11px] text-emerald-950 border-emerald-50"
+                )}>
+                  {cls.name}
+                </td>
+                {visiblePeriods.map(p => {
+                  const lesson = getLesson(cls.id, p);
+                  const teacher = lesson ? employees.find(e => e.id === lesson.employeeId) : null;
+                  const subject = lesson ? subjects.find(s => s.id === lesson.subjectId) : null;
+
+                  return (
+                    <td key={p} className={cn(
+                      "p-1.5 text-center border-e",
+                      isPrint ? "border-black" : "border-emerald-50"
+                    )}>
+                      {lesson ? (
+                        <div className={cn(
+                          "flex flex-col gap-0.5 overflow-hidden",
+                          isPrint ? "text-[7px]" : "text-[9px]"
+                        )}>
+                          <span className="font-black text-emerald-700 truncate">{subject?.name}</span>
+                          <span className="text-slate-500 font-bold truncate opacity-80">
+                            {teacher ? `${teacher.lastName} ${teacher.firstName[0]}.` : "---"}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-slate-200 opacity-20 text-[8px]">---</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {visibleClasses.length === 0 && (
+          <div className="p-20 text-center text-slate-400 font-bold">
+            {isRTL ? "لا توجد بيانات" : "No data"}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-8 pb-20">
       <PageHeader
         title={isRTL ? "الجدول العام للمؤسسة" : "Master Institution Schedule"}
-        subtitle={isRTL ? "عرض بانورامي شامل لكافة الأفواج في لحظة واحدة" : "Panoramic view of all classes in one screen"}
+        subtitle={isRTL ? "عرض بانورامي شامل لكافة الأفواج" : "Panoramic view of all classes"}
         icon={LayoutGrid}
         isRTL={isRTL}
       >
