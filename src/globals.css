@@ -57,9 +57,9 @@
   }
 }
 
-/* تصحيحات الطباعة العالمية */
+/* Global Print Styles */
 @media print {
-  /* إخفاء عناصر واجهة المستخدم */
+  /* Hide UI elements */
   header, 
   aside, 
   button, 
@@ -68,49 +68,28 @@
   nav,
   .print-hidden,
   .print\:hidden,
-  [role="tablist"] {
+  [role="tablist"],
+  [role="presentation"] {
     display: none !important;
   }
 
-  /* عند طباعة نافذة منبثقة، نخفي محتوى التطبيق الأصلي تماماً */
+  /* Break out of Dialog/Radix constraints */
+  body {
+    overflow: visible !important;
+    height: auto !important;
+    background: white !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
   body:has(div[role="dialog"]) #root {
     display: none !important;
   }
 
-  /* تصفير الهوامش والارتفاع لضمان طباعة نظيفة */
-  html, body {
-    height: auto !important;
-    overflow: visible !important;
-    background: white !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* إلغاء قيود التخطيط والهوامش والحدود لجميع الحاويات الأبوية أثناء الطباعة */
   #root, 
   #root > div,
   main,
-  .max-w-7xl,
-  .flex,
-  .flex-col,
-  .flex-1 {
-    display: block !important;
-    width: 100% !important;
-    max-width: none !important;
-    min-width: 0 !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    text-align: initial !important;
-  }
-
-  /* إلغاء التموضع المطلق والنسبي للنوافذ المنبثقة لتمكين فواصل الصفحات */
   div[role="dialog"],
   div[role="dialog"] > div,
   .fixed,
@@ -119,49 +98,48 @@
     display: block !important;
     width: 100% !important;
     height: auto !important;
+    max-height: none !important;
     overflow: visible !important;
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
     padding: 0 !important;
     margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    visibility: visible !important;
   }
 
-  /* الحاوية الرئيسية للطباعة */
+  /* Report Container */
   .page-break-container,
   .print-content-master {
     display: block !important;
-    visibility: visible !important;
-    position: static !important;
     width: 100% !important;
+    max-width: none !important;
     margin: 0 auto !important;
-    padding: 15mm 10mm !important; /* هوامش الطباعة الرسمية */
-    transform: none !important;
-    box-shadow: none !important;
-    border: none !important;
+    padding: 10mm !important;
     box-sizing: border-box !important;
-  }
-
-  /* فواصل الصفحات */
-  .page-break-container {
     page-break-after: always !important;
     break-after: page !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
-  
+
   .page-break-container:last-child {
     page-break-after: avoid !important;
     break-after: avoid !important;
   }
 
-  /* منع كسر صفوف الجدول في منتصف الصفحة */
+  /* Table styling for print */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
   tr {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
-  /* إجبار المتصفح على طباعة ألوان الخلفية */
+  /* Force background colors */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
