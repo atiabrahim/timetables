@@ -78,7 +78,7 @@ const AttendanceSheet = ({
       </div>
 
       {/* Main Document Title */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-1">
         <div className="inline-block relative">
           <h1 className="font-black text-black text-base px-8 py-1.5 border-2 border-black relative z-10 bg-white">
             {t.attendanceSheet}
@@ -86,7 +86,7 @@ const AttendanceSheet = ({
           <div className="absolute -bottom-1 -right-1 w-full h-full bg-black -z-0"></div>
         </div>
         
-        <div className="mt-4 flex justify-center items-center gap-6">
+        <div className="mt-2 flex justify-center items-center gap-6">
           <div className="flex items-center gap-2">
             <Calendar size={16} className="text-black/40" />
             <p className="text-black font-black text-sm underline decoration-dotted underline-offset-2">
