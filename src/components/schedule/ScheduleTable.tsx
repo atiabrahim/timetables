@@ -26,7 +26,7 @@ interface ScheduleTableProps {
   summaryData?: any[];
   totalHours?: number;
   isTransposed?: boolean;
-  allAssignments?: any[]; // مضاف لكشف التعارضات
+  allAssignments?: any[]; 
 }
 
 const SUBJECT_COLORS = [
@@ -43,7 +43,6 @@ const ScheduleTable = ({
   allAssignments = []
 }: ScheduleTableProps) => {
   
-  // دالة متطورة لكشف التعارضات
   const checkConflict = (asgn: any) => {
     if (!asgn || isPrint) return null;
     
@@ -52,8 +51,8 @@ const ScheduleTable = ({
       a.day === asgn.day && 
       a.period === asgn.period &&
       (
-        a.employeeId === asgn.employeeId || // تعارض أستاذ
-        (asgn.room && a.room === asgn.room) // تعارض قاعة
+        a.employeeId === asgn.employeeId || 
+        (asgn.room && a.room === asgn.room)
       )
     );
 
@@ -136,12 +135,10 @@ const ScheduleTable = ({
           </TooltipProvider>
         )}
 
-        {/* Subject Name */}
         <p className={cn("font-black leading-none break-words w-full uppercase tracking-tighter", isPrint ? "text-[8px] mb-0.5" : "text-[11px] mb-1")}>
           {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
         </p>
         
-        {/* Secondary Info */}
         <p className={cn("font-bold leading-tight break-words w-full", isPrint ? "text-[7px] mb-0.5" : "text-[7px] mb-1 opacity-90")}>
           {viewMode === "class" 
             ? (() => {
@@ -152,7 +149,6 @@ const ScheduleTable = ({
           }
         </p>
         
-        {/* Room Label */}
         {assignment.room && (
           <div className={cn(
             isPrint ? "border border-black px-1 mt-0.5" : "bg-black/10 rounded-lg px-2 py-0.5 mt-0.5"
@@ -181,21 +177,31 @@ const ScheduleTable = ({
     isPrint ? "border-2 border-black" : ""
   );
 
-  const HeaderCell = ({ children }: { children: React.ReactNode }) => (
+  const HeaderCell = ({ children, time }: { children: React.ReactNode, time?: string }) => (
     <th className={cn(
       "font-black text-center transition-colors", 
       isPrint 
         ? "border border-black text-[9px] text-black bg-slate-50" 
-        : "rounded-2xl bg-slate-100 text-slate-500 p-2 text-[10px] uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700"
+        : "rounded-2xl bg-slate-100 text-slate-500 p-2 uppercase tracking-widest hover:bg-emerald-50 hover:text-emerald-700"
     )}>
-      {children}
+      <div className="flex flex-col items-center">
+        <span className={isPrint ? "text-[9px]" : "text-[10px]"}>{children}</span>
+        {time && (
+          <span className={cn(
+            "font-bold lowercase opacity-60",
+            isPrint ? "text-[6px]" : "text-[8px]"
+          )}>
+            {time}
+          </span>
+        )}
+      </div>
     </th>
   );
 
   const renderStandard = () => (
     <table className={tableClasses}>
       <thead>
-        <tr className={isPrint ? "h-6" : "h-12"}>
+        <tr className={isPrint ? "h-6" : "h-14"}>
           <th className={cn(
             "font-black text-center w-14", 
             isPrint ? "border border-black text-[9px] text-black bg-slate-100" : "rounded-2xl bg-emerald-950 text-emerald-400 p-2 text-[10px] uppercase"
@@ -216,7 +222,14 @@ const ScheduleTable = ({
                 !isPrint && "bg-slate-50 group-hover:bg-emerald-50 transition-colors"
               )}>
                 <span className={cn("font-black", isPrint ? "text-[9px] text-black" : "text-sm text-slate-400 group-hover:text-emerald-600")}>{slot.label}</span>
-                {!isPrint && <Info size={10} className="text-slate-200 mt-1" />}
+                {slot.time && (
+                  <span className={cn(
+                    "font-bold",
+                    isPrint ? "text-[6px] text-black" : "text-[8px] text-slate-300 group-hover:text-emerald-400"
+                  )}>
+                    {slot.time}
+                  </span>
+                )}
               </div>
             </td>
             {days.map(day => {
@@ -242,7 +255,7 @@ const ScheduleTable = ({
   const renderTransposed = () => (
     <table className={tableClasses}>
       <thead>
-        <tr className={isPrint ? "h-6" : "h-12"}>
+        <tr className={isPrint ? "h-6" : "h-14"}>
           <th className={cn(
             "font-black text-center px-4 w-28", 
             isPrint ? "border border-black text-[9px] text-black bg-slate-100" : "rounded-2xl bg-emerald-950 text-emerald-400 p-2 text-[10px] uppercase"
@@ -250,7 +263,7 @@ const ScheduleTable = ({
             {isRTL ? "اليوم" : "DAY"}
           </th>
           {timeSlots.map(slot => (
-            <HeaderCell key={slot.id}>{slot.label}</HeaderCell>
+            <HeaderCell key={slot.id} time={slot.time}>{slot.label}</HeaderCell>
           ))}
         </tr>
       </thead>

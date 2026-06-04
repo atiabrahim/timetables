@@ -22,6 +22,22 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+// تعريف أوقات الحصص الافتراضية
+const PERIOD_TIMES: Record<string, string> = {
+  "1": "08:00 - 09:00",
+  "2": "09:00 - 10:00",
+  "3": "10:00 - 11:00",
+  "4": "11:00 - 12:00",
+  "5": "13:00 - 14:00",
+  "6": "14:00 - 15:00",
+  "7": "15:00 - 16:00",
+  "8": "16:00 - 17:00",
+  "9": "17:00 - 18:00",
+  "10": "18:00 - 19:00",
+  "11": "19:00 - 20:00",
+  "12": "20:00 - 21:00",
+};
+
 const Schedule = () => {
   const { 
     isRTL, t, employees, classes, subjects, rooms, assignments, setAssignments
@@ -48,14 +64,14 @@ const Schedule = () => {
     );
   }, [assignments, selectedId, viewMode]);
 
-  // توليد خانات الحصص (1-12) مع تغيير التسمية للعربية
+  // توليد خانات الحصص مع التسمية والتوقيت
   const periodSlots = useMemo(() => {
     return PERIODS.map(id => ({
       id,
-      label: isRTL ? `ح${id}` : id, // هنا يتم تغيير التسمية إلى ح1، ح2...
+      label: isRTL ? `ح${id}` : id,
       periodPart: PERIOD_MAP[id] as "Morning" | "Afternoon" | "Evening",
       isBreak: false,
-      time: ""
+      time: PERIOD_TIMES[id] || "" // إضافة التوقيت هنا
     }));
   }, [isRTL]);
 
