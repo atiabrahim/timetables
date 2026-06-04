@@ -152,12 +152,12 @@ const AttendanceSheet = ({
         <div className="text-center space-y-1">
           <p className="font-black text-black text-xs uppercase tracking-wider">{supervisors[0] || (isRTL ? "رئيس المصلحة" : "Head of Dept")}</p>
           <p className="text-[9px] font-bold text-black/40 italic">({isRTL ? "توقيع وختم" : "Seal & Signature"})</p>
-          <div className="h-20 border border-dashed border-black/10 mt-2 rounded-xl"></div>
+          <div className="h-14 border border-dashed border-black/10 mt-2 rounded-xl"></div>
         </div>
         <div className="text-center space-y-1">
           <p className="font-black text-black text-xs uppercase tracking-wider">{t.managerSignature}</p>
           <p className="text-[9px] font-bold text-black/40 italic">({isRTL ? "توقيع وختم" : "Seal & Signature"})</p>
-          <div className="h-20 border border-dashed border-black/10 mt-2 rounded-xl"></div>
+          <div className="h-14 border border-dashed border-black/10 mt-2 rounded-xl"></div>
         </div>
       </div>
 
