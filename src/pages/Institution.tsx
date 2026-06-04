@@ -87,7 +87,7 @@ const Institution = () => {
 
                 <div className="space-y-2">
                   <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
-                    {isRTL ? "السنة الدراسية" : "Academic Year"}
+                    {isRTL ? "السنة التكوينية" : "Training Year"}
                   </label>
                   <div className="relative">
                     <Calendar className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />

@@ -54,7 +54,7 @@ const OfficialPrintWrapper = ({
           <span className="text-black">{departments[0] || (isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate")}</span>
         </div>
         <div className={cn("flex items-center gap-2", isRTL ? "justify-end" : "justify-start")}>
-          <span className="text-black/60">{isRTL ? "السنة الدراسية:" : "Academic Year:"}</span>
+          <span className="text-black/60">{isRTL ? "السنة التكوينية:" : "Training Year:"}</span>
           <span className="text-black">{institution.academicYear || "2023/2024"}</span>
         </div>
       </div>
