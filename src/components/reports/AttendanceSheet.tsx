@@ -105,7 +105,7 @@ const AttendanceSheet = ({
       
       {/* Attendance Table */}
       <div className="flex-1">
-        <Table className="w-full border-collapse border border-black">
+        <Table className="w-[96%] mx-auto border-collapse border border-black">
           <TableHeader>
             <TableRow className="bg-slate-50 hover:bg-slate-50 border-b border-black h-6">
               <TableHead className="w-[50px] text-center font-black text-black border-e border-black p-0.5 text-[10px]">
