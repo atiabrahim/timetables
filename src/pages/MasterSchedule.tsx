@@ -6,14 +6,15 @@ import {
   LayoutGrid, 
   Search, 
   Printer, 
-  Eye, 
-  Settings2,
-  ChevronRight,
-  ChevronLeft,
-  Filter
+  Filter,
+  EyeOff,
+  Rows,
+  Columns
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import PageHeader from "../components/shared/PageHeader";
 import { DAYS, PERIODS } from "../constants/schedule";
 import { cn } from "@/lib/utils";
@@ -22,11 +23,31 @@ import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
 const MasterSchedule = () => {
   const { classes, assignments, subjects, employees, isRTL, t } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDay, setSelectedDay] = useState(0); // الأحد افتراضياً
+  const [selectedDay, setSelectedDay] = useState(0);
+  const [hideEmptyRows, setHideEmptyRows] = useState(false);
+  const [hideEmptyPeriods, setHideEmptyPeriods] = useState(false);
 
-  const filteredClasses = useMemo(() => {
-    return classes.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
-  }, [classes, searchTerm]);
+  // تصفية الأفواج بناءً على البحث والإخفاء الذكي للأسطر
+  const visibleClasses = useMemo(() => {
+    let list = classes.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    if (hideEmptyRows) {
+      list = list.filter(c => 
+        assignments.some(a => a.classId === c.id && a.day === selectedDay)
+      );
+    }
+    
+    return list;
+  }, [classes, searchTerm, hideEmptyRows, selectedDay, assignments]);
+
+  // تصفية الفترات الزمنية بناءً على الإخفاء الذكي للأعمدة
+  const visiblePeriods = useMemo(() => {
+    if (!hideEmptyPeriods) return PERIODS;
+    
+    return PERIODS.filter(p => 
+      assignments.some(a => a.day === selectedDay && a.period === p)
+    );
+  }, [PERIODS, hideEmptyPeriods, selectedDay, assignments]);
 
   const getLesson = (classId: string, period: string) => {
     return assignments.find(a => a.classId === classId && a.day === selectedDay && a.period === period);
@@ -46,7 +67,7 @@ const MasterSchedule = () => {
             )}>
               {isRTL ? "الفوج / الفرع" : "Class / Branch"}
             </th>
-            {PERIODS.map(p => (
+            {visiblePeriods.map(p => (
               <th key={p} className={cn(
                 "p-4 border-e border-white/10 text-center font-black",
                 isPrint ? "text-[10px]" : "text-xs min-w-[120px]"
@@ -57,7 +78,7 @@ const MasterSchedule = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredClasses.map((cls, idx) => (
+          {visibleClasses.map((cls, idx) => (
             <tr key={cls.id} className={cn(
               "group transition-colors",
               idx % 2 === 0 ? "bg-white" : "bg-emerald-50/20",
@@ -70,7 +91,7 @@ const MasterSchedule = () => {
               )}>
                 {cls.name}
               </td>
-              {PERIODS.map(p => {
+              {visiblePeriods.map(p => {
                 const lesson = getLesson(cls.id, p);
                 const teacher = lesson ? employees.find(e => e.id === lesson.employeeId) : null;
                 const subject = lesson ? subjects.find(s => s.id === lesson.subjectId) : null;
@@ -96,15 +117,19 @@ const MasterSchedule = () => {
                         )}
                       </div>
                     ) : (
-                      <span className="text-slate-200">---</span>
+                      <span className="text-slate-200 opacity-20">---</span>
                     )}
                   </td>
                 );
               })}
             </tr>
-          ))}
-        </tbody>
+          </tbody>
       </table>
+      {visibleClasses.length === 0 && (
+        <div className="p-20 text-center text-slate-400 font-bold">
+          {isRTL ? "لا توجد بيانات لعرضها (ربما بسبب الفلاتر المطبقة)" : "No data to display (check filters)"}
+        </div>
+      )}
     </div>
   );
 
@@ -150,6 +175,42 @@ const MasterSchedule = () => {
           {t.print}
         </Button>
       </PageHeader>
+
+      {/* أدوات التصفية المتقدمة */}
+      <div className="flex flex-wrap gap-6 bg-white p-5 rounded-3xl border border-emerald-100 shadow-sm mb-6 print:hidden">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-xl border border-emerald-100">
+          <Filter size={16} className="text-emerald-600" />
+          <span className="text-xs font-black text-emerald-900 uppercase tracking-tighter">{isRTL ? "تصفية الجدول:" : "Table Filter:"}</span>
+        </div>
+
+        <div className="flex items-center space-x-2 space-x-reverse group cursor-pointer" onClick={() => setHideEmptyRows(!hideEmptyRows)}>
+          <Checkbox 
+            id="hide-rows" 
+            checked={hideEmptyRows} 
+            onCheckedChange={(v: boolean) => setHideEmptyRows(v)}
+            className="rounded-md border-emerald-200 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+          />
+          <Label htmlFor="hide-rows" className="text-xs font-bold text-slate-600 cursor-pointer flex items-center gap-2">
+            <Rows size={14} className="text-slate-400" />
+            {isRTL ? "إخفاء الأفواج الفارغة اليوم" : "Hide empty classes today"}
+          </Label>
+        </div>
+
+        <div className="w-px h-6 bg-emerald-100 mx-2 hidden md:block" />
+
+        <div className="flex items-center space-x-2 space-x-reverse group cursor-pointer" onClick={() => setHideEmptyPeriods(!hideEmptyPeriods)}>
+          <Checkbox 
+            id="hide-periods" 
+            checked={hideEmptyPeriods} 
+            onCheckedChange={(v: boolean) => setHideEmptyPeriods(v)}
+            className="rounded-md border-emerald-200 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+          />
+          <Label htmlFor="hide-periods" className="text-xs font-bold text-slate-600 cursor-pointer flex items-center gap-2">
+            <Columns size={14} className="text-slate-400" />
+            {isRTL ? "إخفاء الحصص الفارغة اليوم" : "Hide empty periods today"}
+          </Label>
+        </div>
+      </div>
 
       <div className="print:hidden">
         <MasterTable />
