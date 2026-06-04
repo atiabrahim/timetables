@@ -110,6 +110,23 @@
     text-align: initial !important;
   }
 
+  /* إلغاء التموضع المطلق والنسبي للنوافذ المنبثقة لتمكين فواصل الصفحات */
+  div[role="dialog"],
+  div[role="dialog"] > div,
+  .fixed,
+  .absolute {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
   /* الحاوية الرئيسية للطباعة */
   .page-break-container,
   .print-content-master {
@@ -129,6 +146,8 @@
   .page-break-container {
     page-break-after: always !important;
     break-after: page !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
   
   .page-break-container:last-child {
