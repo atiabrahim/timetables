@@ -79,7 +79,7 @@ const WeeklyWorkSchedule = () => {
     if (!isAdmin) return;
     const current = templateAssignments.find(a => a.dayIdx === dayIdx && a.period === period);
     let newIds = current ? [...current.employeeIds] : [];
-    if (      newIds.includes(empId)) {
+    if (newIds.includes(empId)) {
       newIds = newIds.filter(id => id !== empId);
     } else {
       newIds.push(empId);
@@ -93,35 +93,33 @@ const WeeklyWorkSchedule = () => {
       isPrint ? "p-0 w-full" : "rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-50/50 overflow-hidden"
     )}>
       <Table className={cn(
-        "border-collapse border-spacing-0", 
-        isPrint ? "w-full border-2 border-black table-fixed" : "min-w-[800px]"
+        "border-collapse border-spacing-0 table-fixed", 
+        isPrint ? "w-full border-2 border-black" : "w-full min-w-[800px]"
       )}>
-        {isPrint && (
-          <colgroup>
-            <col className="w-[16%]" />
-            {Array.from({ length: 15 }).map((_, i) => (
-              <col key={i} className="w-[5.6%]" />
-            ))}
-          </colgroup>
-        )}
+        <colgroup>
+          <col className={isPrint ? "w-[15%]" : "w-[120px]"} />
+          {Array.from({ length: 15 }).map((_, i) => (
+            <col key={i} className={isPrint ? "w-[5.66%]" : "w-auto"} />
+          ))}
+        </colgroup>
         <TableHeader>
           <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black" : "bg-emerald-50/50 hover:bg-emerald-50/50")}>
             <TableHead className={cn(
-              "font-black text-emerald-900 border text-center",
-              isPrint ? "text-[9px] p-1 border-black text-black" : "text-sm p-4 border-emerald-100"
+              "font-black text-emerald-900 border text-center sticky left-0 z-20 bg-emerald-50/50",
+              isPrint ? "text-[8px] p-1 border-black text-black" : "text-xs p-3 border-emerald-100"
             )} rowSpan={2}>
-              {isRTL ? "اسم الأستاذ" : "Teacher Name"}
+              {isRTL ? "المعلم" : "Teacher"}
             </TableHead>
             {DAYS.map(day => (
               <TableHead 
                 key={day.id} 
                 className={cn(
                   "text-center font-black border",
-                  isPrint ? "text-[9px] p-0.5 border-black bg-slate-50 text-black" : "text-xs p-2 bg-emerald-50/30 border-emerald-100 text-emerald-700"
+                  isPrint ? "text-[8px] p-0.5 border-black bg-slate-50 text-black" : "text-[10px] p-2 bg-emerald-50/30 border-emerald-100 text-emerald-700"
                 )} 
                 colSpan={PERIODS.length}
               >
-                {isRTL ? day.name : day.en}
+                {isRTL ? day.name : day.en.substr(0, 3)}
               </TableHead>
             ))}
           </TableRow>
@@ -129,7 +127,7 @@ const WeeklyWorkSchedule = () => {
             {DAYS.map(day => PERIODS.map(p => (
               <TableHead key={`${day.id}-${p}`} className={cn(
                 "text-center font-bold border",
-                isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-[10px] p-2 border-emerald-100"
+                isPrint ? "text-[7px] p-0.5 border-black text-black" : "text-[9px] p-1 border-emerald-100 text-slate-400"
               )}>
                 {p === "Morning" ? (isRTL ? "ص" : "M") : p === "Afternoon" ? (isRTL ? "م" : "A") : (isRTL ? "ل" : "E")}
               </TableHead>
@@ -141,8 +139,8 @@ const WeeklyWorkSchedule = () => {
           {filteredEmployees.map(emp => (
             <TableRow key={emp.id} className={cn("group transition-colors", isPrint ? "border-b border-black" : "hover:bg-emerald-50/30")}>
               <TableCell className={cn(
-                "font-bold border bg-white truncate",
-                isPrint ? "text-[8px] p-1 border-black text-black" : "text-xs p-4 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30 sticky right-0 z-10 shadow-sm"
+                "font-bold border bg-white truncate sticky left-0 z-10 shadow-sm",
+                isPrint ? "text-[8px] p-1 border-black text-black" : "text-[11px] p-3 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30"
               )}>
                 {emp.lastName} {emp.firstName}
               </TableCell>
@@ -158,21 +156,18 @@ const WeeklyWorkSchedule = () => {
                     className={cn(
                       "text-center border p-0 transition-all relative",
                       !isPrint && isAdmin && "cursor-pointer",
-                      isActive ? (isPrint ? "bg-black text-white" : "bg-emerald-600 text-white shadow-inner") : "hover:bg-emerald-50/50",
-                      isPrint ? "h-6 border-black" : "h-12 w-12 border-emerald-100"
+                      isActive ? (isPrint ? "bg-black text-white" : "bg-emerald-600 text-white shadow-inner") : (isPrint ? "bg-white" : "hover:bg-emerald-50/50"),
+                      isPrint ? "h-5 border-black" : "h-10 border-emerald-100"
                     )}
                   >
                     {isActive && (
-                      <div className="flex flex-col items-center justify-center gap-0.5">
+                      <div className="flex flex-col items-center justify-center gap-0">
                         {isPrint ? (
                           <span className="font-black text-[9px]">X</span>
                         ) : (
-                          <>
-                            {lessonPresent ? <BookOpen size={14} /> : <ShieldAlert size={14} />}
-                            <span className="font-black uppercase tracking-tighter text-[8px]">
-                              {lessonPresent ? (isRTL ? "ح" : "L") : (isRTL ? "ع" : "W")}
-                            </span>
-                          </>
+                          <span className="font-black uppercase tracking-tighter text-[9px]">
+                            {lessonPresent ? (isRTL ? "ح" : "L") : (isRTL ? "ع" : "W")}
+                          </span>
                         )}
                       </div>
                     )}
@@ -234,7 +229,7 @@ const WeeklyWorkSchedule = () => {
         <ScheduleTable />
       </div>
 
-      {/* Print Content Master - STRICTLY LIMITED TO WRAPPER */}
+      {/* Print Content Master */}
       <div className="print-content-master hidden print:block">
         <OfficialPrintWrapper
           title={t.weeklyWorkSchedule}
