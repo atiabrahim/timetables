@@ -51,7 +51,8 @@ const MasterSchedule = () => {
   };
 
   const MasterTable = ({ isPrint = false }: { isPrint?: boolean }) => {
-    const classColWidth = isPrint ? "w-[75px]" : "w-[90px]";
+    // إعادة تعريض العمود الأول
+    const classColWidth = isPrint ? "w-[100px]" : "w-[140px]";
 
     return (
       <div className={cn(
@@ -66,15 +67,15 @@ const MasterSchedule = () => {
           <thead>
             <tr className="bg-emerald-950 text-white">
               <th className={cn(
-                "p-2 border-e border-white/10 text-center sticky left-0 z-20 bg-emerald-950",
-                isPrint ? "text-[8px]" : "text-[10px] uppercase tracking-tighter font-black"
+                "p-3 border-e border-white/10 text-center sticky left-0 z-20 bg-emerald-950",
+                isPrint ? "text-[10px]" : "text-[12px] uppercase tracking-tighter font-black"
               )}>
                 {isRTL ? "الفوج" : "Class"}
               </th>
               {visiblePeriods.map(p => (
                 <th key={p} className={cn(
-                  "p-2 border-e border-white/10 text-center font-black",
-                  isPrint ? "text-[8px]" : "text-[10px]"
+                  "p-3 border-e border-white/10 text-center font-black",
+                  isPrint ? "text-[10px]" : "text-[12px]"
                 )}>
                   {isRTL ? `ح${p}` : `P${p}`}
                 </th>
@@ -84,14 +85,14 @@ const MasterSchedule = () => {
           <tbody>
             {visibleClasses.map((cls, idx) => (
               <tr key={cls.id} className={cn(
-                "group transition-colors h-10",
+                "group transition-colors h-14",
                 idx % 2 === 0 ? "bg-white" : "bg-emerald-50/10",
                 !isPrint && "hover:bg-emerald-100/30"
               )}>
                 <td className={cn(
-                  "p-1.5 font-black border-e sticky left-0 z-10 transition-colors shadow-sm truncate",
+                  "p-2 font-black border-e sticky left-0 z-10 transition-colors shadow-sm truncate",
                   idx % 2 === 0 ? "bg-white" : "bg-[#fcfdfd]",
-                  isPrint ? "text-[8px] border-black" : "text-[10px] text-emerald-950 border-emerald-50"
+                  isPrint ? "text-[10px] border-black" : "text-[12px] text-emerald-950 border-emerald-50"
                 )}>
                   {cls.name}
                 </td>
@@ -107,16 +108,16 @@ const MasterSchedule = () => {
                     )}>
                       {lesson ? (
                         <div className={cn(
-                          "flex flex-col gap-0 overflow-hidden leading-none",
-                          isPrint ? "text-[7px]" : "text-[8.5px]"
+                          "flex flex-col gap-0.5 overflow-hidden leading-tight",
+                          isPrint ? "text-[9px]" : "text-[11px]"
                         )}>
                           <span className="font-black text-emerald-700 truncate">{subject?.name}</span>
-                          <span className="text-slate-500 font-bold truncate opacity-80 scale-[0.85] origin-center">
+                          <span className="text-slate-500 font-bold truncate opacity-80 scale-[0.9] origin-center">
                             {teacher ? `${teacher.lastName}` : "---"}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-slate-100 opacity-10 text-[7px]">---</span>
+                        <span className="text-slate-100 opacity-20 text-[9px]">---</span>
                       )}
                     </td>
                   );
