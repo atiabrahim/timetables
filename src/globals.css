@@ -115,7 +115,10 @@
     width: 100% !important;
     max-width: none !important;
     margin: 0 auto !important;
-    padding: 3mm !important; /* تقليص الهوامش الداخلية إلى الحد الأدنى الممكن */
+    padding-top: 3mm !important;
+    padding-bottom: 3mm !important;
+    padding-left: 10mm !important; /* زيادة الهامش الأيسر بـ 5 ملم ليصبح 10 ملم */
+    padding-right: 10mm !important; /* زيادة الهامش الأيمن بـ 5 ملم ليصبح 10 ملم */
     box-sizing: border-box !important;
     page-break-after: always !important;
     break-after: page !important;
