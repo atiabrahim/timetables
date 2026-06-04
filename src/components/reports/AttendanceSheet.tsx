@@ -38,7 +38,7 @@ const AttendanceSheet = ({
   supervisors
 }: AttendanceSheetProps) => {
   const isEmpty = assignedEmployees.length === 0;
-  const maxRows = 18;
+  const maxRows = 21;
   const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
 
   const getPeriodRangeHint = (p: PeriodPart) => {
