@@ -1,14 +1,13 @@
 "use client";
 
 import React from "react";
-import { FileText, RotateCw, Printer, X, Calendar as CalendarIcon, User, GraduationCap } from "lucide-react";
+import { FileText, RotateCw, Printer, X, Calendar as CalendarIcon, GraduationCap, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { 
   Dialog, 
   DialogContent 
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 import ScheduleTable from "./ScheduleTable";
 import OfficialPrintWrapper from "../shared/OfficialPrintWrapper";
 
@@ -30,12 +29,11 @@ interface PrintPreviewProps {
   getAssignment: (day: number, period: string) => any;
   summaryData: any[];
   totalHours: number;
-  isTransposed?: boolean;
 }
 
 const PrintPreview = ({ 
   isOpen, onOpenChange, isRTL, orientation, setOrientation, printScale, setPrintScale, 
-  viewMode, selectedId, employees, classes, subjects, days, timeSlots, getAssignment, summaryData, totalHours, isTransposed = false 
+  viewMode, selectedId, employees, classes, subjects, days, timeSlots, getAssignment, summaryData, totalHours
 }: PrintPreviewProps) => {
   
   const selectedEntity = viewMode === "teacher" 
@@ -50,26 +48,20 @@ const PrintPreview = ({
     ? (isRTL ? `جدول توقيت الأستاذ: ${entityName}` : `Teacher Timetable: ${entityName}`)
     : (isRTL ? `جدول توقيت الفوج: ${entityName}` : `Class Timetable: ${entityName}`);
 
+  // تصميم الـ Pill (البطاقة أسفل العنوان)
   const subtitle = (
-    <div className="flex items-center gap-4 text-xs md:text-sm font-bold text-emerald-800">
-      <div className="flex items-center gap-1.5">
-        {viewMode === "teacher" ? <User size={14} /> : <GraduationCap size={14} />}
-        <span>{entityName}</span>
+    <div className="inline-flex items-center gap-4 bg-white border-2 border-black rounded-full px-8 py-2 font-black text-emerald-800">
+      <div className="flex items-center gap-2">
+        {viewMode === "teacher" ? <User size={18} /> : <GraduationCap size={18} />}
+        <span className="text-lg">{entityName}</span>
       </div>
-      <span className="text-emerald-200 h-4 w-px bg-emerald-200"></span>
-      <div className="flex items-center gap-1.5">
-        <CalendarIcon size={14} />
-        <span>{isRTL ? "الجدول الأسبوعي" : "Weekly Schedule"}</span>
+      <div className="w-0.5 h-6 bg-emerald-100 mx-2"></div>
+      <div className="flex items-center gap-2">
+        <CalendarIcon size={18} />
+        <span className="text-lg">{isRTL ? "الجدول الأسبوعي" : "Weekly Schedule"}</span>
       </div>
     </div>
   );
-
-  // تحديد مسميات التوقيعات بناءً على نوع الجدول
-  const leftSignatureTitle = viewMode === "teacher"
-    ? (isRTL ? "توقيع الأستاذ" : "Teacher Signature")
-    : (isRTL ? "رئيس مصلحة التكوين" : "Head of Training");
-
-  const rightSignatureTitle = isRTL ? "ختم وتوقيع المدير" : "Director Signature";
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -96,48 +88,21 @@ const PrintPreview = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white print:block">
-          {/* 1. حاوية المعاينة البصرية على الشاشة فقط (تختفي عند الطباعة) */}
+        <div className="flex-1 overflow-auto p-8 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white print:block">
           <div 
-            id="printable-area"
-            className="transition-all duration-300 origin-top print:hidden"
+            className="transition-all duration-300 origin-top print:transform-none"
             style={{ transform: `scale(${printScale / 100})` }}
           >
             <OfficialPrintWrapper
               title={title}
               subtitle={subtitle}
               orientation={orientation}
-              leftSignatureTitle={leftSignatureTitle}
-              rightSignatureTitle={rightSignatureTitle}
             >
-              <div className="w-full">
-                <ScheduleTable 
-                  isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
-                  onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
-                  classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={totalHours}
-                  isTransposed={isTransposed}
-                />
-              </div>
-            </OfficialPrintWrapper>
-          </div>
-
-          {/* 2. حاوية الطباعة الفعلية (تظهر عند الطباعة فقط وتكون غير مقلصة وبأعلى جودة) */}
-          <div className="hidden print:block w-full">
-            <OfficialPrintWrapper
-              title={title}
-              subtitle={subtitle}
-              orientation={orientation}
-              leftSignatureTitle={leftSignatureTitle}
-              rightSignatureTitle={rightSignatureTitle}
-            >
-              <div className="w-full">
-                <ScheduleTable 
-                  isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
-                  onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
-                  classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={totalHours}
-                  isTransposed={isTransposed}
-                />
-              </div>
+              <ScheduleTable 
+                isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
+                onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
+                classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={totalHours}
+              />
             </OfficialPrintWrapper>
           </div>
         </div>

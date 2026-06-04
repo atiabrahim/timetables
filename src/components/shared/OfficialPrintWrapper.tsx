@@ -3,7 +3,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { useApp } from "../../context/AppContext";
-import { format } from "date-fns";
 
 interface OfficialPrintWrapperProps {
   title: string;
@@ -11,7 +10,6 @@ interface OfficialPrintWrapperProps {
   orientation?: "portrait" | "landscape";
   children: React.ReactNode;
   showSignatures?: boolean;
-  showSystemFooter?: boolean;
   leftSignatureTitle?: string;
   rightSignatureTitle?: string;
 }
@@ -22,79 +20,72 @@ const OfficialPrintWrapper = ({
   orientation = "portrait",
   children,
   showSignatures = true,
-  showSystemFooter = false,
   leftSignatureTitle,
   rightSignatureTitle
 }: OfficialPrintWrapperProps) => {
   const { t, isRTL, institution, departments } = useApp();
 
-  const finalLeftTitle = leftSignatureTitle || institution.pedagogicalManagerTitle || (isRTL ? "المسؤول البيداغوجي" : "Pedagogical Manager");
-  const finalRightTitle = rightSignatureTitle || institution.generalManagerTitle || (isRTL ? "مدير المؤسسة" : "General Manager");
+  const finalLeftTitle = leftSignatureTitle || institution.pedagogicalManagerTitle || (isRTL ? "رئيس مصلحة التكوين" : "Head of Training");
+  const finalRightTitle = rightSignatureTitle || institution.generalManagerTitle || (isRTL ? "ختم وتوقيع المدير" : "Director Signature");
 
   return (
     <div 
       className={cn(
         "bg-white mx-auto page-break-container",
         orientation === "portrait" ? "w-[210mm]" : "w-[297mm]",
-        "print:p-10 p-8 shadow-sm border border-slate-100 print:border-none print:shadow-none"
+        "print:p-8 p-10 print:shadow-none"
       )}
       dir={isRTL ? "rtl" : "ltr"}
       style={{ fontFamily: "'Cairo', sans-serif" }}
     >
-      {/* Official Header */}
-      <div className="flex flex-col items-center text-center mb-6 space-y-1">
-        <p className="font-black text-black text-sm tracking-tight uppercase">{t.republic}</p>
-        <p className="font-bold text-black text-xs">{t.centerName}</p>
-        <p className="font-bold text-black text-xs">{institution.name || t.centerLocation}</p>
+      {/* 1. الترويسة العليا: الوزارة والمركز */}
+      <div className="flex flex-col items-center text-center mb-4 space-y-1">
+        <p className="font-black text-black text-lg tracking-tight uppercase leading-tight">{t.republic}</p>
+        <p className="font-bold text-black text-sm">{t.centerName}</p>
+        <p className="font-bold text-black text-sm">{institution.name || t.centerLocation}</p>
       </div>
 
-      {/* Info Bar */}
-      <div className="flex justify-between items-center border-y-2 border-black py-2 mb-6 text-[12px] font-bold">
-        <p className="text-black">
-          {isRTL ? "المصلحة:" : "Department:"} <span className="font-black">{departments[0] || (isRTL ? "مصلحة التكوين" : "Training Dept")}</span>
-        </p>
-        <p className="text-black">
-          {isRTL ? "السنة الدراسية:" : "Academic Year:"} <span className="font-black">{institution.academicYear || "2023/2024"}</span>
-        </p>
+      {/* 2. شريط المعلومات بين خطين عريضين */}
+      <div className="w-full space-y-1 mb-8">
+        <div className="h-0.5 bg-black w-full"></div>
+        <div className="flex justify-between items-center py-1 px-2 text-sm font-black">
+          <p className="text-black">
+            {isRTL ? "المصلحة:" : "Department:"} <span className="ms-1">{departments[0] || (isRTL ? "مصلحة التكوين" : "Training Dept")}</span>
+          </p>
+          <p className="text-black">
+            {isRTL ? "السنة الدراسية:" : "Academic Year:"} <span className="ms-1">{institution.academicYear || "2023/2024"}</span>
+          </p>
+        </div>
+        <div className="h-0.5 bg-black w-full"></div>
       </div>
 
-      {/* Title */}
-      <div className="text-center mb-6">
-        <h1 className="font-black text-black text-2xl mb-2">
+      {/* 3. العنوان الرئيسي والبطاقة (Pill) */}
+      <div className="text-center mb-8">
+        <h1 className="font-black text-black text-3xl mb-4">
           {title}
         </h1>
-        {subtitle && (
-          <div className="inline-block border border-black px-6 py-1 rounded-md text-[12px] font-black bg-slate-50">
-            {subtitle}
-          </div>
-        )}
+        {subtitle}
       </div>
 
-      <div className="flex-1 w-full overflow-hidden">
+      {/* 4. محتوى الجدول */}
+      <div className="flex-1 w-full overflow-hidden mb-12">
         {children}
       </div>
 
-      {/* Signatures */}
-      {showSignatures && (
-        <div className="mt-12 grid grid-cols-2 gap-20 pt-6 border-t-2 border-black">
-          <div className="text-center">
-            <p className="font-black text-black text-sm mb-16 underline underline-offset-8 decoration-2">
-              {finalLeftTitle}
-            </p>
-            <div className="border-t-2 border-black w-40 mx-auto opacity-20"></div>
-          </div>
-          <div className="text-center">
-            <p className="font-black text-black text-sm mb-16 underline underline-offset-8 decoration-2">
-              {finalRightTitle}
-            </p>
-            <div className="border-t-2 border-black w-40 mx-auto opacity-20"></div>
-          </div>
-        </div>
-      )}
+      {/* 5. الخط الفاصل قبل التواقيع */}
+      <div className="h-0.5 bg-black w-full mb-10"></div>
 
-      {showSystemFooter && (
-        <div className="mt-6 pt-2 text-center text-[8px] text-slate-400 font-bold uppercase tracking-widest border-t border-slate-50 print:hidden">
-          EduSchedule Pro — Generated on {format(new Date(), "yyyy-MM-dd HH:mm")}
+      {/* 6. التواقيع */}
+      {showSignatures && (
+        <div className="grid grid-cols-2 gap-20">
+          <div className="text-center group">
+            <p className="font-black text-black text-xl mb-1">{finalLeftTitle}</p>
+            <div className="h-0.5 bg-black/20 w-48 mx-auto mb-20"></div>
+          </div>
+          <div className="text-center group">
+            <p className="font-black text-black text-xl mb-1">{finalRightTitle}</p>
+            <div className="h-0.5 bg-black/20 w-48 mx-auto mb-20"></div>
+          </div>
         </div>
       )}
     </div>
