@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Calendar, Users, Home, BookOpen, 
   MapPin, BarChart3, FileText, Building2, Settings, UserCog,
-  ClipboardList, ListChecks, UserCheck
+  ClipboardList, ListChecks, UserCheck, LayoutGrid
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "@/lib/utils";
@@ -17,6 +17,7 @@ const Sidebar = () => {
 
   const menuItems = [
     { icon: LayoutDashboard, label: t.dashboard, path: "/" },
+    { icon: LayoutGrid, label: isRTL ? "الجدول العام" : "Master Schedule", path: "/master-schedule" },
     { icon: Calendar, label: t.schedule, path: "/schedule" },
     { icon: ClipboardList, label: t.weeklyWorkSchedule, path: "/work-schedule" },
     { icon: UserCheck, label: t.assignments, path: "/assignments" },

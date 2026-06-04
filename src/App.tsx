@@ -10,6 +10,7 @@ import Employees from "./pages/Employees";
 import Classes from "./pages/Classes";
 import Subjects from "./pages/Subjects";
 import Schedule from "./pages/Schedule";
+import MasterSchedule from "./pages/MasterSchedule";
 import Settings from "./pages/Settings";
 import Users from "./pages/Users";
 import Reports from "./pages/Reports";
@@ -41,6 +42,7 @@ const AppRoutes = () => (
     <Route path="/rooms" element={<ProtectedRoute><Layout><Rooms /></Layout></ProtectedRoute>} />
     <Route path="/lessons" element={<ProtectedRoute><Layout><Lessons /></Layout></ProtectedRoute>} />
     <Route path="/schedule" element={<ProtectedRoute><Layout><Schedule /></Layout></ProtectedRoute>} />
+    <Route path="/master-schedule" element={<ProtectedRoute><Layout><MasterSchedule /></Layout></ProtectedRoute>} />
     <Route path="/work-schedule" element={<ProtectedRoute><Layout><WeeklyWorkSchedule /></Layout></ProtectedRoute>} />
     <Route path="/assignments" element={<ProtectedRoute><Layout><Assignments /></Layout></ProtectedRoute>} />
     <Route path="/reports" element={<ProtectedRoute><Layout><Reports /></Layout></ProtectedRoute>} />
