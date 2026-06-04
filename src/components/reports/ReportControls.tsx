@@ -4,26 +4,43 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Layout as LayoutIcon, Clock } from "lucide-react";
+import { Layout as LayoutIcon, Clock, Building2 } from "lucide-react";
 import { PeriodPart } from "@/types";
 
 interface ReportControlsProps {
   t: any;
+  isRTL: boolean;
   orientation: "portrait" | "landscape";
   onOrientationChange: (val: "portrait" | "landscape") => void;
+  departments: string[];
+  selectedDepartment: string;
+  onDepartmentChange: (dept: string) => void;
   selectedPeriods: PeriodPart[];
   onTogglePeriod: (period: PeriodPart) => void;
 }
 
 const ReportControls = ({ 
   t, 
+  isRTL,
   orientation, 
   onOrientationChange, 
+  departments,
+  selectedDepartment,
+  onDepartmentChange,
   selectedPeriods, 
   onTogglePeriod 
 }: ReportControlsProps) => {
+  // Fallback list of departments if empty
+  const deptList = departments.length > 0 ? departments : [
+    isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate",
+    isRTL ? "مصلحة التكوين" : "Training Department",
+    isRTL ? "مصلحة التمهين" : "Apprenticeship Department",
+    isRTL ? "مصلحة المالية" : "Finance Department"
+  ];
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-2 print:hidden">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-2 print:hidden">
+      {/* Orientation */}
       <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1.5">
         <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
           <LayoutIcon size={12} />
@@ -39,7 +56,28 @@ const ReportControls = ({
           </SelectContent>
         </Select>
       </div>
+
+      {/* Department Selection */}
+      <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1.5">
+        <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+          <Building2 size={12} />
+          {isRTL ? "المصلحة" : "Department"}
+        </Label>
+        <Select value={selectedDepartment} onValueChange={onDepartmentChange}>
+          <SelectTrigger className="h-9 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-xs">
+            <SelectValue placeholder={isRTL ? "اختر المصلحة..." : "Select department..."} />
+          </SelectTrigger>
+          <SelectContent>
+            {deptList.map((dept, idx) => (
+              <SelectItem key={idx} value={dept}>
+                {dept}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       
+      {/* Periods */}
       <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1.5 md:col-span-3">
         <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
           <Clock size={12} />

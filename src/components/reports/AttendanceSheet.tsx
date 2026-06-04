@@ -21,7 +21,7 @@ interface AttendanceSheetProps {
   t: any;
   isRTL: boolean;
   currentLocale: any;
-  departments: string[];
+  selectedDepartment: string;
   reportStyles: any;
   supervisors: string[];
 }
@@ -33,7 +33,7 @@ const AttendanceSheet = ({
   t,
   isRTL,
   currentLocale,
-  departments,
+  selectedDepartment,
   reportStyles,
   supervisors
 }: AttendanceSheetProps) => {
@@ -69,7 +69,7 @@ const AttendanceSheet = ({
       <div className="grid grid-cols-2 border-y border-black py-1 mb-4 text-[10px] font-black">
         <div className="flex items-center gap-2">
           <span className="text-black/60">{isRTL ? "المصلحة:" : "Department:"}</span>
-          <span className="text-black">{departments[0] || "مديرية الدراسات والتربصات"}</span>
+          <span className="text-black">{selectedDepartment}</span>
         </div>
         <div className={cn("flex items-center gap-2", isRTL ? "justify-end" : "justify-start")}>
           <span className="text-black/60">{isRTL ? "السنة التكوينية:" : "Training Year:"}</span>

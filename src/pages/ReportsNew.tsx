@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { 
   format, 
@@ -44,11 +44,14 @@ const ReportsNew = () => {
     language
   } = useApp();
 
+  const defaultDept = useMemo(() => isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate", [isRTL]);
+
   const [dailyDate, setDailyDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [monthlyDate, setMonthlyDate] = useState(format(new Date(), "yyyy-MM"));
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("daily");
   const [selectedPeriods, setSelectedPeriods] = useState<PeriodPart[]>(["Morning", "Afternoon", "Evening"]);
+  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [reportStyles, setReportStyles] = useState({
     fontFamily: "'Cairo', sans-serif",
     headerSize: 14,
@@ -57,6 +60,15 @@ const ReportsNew = () => {
     footerSize: 14,
     orientation: "portrait" as "portrait" | "landscape"
   });
+
+  // Initialize selectedDepartment when departments are loaded
+  useEffect(() => {
+    if (departments && departments.length > 0) {
+      setSelectedDepartment(departments[0]);
+    } else {
+      setSelectedDepartment(defaultDept);
+    }
+  }, [departments, defaultDept]);
 
   const currentLocale = language === "ar" ? ar : enUS;
   const supervisors = useMemo(() => [isRTL ? "رئيس مصلحة التكوين" : "Head of Training"], [isRTL]);
@@ -80,6 +92,8 @@ const ReportsNew = () => {
       });
   };
 
+  const activeDept = selectedDepartment || departments[0] || defaultDept;
+
   const renderDailyReport = () => {
     const date = parseISO(dailyDate);
     if (!isValid(date)) return null;
@@ -98,7 +112,7 @@ const ReportsNew = () => {
         t={t}
         isRTL={isRTL}
         currentLocale={currentLocale}
-        departments={departments}
+        selectedDepartment={activeDept}
         reportStyles={reportStyles}
         supervisors={supervisors}
       />
@@ -126,7 +140,7 @@ const ReportsNew = () => {
               t={t}
               isRTL={isRTL}
               currentLocale={currentLocale}
-              departments={departments}
+              selectedDepartment={activeDept}
               reportStyles={reportStyles}
               supervisors={supervisors}
             />
@@ -227,8 +241,12 @@ const ReportsNew = () => {
       
       <ReportControls 
         t={t}
+        isRTL={isRTL}
         orientation={reportStyles.orientation}
         onOrientationChange={(v) => setReportStyles({...reportStyles, orientation: v})}
+        departments={departments}
+        selectedDepartment={activeDept}
+        onDepartmentChange={setSelectedDepartment}
         selectedPeriods={selectedPeriods}
         onTogglePeriod={togglePeriod}
       />
