@@ -7,7 +7,6 @@ import {
   Search, 
   Printer, 
   Filter,
-  EyeOff,
   Rows,
   Columns
 } from "lucide-react";
@@ -47,7 +46,7 @@ const MasterSchedule = () => {
     return PERIODS.filter(p => 
       assignments.some(a => a.day === selectedDay && a.period === p)
     );
-  }, [PERIODS, hideEmptyPeriods, selectedDay, assignments]);
+  }, [hideEmptyPeriods, selectedDay, assignments]);
 
   const getLesson = (classId: string, period: string) => {
     return assignments.find(a => a.classId === classId && a.day === selectedDay && a.period === period);
@@ -123,7 +122,8 @@ const MasterSchedule = () => {
                 );
               })}
             </tr>
-          </tbody>
+          ))}
+        </tbody>
       </table>
       {visibleClasses.length === 0 && (
         <div className="p-20 text-center text-slate-400 font-bold">
@@ -176,7 +176,6 @@ const MasterSchedule = () => {
         </Button>
       </PageHeader>
 
-      {/* أدوات التصفية المتقدمة */}
       <div className="flex flex-wrap gap-6 bg-white p-5 rounded-3xl border border-emerald-100 shadow-sm mb-6 print:hidden">
         <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-xl border border-emerald-100">
           <Filter size={16} className="text-emerald-600" />
