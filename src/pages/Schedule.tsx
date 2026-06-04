@@ -71,7 +71,7 @@ const Schedule = () => {
       label: isRTL ? `ح${id}` : id,
       periodPart: PERIOD_MAP[id] as "Morning" | "Afternoon" | "Evening",
       isBreak: false,
-      time: PERIOD_TIMES[id] || "" // إضافة التوقيت هنا
+      time: PERIOD_TIMES[id] || "" 
     }));
   }, [isRTL]);
 
@@ -121,28 +121,24 @@ const Schedule = () => {
     showSuccess(isRTL ? "تم حذف الحصة" : "Lesson deleted");
   };
 
+  // تجميع الساعات حسب المادة فقط كما طلب المستخدم
   const summaryData = useMemo(() => {
     const data: any[] = [];
     filteredAssignments.forEach(asgn => {
       const sub = subjects.find(s => s.id === asgn.subjectId)?.name || "---";
-      const teacher = employees.find(e => e.id === asgn.employeeId);
-      const teacherName = teacher ? `${teacher.lastName} ${teacher.firstName}` : "---";
-      const className = classes.find(c => c.id === asgn.classId)?.name || "---";
       
-      const existing = data.find(d => d.subject === sub && (viewMode === "class" ? d.teacher === teacherName : d.branch === className));
+      const existing = data.find(d => d.subject === sub);
       if (existing) {
         existing.count++;
       } else {
         data.push({
           subject: sub,
-          teacher: teacherName,
-          branch: className,
           count: 1
         });
       }
     });
     return data;
-  }, [filteredAssignments, subjects, employees, classes, viewMode]);
+  }, [filteredAssignments, subjects]);
 
   return (
     <div className="space-y-6">
