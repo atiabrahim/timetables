@@ -23,14 +23,14 @@ const ReportControls = ({
   onTogglePeriod 
 }: ReportControlsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 print:hidden">
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
-        <Label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-          <LayoutIcon size={14} />
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-2 print:hidden">
+      <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1.5">
+        <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+          <LayoutIcon size={12} />
           {t.orientation}
         </Label>
         <Select value={orientation} onValueChange={(v: any) => onOrientationChange(v)}>
-          <SelectTrigger className="h-12 rounded-2xl border-slate-100 bg-slate-50/50 font-bold">
+          <SelectTrigger className="h-9 rounded-xl border-slate-100 bg-slate-50/50 font-bold text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -40,28 +40,28 @@ const ReportControls = ({
         </Select>
       </div>
       
-      <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3 md:col-span-3">
-        <Label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-          <Clock size={14} />
+      <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1.5 md:col-span-3">
+        <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+          <Clock size={12} />
           {t.applyToPeriods}
         </Label>
-        <div className="flex flex-wrap gap-8 pt-2">
+        <div className="flex flex-wrap gap-4 pt-0.5">
           {[
             { id: "Morning", label: t.morning, range: "1-4" },
             { id: "Afternoon", label: t.afternoon, range: "5-7" },
             { id: "Evening", label: t.evening, range: "8-10" }
           ].map(p => (
-            <div key={p.id} className="flex items-center gap-3 cursor-pointer group" onClick={() => onTogglePeriod(p.id as PeriodPart)}>
+            <div key={p.id} className="flex items-center gap-2 cursor-pointer group" onClick={() => onTogglePeriod(p.id as PeriodPart)}>
               <Checkbox 
                 id={`filter-${p.id}`} 
                 checked={selectedPeriods.includes(p.id as PeriodPart)} 
-                className="rounded-md border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                className="h-4 w-4 rounded border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
               />
-              <div className="flex flex-col">
-                <Label htmlFor={`filter-${p.id}`} className="text-sm font-black text-slate-700 cursor-pointer group-hover:text-emerald-600 transition-colors">
+              <div className="flex flex-col leading-none">
+                <Label htmlFor={`filter-${p.id}`} className="text-xs font-black text-slate-700 cursor-pointer group-hover:text-emerald-600 transition-colors">
                   {p.label}
                 </Label>
-                <span className="text-[10px] font-bold text-slate-400">{p.range}</span>
+                <span className="text-[8px] font-bold text-slate-400">{p.range}</span>
               </div>
             </div>
           ))}

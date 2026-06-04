@@ -136,9 +136,9 @@ const ReportsNew = () => {
     });
     
     return sheets.length > 0 ? sheets : (
-      <div className="text-center p-10 bg-white rounded-2xl border border-dashed border-slate-200 w-full max-w-4xl">
-        <Info className="mx-auto text-slate-200 mb-2" size={36} />
-        <p className="text-slate-400 font-bold text-sm">{t.noAssignments}</p>
+      <div className="text-center p-6 bg-white rounded-2xl border border-dashed border-slate-200 w-full max-w-4xl">
+        <Info className="mx-auto text-slate-200 mb-1" size={28} />
+        <p className="text-slate-400 font-bold text-xs">{t.noAssignments}</p>
       </div>
     );
   };
@@ -161,8 +161,8 @@ const ReportsNew = () => {
     }).sort((a, b) => b.total - a.total);
 
     const subtitle = (
-      <div className="inline-flex items-center gap-2 text-emerald-700 font-bold">
-        <Calendar size={16} />
+      <div className="inline-flex items-center gap-1.5 text-emerald-700 font-bold text-xs">
+        <Calendar size={14} />
         {format(new Date(year, month - 1, 1), "MMMM yyyy", { locale: currentLocale })}
       </div>
     );
@@ -178,21 +178,21 @@ const ReportsNew = () => {
         <Table className="border-4 border-slate-950 w-full">
           <TableHeader>
             <TableRow className="bg-slate-100 border-b-4 border-slate-950">
-              <TableHead className={cn("font-black text-slate-950 border-e-4 border-slate-950 p-4", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
-              <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-4">ص</TableHead>
-              <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-4">م</TableHead>
-              <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-4">ل</TableHead>
-              <TableHead className="text-center font-black text-white bg-slate-950 p-4">{t.total}</TableHead>
+              <TableHead className={cn("font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
+              <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs">ص</TableHead>
+              <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs">م</TableHead>
+              <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs">ل</TableHead>
+              <TableHead className="text-center font-black text-white bg-slate-950 p-2 text-xs">{t.total}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {stats.map(s => (
               <TableRow key={s.id} className="border-b-2 border-slate-950">
-                <TableCell className={cn("font-bold border-e-2 border-slate-950 p-4", isRTL ? "text-right" : "text-left")}>{s.lastName} {s.firstName}</TableCell>
-                <TableCell className="text-center border-e-2 border-slate-950 p-4">{s.m}</TableCell>
-                <TableCell className="text-center border-e-2 border-slate-950 p-4">{s.a}</TableCell>
-                <TableCell className="text-center border-e-2 border-slate-950 p-4">{s.e}</TableCell>
-                <TableCell className="text-center font-black p-4 bg-slate-50">{s.total}</TableCell>
+                <TableCell className={cn("font-bold border-e-2 border-slate-950 p-2 text-xs", isRTL ? "text-right" : "text-left")}>{s.lastName} {s.firstName}</TableCell>
+                <TableCell className="text-center border-e-2 border-slate-950 p-2 text-xs">{s.m}</TableCell>
+                <TableCell className="text-center border-e-2 border-slate-950 p-2 text-xs">{s.a}</TableCell>
+                <TableCell className="text-center border-e-2 border-slate-950 p-2 text-xs">{s.e}</TableCell>
+                <TableCell className="text-center font-black p-2 bg-slate-50 text-xs">{s.total}</TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -208,19 +208,19 @@ const ReportsNew = () => {
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <div className="space-y-2 pb-2">
       <PageHeader
         title={t.reports}
         subtitle="إصدار أوراق حضور وجداول إحصائية رسمية"
         icon={FileText}
         isRTL={isRTL}
       >
-        <Button variant="outline" size="lg" className="rounded-2xl border-slate-200 font-bold gap-2 h-12 px-6 bg-white" onClick={() => setIsPreviewOpen(true)}>
-          <Eye className="h-5 w-5 text-emerald-600" />
+        <Button variant="outline" size="sm" className="rounded-xl border-slate-200 font-bold gap-1.5 h-10 px-4 bg-white text-xs" onClick={() => setIsPreviewOpen(true)}>
+          <Eye className="h-4 w-4 text-emerald-600" />
           {t.preview}
         </Button>
-        <Button size="lg" onClick={() => window.print()} className="bg-emerald-600 text-white rounded-2xl font-black gap-2 h-12 px-8 shadow-lg shadow-emerald-100">
-          <Printer className="h-5 w-5" />
+        <Button size="sm" onClick={() => window.print()} className="bg-emerald-600 text-white rounded-xl font-black gap-1.5 h-10 px-5 shadow-md shadow-emerald-100 text-xs">
+          <Printer className="h-4 w-4" />
           {t.print}
         </Button>
       </PageHeader>
@@ -234,33 +234,33 @@ const ReportsNew = () => {
       />
 
       <Tabs defaultValue="daily" onValueChange={setActiveTab} className="w-full print:hidden">
-        <TabsList className="grid w-full grid-cols-3 mb-4 h-14 bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm">
-          <TabsTrigger value="daily" className="flex items-center gap-2 font-black rounded-xl data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-xs">
-            <Calendar className="h-4 w-4" /> {t.dailyReport}
+        <TabsList className="grid w-full grid-cols-3 mb-2 h-11 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
+          <TabsTrigger value="daily" className="flex items-center gap-1.5 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-[11px]">
+            <Calendar className="h-3.5 w-3.5" /> {t.dailyReport}
           </TabsTrigger>
-          <TabsTrigger value="monthly" className="flex items-center gap-2 font-black rounded-xl data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-xs">
-            <FileText className="h-4 w-4" /> {t.monthlyReport}
+          <TabsTrigger value="monthly" className="flex items-center gap-1.5 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-[11px]">
+            <FileText className="h-3.5 w-3.5" /> {t.monthlyReport}
           </TabsTrigger>
-          <TabsTrigger value="stats" className="flex items-center gap-2 font-black rounded-xl data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-xs">
-            <BarChart2 className="h-4 w-4" /> {t.monthlyStats}
+          <TabsTrigger value="stats" className="flex items-center gap-1.5 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-[11px]">
+            <BarChart2 className="h-3.5 w-3.5" /> {t.monthlyStats}
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="daily" className="space-y-3">
-          <Input type="date" value={dailyDate} onChange={(e) => setDailyDate(e.target.value)} className="max-w-xs h-10 rounded-xl" />
-          <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex flex-col items-center">
+        <TabsContent value="daily" className="space-y-2">
+          <Input type="date" value={dailyDate} onChange={(e) => setDailyDate(e.target.value)} className="max-w-xs h-9 rounded-lg text-xs" />
+          <div className="bg-slate-50/50 p-2 rounded-xl border border-slate-100 flex flex-col items-center gap-2">
             {renderDailyReport()}
           </div>
         </TabsContent>
-        <TabsContent value="monthly" className="space-y-3">
-          <Input type="month" value={monthlyDate} onChange={(e) => setMonthlyDate(e.target.value)} className="max-w-xs h-10 rounded-xl" />
-          <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex flex-col items-center">
+        <TabsContent value="monthly" className="space-y-2">
+          <Input type="month" value={monthlyDate} onChange={(e) => setMonthlyDate(e.target.value)} className="max-w-xs h-9 rounded-lg text-xs" />
+          <div className="bg-slate-50/50 p-2 rounded-xl border border-slate-100 flex flex-col items-center gap-2">
             {renderMonthlyReport()}
           </div>
         </TabsContent>
-        <TabsContent value="stats" className="space-y-3">
-          <Input type="month" value={monthlyDate} onChange={(e) => setMonthlyDate(e.target.value)} className="max-w-xs h-10 rounded-xl" />
-          <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 flex flex-col items-center">
+        <TabsContent value="stats" className="space-y-2">
+          <Input type="month" value={monthlyDate} onChange={(e) => setMonthlyDate(e.target.value)} className="max-w-xs h-9 rounded-lg text-xs" />
+          <div className="bg-slate-50/50 p-2 rounded-xl border border-slate-100 flex flex-col items-center gap-2">
             {renderStatsReport()}
           </div>
         </TabsContent>
