@@ -57,27 +57,27 @@
   }
 }
 
-/* Global Print Fixes */
+/* تصحيحات الطباعة العالمية */
 @media print {
-  /* Hide UI elements by default when printing the main page */
+  /* إخفاء عناصر واجهة المستخدم */
   header, 
   aside, 
   button, 
   input,
   select,
-  [role="tablist"], 
+  nav,
+  .print-hidden,
   .print\:hidden,
-  .print-hidden {
+  [role="tablist"] {
     display: none !important;
   }
 
-  /* If a dialog/modal is open, hide the main app entirely so only the modal prints */
-  body:has(div[role="dialog"]) #root,
-  body:has([data-radix-portal]) #root {
+  /* عند طباعة نافذة منبثقة، نخفي محتوى التطبيق الأصلي تماماً */
+  body:has(div[role="dialog"]) #root {
     display: none !important;
   }
 
-  /* Ensure the body and root don't collapse and allow multi-page printing */
+  /* تصفير الهوامش والارتفاع لضمان طباعة نظيفة */
   html, body {
     height: auto !important;
     overflow: visible !important;
@@ -86,33 +86,7 @@
     padding: 0 !important;
   }
 
-  #root {
-    height: auto !important;
-    overflow: visible !important;
-    display: block !important;
-    max-width: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* Reset layout wrappers for printing */
-  .flex, .grid {
-    display: block !important;
-  }
-
-  main, .overflow-y-auto, .overflow-x-auto {
-    overflow: visible !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* Target all printable containers used in the app */
-  #printable-area, 
-  #printable-report, 
-  #printable-report-area, 
+  /* الحاوية الرئيسية للطباعة */
   .page-break-container,
   .print-content-master {
     display: block !important;
@@ -120,35 +94,35 @@
     position: static !important;
     width: 100% !important;
     margin: 0 auto !important;
-    padding: 20mm 15mm !important;
+    padding: 15mm 10mm !important; /* هوامش الطباعة الرسمية */
     transform: none !important;
     box-shadow: none !important;
     border: none !important;
     box-sizing: border-box !important;
   }
 
-  /* Avoid trailing blank pages */
+  /* فواصل الصفحات */
   .page-break-container {
     page-break-after: always !important;
     break-after: page !important;
   }
   
-  .page-break-container:last-child,
-  .page-break-container:last-of-type {
+  .page-break-container:last-child {
     page-break-after: avoid !important;
     break-after: avoid !important;
   }
 
-  /* Ensure table rows don't break awkwardly across pages */
+  /* منع كسر صفوف الجدول في منتصف الصفحة */
   tr {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
   }
 
-  /* Force background colors to print */
+  /* إجبار المتصفح على طباعة ألوان الخلفية */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    color-adjust: exact !important;
   }
 
   @page {
