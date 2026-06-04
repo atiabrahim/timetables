@@ -58,7 +58,7 @@ const AttendanceSheet = ({
       style={{ fontFamily: reportStyles.fontFamily }}
     >
       {/* Official State Header */}
-      <div className="flex flex-col items-center text-center mb-4 space-y-0.5">
+      <div className="flex flex-col items-center text-center mb-2 space-y-0.5">
         <p className="font-black text-black text-xs tracking-widest uppercase">{t.republic}</p>
         <div className="w-12 h-px bg-black/20 my-0.5"></div>
         <p className="font-bold text-black text-[10px]">{t.centerName}</p>
@@ -66,7 +66,7 @@ const AttendanceSheet = ({
       </div>
 
       {/* Admin Row */}
-      <div className="grid grid-cols-2 border-y border-black py-1 mb-4 text-[10px] font-black">
+      <div className="grid grid-cols-2 border-y border-black py-1 mb-2 text-[10px] font-black">
         <div className="flex items-center gap-2">
           <span className="text-black/60">{isRTL ? "المصلحة:" : "Department:"}</span>
           <span className="text-black">{selectedDepartment}</span>
