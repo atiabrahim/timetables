@@ -51,8 +51,8 @@ const AttendanceSheet = ({
   return (
     <div 
       className={cn(
-        "bg-white p-6 mb-6 mx-auto shadow-md border border-slate-100 rounded-2xl page-break-container max-w-[210mm]",
-        "print:shadow-none print:border-none print:p-0 print:m-0 print:rounded-none print:w-full"
+        "bg-white py-6 px-[calc(1.5rem+5mm)] mb-6 mx-auto shadow-md border border-slate-100 rounded-2xl page-break-container max-w-[210mm]",
+        "print:shadow-none print:border-none print:py-0 print:px-[5mm] print:m-0 print:rounded-none print:w-full"
       )}
       dir={isRTL ? "rtl" : "ltr"}
       style={{ fontFamily: reportStyles.fontFamily }}
