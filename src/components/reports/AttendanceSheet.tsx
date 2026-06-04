@@ -107,17 +107,17 @@ const AttendanceSheet = ({
       <div className="flex-1">
         <Table className="w-full border-collapse border border-black">
           <TableHeader>
-            <TableRow className="bg-slate-50 hover:bg-slate-50 border-b border-black h-8">
-              <TableHead className="w-[50px] text-center font-black text-black border-e border-black p-1 text-[10px]">
+            <TableRow className="bg-slate-50 hover:bg-slate-50 border-b border-black h-6">
+              <TableHead className="w-[50px] text-center font-black text-black border-e border-black p-0.5 text-[10px]">
                 <div className="flex items-center justify-center gap-0.5"><Hash size={10}/>{t.number}</div>
               </TableHead>
-              <TableHead className={cn("font-black text-black border-e border-black px-3 p-1 text-[10px]", isRTL ? "text-right" : "text-left")}>
+              <TableHead className={cn("font-black text-black border-e border-black px-3 p-0.5 text-[10px]", isRTL ? "text-right" : "text-left")}>
                 <div className="flex items-center gap-1.5"><User size={12}/>{t.employeeName}</div>
               </TableHead>
-              <TableHead className="w-[130px] text-center font-black text-black border-e border-black p-1 text-[10px]">
+              <TableHead className="w-[130px] text-center font-black text-black border-e border-black p-0.5 text-[10px]">
                 <div className="flex items-center justify-center gap-1.5"><PenTool size={12}/>{t.signature}</div>
               </TableHead>
-              <TableHead className="text-center font-black text-black w-[160px] p-1 text-[10px]">
+              <TableHead className="text-center font-black text-black w-[160px] p-0.5 text-[10px]">
                 <div className="flex items-center justify-center gap-1.5"><FileText size={12}/>{t.notes}</div>
               </TableHead>
             </TableRow>
