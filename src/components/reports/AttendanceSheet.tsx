@@ -114,10 +114,10 @@ const AttendanceSheet = ({
               <TableHead className={cn("font-black text-black border-e border-black px-3 p-0.5 text-[10px]", isRTL ? "text-right" : "text-left")}>
                 <div className="flex items-center gap-1.5"><User size={12}/>{t.employeeName}</div>
               </TableHead>
-              <TableHead className="w-[130px] text-center font-black text-black border-e border-black p-0.5 text-[10px]">
+              <TableHead className="w-[140px] text-center font-black text-black border-e border-black p-0.5 text-[10px]">
                 <div className="flex items-center justify-center gap-1.5"><PenTool size={12}/>{t.signature}</div>
               </TableHead>
-              <TableHead className="text-center font-black text-black w-[160px] p-0.5 text-[10px]">
+              <TableHead className="text-center font-black text-black w-[200px] p-0.5 text-[10px]">
                 <div className="flex items-center justify-center gap-1.5"><FileText size={12}/>{t.notes}</div>
               </TableHead>
             </TableRow>
