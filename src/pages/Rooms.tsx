@@ -71,8 +71,8 @@ const Rooms = () => {
   }, [rooms, searchTerm, sortConfig]);
 
   const SortIcon = ({ column }: { column: SortConfig["key"] }) => {
-    if (sortConfig.key !== column) return <ArrowUpDown size={14} className="text-gray-300" />;
-    return sortConfig.direction === "asc" ? <ChevronUp size={14} className="text-emerald-600" /> : <ChevronDown size={14} className="text-emerald-600" />;
+    if (sortConfig.key !== column) return <ArrowUpDown size={12} className="text-gray-300" />;
+    return sortConfig.direction === "asc" ? <ChevronUp size={12} className="text-emerald-600" /> : <ChevronDown size={12} className="text-emerald-600" />;
   };
 
   const handleAddRoom = () => {
@@ -157,57 +157,54 @@ const Rooms = () => {
       </PageHeader>
 
       {/* Table Section */}
-      <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm print:hidden">
+      <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm print:hidden">
         <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
-          <thead className="bg-slate-50/50">
-            <tr>
-              <th 
-                className="p-5 text-slate-900 font-black text-xs uppercase tracking-widest border-b border-slate-100 cursor-pointer"
-                onClick={() => handleSort("name")}
-              >
+          <thead>
+            <tr className="bg-slate-50">
+              <th className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} onClick={() => handleSort("name")}>
                 <div className="flex items-center gap-2">
                   {isRTL ? "اسم القاعة" : "Room Name"}
                   <SortIcon column="name" />
                 </div>
               </th>
-              <th className="p-5 text-slate-900 font-black text-xs uppercase tracking-widest border-b border-slate-100 text-center print:hidden">
-                {isRTL ? "إجراءات" : "Actions"}
-              </th>
+              {isAdmin && (
+                <th className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center w-24">
+                  {isRTL ? "إجراءات" : "Actions"}
+                </th>
+              )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody>
             {sortedAndFilteredRooms.map((room, idx) => (
-              <tr key={idx} className="group hover:bg-emerald-50/30 transition-colors">
-                <td className="p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors">
-                      <MapPin size={18} />
-                    </div>
-                    <span className="font-black text-slate-900">{room}</span>
+              <tr key={idx} className="hover:bg-emerald-50/30 transition-colors group">
+                <td className="p-1 border border-slate-100">
+                  <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
+                    <span className="font-bold text-emerald-900 text-xs">{room}</span>
+                    <MapPin size={12} className="text-emerald-500 shrink-0" />
                   </div>
                 </td>
-                <td className="p-5 text-center print:hidden">
-                  <div className="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 rounded-lg"
-                      onClick={() => handleEditClick(room)}
-                    >
-                      <Edit2 size={14} />
-                    </Button>
-                    {isAdmin && (
+                {isAdmin && (
+                  <td className="p-1 border border-slate-100 text-center">
+                    <div className="flex justify-center gap-1">
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-8 w-8 text-red-400 hover:bg-red-50 rounded-lg"
+                        className="h-6 w-6 text-emerald-600 hover:bg-emerald-50 rounded-md"
+                        onClick={() => handleEditClick(room)}
+                      >
+                        <Edit2 size={12} />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-red-400 hover:bg-red-50 rounded-md"
                         onClick={() => deleteRoom(room)}
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={12} />
                       </Button>
-                    )}
-                  </div>
-                </td>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

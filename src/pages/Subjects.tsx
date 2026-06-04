@@ -78,8 +78,8 @@ const Subjects = () => {
   }, [subjects, searchTerm, sortConfig]);
 
   const SortIcon = ({ column }: { column: SortConfig["key"] }) => {
-    if (sortConfig.key !== column) return <ArrowUpDown size={14} className="text-gray-300" />;
-    return sortConfig.direction === "asc" ? <ChevronUp size={14} className="text-emerald-600" /> : <ChevronDown size={14} className="text-emerald-600" />;
+    if (sortConfig.key !== column) return <ArrowUpDown size={12} className="text-gray-300" />;
+    return sortConfig.direction === "asc" ? <ChevronUp size={12} className="text-emerald-600" /> : <ChevronDown size={12} className="text-emerald-600" />;
   };
 
   const fetchGoogleTranslation = async (text: string, target: "new" | "edit") => {
@@ -198,66 +198,66 @@ const Subjects = () => {
       </PageHeader>
 
       {/* Table Section */}
-      <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm print:hidden">
+      <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm print:hidden">
         <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
-          <thead className="bg-slate-50/50">
-            <tr>
-              <th className="p-5 text-slate-900 font-black text-xs uppercase tracking-widest border-b border-slate-100 cursor-pointer" onClick={() => handleSort("name")}>
+          <thead>
+            <tr className="bg-slate-50">
+              <th className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} onClick={() => handleSort("name")}>
                 <div className="flex items-center gap-2">
                   {isRTL ? "اسم المادة" : "Subject Name"}
                   <SortIcon column="name" />
                 </div>
               </th>
-              <th className="p-5 text-slate-900 font-black text-xs uppercase tracking-widest border-b border-slate-100 cursor-pointer" onClick={() => handleSort("nameEn")}>
+              <th className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} onClick={() => handleSort("nameEn")}>
                 <div className="flex items-center gap-2">
                   {isRTL ? "التسمية بالإنجليزية" : "English Name"}
                   <SortIcon column="nameEn" />
                 </div>
               </th>
-              <th className="p-5 text-slate-900 font-black text-xs uppercase tracking-widest border-b border-slate-100 text-center w-24 print:hidden">
-                {isRTL ? "إجراءات" : "Actions"}
-              </th>
+              {isAdmin && (
+                <th className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center w-24">
+                  {isRTL ? "إجراءات" : "Actions"}
+                </th>
+              )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody>
             {sortedAndFilteredSubjects.map((sub) => (
-              <tr key={sub.id} className="group hover:bg-emerald-50/30 transition-colors">
-                <td className="p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors">
-                      <BookOpen size={18} />
-                    </div>
-                    <span className="font-black text-slate-900">{sub.name}</span>
+              <tr key={sub.id} className="hover:bg-emerald-50/30 transition-colors group">
+                <td className="p-1 border border-slate-100">
+                  <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
+                    <span className="font-bold text-emerald-900 text-xs">{sub.name}</span>
+                    <BookOpen size={12} className="text-emerald-500 shrink-0" />
                   </div>
                 </td>
-                <td className="p-5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-slate-600 font-bold text-sm">{sub.nameEn || "---"}</span>
-                    {sub.nameEn && <Languages size={14} className="text-slate-400" />}
+                <td className="p-1 border border-slate-100">
+                  <div className={cn("flex items-center gap-2 px-2 text-slate-600 text-xs font-medium", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
+                    <span>{sub.nameEn || "---"}</span>
+                    {sub.nameEn && <Languages size={12} className="text-slate-400 shrink-0" />}
                   </div>
                 </td>
-                <td className="p-5 text-center print:hidden">
-                  <div className="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 rounded-lg"
-                      onClick={() => handleEditClick(sub)}
-                    >
-                      <Edit2 size={14} />
-                    </Button>
-                    {isAdmin && (
+                {isAdmin && (
+                  <td className="p-1 border border-slate-100 text-center">
+                    <div className="flex justify-center gap-1">
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-8 w-8 text-red-400 hover:bg-red-50 rounded-lg"
+                        className="h-6 w-6 text-emerald-600 hover:bg-emerald-50 rounded-md"
+                        onClick={() => handleEditClick(sub)}
+                      >
+                        <Edit2 size={12} />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-red-400 hover:bg-red-50 rounded-md"
                         onClick={() => deleteSubject(sub.id)}
                       >
-                        <Trash2 size={14} />
+                        <Trash2 size={12} />
                       </Button>
-                    )}
-                  </div>
-                </td>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

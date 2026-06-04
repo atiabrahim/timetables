@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { 
   Search, Plus, Edit2, ArrowUpDown, Trash2, 
   ChevronUp, ChevronDown, Mail, Phone, Briefcase, Printer, Info,
-  Users, UserCheck, Clock, Award, Eye, X
+  Users, UserCheck, Clock, Award, Eye, X, User as UserIcon
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -86,8 +86,8 @@ const Employees = () => {
   }, [employees, searchTerm, sortConfig]);
 
   const SortIcon = ({ column }: { column: SortConfig["key"] }) => {
-    if (sortConfig.key !== column) return <ArrowUpDown size={14} className="text-slate-300" />;
-    return sortConfig.direction === "asc" ? <ChevronUp size={14} className="text-emerald-600" /> : <ChevronDown size={14} className="text-emerald-600" />;
+    if (sortConfig.key !== column) return <ArrowUpDown size={12} className="text-slate-300" />;
+    return sortConfig.direction === "asc" ? <ChevronUp size={12} className="text-emerald-600" /> : <ChevronDown size={12} className="text-emerald-600" />;
   };
 
   const handleAddEmployee = () => {
@@ -239,52 +239,74 @@ const Employees = () => {
         </Card>
       </div>
 
-      <div className="bg-white rounded-[2rem] border border-slate-100 overflow-hidden shadow-sm print:hidden">
+      <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm print:hidden">
         <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
-          <thead className="bg-slate-50/50">
-            <tr>
-              <th className="p-5 text-slate-900 font-black text-xs uppercase tracking-widest border-b border-slate-100 cursor-pointer" onClick={() => handleSort("lastName")}>
+          <thead>
+            <tr className="bg-slate-50">
+              <th className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} onClick={() => handleSort("lastName")}>
                 <div className="flex items-center gap-2">{isRTL ? "المعلم" : "Teacher"} <SortIcon column="lastName" /></div>
               </th>
-              <th className="p-5 text-slate-900 font-black text-xs uppercase tracking-widest border-b border-slate-100 cursor-pointer" onClick={() => handleSort("category")}>
-                <div className="flex items-center gap-2">{isRTL ? "الفئة" : "Category"} <SortIcon column="category" /></div>
+              <th className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center w-32 cursor-pointer" onClick={() => handleSort("category")}>
+                <div className="flex items-center justify-center gap-2">{isRTL ? "الفئة" : "Category"} <SortIcon column="category" /></div>
               </th>
-              <th className="p-5 text-slate-900 font-black text-xs uppercase tracking-widest border-b border-slate-100">{isRTL ? "التواصل" : "Contact"}</th>
-              <th className="p-5 text-slate-900 font-black text-xs uppercase tracking-widest border-b border-slate-100 text-center print:hidden">{isRTL ? "إجراءات" : "Actions"}</th>
+              <th className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200", isRTL ? "text-right" : "text-left")}>
+                {isRTL ? "التواصل" : "Contact"}
+              </th>
+              {isAdmin && (
+                <th className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center w-24">
+                  {isRTL ? "إجراءات" : "Actions"}
+                </th>
+              )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50">
+          <tbody>
             {sortedAndFilteredEmployees.map((emp) => (
-              <tr key={emp.id} className="group hover:bg-emerald-50/30 transition-colors">
-                <td className="p-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-400 group-hover:bg-emerald-100 group-hover:text-emerald-700 transition-colors">
-                      {emp.lastName[0]}{emp.firstName[0]}
-                    </div>
+              <tr key={emp.id} className="hover:bg-emerald-50/30 transition-colors group">
+                <td className="p-1 border border-slate-100">
+                  <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
                     <div>
-                      <p className="font-black text-slate-900">{emp.lastName} {emp.firstName}</p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">ID: {emp.id}</p>
+                      <p className="font-bold text-emerald-900 text-xs">{emp.lastName} {emp.firstName}</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">ID: {emp.id}</p>
                     </div>
+                    <UserIcon size={12} className="text-emerald-500 shrink-0" />
                   </div>
                 </td>
-                <td className="p-5">
-                  <span className={cn(
-                    "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter",
+                <td className="p-1 border border-slate-100 text-center">
+                  <div className={cn(
+                    "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-black",
                     emp.category === "Full-time" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"
-                  )}>{emp.category}</span>
-                </td>
-                <td className="p-5">
-                  <div className="space-y-1">
-                    {emp.email && <div className="flex items-center gap-2 text-xs text-slate-500"><Mail size={12} /> {emp.email}</div>}
-                    {emp.phone && <div className="flex items-center gap-2 text-xs text-slate-500"><Phone size={12} /> {emp.phone}</div>}
+                  )}>
+                    {emp.category}
                   </div>
                 </td>
-                <td className="p-5 text-center print:hidden">
-                  <div className="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" onClick={() => handleEditClick(emp)} className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 rounded-lg"><Edit2 size={14} /></Button>
-                    {isAdmin && <Button variant="ghost" size="icon" onClick={() => deleteEmployee(emp.id)} className="h-8 w-8 text-red-400 hover:bg-red-50 rounded-lg"><Trash2 size={14} /></Button>}
+                <td className="p-1 border border-slate-100">
+                  <div className={cn("flex flex-col gap-0.5 px-2 text-[10px] font-bold text-slate-600", isRTL ? "items-start" : "items-end")}>
+                    {emp.email && <div className="flex items-center gap-1"><Mail size={10} className="text-slate-400" /> {emp.email}</div>}
+                    {emp.phone && <div className="flex items-center gap-1"><Phone size={10} className="text-slate-400" /> {emp.phone}</div>}
                   </div>
                 </td>
+                {isAdmin && (
+                  <td className="p-1 border border-slate-100 text-center">
+                    <div className="flex justify-center gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-emerald-600 hover:bg-emerald-50 rounded-md"
+                        onClick={() => handleEditClick(emp)}
+                      >
+                        <Edit2 size={12} />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-6 w-6 text-red-400 hover:bg-red-50 rounded-md"
+                        onClick={() => deleteEmployee(emp.id)}
+                      >
+                        <Trash2 size={12} />
+                      </Button>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
