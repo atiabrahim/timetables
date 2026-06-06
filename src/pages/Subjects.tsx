@@ -144,17 +144,17 @@ const Subjects = () => {
     <table className="w-full border-collapse border-2 border-slate-950 text-sm">
       <thead>
         <tr className="bg-slate-100 border-b-2 border-slate-950">
-          <th className="p-5 border-e-2 border-slate-950 text-center font-black w-12">#</th>
-          <th className={cn("p-5 border-e-2 border-slate-950 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "اسم المادة" : "Subject Name"}</th>
-          <th className={cn("p-5 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "التسمية بالإنجليزية" : "English Name"}</th>
+          <th className="p-2 border-e-2 border-slate-950 text-center font-black w-12">#</th>
+          <th className={cn("p-2 border-e-2 border-slate-950 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "اسم المادة" : "Subject Name"}</th>
+          <th className={cn("p-2 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "التسمية بالإنجليزية" : "English Name"}</th>
         </tr>
       </thead>
       <tbody>
         {sortedAndFilteredSubjects.map((sub, idx) => (
           <tr key={sub.id} className="border-b border-slate-950">
-            <td className="p-5 border-e border-slate-950 text-center font-bold">{idx + 1}</td>
-            <td className="p-5 border-e border-slate-950 font-bold text-slate-900">{sub.name}</td>
-            <td className="p-5 text-slate-700">{sub.nameEn || "---"}</td>
+            <td className="p-2 border-e border-slate-950 text-center font-bold">{idx + 1}</td>
+            <td className="p-2 border-e border-slate-950 font-bold text-slate-900">{sub.name}</td>
+            <td className="p-2 text-slate-700">{sub.nameEn || "---"}</td>
           </tr>
         ))}
       </tbody>
