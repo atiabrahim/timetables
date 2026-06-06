@@ -87,10 +87,15 @@
     margin: 0 !important;
   }
 
-  /* 5. منع تداخل الجداول بين الصفحات */
+  /* 5. منع تداخل الجداول بين الصفحات ومنع الصفحة البيضاء الأخيرة */
   .page-break-container {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* يضيف فاصلاً فقط إذا لم يكن هذا هو العنصر الأخير */
+  .page-break-container:not(:last-child) {
     page-break-after: always !important;
     break-after: page !important;
   }
