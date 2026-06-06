@@ -203,41 +203,41 @@ const Classes = () => {
           <tbody>
             {sortedAndFilteredClasses.map((cls) => (
               <tr key={cls.id} className="hover:bg-emerald-50/30 transition-colors group">
-                <td className="p-1 border border-slate-100">
-                  <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
+                <td className="py-0.5 px-1 border border-slate-100">
+                  <div className={cn("flex items-center gap-2 px-1", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
                     <span className="font-bold text-emerald-900 text-xs">{cls.name}</span>
                     <GraduationCap size={12} className="text-emerald-500 shrink-0" />
                   </div>
                 </td>
-                <td className="p-1 border border-slate-100 text-center">
-                  <div className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-black">
+                <td className="py-0.5 px-1 border border-slate-100 text-center">
+                  <div className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0 rounded text-[10px] font-black">
                     {cls.code || "---"}
                   </div>
                 </td>
-                <td className="p-1 border border-slate-100">
-                  <div className={cn("flex items-center gap-2 px-2 text-slate-600 text-xs font-medium", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
+                <td className="py-0.5 px-1 border border-slate-100">
+                  <div className={cn("flex items-center gap-2 px-1 text-slate-600 text-xs font-medium", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
                     <span>{cls.qualificationLevel || "---"}</span>
                     <Award size={12} className="text-slate-400 shrink-0" />
                   </div>
                 </td>
                 {isAdmin && (
-                  <td className="p-1 border border-slate-100 text-center">
+                  <td className="py-0.5 px-1 border border-slate-100 text-center">
                     <div className="flex justify-center gap-1">
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 text-emerald-600 hover:bg-emerald-50 rounded-md"
+                        className="h-5 w-5 text-emerald-600 hover:bg-emerald-50 rounded-md"
                         onClick={() => handleEditClick(cls)}
                       >
-                        <Edit2 size={12} />
+                        <Edit2 size={10} />
                       </Button>
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 text-red-400 hover:bg-red-50 rounded-md"
+                        className="h-5 w-5 text-red-400 hover:bg-red-50 rounded-md"
                         onClick={() => deleteClass(cls.id)}
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={10} />
                       </Button>
                     </div>
                   </td>
