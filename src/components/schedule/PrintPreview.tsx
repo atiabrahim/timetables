@@ -143,7 +143,7 @@ const PrintPreview = ({
           {`
             @page {
               size: A4 ${orientation};
-              margin: 10mm;
+              margin: 15mm !important;
             }
             @media print {
               body:has(div[role="dialog"]) #root {

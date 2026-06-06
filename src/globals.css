@@ -115,10 +115,10 @@
     width: 100% !important;
     max-width: none !important;
     margin: 0 auto !important;
-    padding-top: 3mm !important;
-    padding-bottom: 3mm !important;
-    padding-left: 10mm !important; /* زيادة الهامش الأيسر بـ 5 ملم ليصبح 10 ملم */
-    padding-right: 10mm !important; /* زيادة الهامش الأيمن بـ 5 ملم ليصبح 10 ملم */
+    padding-top: 5mm !important;
+    padding-bottom: 5mm !important;
+    padding-left: 10mm !important; 
+    padding-right: 10mm !important; 
     box-sizing: border-box !important;
     page-break-after: always !important;
     break-after: page !important;
@@ -150,6 +150,6 @@
   }
 
   @page {
-    margin: 0 !important; /* تصفير هوامش الصفحة لإخفاء ترويسة وتذييل المتصفح الافتراضي */
+    margin: 15mm !important; /* الحفاظ على هوامش الصفحة بدلاً من تصفيرها */
   }
 }
