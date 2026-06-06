@@ -93,6 +93,19 @@
   .print-content-master * {
     visibility: visible !important;
   }
+
+  /* 4. منع تكرار الطباعة: إذا كانت نافذة المعاينة مفتوحة، نخفي حاوية الخلفية تماماً */
+  body:has(div[role="dialog"]) .print-content-master {
+    display: none !important;
+  }
+
+  /* 5. إخفاء غطاء الخلفية الداكن للنافذة (Overlay) لكي لا يظهر بلون داكن في الطباعة */
+  div[class*="bg-black/80"],
+  div[class*="bg-background/80"],
+  .fixed.inset-0 {
+    display: none !important;
+    background: transparent !important;
+  }
   
   /* منع قص الجداول أو تداخل الصفحات */
   .page-break-container {
