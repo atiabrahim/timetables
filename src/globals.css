@@ -73,14 +73,17 @@
     display: none !important;
   }
 
-  /* Break out of Dialog/Radix constraints */
+  /* Force body to be a centering container for print */
   body {
     overflow: visible !important;
-    height: auto !important;
+    height: 100vh !important;
     background: white !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   body:has(div[role="dialog"]) #root {
@@ -91,36 +94,30 @@
   #root > div,
   main,
   div[role="dialog"],
-  div[role="dialog"] > div,
-  .fixed,
-  .absolute {
+  div[role="dialog"] > div {
     position: static !important;
-    display: block !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
     width: 100% !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    padding: 0 !important;
+    min-height: 100vh !important;
     margin: 0 !important;
     border: none !important;
     box-shadow: none !important;
     background: transparent !important;
-    visibility: visible !important;
   }
 
-  /* Report Container optimized for single page */
+  /* Report Container centered in the page */
   .page-break-container,
   .print-content-master {
     display: block !important;
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 auto !important;
-    padding: 5mm !important;
+    width: auto !important;
+    margin: auto !important;
+    padding: 0 !important;
     box-sizing: border-box !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    page-break-after: avoid !important;
-    break-after: avoid !important;
   }
 
   /* Table styling for print */
@@ -128,11 +125,6 @@
     width: 100% !important;
     border-collapse: collapse !important;
     table-layout: fixed !important;
-  }
-
-  tr {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
   }
 
   /* Force background colors */
@@ -143,6 +135,6 @@
   }
 
   @page {
-    margin: 10mm !important; 
+    margin: 0 !important; /* نستخدم الهوامش الداخلية للمكون بدلاً من هوامش الصفحة */
   }
 }

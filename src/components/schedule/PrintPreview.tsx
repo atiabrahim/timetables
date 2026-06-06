@@ -123,16 +123,17 @@ const PrintPreview = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-8 flex flex-col items-center bg-zinc-950/50 print:p-0 print:bg-white print:block">
+        {/* تعديل هنا لتوسيط المحتوى */}
+        <div className="flex-1 overflow-auto p-8 flex items-center justify-center bg-zinc-950/50 print:p-0 print:bg-white print:block">
           <div 
-            className="transition-all duration-300 origin-top print:transform-none flex flex-col gap-12 print:gap-0"
+            className="transition-all duration-300 origin-center print:transform-none flex flex-col gap-12 print:gap-0"
             style={{ transform: `scale(${printScale / 100})` }}
           >
-            <div className="print:mb-12 print:page-break-after-auto">
+            <div className="print:mb-0">
               <ScheduleContent />
             </div>
             {doubleMode && (
-              <div className="print:mt-12 print:page-break-before-auto">
+              <div className="print:mt-12">
                 <ScheduleContent />
               </div>
             )}
@@ -143,15 +144,11 @@ const PrintPreview = ({
           {`
             @page {
               size: A4 ${orientation};
-              margin: 15mm !important;
+              margin: 0 !important;
             }
             @media print {
               body:has(div[role="dialog"]) #root {
                 display: none !important;
-              }
-              .page-break-container {
-                page-break-after: ${doubleMode ? 'avoid' : 'always'} !important;
-                margin-bottom: ${doubleMode ? '20mm' : '0'} !important;
               }
             }
           `}
