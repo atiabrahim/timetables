@@ -38,11 +38,10 @@ const OfficialPrintWrapper = ({
   return (
     <div 
       className={cn(
-        "bg-white mx-auto page-break-container relative shadow-2xl",
-        // الهوامش الجانبية (10مم) تظهر في المعاينة والطباعة
+        "bg-white mx-auto page-break-container relative",
         "px-[10mm] py-[10mm]",
         orientation === "portrait" ? "w-[210mm]" : "w-[297mm]",
-        "print:w-full print:shadow-none print:m-0"
+        "print:shadow-none shadow-none print:m-auto"
       )}
       dir={isRTL ? "rtl" : "ltr"}
     >

@@ -60,47 +60,56 @@
 /* Global Print Styles */
 @media print {
   /* Hide UI elements */
-  header, aside, button, input, select, nav, .print-hidden, .print\:hidden, [role="tablist"], [role="presentation"] {
+  header, aside, button, input, select, nav, .print-hidden, .print\:hidden, [role="tablist"], [role="presentation"], .lucide {
     display: none !important;
   }
 
-  /* Reset layout for print - Critical for vertical centering */
+  /* Reset layout for print */
   html, body {
     margin: 0 !important;
     padding: 0 !important;
     height: 100vh !important;
     width: 100% !important;
-    background: #fff !important;
-    overflow: hidden !important;
+    background: white !important;
+    background-color: white !important;
+    color: black !important;
+    overflow: visible !important;
   }
 
-  /* Absolute Centering in Print */
+  /* Force white background for all elements */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Ensure the centering container is also white */
   body {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
   }
 
+  /* Target the dialog specifically to remove its dark background */
+  [role="dialog"], [data-state="open"] {
+    background-color: white !important;
+    background: white !important;
+  }
+
   body:has(div[role="dialog"]) #root {
     display: none !important;
   }
 
-  /* Ensure the content is treated as a single block for centering */
   #root, main, div[role="dialog"] {
     display: contents !important;
   }
 
-  /* OfficialPrintWrapper centering logic */
   .page-break-container, .print-content-master {
     margin: auto !important;
-    box-shadow: none !important;
+    background-color: white !important;
     page-break-inside: avoid !important;
-  }
-
-  /* Force visuals */
-  * {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
   @page {
