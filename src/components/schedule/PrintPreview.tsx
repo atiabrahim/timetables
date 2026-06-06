@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { FileText, RotateCw, Printer, X, Copy } from "lucide-react";
+import { FileText, RotateCw, Printer, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { 
@@ -77,7 +77,7 @@ const PrintPreview = ({
       orientation={orientation}
     >
       <ScheduleTable 
-        isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
+        isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={day.id, slot.id} 
         onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
         classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={totalHours}
         isTransposed={isTransposed}
@@ -87,7 +87,7 @@ const PrintPreview = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 flex flex-col rounded-none z-[9999]">
+      <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 flex flex-col rounded-none z-[9999] print:bg-white print:h-auto print:block">
         <div className="h-16 bg-black/40 border-b border-white/10 flex items-center justify-between px-8 shrink-0 print:hidden">
           <div className="flex items-center gap-4 text-white">
             <FileText size={20} />
@@ -121,10 +121,9 @@ const PrintPreview = ({
           </div>
         </div>
 
-        {/* Centering Container */}
         <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white grid place-items-center p-8 print:p-0">
           <div 
-            className="transition-all duration-300 flex flex-col gap-8 print:gap-0"
+            className="transition-all duration-300 flex flex-col gap-8 print:gap-0 print:block"
             style={{ transform: `scale(${printScale / 100})`, transformOrigin: 'center center' }}
           >
             <ScheduleContent />
@@ -137,11 +136,6 @@ const PrintPreview = ({
             @page {
               size: A4 ${orientation};
               margin: 0 !important;
-            }
-            @media print {
-              body:has(div[role="dialog"]) #root {
-                display: none !important;
-              }
             }
           `}
         </style>

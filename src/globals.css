@@ -38,76 +38,72 @@
 }
 
 /* -----------------------------------------------------------
-   نظام الطباعة الصارم - إزالة التظليل والطبقات الداكنة تماماً
+   نظام الطباعة الاحترافي - الحل النهائي للسواد والتظليل
    ----------------------------------------------------------- */
 @media print {
-  /* 1. إخفاء شامل لكافة العناصر غير الورقية */
+  /* 1. إخفاء كافة عناصر الواجهة الرقمية */
   header, aside, nav, button, input, select, footer, 
   [role="tablist"], .print-hidden, .print\:hidden,
   .lucide, svg:not(.keep-print) {
     display: none !important;
   }
 
-  /* 2. فرض البياض المطلق وإلغاء أي تعتيم أو ضبابية */
+  /* 2. تنظيف شامل لكافة الألوان والظلال */
   html, body {
     background-color: #ffffff !important;
     background: #ffffff !important;
     color: #000000 !important;
-    width: 100% !important;
-    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* 3. إزالة كافة الظلال والحدود الملونة */
+  /* إجبار كافة العناصر على التخلي عن خلفياتها الملونة */
   * {
     box-shadow: none !important;
     text-shadow: none !important;
     filter: none !important;
     backdrop-filter: none !important;
-    border-color: #000000 !important; /* فرض حدود سوداء خفيفة للطباعة */
-    background-color: transparent !important;
   }
 
-  /* 4. قتل الطبقة الداكنة (Overlay) للنوافذ المنبثقة */
+  /* 3. قتل طبقات الـ Overlay (الغشاء الأسود) */
+  /* نستهدف كافة الطبقات التي تنشئها مكتبة Radix/Shadcn */
   div[data-state="open"].fixed.inset-0,
   div[class*="bg-black/"],
   div[class*="bg-zinc-"],
-  div[class*="bg-background/80"],
-  .fixed.inset-0.z-50 {
+  div[class*="backdrop-blur"],
+  [data-radix-portal] > div:first-child {
     display: none !important;
-    background: none !important;
-    background-color: transparent !important;
-    backdrop-filter: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
   }
 
-  /* 5. تحرير محتوى النافذة المنبثقة ليكون حراً في الصفحة */
+  /* 4. تحرير محتوى الطباعة */
   [role="dialog"] {
-    position: static !important;
-    transform: none !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    height: auto !important;
     background-color: #ffffff !important;
+    background: #ffffff !important;
     border: none !important;
-    box-shadow: none !important;
     display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
-  /* 6. منع إخفاء المحتوى إذا كان بداخل روت مخفي */
-  body:has([role="dialog"]) #root {
+  /* 5. إخفاء المحتوى الرئيسي لترك المساحة للمعاينة فقط */
+  #root {
     display: none !important;
   }
 
-  /* 7. توسيط الصفحة المطبوعة */
+  /* 6. منع قص الصفحات */
   .page-break-container {
-    margin: 0 auto !important;
-    background: white !important;
     page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background: white !important;
   }
 
   @page {

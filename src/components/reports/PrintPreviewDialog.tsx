@@ -27,7 +27,7 @@ const PrintPreviewDialog = ({
 }: PrintPreviewDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[98vw] w-full h-[95vh] overflow-hidden bg-zinc-900/95 border-none p-0 rounded-none flex flex-col z-[9999]">
+      <DialogContent className="max-w-[98vw] w-full h-[95vh] overflow-hidden bg-zinc-900/95 border-none p-0 rounded-none flex flex-col z-[9999] print:bg-white print:h-auto print:block">
         <div className="bg-black/40 p-4 border-b border-white/10 flex justify-between items-center shrink-0 print:hidden">
           <div className="flex items-center gap-3 text-white">
             <Eye className="text-emerald-500" />
@@ -64,11 +64,6 @@ const PrintPreviewDialog = ({
             @page {
               size: A4 ${orientation};
               margin: 0;
-            }
-            @media print {
-              body:has(div[role="dialog"]) #root {
-                display: none !important;
-              }
             }
           `}
         </style>
