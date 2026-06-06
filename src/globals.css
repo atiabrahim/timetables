@@ -48,12 +48,7 @@
     display: none !important;
   }
 
-  /* 2. إخفاء الروت (التطبيق الأساسي) عند فتح المعاينة لتجنب الطباعة المزدوجة أو الفارغة */
-  body:has([role="dialog"]) #root {
-    display: none !important;
-  }
-
-  /* 3. فرض البياض المطلق والوضوح */
+  /* 2. فرض البياض المطلق والوضوح */
   html, body {
     background: #ffffff !important;
     background-color: #ffffff !important;
@@ -64,11 +59,16 @@
     print-color-adjust: exact !important;
   }
 
-  /* 4. معالجة الـ Portal والـ Dialog لضمان الظهور */
+  /* 3. معالجة الـ Portal والـ Dialog لضمان الظهور */
   [data-radix-portal] {
     position: static !important;
     display: block !important;
     visibility: visible !important;
+  }
+
+  /* إخفاء التطبيق الأصلي تماماً عند الطباعة لترك المجال لمحتوى المعاينة */
+  #root {
+    display: none !important;
   }
 
   [role="dialog"] {
@@ -83,14 +83,14 @@
     margin: 0 !important;
   }
 
-  /* 5. إظهار محتوى الطباعة المباشر */
+  /* 4. إظهار محتوى الطباعة المباشر */
   .print-content-master {
     display: block !important;
     visibility: visible !important;
     background: #ffffff !important;
   }
 
-  /* 6. منع شفافية النصوص أو الصور */
+  /* 5. منع شفافية النصوص أو الصور */
   * {
     opacity: 1 !important;
     visibility: visible !important;
@@ -98,7 +98,7 @@
     text-shadow: none !important;
   }
 
-  /* 7. إخفاء غلاف التعتيم (Overlay) */
+  /* 6. إخفاء غلاف التعتيم (Overlay) */
   [data-radix-portal] > div:first-child {
     display: none !important;
   }
