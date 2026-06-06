@@ -40,7 +40,7 @@ const OfficialPrintWrapper = ({
       className={cn(
         "bg-white mx-auto page-break-container relative",
         "px-[8mm] py-[8mm] print:px-[4mm] print:py-[4mm]",
-        orientation === "portrait" ? "w-[210mm]" : "w-[297mm]",
+        orientation === "portrait" ? "w-[210mm] print:w-full" : "w-[297mm] print:w-full",
         "shadow-none border-none print:shadow-none print:border-none print:bg-white"
       )}
       dir={isRTL ? "rtl" : "ltr"}

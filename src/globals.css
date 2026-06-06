@@ -70,12 +70,15 @@
     z-index: 9999999 !important;
   }
   
-  /* 4. ضبط المتصفح لطباعة الألوان والخلفيات بدقة */
-  html, body {
+  /* 4. ضبط المتصفح لطباعة الألوان والخلفيات بدقة وتصفير الهوامش */
+  html, body, #root {
     background: #ffffff !important;
     color: #000000 !important;
     width: 100% !important;
     height: auto !important;
+    min-height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
     overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
@@ -87,5 +90,7 @@
     break-inside: avoid !important;
     margin-left: auto !important;
     margin-right: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }

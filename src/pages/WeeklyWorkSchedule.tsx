@@ -92,7 +92,7 @@ const WeeklyWorkSchedule = () => {
         <colgroup>
           <col className={isPrint ? "w-[18%]" : "w-[180px]"} />
           {Array.from({ length: 15 }).map((_, i) => (
-            <col key={i} className="w-auto" />
+            <col key={i} className={isPrint ? "w-[5.46%]" : "w-auto"} />
           ))}
         </colgroup>
         <TableHeader>

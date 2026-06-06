@@ -205,7 +205,8 @@ const ScheduleTable = ({
   if (isTransposed) {
     return (
       <div className={cn(
-        "flex items-stretch w-full overflow-x-auto pb-2 gap-0", 
+        "flex items-stretch w-full gap-0", 
+        isPrint ? "overflow-hidden" : "overflow-x-auto pb-2",
         isRTL ? "flex-row" : "flex-row-reverse"
       )}>
         <div className="flex-1 min-w-0">
@@ -286,7 +287,8 @@ const ScheduleTable = ({
 
   return (
     <div className={cn(
-      "flex items-stretch w-full overflow-x-auto pb-2 gap-0", 
+      "flex items-stretch w-full gap-0", 
+      isPrint ? "overflow-hidden" : "overflow-x-auto pb-2",
       isRTL ? "flex-row" : "flex-row-reverse"
     )}>
       <div className="flex-1 min-w-0">
