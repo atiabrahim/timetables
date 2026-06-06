@@ -1,8 +1,14 @@
 "use client";
 
 import React from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ScheduleTableProps {
   isRTL: boolean;
@@ -32,8 +38,24 @@ const getSubjectColor = (index: number) => SUBJECT_COLORS[index % SUBJECT_COLORS
 
 const ScheduleTable = ({ 
   isRTL, days, timeSlots, getAssignment, onAddClick, onDeleteClick, 
-  subjects, employees, classes, viewMode, isPrint = false, summaryData = [], totalHours = 0, isTransposed = false
+  subjects, employees, classes, viewMode, isPrint = false, summaryData = [], totalHours = 0, isTransposed = false, allAssignments = []
 }: ScheduleTableProps) => {
+
+  const checkConflict = (day: number, period: string, assignment: any) => {
+    if (isPrint || !allAssignments) return null;
+    
+    // تعارض الأستاذ: نفس الأستاذ في حصة أخرى بنفس الوقت
+    const teacherConflict = allAssignments.find(a => 
+      a.id !== assignment.id && a.day === day && a.period === period && a.employeeId === assignment.employeeId
+    );
+    
+    // تعارض القاعة: نفس القاعة مستخدمة في حصة أخرى بنفس الوقت
+    const roomConflict = assignment.room ? allAssignments.find(a => 
+      a.id !== assignment.id && a.day === day && a.period === period && a.room === assignment.room
+    ) : null;
+
+    return teacherConflict || roomConflict ? { teacherConflict, roomConflict } : null;
+  };
   
   const SummaryTable = () => (
     <div className={cn("shrink-0", isPrint ? "w-[150px]" : "w-[200px] h-fit")}>
@@ -97,43 +119,72 @@ const ScheduleTable = ({
     </div>
   );
 
-  const LessonCard = ({ assignment }: { assignment: any }) => {
+  const LessonCard = ({ assignment, day, period }: { assignment: any, day: number, period: string }) => {
     const subjectIndex = subjects.findIndex(s => s.id === assignment.subjectId);
     const colorClass = getSubjectColor(subjectIndex);
+    const conflict = checkConflict(day, period, assignment);
 
     return (
-      <div className={cn(
-        "h-full w-full flex flex-col justify-center items-center text-center relative transition-all group/card",
-        isPrint ? "p-1 text-black bg-white" : cn(
-          "text-white shadow-sm rounded-xl p-2", 
-          colorClass,
-          "hover:scale-[1.02]"
-        )
-      )}>
-        <p className={cn("font-bold leading-tight truncate w-full mb-0.5", isPrint ? "text-[8px] opacity-70" : "text-[9px] opacity-80")}>
-          {viewMode === "class" 
-            ? (() => {
-                const e = employees.find(emp => emp.id === assignment.employeeId);
-                return e ? `${e.lastName} ${e.firstName}` : "---";
-              })()
-            : classes.find(c => c.id === assignment.classId)?.name
-          }
-        </p>
-        <p className={cn("font-black leading-tight uppercase w-full", isPrint ? "text-[11px] mb-1" : "text-[12px] mb-1")}>
-          {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
-        </p>
-        <p className={cn("font-bold leading-tight truncate w-full", isPrint ? "text-[9px] text-emerald-900" : "text-[10px] opacity-90")}>
-          {assignment.room || "---"}
-        </p>
-        {!isPrint && (
-          <button 
-            className="absolute -top-1 -right-1 opacity-0 group-hover/card:opacity-100 bg-white text-red-500 p-1 rounded-full shadow-lg"
-            onClick={(e) => { e.stopPropagation(); onDeleteClick(assignment.id); }}
-          >
-            <Trash2 size={10} />
-          </button>
-        )}
-      </div>
+      <TooltipProvider>
+        <div className={cn(
+          "h-full w-full flex flex-col justify-center items-center text-center relative transition-all group/card",
+          isPrint ? "p-1 text-black bg-white" : cn(
+            "text-white shadow-sm rounded-xl p-2", 
+            colorClass,
+            "hover:scale-[1.02]",
+            conflict && "ring-2 ring-red-500 ring-offset-2"
+          )
+        )}>
+          <p className={cn("font-bold leading-tight truncate w-full mb-0.5", isPrint ? "text-[8px] opacity-70" : "text-[9px] opacity-80")}>
+            {viewMode === "class" 
+              ? (() => {
+                  const e = employees.find(emp => emp.id === assignment.employeeId);
+                  return e ? `${e.lastName} ${e.firstName}` : "---";
+                })()
+              : classes.find(c => c.id === assignment.classId)?.name
+            }
+          </p>
+          <p className={cn("font-black leading-tight uppercase w-full", isPrint ? "text-[11px] mb-1" : "text-[12px] mb-1")}>
+            {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
+          </p>
+          <p className={cn("font-bold leading-tight truncate w-full", isPrint ? "text-[9px] text-emerald-900" : "text-[10px] opacity-90")}>
+            {assignment.room || "---"}
+          </p>
+          
+          {!isPrint && (
+            <div className="absolute -top-1 -right-1 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
+              {conflict && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="bg-red-500 text-white p-1 rounded-full shadow-lg">
+                      <AlertTriangle size={10} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-red-900 text-white border-none rounded-xl p-3 shadow-2xl">
+                    <p className="font-bold text-xs">
+                      {isRTL ? "تنبيه تعارض:" : "Conflict Alert:"}
+                    </p>
+                    <ul className="text-[10px] mt-1 list-disc list-inside opacity-90">
+                      {conflict.teacherConflict && (
+                        <li>{isRTL ? "الأستاذ مشغول في فوج آخر" : "Teacher is busy elsewhere"}</li>
+                      )}
+                      {conflict.roomConflict && (
+                        <li>{isRTL ? "القاعة محجوزة في فوج آخر" : "Room is occupied elsewhere"}</li>
+                      )}
+                    </ul>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              <button 
+                className="bg-white text-red-500 p-1 rounded-full shadow-lg hover:bg-red-50"
+                onClick={(e) => { e.stopPropagation(); onDeleteClick(assignment.id); }}
+              >
+                <Trash2 size={10} />
+              </button>
+            </div>
+          )}
+        </div>
+      </TooltipProvider>
     );
   };
 
@@ -208,7 +259,9 @@ const ScheduleTable = ({
                   {timeSlots.map(slot => (
                     <React.Fragment key={slot.id}>
                       <td className={cn("relative h-full", isPrint ? "border border-emerald-950" : "p-1")}>
-                        {getAssignment(day.id, slot.id) ? <LessonCard assignment={getAssignment(day.id, slot.id)} /> : (
+                        {getAssignment(day.id, slot.id) ? (
+                          <LessonCard assignment={getAssignment(day.id, slot.id)} day={day.id} period={slot.id} />
+                        ) : (
                           !isPrint && (
                             <div className="h-full w-full rounded-xl border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50 transition-all" onClick={() => onAddClick(day.id, slot.id)}>
                               <Plus size={14} className="text-slate-200" />
@@ -268,7 +321,9 @@ const ScheduleTable = ({
                     const assignment = getAssignment(day.id, slot.id);
                     return (
                       <td key={day.id} className={cn("relative h-full", isPrint ? "border border-emerald-950" : "p-1")}>
-                        {assignment ? <LessonCard assignment={assignment} /> : (
+                        {assignment ? (
+                          <LessonCard assignment={assignment} day={day.id} period={slot.id} />
+                        ) : (
                           !isPrint && (
                             <div className="h-full w-full rounded-xl border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50 transition-all" onClick={() => onAddClick(day.id, slot.id)}>
                               <Plus size={14} className="text-slate-200" />

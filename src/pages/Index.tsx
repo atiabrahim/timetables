@@ -19,7 +19,9 @@ import {
   UserCheck,
   Zap,
   ShieldCheck,
-  BarChart3
+  BarChart3,
+  MousePointer2,
+  Settings2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -62,6 +64,13 @@ const Index = () => {
     { label: t.stats.subjects, value: subjects.length, icon: BookOpen, color: "text-amber-600", bg: "bg-amber-50", path: "/subjects", trend: "Full" },
     { label: t.stats.rooms, value: rooms.length, icon: MapPin, color: "text-rose-600", bg: "bg-rose-50", path: "/rooms", trend: "Active" },
   ], [employees, classes, subjects, rooms, t]);
+
+  const quickActions = [
+    { label: isRTL ? "إضافة حصة" : "Add Lesson", icon: Calendar, path: "/schedule", color: "bg-emerald-100 text-emerald-700" },
+    { label: isRTL ? "تكليف يومي" : "Assign Duty", icon: UserCheck, path: "/assignments", color: "bg-blue-100 text-blue-700" },
+    { label: isRTL ? "تقرير الحضور" : "Attendance", icon: FileText, path: "/reports-new", color: "bg-amber-100 text-amber-700" },
+    { label: isRTL ? "ضبط النظام" : "Config", icon: Settings2, path: "/settings", color: "bg-purple-100 text-purple-700" },
+  ];
 
   const completionPercentage = useMemo(() => {
     if (classes.length === 0) return 0;
@@ -135,6 +144,25 @@ const Index = () => {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div className="xl:col-span-2 space-y-8">
+          {/* Quick Actions Bar */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {quickActions.map((action, idx) => (
+              <Button
+                key={idx}
+                variant="ghost"
+                onClick={() => navigate(action.path)}
+                className={cn(
+                  "h-auto flex flex-col items-center gap-3 p-6 rounded-[2.5rem] border border-slate-100 bg-white hover:bg-emerald-50 transition-all shadow-sm hover:shadow-md",
+                )}
+              >
+                <div className={cn("p-4 rounded-2xl", action.color)}>
+                  <action.icon size={24} />
+                </div>
+                <span className="font-black text-xs text-slate-700">{action.label}</span>
+              </Button>
+            ))}
+          </div>
+
           {/* Real-time Monitor Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {stats.map((stat, idx) => (
@@ -149,9 +177,6 @@ const Index = () => {
                   </div>
                   <p className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</p>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">{stat.label}</p>
-                  <div className="mt-4 px-3 py-1 bg-slate-50 rounded-full text-[9px] font-black text-emerald-600 border border-slate-100">
-                    {stat.trend}
-                  </div>
                 </CardContent>
               </Card>
             ))}
