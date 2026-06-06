@@ -38,77 +38,81 @@
 }
 
 /* -----------------------------------------------------------
-   PRINT OPTIMIZATION - CLEAN & CENTERED
+   نظام الطباعة الاحترافي - إزالة التظليل والخلفيات الداكنة
    ----------------------------------------------------------- */
 @media print {
-  /* 1. إخفاء كافة عناصر واجهة المستخدم */
-  header, aside, button, input, select, nav, 
+  /* 1. إخفاء كافة عناصر الواجهة غير الضرورية */
+  header, aside, nav, button, input, select, footer, 
   [role="tablist"], .print-hidden, .print\:hidden {
     display: none !important;
   }
 
-  /* 2. تصفير الجسم والصفحة لضمان اللون الأبيض الصافي */
+  /* 2. فرض الخلفية البيضاء الصافية على الصفحة والجسم */
   html, body {
     background-color: #ffffff !important;
     background: #ffffff !important;
     color: #000000 !important;
+    width: 100% !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
     overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* 3. إزالة كافة الظلال والفلاتر من جميع العناصر */
-  * {
+  /* 3. إزالة التظليل (Shadows) والفلاتر تماماً */
+  *, ::before, ::after {
     box-shadow: none !important;
     text-shadow: none !important;
     filter: none !important;
     backdrop-filter: none !important;
+    background-color: transparent !important;
   }
 
-  /* 4. معالجة النوافذ المنبثقة (Dialog/Overlay) - السبب الرئيسي للتظليل */
-  [role="dialog"], 
-  div[data-state="open"], 
-  .fixed.inset-0 {
+  /* 4. معالجة مشكلة سواد النوافذ المنبثقة (Dialog Overlay) */
+  /* نقوم بإخفاء الطبقة الشفافة الداكنة وفرض البياض على المحتوى */
+  [role="dialog"] {
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
     background-color: #ffffff !important;
     background: #ffffff !important;
-    position: static !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
     display: block !important;
-    box-shadow: none !important;
   }
 
-  /* إخفاء خلفية النافذة الداكنة تماماً */
-  div[class*="bg-black/80"], 
-  div[class*="backdrop-blur"],
-  .fixed.inset-0.z-50.bg-background\/80 {
-    display: none !important;
+  /* إخفاء الطبقة السوداء الخلفية (Overlay) */
+  div[data-state="open"].fixed.inset-0,
+  div[class*="bg-black/"],
+  div[class*="bg-zinc-"],
+  .fixed.inset-0.z-50 {
+    background: none !important;
+    background-color: transparent !important;
+    backdrop-filter: none !important;
   }
 
-  /* 5. التوسيط العمودي والأفقي */
-  body {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  #root:has(div[role="dialog"]) {
-    display: none !important;
-  }
-
-  /* 6. ضبط مكون الطباعة الرسمي */
-  .page-break-container, 
-  .print-content-master {
-    background: #ffffff !important;
-    margin: auto !important;
+  /* 5. توسيط المحتوى المطبوع */
+  .page-break-container {
+    background-color: #ffffff !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     border: none !important;
     page-break-inside: avoid !important;
   }
 
+  /* إخفاء التطبيق الأساسي إذا كانت الطباعة من نافذة منبثقة */
+  body:has([role="dialog"]) #root {
+    display: none !important;
+  }
+
   @page {
-    margin: 0 !important;
+    margin: 0;
     size: auto;
   }
 }

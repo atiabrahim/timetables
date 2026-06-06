@@ -41,14 +41,14 @@ const OfficialPrintWrapper = ({
         "bg-white mx-auto page-break-container relative",
         "px-[10mm] py-[10mm]",
         orientation === "portrait" ? "w-[210mm]" : "w-[297mm]",
-        "shadow-none border-none"
+        "shadow-none border-none print:shadow-none print:border-none"
       )}
       dir={isRTL ? "rtl" : "ltr"}
     >
       {/* Header */}
       <div className="flex justify-between items-start mb-4 print:mb-2">
-        <div className="w-20 h-20 print:w-16 print:h-16 flex items-center justify-center border border-slate-200 rounded-xl p-2 print:border-black">
-          <div className="w-full h-full bg-slate-50 flex items-center justify-center text-slate-400 font-bold text-[10px] print:bg-transparent print:text-black">
+        <div className="w-20 h-20 print:w-16 print:h-16 flex items-center justify-center border border-slate-200 rounded-xl p-2 print:border-black bg-white">
+          <div className="w-full h-full bg-slate-50 flex items-center justify-center text-slate-400 font-bold text-[10px] print:bg-white print:text-black">
             LOGO
           </div>
         </div>
@@ -69,25 +69,25 @@ const OfficialPrintWrapper = ({
         </div>
       )}
 
-      {/* Content */}
-      <div className="w-full overflow-hidden mb-4 print:mb-2">
+      {/* Content Area */}
+      <div className="w-full overflow-hidden mb-4 print:mb-2 bg-white">
         {children}
       </div>
 
-      {/* Signatures */}
+      {/* Signatures Section */}
       {showSignatures && (
         <div className="grid grid-cols-3 gap-4 pt-3 border-t border-slate-200 print:border-black print:pt-2">
           <div className="text-center">
             <p className="font-black text-slate-950 text-[10px] mb-1 print:text-black">{finalRightTitle}</p>
-            <div className="h-12 border border-dashed border-slate-200 rounded-xl print:border-black"></div>
+            <div className="h-12 border border-dashed border-slate-200 rounded-xl print:border-black bg-white"></div>
           </div>
           <div className="text-center">
             <p className="font-black text-slate-950 text-[10px] mb-1 print:text-black">{finalCenterTitle}</p>
-            <div className="h-12 border border-dashed border-slate-200 rounded-xl print:border-black"></div>
+            <div className="h-12 border border-dashed border-slate-200 rounded-xl print:border-black bg-white"></div>
           </div>
           <div className="text-center">
             <p className="font-black text-slate-950 text-[10px] mb-1 print:text-black">{finalLeftTitle}</p>
-            <div className="h-12 border border-dashed border-slate-200 rounded-xl print:border-black"></div>
+            <div className="h-12 border border-dashed border-slate-200 rounded-xl print:border-black bg-white"></div>
           </div>
         </div>
       )}
