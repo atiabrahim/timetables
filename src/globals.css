@@ -108,25 +108,17 @@
     visibility: visible !important;
   }
 
-  /* Report Container with minimal margins */
+  /* Report Container optimized for single page */
   .page-break-container,
   .print-content-master {
     display: block !important;
     width: 100% !important;
     max-width: none !important;
     margin: 0 auto !important;
-    padding-top: 5mm !important;
-    padding-bottom: 5mm !important;
-    padding-left: 10mm !important; 
-    padding-right: 10mm !important; 
+    padding: 5mm !important;
     box-sizing: border-box !important;
-    page-break-after: always !important;
-    break-after: page !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-  }
-
-  .page-break-container:last-child {
     page-break-after: avoid !important;
     break-after: avoid !important;
   }
@@ -135,6 +127,7 @@
   table {
     width: 100% !important;
     border-collapse: collapse !important;
+    table-layout: fixed !important;
   }
 
   tr {
@@ -150,6 +143,6 @@
   }
 
   @page {
-    margin: 15mm !important; /* الحفاظ على هوامش الصفحة بدلاً من تصفيرها */
+    margin: 10mm !important; 
   }
 }
