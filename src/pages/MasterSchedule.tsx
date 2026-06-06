@@ -98,7 +98,7 @@ const MasterSchedule = () => {
                 !isPrint && "hover:bg-emerald-100/30"
               )}>
                 <td className={cn(
-                  "p-2 font-black border sticky left-0 z-10 transition-colors shadow-sm truncate",
+                  "p-2 font-black border sticky left-0 z-10 transition-colors shadow-sm whitespace-normal break-words",
                   idx % 2 === 0 ? "bg-white" : "bg-[#fcfdfd]",
                   isPrint ? "text-[10px] border-black text-black" : "text-[12px] text-emerald-950 border-emerald-50"
                 )}>
