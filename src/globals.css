@@ -59,16 +59,31 @@
     print-color-adjust: exact !important;
   }
 
-  /* 3. معالجة الـ Portal والـ Dialog لضمان الظهور */
+  /* إخفاء التطبيق الأصلي تماماً عند الطباعة لترك المجال لمحتوى المعاينة */
+  #root {
+    display: none !important;
+  }
+
+  /* 3. معالجة الـ Portal والـ Dialog لضمان الظهور الكامل */
   [data-radix-portal] {
     position: static !important;
     display: block !important;
     visibility: visible !important;
+    width: 100% !important;
   }
 
-  /* إخفاء التطبيق الأصلي تماماً عند الطباعة لترك المجال لمحتوى المعاينة */
-  #root {
+  /* إخفاء غلاف التعتيم (Overlay) الخلفي */
+  [data-radix-portal] > div[style*="pointer-events"] {
     display: none !important;
+  }
+
+  /* تحرير الحاوية التي تقوم بتوسيط نافذة الحوار */
+  [data-radix-portal] > div:not([style*="pointer-events"]) {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   [role="dialog"] {
@@ -78,29 +93,32 @@
     background: #ffffff !important;
     width: 100% !important;
     height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
     box-shadow: none !important;
     padding: 0 !important;
     margin: 0 !important;
   }
 
-  /* 4. إظهار محتوى الطباعة المباشر */
-  .print-content-master {
-    display: block !important;
-    visibility: visible !important;
-    background: #ffffff !important;
+  /* تمديد الحاويات الداخلية القابلة للتمرير لتظهر كاملة على الورق */
+  [role="dialog"] .overflow-y-auto,
+  [role="dialog"] .overflow-auto {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
-  /* 5. منع شفافية النصوص أو الصور */
+  /* إلغاء تأثير التحجيم (Scale Transform) عند الطباعة لضمان دقة 100% واضحة */
+  [role="dialog"] div[style*="transform"] {
+    transform: none !important;
+  }
+
+  /* 4. منع شفافية النصوص أو الصور */
   * {
     opacity: 1 !important;
     visibility: visible !important;
     box-shadow: none !important;
     text-shadow: none !important;
-  }
-
-  /* 6. إخفاء غلاف التعتيم (Overlay) */
-  [data-radix-portal] > div:first-child {
-    display: none !important;
   }
 
   .page-break-container {
