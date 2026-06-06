@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
   Building2, Save, Mail, Phone, Calendar, FileCode, PenTool, 
-  Plus, Edit2, Trash2, Info, Hash, User, ShieldAlert
+  Plus, Edit2, Trash2, Info, Hash, User, ShieldAlert, Upload, Image as ImageIcon
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,7 @@ const Institution = () => {
   } = useApp();
 
   const isAdmin = user?.role === "Admin";
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // إدارة المصالح
   const [isAddDeptOpen, setIsAddDeptOpen] = useState(false);
@@ -53,6 +54,31 @@ const Institution = () => {
     };
     exportToXml(dataToExport, `EduSchedule_Export_${new Date().toISOString().split('T')[0]}`);
     showSuccess(isRTL ? "تم تصدير ملف XML المحدث" : "Updated XML file exported");
+  };
+
+  // معالجة رفع الشعار وتحويله إلى Base64
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1024 * 1024) { // حد أقصى 1 ميجابايت للحفاظ على أداء التخزين المحلي
+      showError(isRTL ? "حجم الصورة كبير جداً، يرجى اختيار صورة أقل من 1 ميجابايت" : "Image size is too large, please select an image under 1MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64String = event.target?.result as string;
+      setInstitution({ ...institution, logo: base64String });
+      showSuccess(isRTL ? "تم رفع الشعار بنجاح" : "Logo uploaded successfully");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveLogo = () => {
+    setInstitution({ ...institution, logo: "" });
+    showSuccess(isRTL ? "تم حذف الشعار" : "Logo removed");
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   // إضافة مصلحة جديدة
@@ -292,6 +318,59 @@ const Institution = () => {
         </div>
 
         <div className="space-y-6">
+          {/* قسم رفع وتعديل الشعار */}
+          <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+            <CardHeader className="bg-[#f9f9f1] border-b border-gray-100">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <ImageIcon size={20} className="text-[#064e3b]" />
+                {isRTL ? "شعار المؤسسة" : "Institution Logo"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 flex flex-col items-center space-y-4">
+              <div className="w-32 h-32 border-2 border-dashed border-emerald-100 rounded-2xl flex items-center justify-center bg-emerald-50/10 overflow-hidden relative group">
+                {institution.logo ? (
+                  <>
+                    <img src={institution.logo} alt="Institution Logo" className="w-full h-full object-contain p-2" />
+                    {isAdmin && (
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <Button size="icon" variant="ghost" className="text-white hover:bg-white/20" onClick={() => fileInputRef.current?.click()}>
+                          <Edit2 size={16} />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="text-red-400 hover:bg-red-500/20" onClick={handleRemoveLogo}>
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center p-4 flex flex-col items-center gap-2 text-slate-400">
+                    <ImageIcon size={32} className="text-slate-300" />
+                    <span className="text-[10px] font-bold">{isRTL ? "لا يوجد شعار" : "No Logo"}</span>
+                  </div>
+                )}
+              </div>
+
+              {isAdmin && (
+                <div className="w-full">
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleLogoUpload} 
+                    accept="image/*" 
+                    className="hidden" 
+                  />
+                  <Button 
+                    onClick={() => fileInputRef.current?.click()} 
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold"
+                  >
+                    <Upload size={16} />
+                    {institution.logo ? (isRTL ? "تغيير الشعار" : "Change Logo") : (isRTL ? "رفع شعار جديد" : "Upload Logo")}
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
             <CardHeader className="bg-[#f9f9f1] border-b border-gray-100">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -301,6 +380,13 @@ const Institution = () => {
             </CardHeader>
             <CardContent className="p-6">
               <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center space-y-2">
+                <div className="w-12 h-12 mx-auto mb-2 border border-black rounded-lg p-1 bg-white overflow-hidden flex items-center justify-center">
+                  {institution.logo ? (
+                    <img src={institution.logo} alt="Logo" className="w-full h-full object-contain" />
+                  ) : (
+                    <span className="text-[6px] font-black">LOGO</span>
+                  )}
+                </div>
                 <h3 className="text-lg font-black text-emerald-900">{institution.name || "---"}</h3>
                 <p className="text-sm font-bold text-emerald-700">{institution.subName || "---"}</p>
                 <div className="flex justify-between mt-4 pt-4 border-t border-gray-100 text-[10px] font-black uppercase text-gray-400">

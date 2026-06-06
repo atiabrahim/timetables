@@ -60,10 +60,14 @@ const OfficialPrintWrapper = ({
     >
       {/* Header Section */}
       <div className="flex justify-between items-start mb-2 print:mb-1">
-        <div className="w-14 h-14 print:w-8 print:h-8 flex items-center justify-center border border-black rounded-lg p-1 bg-white">
-          <div className="w-full h-full flex items-center justify-center text-black font-black text-[7px] text-center border border-dashed border-black/20">
-            LOGO
-          </div>
+        <div className="w-14 h-14 print:w-10 print:h-10 flex items-center justify-center border border-black rounded-lg p-1 bg-white overflow-hidden">
+          {institution.logo ? (
+            <img src={institution.logo} alt="Institution Logo" className="w-full h-full object-contain" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-black font-black text-[7px] text-center border border-dashed border-black/20">
+              LOGO
+            </div>
+          )}
         </div>
 
         <div className="flex-1 text-center space-y-0.5">
@@ -72,7 +76,7 @@ const OfficialPrintWrapper = ({
           {subtitle && <div className="text-black font-bold text-[9px] print:text-[8px] opacity-80">{subtitle}</div>}
         </div>
 
-        <div className="w-14 print:w-8"></div> 
+        <div className="w-14 print:w-10"></div> 
       </div>
 
       {/* Metadata Bar */}
