@@ -105,15 +105,15 @@ const Rooms = () => {
     <table className="w-full border-collapse border-2 border-slate-950 text-sm">
       <thead>
         <tr className="bg-slate-100 border-b-2 border-slate-950">
-          <th className="p-3 border-e-2 border-slate-950 text-center font-black w-12">#</th>
-          <th className={cn("p-3 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "اسم القاعة / الورشة" : "Room / Workshop Name"}</th>
+          <th className="p-4 border-e-2 border-slate-950 text-center font-black w-12">#</th>
+          <th className={cn("p-4 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "اسم القاعة / الورشة" : "Room / Workshop Name"}</th>
         </tr>
       </thead>
       <tbody>
         {sortedAndFilteredRooms.map((room, idx) => (
           <tr key={idx} className="border-b border-slate-950">
-            <td className="p-3 border-e border-slate-950 text-center font-bold">{idx + 1}</td>
-            <td className="p-3 font-bold text-slate-900">{room}</td>
+            <td className="p-4 border-e border-slate-950 text-center font-bold">{idx + 1}</td>
+            <td className="p-4 font-bold text-slate-900">{room}</td>
           </tr>
         ))}
       </tbody>
