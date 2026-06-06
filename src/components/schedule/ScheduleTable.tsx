@@ -141,52 +141,66 @@ const ScheduleTable = ({
     isPrint ? "border-2 border-emerald-950" : ""
   );
 
-  const renderStandard = () => (
-    <table className={tableClasses}>
-      <colgroup>
-        <col className={isPrint ? "w-[60px]" : "w-[80px]"} />
-        {days.map(day => <col key={day.id} className="w-auto" />)}
-      </colgroup>
-      <thead>
-        <tr className={isPrint ? "h-10" : "h-14"}>
-          <th className={cn("font-black text-center", isPrint ? "border border-emerald-950 text-[10px] bg-emerald-50" : "rounded-2xl bg-emerald-950 text-emerald-400 p-2 text-[11px]")}>
-            {isRTL ? "الحصة" : "Slot"}
-          </th>
-          {days.map(day => (
-            <th key={day.id} className={cn("font-black text-center px-2", isPrint ? "border border-emerald-950 text-[12px] bg-emerald-50" : "rounded-2xl bg-slate-50 text-slate-500 p-2 uppercase text-[11px]")}>
-              {isRTL ? day.name : day.en}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {timeSlots.map(slot => (
-          <tr key={slot.id} className={isPrint ? "h-20" : "h-24"}>
-            <td className={cn(isPrint ? "border border-emerald-950 p-1 bg-emerald-50/10" : "p-2 border-e border-slate-100")}>
-              <div className="flex flex-col items-center justify-center h-full">
-                <span className={cn("font-black leading-none", isPrint ? "text-[12px]" : "text-[14px] text-slate-600")}>{slot.label}</span>
-                {slot.time && <span className={cn("font-bold opacity-40 mt-1", isPrint ? "text-[8px]" : "text-[9px]")}>{slot.time}</span>}
-              </div>
-            </td>
-            {days.map(day => {
-              const assignment = getAssignment(day.id, slot.id);
-              return (
-                <td key={day.id} className={cn("relative h-full", isPrint ? "border border-emerald-950" : "p-1")}>
-                  {assignment ? <LessonCard assignment={assignment} /> : (
-                    !isPrint && (
-                      <div className="h-full w-full rounded-xl border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50 transition-all" onClick={() => onAddClick(day.id, slot.id)}>
-                        <Plus size={14} className="text-slate-200" />
-                      </div>
-                    )
-                  )}
-                </td>
-              );
-            })}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
+  if (isTransposed) {
+    return (
+      <div className={cn(
+        "flex items-stretch w-full overflow-x-auto pb-4 gap-0", 
+        isRTL ? "flex-row" : "flex-row-reverse"
+      )}>
+        <div className="flex-1 min-w-0">
+          <table className={tableClasses}>
+            <colgroup>
+              <col className={isPrint ? "w-[60px]" : "w-[80px]"} />
+              {timeSlots.map(slot => <col key={slot.id} className="w-auto" />)}
+            </colgroup>
+            <thead>
+              <tr className={isPrint ? "h-10" : "h-14"}>
+                <th className={cn("font-black text-center", isPrint ? "border border-emerald-950 text-[10px] bg-emerald-50" : "rounded-2xl bg-slate-50 text-slate-500 p-2 uppercase text-[11px]")}>
+                  {isRTL ? "اليوم" : "Day"}
+                </th>
+                {timeSlots.map(slot => (
+                  <th key={slot.id} className={cn("font-black text-center px-2", isPrint ? "border border-emerald-950 text-[10px] bg-emerald-50" : "rounded-2xl bg-emerald-950 text-emerald-400 p-2 text-[11px]")}>
+                    <div className="flex flex-col items-center justify-center">
+                      <span>{slot.label}</span>
+                      {slot.time && !isPrint && <span className="text-[8px] opacity-60 font-medium">{slot.time}</span>}
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {days.map(day => (
+                <tr key={day.id} className={isPrint ? "h-20" : "h-24"}>
+                  <td className={cn(isPrint ? "border border-emerald-950 p-1 bg-emerald-50/10" : "p-2 border-e border-slate-100")}>
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <span className={cn("font-black leading-none", isPrint ? "text-[12px]" : "text-[14px] text-slate-600")}>
+                        {isRTL ? day.name : day.en}
+                      </span>
+                    </div>
+                  </td>
+                  {timeSlots.map(slot => {
+                    const assignment = getAssignment(day.id, slot.id);
+                    return (
+                      <td key={slot.id} className={cn("relative h-full", isPrint ? "border border-emerald-950" : "p-1")}>
+                        {assignment ? <LessonCard assignment={assignment} /> : (
+                          !isPrint && (
+                            <div className="h-full w-full rounded-xl border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50 transition-all" onClick={() => onAddClick(day.id, slot.id)}>
+                              <Plus size={14} className="text-slate-200" />
+                            </div>
+                          )
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <SummaryTable />
+      </div>
+    );
+  }
 
   return (
     <div className={cn(
@@ -194,7 +208,50 @@ const ScheduleTable = ({
       isRTL ? "flex-row" : "flex-row-reverse"
     )}>
       <div className="flex-1 min-w-0">
-        {renderStandard()}
+        <table className={tableClasses}>
+          <colgroup>
+            <col className={isPrint ? "w-[60px]" : "w-[80px]"} />
+            {days.map(day => <col key={day.id} className="w-auto" />)}
+          </colgroup>
+          <thead>
+            <tr className={isPrint ? "h-10" : "h-14"}>
+              <th className={cn("font-black text-center", isPrint ? "border border-emerald-950 text-[10px] bg-emerald-50" : "rounded-2xl bg-emerald-950 text-emerald-400 p-2 text-[11px]")}>
+                {isRTL ? "الحصة" : "Slot"}
+              </th>
+              {days.map(day => (
+                <th key={day.id} className={cn("font-black text-center px-2", isPrint ? "border border-emerald-950 text-[12px] bg-emerald-50" : "rounded-2xl bg-slate-50 text-slate-500 p-2 uppercase text-[11px]")}>
+                  {isRTL ? day.name : day.en}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {timeSlots.map(slot => (
+              <tr key={slot.id} className={isPrint ? "h-20" : "h-24"}>
+                <td className={cn(isPrint ? "border border-emerald-950 p-1 bg-emerald-50/10" : "p-2 border-e border-slate-100")}>
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <span className={cn("font-black leading-none", isPrint ? "text-[12px]" : "text-[14px] text-slate-600")}>{slot.label}</span>
+                    {slot.time && <span className={cn("font-bold opacity-40 mt-1", isPrint ? "text-[8px]" : "text-[9px]")}>{slot.time}</span>}
+                  </div>
+                </td>
+                {days.map(day => {
+                  const assignment = getAssignment(day.id, slot.id);
+                  return (
+                    <td key={day.id} className={cn("relative h-full", isPrint ? "border border-emerald-950" : "p-1")}>
+                      {assignment ? <LessonCard assignment={assignment} /> : (
+                        !isPrint && (
+                          <div className="h-full w-full rounded-xl border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50 transition-all" onClick={() => onAddClick(day.id, slot.id)}>
+                            <Plus size={14} className="text-slate-200" />
+                          </div>
+                        )
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
       <SummaryTable />
     </div>
