@@ -266,7 +266,6 @@ const Employees = () => {
                   <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
                     <div>
                       <p className="font-bold text-emerald-900 text-xs">{emp.lastName} {emp.firstName}</p>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">ID: {emp.id}</p>
                     </div>
                     <UserIcon size={12} className="text-emerald-500 shrink-0" />
                   </div>
