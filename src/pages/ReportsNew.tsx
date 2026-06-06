@@ -193,7 +193,7 @@ const ReportsNew = () => {
         <Table className="border-4 border-slate-950 w-full">
           <TableHeader>
             <TableRow className="bg-slate-100 border-b-4 border-slate-950">
-              <TableHead className={cn("font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
+              <TableHead className={cn("font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs w-[240px] whitespace-nowrap", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
               <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs">ص</TableHead>
               <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs">م</TableHead>
               <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs">ل</TableHead>
@@ -203,7 +203,7 @@ const ReportsNew = () => {
           <TableBody>
             {stats.map(s => (
               <TableRow key={s.id} className="border-b-2 border-slate-950">
-                <TableCell className={cn("font-bold border-e-2 border-slate-950 p-2 text-xs", isRTL ? "text-right" : "text-left")}>{s.lastName} {s.firstName}</TableCell>
+                <TableCell className={cn("font-bold border-e-2 border-slate-950 p-2 text-xs whitespace-nowrap", isRTL ? "text-right" : "text-left")}>{s.lastName} {s.firstName}</TableCell>
                 <TableCell className="text-center border-e-2 border-slate-950 p-2 text-xs">{s.m}</TableCell>
                 <TableCell className="text-center border-e-2 border-slate-950 p-2 text-xs">{s.a}</TableCell>
                 <TableCell className="text-center border-e-2 border-slate-950 p-2 text-xs">{s.e}</TableCell>

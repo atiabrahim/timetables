@@ -111,7 +111,7 @@ const AttendanceSheet = ({
               <TableHead className="w-[50px] text-center font-black text-black border-e border-black p-0.5 text-[10px]">
                 <div className="flex items-center justify-center gap-0.5"><Hash size={10}/>{t.number}</div>
               </TableHead>
-              <TableHead className={cn("font-black text-black border-e border-black px-3 p-0.5 text-[10px]", isRTL ? "text-right" : "text-left")}>
+              <TableHead className={cn("font-black text-black border-e border-black px-3 p-0.5 text-[10px] w-[240px] whitespace-nowrap", isRTL ? "text-right" : "text-left")}>
                 <div className="flex items-center gap-1.5"><User size={12}/>{t.employeeName}</div>
               </TableHead>
               <TableHead className="w-[130px] text-center font-black text-black border-e border-black p-0.5 text-[10px]">
@@ -126,7 +126,7 @@ const AttendanceSheet = ({
             {assignedEmployees.map((emp, idx) => (
               <TableRow key={emp?.id} className="hover:bg-transparent border-b border-black h-8">
                 <TableCell className="text-center font-black border-e border-black p-1 text-[10px] bg-slate-50/50">{idx + 1}</TableCell>
-                <TableCell className={cn("font-black border-e border-black px-3 p-1 text-[11px] text-black", isRTL ? "text-right" : "text-left")}>
+                <TableCell className={cn("font-black border-e border-black px-3 p-1 text-[11px] text-black whitespace-nowrap", isRTL ? "text-right" : "text-left")}>
                   {emp?.lastName} {emp?.firstName}
                 </TableCell>
                 <TableCell className="border-e border-black p-1"></TableCell>
