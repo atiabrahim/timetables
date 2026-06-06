@@ -60,81 +60,52 @@
 /* Global Print Styles */
 @media print {
   /* Hide UI elements */
-  header, 
-  aside, 
-  button, 
-  input,
-  select,
-  nav,
-  .print-hidden,
-  .print\:hidden,
-  [role="tablist"],
-  [role="presentation"] {
+  header, aside, button, input, select, nav, .print-hidden, .print\:hidden, [role="tablist"], [role="presentation"] {
     display: none !important;
   }
 
-  /* Force body to be a centering container for print */
-  body {
-    overflow: visible !important;
-    height: 100vh !important;
-    background: white !important;
-    width: 100% !important;
+  /* Reset layout for print */
+  html, body {
     margin: 0 !important;
     padding: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    height: 100% !important;
+    width: 100% !important;
+    background: #fff !important;
+  }
+
+  /* Absolute Centering in Print */
+  body {
+    display: grid !important;
+    place-items: center !important;
+    align-content: center !important;
   }
 
   body:has(div[role="dialog"]) #root {
     display: none !important;
   }
 
-  #root, 
-  #root > div,
-  main,
-  div[role="dialog"],
-  div[role="dialog"] > div {
-    position: static !important;
+  #root, main, div[role="dialog"] {
+    display: contents !important;
+  }
+
+  /* Container Centering */
+  .page-break-container, .print-content-master {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     width: 100% !important;
-    min-height: 100vh !important;
-    margin: 0 !important;
-    border: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-  }
-
-  /* Report Container centered in the page */
-  .page-break-container,
-  .print-content-master {
-    display: block !important;
-    width: auto !important;
-    margin: auto !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
+    margin: 0 auto !important;
     page-break-inside: avoid !important;
-    break-inside: avoid !important;
   }
 
-  /* Table styling for print */
-  table {
-    width: 100% !important;
-    border-collapse: collapse !important;
-    table-layout: fixed !important;
-  }
-
-  /* Force background colors */
+  /* Force visuals */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    color-adjust: exact !important;
   }
 
   @page {
-    margin: 0 !important; /* نستخدم الهوامش الداخلية للمكون بدلاً من هوامش الصفحة */
+    margin: 0 !important; /* الهوامش يتم التحكم بها عبر OfficialPrintWrapper */
   }
 }

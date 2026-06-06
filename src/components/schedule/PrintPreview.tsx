@@ -38,7 +38,6 @@ const PrintPreview = ({
   isOpen, onOpenChange, isRTL, orientation, setOrientation, printScale, setPrintScale, 
   viewMode, selectedId, employees, classes, subjects, days, timeSlots, getAssignment, summaryData, totalHours, isTransposed
 }: PrintPreviewProps) => {
-  // تم تغيير القيمة الافتراضية إلى false لمنع التكرار التلقائي
   const [doubleMode, setDoubleMode] = useState(false); 
 
   const selectedEntity = viewMode === "teacher" 
@@ -98,9 +97,8 @@ const PrintPreview = ({
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/10">
               <Checkbox id="double-mode" checked={doubleMode} onCheckedChange={(v: boolean) => setDoubleMode(v)} className="border-white/50" />
-              <Label htmlFor="double-mode" className="text-white text-xs font-black cursor-pointer flex items-center gap-2">
-                <Copy size={14} className="text-emerald-400" />
-                {isRTL ? "نسختان في الصفحة" : "2 per sheet"}
+              <Label htmlFor="double-mode" className="text-white text-xs font-black cursor-pointer">
+                {isRTL ? "نسختان" : "2 per sheet"}
               </Label>
             </div>
 
@@ -123,20 +121,14 @@ const PrintPreview = ({
           </div>
         </div>
 
-        {/* تعديل هنا لتوسيط المحتوى */}
-        <div className="flex-1 overflow-auto p-8 flex items-center justify-center bg-zinc-950/50 print:p-0 print:bg-white print:block">
+        {/* Centering Container */}
+        <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white grid place-items-center p-8 print:p-0">
           <div 
-            className="transition-all duration-300 origin-center print:transform-none flex flex-col gap-12 print:gap-0"
-            style={{ transform: `scale(${printScale / 100})` }}
+            className="transition-all duration-300 flex flex-col gap-8 print:gap-0"
+            style={{ transform: `scale(${printScale / 100})`, transformOrigin: 'center center' }}
           >
-            <div className="print:mb-0">
-              <ScheduleContent />
-            </div>
-            {doubleMode && (
-              <div className="print:mt-12">
-                <ScheduleContent />
-              </div>
-            )}
+            <ScheduleContent />
+            {doubleMode && <ScheduleContent />}
           </div>
         </div>
 
