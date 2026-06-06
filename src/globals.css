@@ -38,20 +38,25 @@
 }
 
 /* -----------------------------------------------------------
-   نظام الطباعة الاحترافي - الحل النهائي للسواد والتظليل
+   نظام الطباعة الاحترافي - الحل النهائي للفراغ والسواد
    ----------------------------------------------------------- */
 @media print {
-  /* إخفاء عناصر الواجهة */
+  /* 1. إخفاء كل شيء غير ضروري */
   header, aside, nav, button, input, select, footer, 
   [role="tablist"], .print-hidden, .print\:hidden,
   .lucide, svg:not(.keep-print) {
     display: none !important;
   }
 
-  /* فرض البياض المطلق */
+  /* 2. إخفاء الروت (التطبيق الأساسي) عند فتح المعاينة لتجنب الطباعة المزدوجة أو الفارغة */
+  body:has([role="dialog"]) #root {
+    display: none !important;
+  }
+
+  /* 3. فرض البياض المطلق والوضوح */
   html, body {
-    background-color: #ffffff !important;
     background: #ffffff !important;
+    background-color: #ffffff !important;
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -59,52 +64,54 @@
     print-color-adjust: exact !important;
   }
 
-  /* إزالة الظلال والضبابية */
-  * {
-    box-shadow: none !important;
-    text-shadow: none !important;
-    filter: none !important;
-    backdrop-filter: none !important;
-    background-color: transparent !important;
+  /* 4. معالجة الـ Portal والـ Dialog لضمان الظهور */
+  [data-radix-portal] {
+    position: static !important;
+    display: block !important;
+    visibility: visible !important;
   }
 
-  /* قتل طبقة الـ Overlay الداكنة تماماً */
-  [data-radix-portal] > div:first-child,
-  div[class*="bg-black/"],
-  div[class*="bg-zinc-"],
-  div[class*="backdrop-blur"],
-  .fixed.inset-0.z-50 {
-    display: none !important;
-    opacity: 0 !important;
-    visibility: hidden !important;
-  }
-
-  /* تحرير محتوى النافذة المنبثقة للطباعة */
   [role="dialog"] {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
+    position: static !important;
+    display: block !important;
+    visibility: visible !important;
+    background: #ffffff !important;
     width: 100% !important;
     height: auto !important;
-    background-color: #ffffff !important;
-    border: none !important;
-    display: block !important;
+    box-shadow: none !important;
     padding: 0 !important;
     margin: 0 !important;
   }
 
-  /* إخفاء التطبيق الأصلي لتجنب التشويش */
-  body:has([role="dialog"]) #root {
+  /* 5. إظهار محتوى الطباعة المباشر */
+  .print-content-master {
+    display: block !important;
+    visibility: visible !important;
+    background: #ffffff !important;
+  }
+
+  /* 6. منع شفافية النصوص أو الصور */
+  * {
+    opacity: 1 !important;
+    visibility: visible !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* 7. إخفاء غلاف التعتيم (Overlay) */
+  [data-radix-portal] > div:first-child {
     display: none !important;
   }
 
   .page-break-container {
     page-break-inside: avoid !important;
     background: white !important;
+    display: block !important;
+    width: 100% !important;
   }
 
   @page {
-    margin: 0;
+    margin: 10mm;
     size: auto;
   }
 }
