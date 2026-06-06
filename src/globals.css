@@ -64,38 +64,36 @@
     display: none !important;
   }
 
-  /* Reset layout for print */
+  /* Reset layout for print - Critical for vertical centering */
   html, body {
     margin: 0 !important;
     padding: 0 !important;
-    height: 100% !important;
+    height: 100vh !important; /* Full viewport height for centering */
     width: 100% !important;
     background: #fff !important;
+    overflow: hidden !important;
   }
 
   /* Absolute Centering in Print */
   body {
-    display: grid !important;
-    place-items: center !important;
-    align-content: center !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   body:has(div[role="dialog"]) #root {
     display: none !important;
   }
 
+  /* Ensure the content is treated as a single block for centering */
   #root, main, div[role="dialog"] {
     display: contents !important;
   }
 
-  /* Container Centering */
+  /* OfficialPrintWrapper centering logic */
   .page-break-container, .print-content-master {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 100% !important;
-    margin: 0 auto !important;
+    margin: auto !important; /* Forces the block to take center position */
+    box-shadow: none !important;
     page-break-inside: avoid !important;
   }
 
@@ -106,6 +104,114 @@
   }
 
   @page {
-    margin: 0 !important; /* الهوامش يتم التحكم بها عبر OfficialPrintWrapper */
+    margin: 0 !important;
   }
 }
+</dyad-file>
+
+<dyad-write path="src/components/shared/OfficialPrintWrapper.tsx" description="تعديل خصائص المكون البرمجية لضمان عدم تمدده إلى كامل عرض الصفحة عند الطباعة، مما يسمح لنظام التوسيط بوضعه في المركز بدقة.">
+"use client";
+
+import React from "react";
+import { cn } from "@/lib/utils";
+import { useApp } from "../../context/AppContext";
+
+interface OfficialPrintWrapperProps {
+  title: string;
+  subtitle?: React.ReactNode;
+  metadata?: React.ReactNode;
+  orientation?: "portrait" | "landscape";
+  children: React.ReactNode;
+  showSignatures?: boolean;
+  leftSignatureTitle?: string;
+  centerSignatureTitle?: string;
+  rightSignatureTitle?: string;
+  showSystemFooter?: boolean;
+}
+
+const OfficialPrintWrapper = ({
+  title,
+  subtitle,
+  metadata,
+  orientation = "portrait",
+  children,
+  showSignatures = true,
+  leftSignatureTitle,
+  centerSignatureTitle,
+  rightSignatureTitle,
+  showSystemFooter = true
+}: OfficialPrintWrapperProps) => {
+  const { isRTL, institution } = useApp();
+
+  const finalLeftTitle = leftSignatureTitle || (isRTL ? "المدير" : "Director");
+  const finalCenterTitle = centerSignatureTitle || institution.pedagogicalManagerTitle || (isRTL ? "المسؤول البيداغوجي" : "Pedagogical Manager");
+  const finalRightTitle = rightSignatureTitle || (isRTL ? "أستاذ الفرع" : "Branch Teacher");
+
+  return (
+    <div 
+      className={cn(
+        "bg-white mx-auto page-break-container relative shadow-2xl",
+        "px-[10mm] py-[10mm]",
+        orientation === "portrait" ? "w-[210mm]" : "w-[297mm]",
+        // إزالة print:w-full للسماح بالتوسيط الحر
+        "print:shadow-none print:m-auto"
+      )}
+      dir={isRTL ? "rtl" : "ltr"}
+    >
+      {/* Header with Logo */}
+      <div className="flex justify-between items-start mb-4 print:mb-2 print:gap-2">
+        <div className="w-20 h-20 print:w-16 print:h-16 flex items-center justify-center border-2 border-emerald-900/10 rounded-2xl p-2">
+          <div className="w-full h-full bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-800 font-black text-[10px] text-center uppercase">
+            Logo
+          </div>
+        </div>
+
+        <div className="flex-1 text-center space-y-0.5">
+          <h2 className="font-black text-emerald-950 text-lg md:text-xl print:text-base">{institution.name}</h2>
+          <h3 className="font-bold text-emerald-700 text-base print:text-sm">{title}</h3>
+          {subtitle && <div className="text-emerald-600 font-bold text-xs print:text-[10px]">{subtitle}</div>}
+        </div>
+
+        <div className="w-20 print:w-16"></div> 
+      </div>
+
+      {/* Metadata Bar */}
+      {metadata && (
+        <div className="border-y-2 border-emerald-900/20 py-1.5 mb-3 flex justify-between items-center text-[10px] font-black text-emerald-900 print:mb-2 print:py-1">
+          {metadata}
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <div className="w-full overflow-hidden mb-4 print:mb-2">
+        {children}
+      </div>
+
+      {/* Signatures Footer */}
+      {showSignatures && (
+        <div className="grid grid-cols-3 gap-4 pt-3 border-t-2 border-emerald-900/10 print:pt-2 print:gap-2">
+          <div className="text-center">
+            <p className="font-black text-emerald-950 text-[10px] mb-1">{finalRightTitle}</p>
+            <div className="h-12 print:h-10 border border-dashed border-emerald-200 rounded-xl mt-0.5"></div>
+          </div>
+          <div className="text-center">
+            <p className="font-black text-emerald-950 text-[10px] mb-1">{finalCenterTitle}</p>
+            <div className="h-12 print:h-10 border border-dashed border-emerald-200 rounded-xl mt-0.5"></div>
+          </div>
+          <div className="text-center">
+            <p className="font-black text-emerald-950 text-[10px] mb-1">{finalLeftTitle}</p>
+            <div className="h-12 print:h-10 border border-dashed border-emerald-200 rounded-xl mt-0.5"></div>
+          </div>
+        </div>
+      )}
+
+      {showSystemFooter && (
+        <div className="mt-2 text-center text-[7px] font-bold text-slate-300 uppercase tracking-widest print:hidden">
+          Generated by EduSchedule Pro
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default OfficialPrintWrapper;
