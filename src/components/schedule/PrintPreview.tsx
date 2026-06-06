@@ -137,8 +137,8 @@ const PrintPreview = ({
         <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white grid place-items-center p-8 print:p-0">
           <div 
             className={cn(
-              "transition-all duration-300 flex flex-col gap-8 print:gap-0",
-              doubleMode ? "print:h-screen print:justify-between print:gap-0 print:flex print:flex-col" : "print:block"
+              "transition-all duration-300 flex flex-col print:gap-0 print:justify-start",
+              doubleMode ? "gap-8 print:flex print:flex-col print:h-screen" : "gap-8 print:block"
             )}
             style={{ transform: `scale(${printScale / 100})`, transformOrigin: 'center center' }}
           >
