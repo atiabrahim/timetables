@@ -59,10 +59,11 @@ const OfficialPrintWrapper = ({
       dir={isRTL ? "rtl" : "ltr"}
     >
       {/* Header Section */}
-      <div className="flex justify-between items-start mb-2 print:mb-1">
-        <div className="w-14 h-14 print:w-10 print:h-10 flex items-center justify-center border border-black rounded-lg p-1 bg-white overflow-hidden">
+      <div className="flex justify-between items-center mb-2 print:mb-1">
+        {/* Left Logo */}
+        <div className="w-12 h-12 print:w-10 print:h-10 flex items-center justify-center border border-black rounded-lg p-1 bg-white overflow-hidden shrink-0">
           {institution.logo ? (
-            <img src={institution.logo} alt="Institution Logo" className="w-full h-full object-contain" />
+            <img src={institution.logo} alt="Institution Logo" className="max-h-full max-w-full object-contain" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-black font-black text-[7px] text-center border border-dashed border-black/20">
               LOGO
@@ -70,13 +71,23 @@ const OfficialPrintWrapper = ({
           )}
         </div>
 
-        <div className="flex-1 text-center space-y-0.5">
+        {/* Center Text */}
+        <div className="flex-1 text-center space-y-0.5 px-4">
           <h2 className="font-black text-black text-sm print:text-[10px] leading-tight">{institution.name}</h2>
           <h3 className="font-bold text-black text-xs print:text-[9px] underline underline-offset-1 decoration-1">{title}</h3>
           {subtitle && <div className="text-black font-bold text-[9px] print:text-[8px] opacity-80">{subtitle}</div>}
         </div>
 
-        <div className="w-14 print:w-10"></div> 
+        {/* Right Logo */}
+        <div className="w-12 h-12 print:w-10 print:h-10 flex items-center justify-center border border-black rounded-lg p-1 bg-white overflow-hidden shrink-0">
+          {institution.logo ? (
+            <img src={institution.logo} alt="Institution Logo" className="max-h-full max-w-full object-contain" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-black font-black text-[7px] text-center border border-dashed border-black/20">
+              LOGO
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Metadata Bar */}
