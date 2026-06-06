@@ -38,16 +38,17 @@
 }
 
 /* -----------------------------------------------------------
-   نظام الطباعة الاحترافي - إزالة التظليل والخلفيات الداكنة
+   نظام الطباعة الصارم - إزالة التظليل والطبقات الداكنة تماماً
    ----------------------------------------------------------- */
 @media print {
-  /* 1. إخفاء كافة عناصر الواجهة غير الضرورية */
+  /* 1. إخفاء شامل لكافة العناصر غير الورقية */
   header, aside, nav, button, input, select, footer, 
-  [role="tablist"], .print-hidden, .print\:hidden {
+  [role="tablist"], .print-hidden, .print\:hidden,
+  .lucide, svg:not(.keep-print) {
     display: none !important;
   }
 
-  /* 2. فرض الخلفية البيضاء الصافية على الصفحة والجسم */
+  /* 2. فرض البياض المطلق وإلغاء أي تعتيم أو ضبابية */
   html, body {
     background-color: #ffffff !important;
     background: #ffffff !important;
@@ -61,54 +62,52 @@
     print-color-adjust: exact !important;
   }
 
-  /* 3. إزالة التظليل (Shadows) والفلاتر تماماً */
-  *, ::before, ::after {
+  /* 3. إزالة كافة الظلال والحدود الملونة */
+  * {
     box-shadow: none !important;
     text-shadow: none !important;
     filter: none !important;
     backdrop-filter: none !important;
+    border-color: #000000 !important; /* فرض حدود سوداء خفيفة للطباعة */
     background-color: transparent !important;
   }
 
-  /* 4. معالجة مشكلة سواد النوافذ المنبثقة (Dialog Overlay) */
-  /* نقوم بإخفاء الطبقة الشفافة الداكنة وفرض البياض على المحتوى */
-  [role="dialog"] {
-    position: relative !important;
-    top: 0 !important;
-    left: 0 !important;
-    transform: none !important;
-    background-color: #ffffff !important;
-    background: #ffffff !important;
-    border: none !important;
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    display: block !important;
-  }
-
-  /* إخفاء الطبقة السوداء الخلفية (Overlay) */
+  /* 4. قتل الطبقة الداكنة (Overlay) للنوافذ المنبثقة */
   div[data-state="open"].fixed.inset-0,
   div[class*="bg-black/"],
   div[class*="bg-zinc-"],
+  div[class*="bg-background/80"],
   .fixed.inset-0.z-50 {
+    display: none !important;
     background: none !important;
     background-color: transparent !important;
     backdrop-filter: none !important;
   }
 
-  /* 5. توسيط المحتوى المطبوع */
-  .page-break-container {
+  /* 5. تحرير محتوى النافذة المنبثقة ليكون حراً في الصفحة */
+  [role="dialog"] {
+    position: static !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
     background-color: #ffffff !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
     border: none !important;
-    page-break-inside: avoid !important;
+    box-shadow: none !important;
+    display: block !important;
   }
 
-  /* إخفاء التطبيق الأساسي إذا كانت الطباعة من نافذة منبثقة */
+  /* 6. منع إخفاء المحتوى إذا كان بداخل روت مخفي */
   body:has([role="dialog"]) #root {
     display: none !important;
+  }
+
+  /* 7. توسيط الصفحة المطبوعة */
+  .page-break-container {
+    margin: 0 auto !important;
+    background: white !important;
+    page-break-inside: avoid !important;
   }
 
   @page {
