@@ -14,7 +14,6 @@ import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
 const Reports = () => {
   const { employees, assignments, classes, rooms, isRTL, t } = useApp();
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [printScale, setPrintScale] = useState(100);
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
 
   const teacherLoadData = useMemo(() => 
@@ -135,20 +134,6 @@ const Reports = () => {
           </div>
         </DialogContent>
       </Dialog>
-
-      <style>
-        {`
-          @media print {
-            body:has(div[role="dialog"]) #root {
-              display: none !important;
-            }
-            @page {
-              size: A4 ${orientation};
-              margin: 0 !important;
-            }
-          }
-        `}
-      </style>
     </div>
   );
 };

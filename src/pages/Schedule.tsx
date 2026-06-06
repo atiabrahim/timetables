@@ -140,6 +140,15 @@ const Schedule = () => {
     return data;
   }, [filteredAssignments, subjects]);
 
+  const selectedEntityName = useMemo(() => {
+    if (viewMode === "class") {
+      return classes.find(c => c.id === selectedId)?.name || "";
+    } else {
+      const emp = employees.find(e => e.id === selectedId);
+      return emp ? `${emp.lastName} ${emp.firstName}` : "";
+    }
+  }, [selectedId, viewMode, classes, employees]);
+
   return (
     <div className="space-y-6">
       <ScheduleHeader 
@@ -231,6 +240,34 @@ const Schedule = () => {
         summaryData={summaryData} totalHours={filteredAssignments.length}
         isTransposed={isTransposed}
       />
+
+      {/* حاوية الطباعة الموحدة الخلفية */}
+      {selectedId && (
+        <div className="print-content-master hidden print:block">
+          <OfficialPrintWrapper
+            title={isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Schedule"}
+            subtitle={viewMode === "teacher" ? (isRTL ? `للأستاذ : ${selectedEntityName}` : `for Teacher: ${selectedEntityName}`) : (isRTL ? `لفوج : ${selectedEntityName}` : `for Branch: ${selectedEntityName}`)}
+            orientation={orientation}
+          >
+            <ScheduleTable 
+              isRTL={isRTL} 
+              days={DAYS} 
+              timeSlots={activeTimeSlots} 
+              getAssignment={getAssignment} 
+              onAddClick={() => {}} 
+              onDeleteClick={() => {}} 
+              subjects={subjects} 
+              employees={employees} 
+              classes={classes} 
+              viewMode={viewMode} 
+              isPrint={true} 
+              summaryData={summaryData} 
+              totalHours={filteredAssignments.length}
+              isTransposed={isTransposed}
+            />
+          </OfficialPrintWrapper>
+        </div>
+      )}
     </div>
   );
 };

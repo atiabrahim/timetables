@@ -262,14 +262,17 @@ const MasterSchedule = () => {
         </DialogContent>
       </Dialog>
 
-      <style>
-        {`
-          @media print {
-            body:has(div[role="dialog"]) #root { display: none !important; }
-            @page { size: A4 ${orientation}; margin: 0 !important; }
-          }
-        `}
-      </style>
+      {/* حاوية الطباعة الموحدة الخلفية */}
+      <div className="print-content-master hidden print:block">
+        <OfficialPrintWrapper
+          title={isRTL ? `الجدول العام - يوم ${DAYS.find(d => d.id === selectedDay)?.name}` : `Master Schedule - ${DAYS.find(d => d.id === selectedDay)?.en}`}
+          subtitle={isRTL ? "خارطة الحصص الأسبوعية للمؤسسة" : "Institutional weekly lesson map"}
+          orientation={orientation}
+          showSystemFooter={false}
+        >
+          <MasterTable isPrint={true} />
+        </OfficialPrintWrapper>
+      </div>
     </div>
   );
 };

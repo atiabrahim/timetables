@@ -234,20 +234,6 @@ const WeeklyWorkSchedule = () => {
           <ScheduleTable isPrint={true} />
         </OfficialPrintWrapper>
       </div>
-
-      <style>
-        {`
-          @media print {
-            body:has(div[role="dialog"]) #root {
-              display: none !important;
-            }
-            @page {
-              size: A4 ${orientation};
-              margin: 0 !important;
-            }
-          }
-        `}
-      </style>
     </div>
   );
 };

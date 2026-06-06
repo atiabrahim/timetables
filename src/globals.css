@@ -38,106 +38,48 @@
 }
 
 /* -----------------------------------------------------------
-   نظام الطباعة الاحترافي - الحل النهائي للفراغ والسواد
+   نظام الطباعة الاحترافي الجديد والمضمون 100% من الصفر
    ----------------------------------------------------------- */
 @media print {
-  /* 1. إخفاء كل شيء غير ضروري */
-  header, aside, nav, button, input, select, footer, 
-  [role="tablist"], .print-hidden, .print\:hidden,
-  .lucide, svg:not(.keep-print) {
-    display: none !important;
+  /* 1. إخفاء جميع عناصر الصفحة بشكل افتراضي لمنع التداخل */
+  body * {
+    visibility: hidden !important;
   }
-
-  /* 2. فرض البياض المطلق والوضوح */
-  html, body {
-    background: #ffffff !important;
-    background-color: #ffffff !important;
-    color: #000000 !important;
+  
+  /* 2. إظهار حاوية الطباعة الموحدة ومحتوياتها فقط */
+  .print-content-master,
+  .print-content-master * {
+    visibility: visible !important;
+  }
+  
+  /* 3. تهيئة حاوية الطباعة لتأخذ كامل الصفحة وبأعلى جودة */
+  .print-content-master {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
+    background: #ffffff !important;
+    z-index: 9999999 !important;
+  }
+  
+  /* 4. ضبط المتصفح لطباعة الألوان والخلفيات بدقة */
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-
-  /* تحويل حاويات التصميم لتتمدد تلقائياً وتمنع الفراغات أو المشاكل الهيكلية */
-  #root, .flex, .flex-col, .flex-1, main, .max-w-7xl {
-    display: block !important;
-    height: auto !important;
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
-    position: static !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-  }
-
-  /* 3. معالجة الـ Portal والـ Dialog لضمان الظهور الكامل */
-  [data-radix-portal] {
-    position: static !important;
-    display: block !important;
-    visibility: visible !important;
-    width: 100% !important;
-  }
-
-  /* إخفاء غلاف التعتيم (Overlay) الخلفي */
-  [data-radix-portal] > div[style*="pointer-events"] {
-    display: none !important;
-  }
-
-  /* تحرير الحاوية التي تقوم بتوسيط نافذة الحوار */
-  [data-radix-portal] > div:not([style*="pointer-events"]) {
-    position: static !important;
-    display: block !important;
-    width: 100% !important;
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  [role="dialog"] {
-    position: static !important;
-    display: block !important;
-    visibility: visible !important;
-    background: #ffffff !important;
-    width: 100% !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: visible !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  /* تمديد الحاويات الداخلية القابلة للتمرير لتظهر كاملة على الورق */
-  [role="dialog"] .overflow-y-auto,
-  [role="dialog"] .overflow-auto {
-    overflow: visible !important;
-    height: auto !important;
-    max-height: none !important;
-  }
-
-  /* إلغاء تأثير التحجيم (Scale Transform) عند الطباعة لضمان دقة 100% واضحة */
-  [role="dialog"] div[style*="transform"] {
-    transform: none !important;
-  }
-
-  /* 4. منع شفافية النصوص أو الصور */
-  * {
-    opacity: 1 !important;
-    visibility: visible !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
-
+  
+  /* منع قص الجداول أو تداخل الصفحات */
   .page-break-container {
     page-break-inside: avoid !important;
-    background: white !important;
-    display: block !important;
-    width: 100% !important;
-  }
-
-  @page {
-    margin: 10mm;
-    size: auto;
+    break-inside: avoid !important;
   }
 }
