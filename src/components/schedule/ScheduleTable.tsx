@@ -161,9 +161,12 @@ const ScheduleTable = ({
           <table className={tableClasses}>
             <colgroup>
               <col className={isPrint ? "w-[60px]" : "w-[80px]"} />
-              {/* هنا سنحتاج لإدارة الأعمدة التي تحتوي على راحة في الوضع الأفقي إذا لزم الأمر، 
-                  لكن الطلب يركز عادة على الوضع الرأسي (الحصص كأسطر) */}
-              {timeSlots.map(slot => <col key={slot.id} className="w-auto" />)}
+              {timeSlots.map(slot => (
+                <React.Fragment key={slot.id}>
+                  <col className="w-auto" />
+                  {(slot.id === "2" || slot.id === "4") && <col className="w-6" />}
+                </React.Fragment>
+              ))}
             </colgroup>
             <thead>
               <tr className={isPrint ? "h-10" : "h-14"}>
@@ -179,12 +182,12 @@ const ScheduleTable = ({
                       </div>
                     </th>
                     {slot.id === "2" && (
-                      <th className={cn("w-4 border border-emerald-950 bg-emerald-50/50 text-[8px] font-black [writing-mode:vertical-rl] rotate-180 p-0.5", isPrint ? "flex" : "hidden")}>
+                      <th className={cn("border border-emerald-950 bg-emerald-50/50 text-[8px] font-black [writing-mode:vertical-rl] rotate-180 p-0.5")}>
                         {isRTL ? "راحة" : "BREAK"}
                       </th>
                     )}
                     {slot.id === "4" && (
-                      <th className={cn("w-4 border border-emerald-950 bg-emerald-50/50 text-[8px] font-black [writing-mode:vertical-rl] rotate-180 p-0.5", isPrint ? "flex" : "hidden")}>
+                      <th className={cn("border border-emerald-950 bg-emerald-50/50 text-[8px] font-black [writing-mode:vertical-rl] rotate-180 p-0.5")}>
                         {isRTL ? "راحة الزوال" : "NOON BREAK"}
                       </th>
                     )}
@@ -213,8 +216,9 @@ const ScheduleTable = ({
                           )
                         )}
                       </td>
-                      {slot.id === "2" && <td className="border border-emerald-950 bg-emerald-50/30"></td>}
-                      {slot.id === "4" && <td className="border border-emerald-950 bg-emerald-50/30"></td>}
+                      {(slot.id === "2" || slot.id === "4") && (
+                        <td className="border border-emerald-950 bg-emerald-50/20"></td>
+                      )}
                     </React.Fragment>
                   ))}
                 </tr>
