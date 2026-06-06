@@ -38,9 +38,11 @@ const OfficialPrintWrapper = ({
   return (
     <div 
       className={cn(
-        "bg-white mx-auto page-break-container relative",
-        orientation === "portrait" ? "md:w-[210mm]" : "md:w-[297mm]",
-        "print:w-full print:p-0 print:mb-0 print:shadow-none"
+        "bg-white mx-auto page-break-container relative shadow-2xl",
+        // الهوامش الجانبية (10مم) تظهر في المعاينة والطباعة
+        "px-[10mm] py-[10mm]",
+        orientation === "portrait" ? "w-[210mm]" : "w-[297mm]",
+        "print:w-full print:shadow-none print:m-0"
       )}
       dir={isRTL ? "rtl" : "ltr"}
     >
@@ -68,7 +70,7 @@ const OfficialPrintWrapper = ({
         </div>
       )}
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <div className="w-full overflow-hidden mb-4 print:mb-2">
         {children}
       </div>
