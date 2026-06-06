@@ -112,22 +112,22 @@ const Classes = () => {
   };
 
   const PrintableTable = () => (
-    <table className="w-full border-collapse border-2 border-slate-950 text-sm">
+    <table className="w-full border-collapse border-2 border-slate-950 text-xs">
       <thead>
         <tr className="bg-slate-100 border-b-2 border-slate-950">
-          <th className="p-3 border-e-2 border-slate-950 text-center font-black w-12">#</th>
-          <th className={cn("p-3 border-e-2 border-slate-950 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "اسم الفرع" : "Branch Name"}</th>
-          <th className="p-3 border-e-2 border-slate-950 text-center font-black w-32">{isRTL ? "الرمز" : "Code"}</th>
-          <th className={cn("p-3 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "مستوى التأهيل" : "Qualification Level"}</th>
+          <th className="p-1 border-e-2 border-slate-950 text-center font-black w-12">#</th>
+          <th className={cn("p-1 border-e-2 border-slate-950 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "اسم الفرع" : "Branch Name"}</th>
+          <th className="p-1 border-e-2 border-slate-950 text-center font-black w-32">{isRTL ? "الرمز" : "Code"}</th>
+          <th className={cn("p-1 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "مستوى التأهيل" : "Qualification Level"}</th>
         </tr>
       </thead>
       <tbody>
         {sortedAndFilteredClasses.map((cls, idx) => (
           <tr key={cls.id} className="border-b border-slate-950">
-            <td className="p-3 border-e border-slate-950 text-center font-bold">{idx + 1}</td>
-            <td className="p-3 border-e border-slate-950 font-bold text-slate-900">{cls.name}</td>
-            <td className="p-3 border-e border-slate-950 text-center font-medium">{cls.code || "---"}</td>
-            <td className="p-3 text-slate-700">{cls.qualificationLevel || "---"}</td>
+            <td className="p-1 border-e border-slate-950 text-center font-bold">{idx + 1}</td>
+            <td className="p-1 border-e border-slate-950 font-bold text-slate-900">{cls.name}</td>
+            <td className="p-1 border-e border-slate-950 text-center font-medium">{cls.code || "---"}</td>
+            <td className="p-1 text-slate-700">{cls.qualificationLevel || "---"}</td>
           </tr>
         ))}
       </tbody>
