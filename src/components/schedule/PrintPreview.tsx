@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import ScheduleTable from "./ScheduleTable";
 import OfficialPrintWrapper from "../shared/OfficialPrintWrapper";
+import { cn } from "@/lib/utils";
 
 interface PrintPreviewProps {
   isOpen: boolean;
@@ -69,12 +70,14 @@ const PrintPreview = ({
     </>
   );
 
-  const ScheduleContent = () => (
+  const ScheduleContent = ({ disablePageBreak }: { disablePageBreak?: boolean }) => (
     <OfficialPrintWrapper
       title={isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Schedule"}
       subtitle={title}
       metadata={metadata}
       orientation={orientation}
+      disablePageBreak={disablePageBreak}
+      doubleMode={doubleMode}
     >
       <ScheduleTable 
         isRTL={isRTL} 
@@ -133,11 +136,14 @@ const PrintPreview = ({
 
         <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white grid place-items-center p-8 print:p-0">
           <div 
-            className="transition-all duration-300 flex flex-col gap-8 print:gap-0 print:block"
+            className={cn(
+              "transition-all duration-300 flex flex-col gap-8 print:gap-0",
+              doubleMode ? "print:h-screen print:justify-between print:gap-0 print:flex print:flex-col" : "print:block"
+            )}
             style={{ transform: `scale(${printScale / 100})`, transformOrigin: 'center center' }}
           >
-            <ScheduleContent />
-            {doubleMode && <ScheduleContent />}
+            <ScheduleContent disablePageBreak={doubleMode} />
+            {doubleMode && <ScheduleContent disablePageBreak={false} />}
           </div>
         </div>
 

@@ -15,6 +15,8 @@ interface OfficialPrintWrapperProps {
   centerSignatureTitle?: string;
   rightSignatureTitle?: string;
   showSystemFooter?: boolean;
+  disablePageBreak?: boolean;
+  doubleMode?: boolean;
 }
 
 const OfficialPrintWrapper = ({
@@ -27,7 +29,9 @@ const OfficialPrintWrapper = ({
   leftSignatureTitle,
   centerSignatureTitle,
   rightSignatureTitle,
-  showSystemFooter = true
+  showSystemFooter = true,
+  disablePageBreak = false,
+  doubleMode = false
 }: OfficialPrintWrapperProps) => {
   const { isRTL, institution } = useApp();
 
@@ -38,8 +42,15 @@ const OfficialPrintWrapper = ({
   return (
     <div 
       className={cn(
-        "bg-white mx-auto page-break-container relative",
-        "px-[8mm] py-[8mm] print:px-[4mm] print:py-[4mm]",
+        "bg-white mx-auto relative flex flex-col justify-between",
+        !disablePageBreak && "page-break-container",
+        doubleMode ? (
+          orientation === "portrait" 
+            ? "print:h-[142mm] print:py-[2mm] print:px-[4mm]" 
+            : "print:h-[100mm] print:py-[1mm] print:px-[4mm]"
+        ) : (
+          "px-[8mm] py-[8mm] print:px-[4mm] print:py-[4mm]"
+        ),
         orientation === "portrait" ? "w-[210mm] print:w-full" : "w-[297mm] print:w-full",
         "shadow-none border-none print:shadow-none print:border-none print:bg-white"
       )}
@@ -70,7 +81,7 @@ const OfficialPrintWrapper = ({
       )}
 
       {/* Main Content Area */}
-      <div className="w-full overflow-hidden mb-4 print:mb-1.5 bg-white">
+      <div className={cn("w-full overflow-hidden bg-white", doubleMode ? "flex-1 flex flex-col justify-center" : "mb-4 print:mb-1.5")}>
         {children}
       </div>
 
