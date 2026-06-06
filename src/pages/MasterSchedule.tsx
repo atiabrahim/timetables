@@ -75,7 +75,7 @@ const MasterSchedule = () => {
           <thead>
             <tr className={cn(isPrint ? "bg-slate-100" : "bg-emerald-950 text-white")}>
               <th className={cn(
-                "p-3 border sticky left-0 z-20",
+                "p-3 border sticky left-0 z-20 text-center",
                 isPrint ? "text-[10px] font-black border-black text-black bg-slate-100" : "text-[12px] uppercase tracking-tighter font-black border-white/10 bg-emerald-950"
               )}>
                 {isRTL ? "الفوج" : "Class"}
@@ -98,7 +98,7 @@ const MasterSchedule = () => {
                 !isPrint && "hover:bg-emerald-100/30"
               )}>
                 <td className={cn(
-                  "p-2 font-black border sticky left-0 z-10 transition-colors shadow-sm whitespace-normal break-words",
+                  "p-2 font-black border sticky left-0 z-10 transition-colors shadow-sm whitespace-normal break-words text-center",
                   idx % 2 === 0 ? "bg-white" : "bg-[#fcfdfd]",
                   isPrint ? "text-[10px] border-black text-black" : "text-[12px] text-emerald-950 border-emerald-50"
                 )}>
