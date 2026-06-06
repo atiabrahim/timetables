@@ -19,6 +19,7 @@ interface ScheduleTableProps {
   summaryData?: any[];
   totalHours?: number;
   isTransposed?: boolean;
+  allAssignments?: any[];
 }
 
 const SUBJECT_COLORS = [
@@ -141,6 +142,15 @@ const ScheduleTable = ({
     isPrint ? "border-2 border-emerald-950" : ""
   );
 
+  const BreakRow = ({ title }: { title: string }) => (
+    <tr className={cn(isPrint ? "h-4" : "h-6", "bg-emerald-50/50")}>
+      <td className={cn("border border-emerald-950 text-center font-black", isPrint ? "text-[8px]" : "text-[10px]")}>---</td>
+      <td colSpan={days.length} className={cn("border border-emerald-950 text-center font-black uppercase tracking-widest", isPrint ? "text-[9px]" : "text-[11px] text-emerald-800")}>
+        {title}
+      </td>
+    </tr>
+  );
+
   if (isTransposed) {
     return (
       <div className={cn(
@@ -151,6 +161,8 @@ const ScheduleTable = ({
           <table className={tableClasses}>
             <colgroup>
               <col className={isPrint ? "w-[60px]" : "w-[80px]"} />
+              {/* هنا سنحتاج لإدارة الأعمدة التي تحتوي على راحة في الوضع الأفقي إذا لزم الأمر، 
+                  لكن الطلب يركز عادة على الوضع الرأسي (الحصص كأسطر) */}
               {timeSlots.map(slot => <col key={slot.id} className="w-auto" />)}
             </colgroup>
             <thead>
@@ -159,12 +171,24 @@ const ScheduleTable = ({
                   {isRTL ? "اليوم" : "Day"}
                 </th>
                 {timeSlots.map(slot => (
-                  <th key={slot.id} className={cn("font-black text-center px-2", isPrint ? "border border-emerald-950 text-[10px] bg-emerald-50" : "rounded-2xl bg-emerald-950 text-emerald-400 p-2 text-[11px]")}>
-                    <div className="flex flex-col items-center justify-center">
-                      <span>{slot.label}</span>
-                      {slot.time && !isPrint && <span className="text-[8px] opacity-60 font-medium">{slot.time}</span>}
-                    </div>
-                  </th>
+                  <React.Fragment key={slot.id}>
+                    <th className={cn("font-black text-center px-2", isPrint ? "border border-emerald-950 text-[10px] bg-emerald-50" : "rounded-2xl bg-emerald-950 text-emerald-400 p-2 text-[11px]")}>
+                      <div className="flex flex-col items-center justify-center">
+                        <span>{slot.label}</span>
+                        {slot.time && !isPrint && <span className="text-[8px] opacity-60 font-medium">{slot.time}</span>}
+                      </div>
+                    </th>
+                    {slot.id === "2" && (
+                      <th className={cn("w-4 border border-emerald-950 bg-emerald-50/50 text-[8px] font-black [writing-mode:vertical-rl] rotate-180 p-0.5", isPrint ? "flex" : "hidden")}>
+                        {isRTL ? "راحة" : "BREAK"}
+                      </th>
+                    )}
+                    {slot.id === "4" && (
+                      <th className={cn("w-4 border border-emerald-950 bg-emerald-50/50 text-[8px] font-black [writing-mode:vertical-rl] rotate-180 p-0.5", isPrint ? "flex" : "hidden")}>
+                        {isRTL ? "راحة الزوال" : "NOON BREAK"}
+                      </th>
+                    )}
+                  </React.Fragment>
                 ))}
               </tr>
             </thead>
@@ -178,11 +202,10 @@ const ScheduleTable = ({
                       </span>
                     </div>
                   </td>
-                  {timeSlots.map(slot => {
-                    const assignment = getAssignment(day.id, slot.id);
-                    return (
-                      <td key={slot.id} className={cn("relative h-full", isPrint ? "border border-emerald-950" : "p-1")}>
-                        {assignment ? <LessonCard assignment={assignment} /> : (
+                  {timeSlots.map(slot => (
+                    <React.Fragment key={slot.id}>
+                      <td className={cn("relative h-full", isPrint ? "border border-emerald-950" : "p-1")}>
+                        {getAssignment(day.id, slot.id) ? <LessonCard assignment={getAssignment(day.id, slot.id)} /> : (
                           !isPrint && (
                             <div className="h-full w-full rounded-xl border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50 transition-all" onClick={() => onAddClick(day.id, slot.id)}>
                               <Plus size={14} className="text-slate-200" />
@@ -190,8 +213,10 @@ const ScheduleTable = ({
                           )
                         )}
                       </td>
-                    );
-                  })}
+                      {slot.id === "2" && <td className="border border-emerald-950 bg-emerald-50/30"></td>}
+                      {slot.id === "4" && <td className="border border-emerald-950 bg-emerald-50/30"></td>}
+                    </React.Fragment>
+                  ))}
                 </tr>
               ))}
             </tbody>
@@ -227,28 +252,32 @@ const ScheduleTable = ({
           </thead>
           <tbody>
             {timeSlots.map(slot => (
-              <tr key={slot.id} className={isPrint ? "h-20" : "h-24"}>
-                <td className={cn(isPrint ? "border border-emerald-950 p-1 bg-emerald-50/10" : "p-2 border-e border-slate-100")}>
-                  <div className="flex flex-col items-center justify-center h-full">
-                    <span className={cn("font-black leading-none", isPrint ? "text-[12px]" : "text-[14px] text-slate-600")}>{slot.label}</span>
-                    {slot.time && <span className={cn("font-bold opacity-40 mt-1", isPrint ? "text-[8px]" : "text-[9px]")}>{slot.time}</span>}
-                  </div>
-                </td>
-                {days.map(day => {
-                  const assignment = getAssignment(day.id, slot.id);
-                  return (
-                    <td key={day.id} className={cn("relative h-full", isPrint ? "border border-emerald-950" : "p-1")}>
-                      {assignment ? <LessonCard assignment={assignment} /> : (
-                        !isPrint && (
-                          <div className="h-full w-full rounded-xl border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50 transition-all" onClick={() => onAddClick(day.id, slot.id)}>
-                            <Plus size={14} className="text-slate-200" />
-                          </div>
-                        )
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
+              <React.Fragment key={slot.id}>
+                <tr className={isPrint ? "h-20" : "h-24"}>
+                  <td className={cn(isPrint ? "border border-emerald-950 p-1 bg-emerald-50/10" : "p-2 border-e border-slate-100")}>
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <span className={cn("font-black leading-none", isPrint ? "text-[12px]" : "text-[14px] text-slate-600")}>{slot.label}</span>
+                      {slot.time && <span className={cn("font-bold opacity-40 mt-1", isPrint ? "text-[8px]" : "text-[9px]")}>{slot.time}</span>}
+                    </div>
+                  </td>
+                  {days.map(day => {
+                    const assignment = getAssignment(day.id, slot.id);
+                    return (
+                      <td key={day.id} className={cn("relative h-full", isPrint ? "border border-emerald-950" : "p-1")}>
+                        {assignment ? <LessonCard assignment={assignment} /> : (
+                          !isPrint && (
+                            <div className="h-full w-full rounded-xl border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50 transition-all" onClick={() => onAddClick(day.id, slot.id)}>
+                              <Plus size={14} className="text-slate-200" />
+                            </div>
+                          )
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+                {slot.id === "2" && <BreakRow title={isRTL ? "راحة" : "BREAK"} />}
+                {slot.id === "4" && <BreakRow title={isRTL ? "راحة الزوال" : "NOON BREAK"} />}
+              </React.Fragment>
             ))}
           </tbody>
         </table>
