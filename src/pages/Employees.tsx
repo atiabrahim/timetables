@@ -128,24 +128,24 @@ const Employees = () => {
   };
 
   const PrintableTable = () => (
-    <table className="w-full border-collapse border-2 border-slate-950 text-sm">
+    <table className="w-full border-collapse border-2 border-slate-950 text-xs">
       <thead>
         <tr className="bg-slate-100 border-b-2 border-slate-950">
-          <th className="p-3 border-e-2 border-slate-950 text-center font-black w-12">#</th>
-          <th className={cn("p-3 border-e-2 border-slate-950 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "المعلم" : "Teacher"}</th>
-          <th className="p-3 border-e-2 border-slate-950 text-center font-black w-32">{isRTL ? "الفئة" : "Category"}</th>
-          <th className={cn("p-3 border-e-2 border-slate-950 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "البريد الإلكتروني" : "Email"}</th>
-          <th className={cn("p-3 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "الهاتف" : "Phone"}</th>
+          <th className="p-1.5 border-e-2 border-slate-950 text-center font-black w-12">#</th>
+          <th className={cn("p-1.5 border-e-2 border-slate-950 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "المعلم" : "Teacher"}</th>
+          <th className="p-1.5 border-e-2 border-slate-950 text-center font-black w-32">{isRTL ? "الفئة" : "Category"}</th>
+          <th className={cn("p-1.5 border-e-2 border-slate-950 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "البريد الإلكتروني" : "Email"}</th>
+          <th className={cn("p-1.5 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "الهاتف" : "Phone"}</th>
         </tr>
       </thead>
       <tbody>
         {sortedAndFilteredEmployees.map((emp, idx) => (
           <tr key={emp.id} className="border-b border-slate-950">
-            <td className="p-3 border-e border-slate-950 text-center font-bold">{idx + 1}</td>
-            <td className="p-3 border-e border-slate-950 font-bold text-slate-900">{emp.lastName} {emp.firstName}</td>
-            <td className="p-3 border-e border-slate-950 text-center font-medium">{emp.category}</td>
-            <td className="p-3 border-e border-slate-950 text-slate-700">{emp.email || "---"}</td>
-            <td className="p-3 text-slate-700">{emp.phone || "---"}</td>
+            <td className="p-1.5 border-e border-slate-950 text-center font-bold">{idx + 1}</td>
+            <td className="p-1.5 border-e border-slate-950 font-bold text-slate-900">{emp.lastName} {emp.firstName}</td>
+            <td className="p-1.5 border-e border-slate-950 text-center font-medium">{emp.category}</td>
+            <td className="p-1.5 border-e border-slate-950 text-slate-700">{emp.email || "---"}</td>
+            <td className="p-1.5 text-slate-700">{emp.phone || "---"}</td>
           </tr>
         ))}
       </tbody>
