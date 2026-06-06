@@ -38,7 +38,8 @@ const PrintPreview = ({
   isOpen, onOpenChange, isRTL, orientation, setOrientation, printScale, setPrintScale, 
   viewMode, selectedId, employees, classes, subjects, days, timeSlots, getAssignment, summaryData, totalHours, isTransposed
 }: PrintPreviewProps) => {
-  const [doubleMode, setDoubleMode] = useState(true); // Default to 2 per sheet
+  // تم تغيير القيمة الافتراضية إلى false لمنع التكرار التلقائي
+  const [doubleMode, setDoubleMode] = useState(false); 
 
   const selectedEntity = viewMode === "teacher" 
     ? employees.find(e => e.id === selectedId) 
@@ -50,7 +51,7 @@ const PrintPreview = ({
 
   const title = viewMode === "teacher"
     ? (isRTL ? `للأستاذ : ${entityName}` : `for Teacher: ${entityName}`)
-    : (isRTL ? `لفرح : ${entityName}` : `for Branch: ${entityName}`);
+    : (isRTL ? `لفوج : ${entityName}` : `for Branch: ${entityName}`);
 
   const metadata = (
     <>
@@ -60,18 +61,18 @@ const PrintPreview = ({
       </div>
       <div className="flex items-center gap-2">
         <span className="opacity-60">{isRTL ? "مستوى التأهيل:" : "Qual. Level:"}</span>
-        <span>{viewMode === "class" ? (selectedEntity?.qualificationLevel || "3") : "---"}</span>
+        <span>{viewMode === "class" ? (selectedEntity?.qualificationLevel || "---") : "---"}</span>
       </div>
       <div className="flex items-center gap-2">
-        <span className="opacity-60">{isRTL ? "السداسي:" : "Semester:"}</span>
-        <span>26/06/2024 --- 25/02/2024</span>
+        <span className="opacity-60">{isRTL ? "السنة التكوينية:" : "Training Year:"}</span>
+        <span>2023 / 2024</span>
       </div>
     </>
   );
 
   const ScheduleContent = () => (
     <OfficialPrintWrapper
-      title={isRTL ? "الجدول الزمني" : "Weekly Schedule"}
+      title={isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Schedule"}
       subtitle={title}
       metadata={metadata}
       orientation={orientation}
