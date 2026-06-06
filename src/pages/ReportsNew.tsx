@@ -104,20 +104,24 @@ const ReportsNew = () => {
       selectedPeriods.includes(p) && 
       periodConfigs.find(c => c.day === dayIdx && c.period === p)?.isActive
     );
-    return activePeriods.map(p => (
-      <AttendanceSheet 
-        key={`${dailyDate}-${p}`}
-        date={date}
-        period={p}
-        assignedEmployees={getSheetData(date, p)}
-        t={t}
-        isRTL={isRTL}
-        currentLocale={currentLocale}
-        selectedDepartment={activeDept}
-        reportStyles={reportStyles}
-        supervisors={supervisors}
-      />
-    ));
+    return activePeriods.map(p => {
+      const assigned = getSheetData(date, p);
+      if (assigned.length === 0) return null; // تخطي الفترات الفارغة في التقرير اليومي
+      return (
+        <AttendanceSheet 
+          key={`${dailyDate}-${p}`}
+          date={date}
+          period={p}
+          assignedEmployees={assigned}
+          t={t}
+          isRTL={isRTL}
+          currentLocale={currentLocale}
+          selectedDepartment={activeDept}
+          reportStyles={reportStyles}
+          supervisors={supervisors}
+        />
+      );
+    }).filter(Boolean);
   };
 
   const renderMonthlyReport = () => {
@@ -132,20 +136,23 @@ const ReportsNew = () => {
       const dayIdx = getDay(day);
       periods.forEach((p) => {
         if (selectedPeriods.includes(p) && periodConfigs.find(c => c.day === dayIdx && c.period === p)?.isActive) {
-          sheets.push(
-            <AttendanceSheet 
-              key={`${format(day, 'yyyy-MM-dd')}-${p}`}
-              date={day}
-              period={p}
-              assignedEmployees={getSheetData(day, p)}
-              t={t}
-              isRTL={isRTL}
-              currentLocale={currentLocale}
-              selectedDepartment={activeDept}
-              reportStyles={reportStyles}
-              supervisors={supervisors}
-            />
-          );
+          const assigned = getSheetData(day, p);
+          if (assigned.length > 0) { // تخطي الفترات الفارغة في التقرير الشهري
+            sheets.push(
+              <AttendanceSheet 
+                key={`${format(day, 'yyyy-MM-dd')}-${p}`}
+                date={day}
+                period={p}
+                assignedEmployees={assigned}
+                t={t}
+                isRTL={isRTL}
+                currentLocale={currentLocale}
+                selectedDepartment={activeDept}
+                reportStyles={reportStyles}
+                supervisors={supervisors}
+              />
+            );
+          }
         }
       });
     });
