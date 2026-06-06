@@ -363,7 +363,7 @@ const Classes = () => {
       {/* Print Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[95vw] w-full max-h-[95vh] overflow-hidden rounded-[2.5rem] p-0 border-none bg-emerald-50/30 flex flex-col">
-          <div className="bg-white p-6 border-b border-emerald-100 flex items-center justify-between sticky top-0 z-10 shrink-0">
+          <div className="bg-white p-6 border-b border-emerald-100 flex items-center justify-between sticky top-0 z-10 shrink-0 print:hidden">
             <div className="flex items-center gap-3">
               <Printer className="text-emerald-600" />
               <h3 className="font-black text-emerald-900">{isRTL ? "معاينة طباعة قائمة الفروع" : "Branches List Print Preview"}</h3>
@@ -384,7 +384,7 @@ const Classes = () => {
               </OfficialPrintWrapper>
             </div>
           </div>
-          <DialogFooter className="bg-white p-6 border-t border-emerald-100 shrink-0">
+          <DialogFooter className="bg-white p-6 border-t border-emerald-100 shrink-0 print:hidden">
             <Button variant="outline" onClick={() => setIsPreviewOpen(false)} className="rounded-xl px-8 h-12 font-bold">{t.cancel}</Button>
             <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-12 h-12 font-black shadow-lg shadow-emerald-100 text-white">
               <Printer size={20} className="mr-2" /> {t.print}
