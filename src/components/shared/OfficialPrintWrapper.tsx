@@ -39,15 +39,15 @@ const OfficialPrintWrapper = ({
     <div 
       className={cn(
         "bg-white mx-auto page-break-container relative",
-        "px-[8mm] py-[8mm] print:px-[5mm] print:py-[5mm]",
+        "px-[8mm] py-[8mm] print:px-[4mm] print:py-[4mm]",
         orientation === "portrait" ? "w-[210mm]" : "w-[297mm]",
         "shadow-none border-none print:shadow-none print:border-none print:bg-white"
       )}
       dir={isRTL ? "rtl" : "ltr"}
     >
       {/* Header Section */}
-      <div className="flex justify-between items-start mb-4 print:mb-2">
-        <div className="w-16 h-16 print:w-12 print:h-12 flex items-center justify-center border border-black rounded-xl p-1 bg-white">
+      <div className="flex justify-between items-start mb-4 print:mb-1">
+        <div className="w-16 h-16 print:w-10 print:h-10 flex items-center justify-center border border-black rounded-xl p-1 bg-white">
           <div className="w-full h-full flex items-center justify-center text-black font-black text-[8px] text-center border border-dashed border-black/20">
             LOGO
           </div>
@@ -59,35 +59,35 @@ const OfficialPrintWrapper = ({
           {subtitle && <div className="text-black font-bold text-[10px] print:text-[9px] opacity-80">{subtitle}</div>}
         </div>
 
-        <div className="w-16 print:w-12"></div> 
+        <div className="w-16 print:w-10"></div> 
       </div>
 
       {/* Metadata Bar */}
       {metadata && (
-        <div className="border-y border-black py-1 mb-3 flex justify-between items-center text-[9px] font-black text-black print:mb-2 print:py-1">
+        <div className="border-y border-black py-1 mb-3 flex justify-between items-center text-[9px] font-black text-black print:mb-1.5 print:py-0.5">
           {metadata}
         </div>
       )}
 
       {/* Main Content Area */}
-      <div className="w-full overflow-hidden mb-4 print:mb-2 bg-white">
+      <div className="w-full overflow-hidden mb-4 print:mb-1.5 bg-white">
         {children}
       </div>
 
       {/* Signatures Section */}
       {showSignatures && (
-        <div className="grid grid-cols-3 gap-6 pt-2 border-t border-black print:pt-1.5 print:gap-3">
+        <div className="grid grid-cols-3 gap-6 pt-2 border-t border-black print:pt-1 print:gap-3">
           <div className="text-center">
             <p className="font-black text-black text-[9px] mb-1">{finalRightTitle}</p>
-            <div className="h-12 print:h-10 border border-dashed border-black/30 rounded-xl bg-white"></div>
+            <div className="h-12 print:h-8 border border-dashed border-black/30 rounded-xl bg-white"></div>
           </div>
           <div className="text-center">
             <p className="font-black text-black text-[9px] mb-1">{finalCenterTitle}</p>
-            <div className="h-12 print:h-10 border border-dashed border-black/30 rounded-xl bg-white"></div>
+            <div className="h-12 print:h-8 border border-dashed border-black/30 rounded-xl bg-white"></div>
           </div>
           <div className="text-center">
             <p className="font-black text-black text-[9px] mb-1">{finalLeftTitle}</p>
-            <div className="h-12 print:h-10 border border-dashed border-black/30 rounded-xl bg-white"></div>
+            <div className="h-12 print:h-8 border border-dashed border-black/30 rounded-xl bg-white"></div>
           </div>
         </div>
       )}

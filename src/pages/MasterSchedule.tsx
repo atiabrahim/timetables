@@ -57,7 +57,9 @@ const MasterSchedule = () => {
   };
 
   const MasterTable = ({ isPrint = false }: { isPrint?: boolean }) => {
-    const classColWidth = isPrint ? "w-[100px]" : "w-[140px]";
+    // توزيع العرض بنسب مئوية دقيقة لمنع التجاوز الأفقي نهائياً عند الطباعة
+    const classColWidth = isPrint ? "15%" : "140px";
+    const periodColWidth = isPrint ? `${85 / visiblePeriods.length}%` : "auto";
 
     return (
       <div className={cn(
@@ -69,21 +71,23 @@ const MasterSchedule = () => {
           isPrint ? "border-2 border-black" : ""
         )}>
           <colgroup>
-            <col className={classColWidth} />
-            {visiblePeriods.map(p => <col key={p} className="w-auto" />)}
+            <col style={{ width: classColWidth }} />
+            {visiblePeriods.map(p => (
+              <col key={p} style={{ width: periodColWidth }} />
+            ))}
           </colgroup>
           <thead>
-            <tr className={cn(isPrint ? "bg-slate-100" : "bg-emerald-950 text-white")}>
+            <tr className={cn(isPrint ? "bg-slate-100 h-8" : "bg-emerald-950 text-white")}>
               <th className={cn(
-                "p-3 border sticky left-0 z-20 text-center",
-                isPrint ? "text-[10px] font-black border-black text-black bg-slate-100" : "text-[12px] uppercase tracking-tighter font-black border-white/10 bg-emerald-950"
+                "p-1 border sticky left-0 z-20 text-center",
+                isPrint ? "text-[9px] font-black border-black text-black bg-slate-100" : "text-[12px] uppercase tracking-tighter font-black border-white/10 bg-emerald-950"
               )}>
                 {isRTL ? "الفوج" : "Class"}
               </th>
               {visiblePeriods.map(p => (
                 <th key={p} className={cn(
-                  "p-3 border text-center font-black",
-                  isPrint ? "text-[10px] border-black text-black" : "text-[12px] border-white/10"
+                  "p-1 border text-center font-black",
+                  isPrint ? "text-[9px] border-black text-black" : "text-[12px] border-white/10"
                 )}>
                   {isRTL ? `ح${p}` : `P${p}`}
                 </th>
@@ -93,14 +97,15 @@ const MasterSchedule = () => {
           <tbody>
             {visibleClasses.map((cls, idx) => (
               <tr key={cls.id} className={cn(
-                "group transition-colors h-14",
+                "group transition-colors",
+                isPrint ? "h-8" : "h-14",
                 idx % 2 === 0 ? "bg-white" : "bg-emerald-50/10",
                 !isPrint && "hover:bg-emerald-100/30"
               )}>
                 <td className={cn(
-                  "p-2 font-black border sticky left-0 z-10 transition-colors shadow-sm whitespace-normal break-words text-center",
+                  "p-1 font-black border sticky left-0 z-10 transition-colors shadow-sm whitespace-normal break-words text-center",
                   idx % 2 === 0 ? "bg-white" : "bg-[#fcfdfd]",
-                  isPrint ? "text-[10px] border-black text-black" : "text-[12px] text-emerald-950 border-emerald-50"
+                  isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-[12px] text-emerald-950 border-emerald-50"
                 )}>
                   {cls.name}
                 </td>
@@ -111,21 +116,21 @@ const MasterSchedule = () => {
 
                   return (
                     <td key={p} className={cn(
-                      "p-1 text-center border",
+                      "p-0.5 text-center border",
                       isPrint ? "border-black" : "border-emerald-50"
                     )}>
                       {lesson ? (
                         <div className={cn(
                           "flex flex-col gap-0.5 overflow-hidden leading-tight",
-                          isPrint ? "text-[9px] text-black" : "text-[11px]"
+                          isPrint ? "text-[7.5px] text-black" : "text-[11px]"
                         )}>
-                          <span className={cn("font-black", isPrint ? "" : "text-emerald-700")}>{subject?.name}</span>
-                          <span className={cn("font-bold opacity-80", isPrint ? "text-[8px]" : "text-slate-500")}>
+                          <span className={cn("font-black truncate", isPrint ? "" : "text-emerald-700")}>{subject?.name}</span>
+                          <span className={cn("font-bold opacity-80 truncate", isPrint ? "text-[7px]" : "text-slate-500")}>
                             {teacher ? `${teacher.lastName}` : "---"}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-slate-200 opacity-20 text-[9px]">---</span>
+                        <span className="text-slate-200 opacity-20 text-[8px]">---</span>
                       )}
                     </td>
                   );
