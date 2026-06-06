@@ -41,14 +41,14 @@
    نظام الطباعة الاحترافي - الحل النهائي للسواد والتظليل
    ----------------------------------------------------------- */
 @media print {
-  /* 1. إخفاء كافة عناصر الواجهة الرقمية */
+  /* إخفاء عناصر الواجهة */
   header, aside, nav, button, input, select, footer, 
   [role="tablist"], .print-hidden, .print\:hidden,
   .lucide, svg:not(.keep-print) {
     display: none !important;
   }
 
-  /* 2. تنظيف شامل لكافة الألوان والظلال */
+  /* فرض البياض المطلق */
   html, body {
     background-color: #ffffff !important;
     background: #ffffff !important;
@@ -59,27 +59,27 @@
     print-color-adjust: exact !important;
   }
 
-  /* إجبار كافة العناصر على التخلي عن خلفياتها الملونة */
+  /* إزالة الظلال والضبابية */
   * {
     box-shadow: none !important;
     text-shadow: none !important;
     filter: none !important;
     backdrop-filter: none !important;
+    background-color: transparent !important;
   }
 
-  /* 3. قتل طبقات الـ Overlay (الغشاء الأسود) */
-  /* نستهدف كافة الطبقات التي تنشئها مكتبة Radix/Shadcn */
-  div[data-state="open"].fixed.inset-0,
+  /* قتل طبقة الـ Overlay الداكنة تماماً */
+  [data-radix-portal] > div:first-child,
   div[class*="bg-black/"],
   div[class*="bg-zinc-"],
   div[class*="backdrop-blur"],
-  [data-radix-portal] > div:first-child {
+  .fixed.inset-0.z-50 {
     display: none !important;
     opacity: 0 !important;
     visibility: hidden !important;
   }
 
-  /* 4. تحرير محتوى الطباعة */
+  /* تحرير محتوى النافذة المنبثقة للطباعة */
   [role="dialog"] {
     position: absolute !important;
     top: 0 !important;
@@ -87,22 +87,19 @@
     width: 100% !important;
     height: auto !important;
     background-color: #ffffff !important;
-    background: #ffffff !important;
     border: none !important;
     display: block !important;
     padding: 0 !important;
     margin: 0 !important;
   }
 
-  /* 5. إخفاء المحتوى الرئيسي لترك المساحة للمعاينة فقط */
-  #root {
+  /* إخفاء التطبيق الأصلي لتجنب التشويش */
+  body:has([role="dialog"]) #root {
     display: none !important;
   }
 
-  /* 6. منع قص الصفحات */
   .page-break-container {
     page-break-inside: avoid !important;
-    break-inside: avoid !important;
     background: white !important;
   }
 

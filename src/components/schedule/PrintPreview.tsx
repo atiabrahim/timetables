@@ -77,9 +77,19 @@ const PrintPreview = ({
       orientation={orientation}
     >
       <ScheduleTable 
-        isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={day.id, slot.id} 
-        onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
-        classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={totalHours}
+        isRTL={isRTL} 
+        days={days} 
+        timeSlots={timeSlots} 
+        getAssignment={getAssignment} 
+        onAddClick={() => {}} 
+        onDeleteClick={() => {}} 
+        subjects={subjects} 
+        employees={employees} 
+        classes={classes} 
+        viewMode={viewMode} 
+        isPrint={true} 
+        summaryData={summaryData} 
+        totalHours={totalHours}
         isTransposed={isTransposed}
       />
     </OfficialPrintWrapper>
