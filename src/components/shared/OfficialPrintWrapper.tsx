@@ -7,86 +7,94 @@ import { useApp } from "../../context/AppContext";
 interface OfficialPrintWrapperProps {
   title: string;
   subtitle?: React.ReactNode;
+  metadata?: React.ReactNode;
   orientation?: "portrait" | "landscape";
   children: React.ReactNode;
   showSignatures?: boolean;
   leftSignatureTitle?: string;
+  centerSignatureTitle?: string;
   rightSignatureTitle?: string;
+  showSystemFooter?: boolean;
 }
 
 const OfficialPrintWrapper = ({
   title,
   subtitle,
+  metadata,
   orientation = "portrait",
   children,
   showSignatures = true,
   leftSignatureTitle,
-  rightSignatureTitle
+  centerSignatureTitle,
+  rightSignatureTitle,
+  showSystemFooter = true
 }: OfficialPrintWrapperProps) => {
-  const { t, isRTL, institution, departments } = useApp();
+  const { t, isRTL, institution } = useApp();
 
-  const finalLeftTitle = leftSignatureTitle || institution.pedagogicalManagerTitle || (isRTL ? "رئيس مصلحة التكوين" : "Head of Training");
-  const finalRightTitle = rightSignatureTitle || institution.generalManagerTitle || (isRTL ? "ختم وتوقيع المدير" : "Director Signature");
-
-  const firstDeptName = departments[0] 
-    ? (typeof departments[0] === 'string' ? departments[0] : departments[0].name)
-    : (isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate");
+  const finalLeftTitle = leftSignatureTitle || (isRTL ? "المدير" : "Director");
+  const finalCenterTitle = centerSignatureTitle || institution.pedagogicalManagerTitle || (isRTL ? "المسؤول البيداغوجي" : "Pedagogical Manager");
+  const finalRightTitle = rightSignatureTitle || (isRTL ? "أستاذ الفرع" : "Branch Teacher");
 
   return (
     <div 
       className={cn(
-        "bg-white mx-auto page-break-container",
-        // العرض الثابت للمعاينة فقط، في الطباعة سيتم تجاوزه بواسطة CSS
+        "bg-white mx-auto page-break-container relative",
         orientation === "portrait" ? "md:w-[210mm]" : "md:w-[297mm]",
-        "print:w-full print:p-0"
+        "print:w-full print:p-0 print:mb-0"
       )}
       dir={isRTL ? "rtl" : "ltr"}
-      style={{ fontFamily: "'Cairo', sans-serif" }}
     >
-      {/* الترويسة الرسمية */}
-      <div className="flex flex-col items-center text-center mb-8 space-y-1">
-        <p className="font-black text-black text-sm tracking-widest uppercase leading-tight">{t.republic}</p>
-        <div className="w-24 h-px bg-black/20 my-1"></div>
-        <p className="font-bold text-black text-xs">{t.centerName}</p>
-        <p className="font-bold text-black text-xs">{institution.name || t.centerLocation}</p>
-      </div>
-
-      {/* بيانات المصلحة والسنة الدراسية */}
-      <div className="grid grid-cols-2 border-y-2 border-black py-2 mb-8 text-xs font-black">
-        <div className="flex items-center gap-2">
-          <span className="text-black/60">{isRTL ? "المصلحة:" : "Department:"}</span>
-          <span className="text-black">{firstDeptName}</span>
+      {/* Header with Logo */}
+      <div className="flex justify-between items-start mb-4 print:mb-2">
+        <div className="w-24 h-24 flex items-center justify-center border-2 border-emerald-900/10 rounded-2xl p-2">
+          {/* Placeholder for Logo - In a real app, this would be institution.logo */}
+          <div className="w-full h-full bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-800 font-black text-[10px] text-center uppercase">
+            Logo
+          </div>
         </div>
-        <div className={cn("flex items-center gap-2", isRTL ? "justify-end" : "justify-start")}>
-          <span className="text-black/60">{isRTL ? "السنة التكوينية:" : "Training Year:"}</span>
-          <span className="text-black">{institution.academicYear || "2023/2024"}</span>
+
+        <div className="flex-1 text-center space-y-1">
+          <h2 className="font-black text-emerald-950 text-xl md:text-2xl">{institution.name}</h2>
+          <h3 className="font-bold text-emerald-700 text-lg">{title}</h3>
+          {subtitle && <div className="text-emerald-600 font-bold text-sm">{subtitle}</div>}
         </div>
+
+        <div className="w-24"></div> {/* Spacer for symmetry */}
       </div>
 
-      {/* العنوان الرئيسي */}
-      <div className="text-center mb-8">
-        <h1 className="font-black text-black text-2xl mb-4 uppercase tracking-tight">
-          {title}
-        </h1>
-        {subtitle}
-      </div>
+      {/* Metadata Bar */}
+      {metadata && (
+        <div className="border-y-2 border-emerald-900/20 py-2 mb-4 flex justify-between items-center text-xs font-black text-emerald-900 print:mb-2">
+          {metadata}
+        </div>
+      )}
 
-      {/* محتوى المستند */}
-      <div className="flex-1 w-full overflow-hidden mb-12">
+      {/* Main Content */}
+      <div className="w-full overflow-hidden mb-6">
         {children}
       </div>
 
-      {/* التواقيع الختامية */}
+      {/* Signatures Footer */}
       {showSignatures && (
-        <div className="mt-10 grid grid-cols-2 gap-20 pt-8 border-t border-black/10">
+        <div className="grid grid-cols-3 gap-8 pt-4 border-t-2 border-emerald-900/10">
           <div className="text-center">
-            <p className="font-black text-black text-sm uppercase tracking-wider mb-2">{finalLeftTitle}</p>
-            <div className="h-28 border border-dashed border-black/5 mt-2 rounded-2xl print:border-none"></div>
+            <p className="font-black text-emerald-950 text-xs mb-1">{finalRightTitle}</p>
+            <div className="h-16 border border-dashed border-emerald-200 rounded-xl mt-1"></div>
           </div>
           <div className="text-center">
-            <p className="font-black text-black text-sm uppercase tracking-wider mb-2">{finalRightTitle}</p>
-            <div className="h-28 border border-dashed border-black/5 mt-2 rounded-2xl print:border-none"></div>
+            <p className="font-black text-emerald-950 text-xs mb-1">{finalCenterTitle}</p>
+            <div className="h-16 border border-dashed border-emerald-200 rounded-xl mt-1"></div>
           </div>
+          <div className="text-center">
+            <p className="font-black text-emerald-950 text-xs mb-1">{finalLeftTitle}</p>
+            <div className="h-16 border border-dashed border-emerald-200 rounded-xl mt-1"></div>
+          </div>
+        </div>
+      )}
+
+      {showSystemFooter && (
+        <div className="mt-4 text-center text-[8px] font-bold text-slate-300 uppercase tracking-widest border-t border-slate-50 pt-2 print:hidden">
+          Generated by EduSchedule Pro
         </div>
       )}
     </div>

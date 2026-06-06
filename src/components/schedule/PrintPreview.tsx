@@ -1,13 +1,15 @@
 "use client";
 
-import React from "react";
-import { FileText, RotateCw, Printer, X } from "lucide-react";
+import React, { useState } from "react";
+import { FileText, RotateCw, Printer, X, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { 
   Dialog, 
   DialogContent 
 } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import ScheduleTable from "./ScheduleTable";
 import OfficialPrintWrapper from "../shared/OfficialPrintWrapper";
 
@@ -36,7 +38,8 @@ const PrintPreview = ({
   isOpen, onOpenChange, isRTL, orientation, setOrientation, printScale, setPrintScale, 
   viewMode, selectedId, employees, classes, subjects, days, timeSlots, getAssignment, summaryData, totalHours, isTransposed
 }: PrintPreviewProps) => {
-  
+  const [doubleMode, setDoubleMode] = useState(true); // Default to 2 per sheet
+
   const selectedEntity = viewMode === "teacher" 
     ? employees.find(e => e.id === selectedId) 
     : classes.find(c => c.id === selectedId);
@@ -46,13 +49,40 @@ const PrintPreview = ({
     : (selectedEntity ? selectedEntity.name : "---");
 
   const title = viewMode === "teacher"
-    ? (isRTL ? `جدول توقيت الأستاذ: ${entityName}` : `Teacher Timetable: ${entityName}`)
-    : (isRTL ? `جدول توقيت الفوج: ${entityName}` : `Class Timetable: ${entityName}`);
+    ? (isRTL ? `للأستاذ : ${entityName}` : `for Teacher: ${entityName}`)
+    : (isRTL ? `لفرح : ${entityName}` : `for Branch: ${entityName}`);
 
-  const subtitle = (
-    <div className="flex items-center justify-center gap-2 text-emerald-800 font-bold">
-      <span>{isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Time Schedule"}</span>
-    </div>
+  const metadata = (
+    <>
+      <div className="flex items-center gap-2">
+        <span className="opacity-60">{isRTL ? "رمز الفرع:" : "Branch Code:"}</span>
+        <span>{viewMode === "class" ? (selectedEntity?.code || "---") : "---"}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="opacity-60">{isRTL ? "مستوى التأهيل:" : "Qual. Level:"}</span>
+        <span>{viewMode === "class" ? (selectedEntity?.qualificationLevel || "3") : "---"}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="opacity-60">{isRTL ? "السداسي:" : "Semester:"}</span>
+        <span>26/06/2024 --- 25/02/2024</span>
+      </div>
+    </>
+  );
+
+  const ScheduleContent = () => (
+    <OfficialPrintWrapper
+      title={isRTL ? "الجدول الزمني" : "Weekly Schedule"}
+      subtitle={title}
+      metadata={metadata}
+      orientation={orientation}
+    >
+      <ScheduleTable 
+        isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
+        onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
+        classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={totalHours}
+        isTransposed={isTransposed}
+      />
+    </OfficialPrintWrapper>
   );
 
   return (
@@ -63,40 +93,48 @@ const PrintPreview = ({
             <FileText size={20} />
             <h3 className="font-bold">{isRTL ? "معاينة الطباعة الرسمية" : "Official Print Preview"}</h3>
           </div>
+          
           <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/10">
+              <Checkbox id="double-mode" checked={doubleMode} onCheckedChange={(v: boolean) => setDoubleMode(v)} className="border-white/50" />
+              <Label htmlFor="double-mode" className="text-white text-xs font-black cursor-pointer flex items-center gap-2">
+                <Copy size={14} className="text-emerald-400" />
+                {isRTL ? "نسختان في الصفحة" : "2 per sheet"}
+              </Label>
+            </div>
+
             <div className="flex items-center gap-3 bg-white/5 p-1.5 rounded-xl">
               <Slider value={[printScale]} onValueChange={(v) => setPrintScale(v[0])} min={30} max={150} className="w-32" />
               <span className="text-white text-xs font-bold">{printScale}%</span>
             </div>
+            
             <Button variant="outline" onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")} className="text-white border-white/20 bg-transparent rounded-xl">
               <RotateCw size={16} className="mr-2" />
               {isRTL ? (orientation === "portrait" ? "عرضي" : "طولي") : "Orientation"}
             </Button>
+            
             <Button onClick={() => window.print()} className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold px-8">
               <Printer size={16} className="mr-2" />
               {isRTL ? "طباعة" : "Print"}
             </Button>
+            
             <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-white/50"><X size={20} /></Button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto p-8 flex justify-center bg-zinc-950/50 print:p-0 print:bg-white print:block">
+        <div className="flex-1 overflow-auto p-8 flex flex-col items-center bg-zinc-950/50 print:p-0 print:bg-white print:block">
           <div 
-            className="transition-all duration-300 origin-top print:transform-none"
+            className="transition-all duration-300 origin-top print:transform-none flex flex-col gap-12 print:gap-0"
             style={{ transform: `scale(${printScale / 100})` }}
           >
-            <OfficialPrintWrapper
-              title={title}
-              subtitle={subtitle}
-              orientation={orientation}
-            >
-              <ScheduleTable 
-                isRTL={isRTL} days={days} timeSlots={timeSlots} getAssignment={getAssignment} 
-                onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} 
-                classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={totalHours}
-                isTransposed={isTransposed}
-              />
-            </OfficialPrintWrapper>
+            <div className="print:mb-12 print:page-break-after-auto">
+              <ScheduleContent />
+            </div>
+            {doubleMode && (
+              <div className="print:mt-12 print:page-break-before-auto">
+                <ScheduleContent />
+              </div>
+            )}
           </div>
         </div>
 
@@ -104,11 +142,15 @@ const PrintPreview = ({
           {`
             @page {
               size: A4 ${orientation};
-              margin: 0;
+              margin: 10mm;
             }
             @media print {
               body:has(div[role="dialog"]) #root {
                 display: none !important;
+              }
+              .page-break-container {
+                page-break-after: ${doubleMode ? 'avoid' : 'always'} !important;
+                margin-bottom: ${doubleMode ? '20mm' : '0'} !important;
               }
             }
           `}
