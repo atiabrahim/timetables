@@ -5,44 +5,25 @@
 @layer base {
   :root {
     --radius: 0.75rem;
-    
-    /* Emerald Prestige palette - Light Mode */
     --background: oklch(0.985 0.012 95);
     --foreground: oklch(0.22 0.04 160);
-    
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.22 0.04 160);
-    
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.22 0.04 160);
-    
     --primary: oklch(0.38 0.09 160);
     --primary-foreground: oklch(0.97 0.02 95);
-    
     --secondary: oklch(0.95 0.025 95);
     --secondary-foreground: oklch(0.32 0.07 160);
-    
     --muted: oklch(0.95 0.02 150);
     --muted-foreground: oklch(0.5 0.03 160);
-    
     --accent: oklch(0.78 0.13 85);
     --accent-foreground: oklch(0.22 0.04 160);
-    
     --destructive: oklch(0.577 0.245 27.325);
     --destructive-foreground: oklch(0.984 0.003 247.858);
-    
     --border: oklch(0.9 0.02 150);
     --input: oklch(0.92 0.02 150);
     --ring: oklch(0.5 0.09 160);
-
-    --sidebar-background: oklch(1 0 0);
-    --sidebar-foreground: oklch(0.22 0.04 160);
-    --sidebar-primary: oklch(0.38 0.09 160);
-    --sidebar-primary-foreground: oklch(0.97 0.02 95);
-    --sidebar-accent: oklch(0.95 0.025 95);
-    --sidebar-accent-foreground: oklch(0.32 0.07 160);
-    --sidebar-border: oklch(0.9 0.02 150);
-    --sidebar-ring: oklch(0.5 0.09 160);
   }
 }
 
@@ -50,69 +31,84 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
-    font-family: 'Cairo', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-family: 'Cairo', sans-serif;
   }
 }
 
-/* Global Print Styles */
+/* -----------------------------------------------------------
+   PRINT OPTIMIZATION - CLEAN & CENTERED
+   ----------------------------------------------------------- */
 @media print {
-  /* Hide UI elements */
-  header, aside, button, input, select, nav, .print-hidden, .print\:hidden, [role="tablist"], [role="presentation"], .lucide {
+  /* 1. إخفاء كافة عناصر واجهة المستخدم */
+  header, aside, button, input, select, nav, 
+  [role="tablist"], .print-hidden, .print\:hidden {
     display: none !important;
   }
 
-  /* Reset layout for print */
+  /* 2. تصفير الجسم والصفحة لضمان اللون الأبيض الصافي */
   html, body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
-    height: 100vh !important;
     width: 100% !important;
-    background: white !important;
-    background-color: white !important;
-    color: black !important;
+    height: 100% !important;
     overflow: visible !important;
-  }
-
-  /* Force white background for all elements */
-  * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
   }
 
-  /* Ensure the centering container is also white */
+  /* 3. إزالة كافة الظلال والفلاتر من جميع العناصر */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* 4. معالجة النوافذ المنبثقة (Dialog/Overlay) - السبب الرئيسي للتظليل */
+  [role="dialog"], 
+  div[data-state="open"], 
+  .fixed.inset-0 {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    position: static !important;
+    display: block !important;
+    box-shadow: none !important;
+  }
+
+  /* إخفاء خلفية النافذة الداكنة تماماً */
+  div[class*="bg-black/80"], 
+  div[class*="backdrop-blur"],
+  .fixed.inset-0.z-50.bg-background\/80 {
+    display: none !important;
+  }
+
+  /* 5. التوسيط العمودي والأفقي */
   body {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
   }
 
-  /* Target the dialog specifically to remove its dark background */
-  [role="dialog"], [data-state="open"] {
-    background-color: white !important;
-    background: white !important;
-  }
-
-  body:has(div[role="dialog"]) #root {
+  #root:has(div[role="dialog"]) {
     display: none !important;
   }
 
-  #root, main, div[role="dialog"] {
-    display: contents !important;
-  }
-
-  .page-break-container, .print-content-master {
+  /* 6. ضبط مكون الطباعة الرسمي */
+  .page-break-container, 
+  .print-content-master {
+    background: #ffffff !important;
     margin: auto !important;
-    background-color: white !important;
+    border: none !important;
     page-break-inside: avoid !important;
   }
 
   @page {
     margin: 0 !important;
+    size: auto;
   }
 }
