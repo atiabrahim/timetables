@@ -59,9 +59,17 @@
     print-color-adjust: exact !important;
   }
 
-  /* إخفاء التطبيق الأصلي تماماً عند الطباعة لترك المجال لمحتوى المعاينة */
-  #root {
-    display: none !important;
+  /* تحويل حاويات التصميم لتتمدد تلقائياً وتمنع الفراغات أو المشاكل الهيكلية */
+  #root, .flex, .flex-col, .flex-1, main, .max-w-7xl {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
   }
 
   /* 3. معالجة الـ Portal والـ Dialog لضمان الظهور الكامل */
