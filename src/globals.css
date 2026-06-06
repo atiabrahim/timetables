@@ -44,59 +44,63 @@
   /* 1. إخفاء العناصر غير المطلوبة في الطباعة تماماً */
   header, 
   aside, 
+  nav,
   .print\:hidden,
   button,
   input,
   select,
-  div[role="dialog"],
-  [data-radix-portal],
-  .fixed {
+  .fixed,
+  [role="dialog"] {
     display: none !important;
   }
   
-  /* 2. تهيئة العناصر الأبوية للطباعة متعددة الصفحات بشكل انسيابي */
+  /* 2. تهيئة العناصر الأبوية للطباعة */
   html, 
-  body, 
-  #root, 
-  #root > div, 
-  main, 
-  main > div, 
-  .max-w-7xl, 
-  .max-w-7xl > div {
+  body {
     height: auto !important;
-    min-height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
     background: #ffffff !important;
-    border: none !important;
-    box-shadow: none !important;
   }
-  
-  /* 3. تهيئة حاوية الطباعة لتتدفق بشكل طبيعي عبر الصفحات المتعددة دون تداخل */
-  .print-content-master {
-    display: block !important;
-    position: relative !important;
-    width: 100% !important;
-    height: auto !important;
+
+  #root {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  main {
     margin: 0 !important;
     padding: 0 !important;
-    background: #ffffff !important;
+    display: block !important;
+  }
+  
+  /* 3. إظهار حاوية الطباعة فقط */
+  .print-content-master {
+    display: block !important;
+    width: 100% !important;
     visibility: visible !important;
   }
 
-  .print-content-master * {
-    visibility: visible !important;
+  /* 4. إزالة رابط الموقع والتاريخ (ترويسة المتصفح) */
+  @page {
+    margin: 0 !important;
   }
-  
-  /* 4. منع قص الجداول أو تداخل الصفحات وضمان بدء كل ورقة حضور في صفحة جديدة */
+
+  /* 5. منع تداخل الجداول بين الصفحات */
   .page-break-container {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    margin-bottom: 0 !important;
     page-break-after: always !important;
     break-after: page !important;
-    width: 100% !important;
-    max-width: 100% !important;
+  }
+
+  table {
+    page-break-inside: auto;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
   }
 }
