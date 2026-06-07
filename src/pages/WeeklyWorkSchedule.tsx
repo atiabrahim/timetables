@@ -96,10 +96,10 @@ const WeeklyWorkSchedule = () => {
           ))}
         </colgroup>
         <TableHeader>
-          <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black" : "bg-emerald-50/50 hover:bg-emerald-50/50")}>
+          <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-7" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-9")}>
             <TableHead className={cn(
               "font-black text-emerald-900 border text-center sticky left-0 z-20 bg-emerald-50/50",
-              isPrint ? "text-[10px] p-2 border-black text-black" : "text-sm p-4 border-emerald-100"
+              isPrint ? "text-[10px] p-1 border-black text-black" : "text-sm p-2 border-emerald-100"
             )} rowSpan={2}>
               {isRTL ? "المعلم" : "Teacher"}
             </TableHead>
@@ -108,7 +108,7 @@ const WeeklyWorkSchedule = () => {
                 key={day.id} 
                 className={cn(
                   "text-center font-black border",
-                  isPrint ? "text-[10px] p-1 border-black bg-slate-50 text-black" : "text-[12px] p-3 bg-emerald-50/30 border-emerald-100 text-emerald-700"
+                  isPrint ? "text-[10px] p-0.5 border-black bg-slate-50 text-black" : "text-[12px] p-1.5 bg-emerald-50/30 border-emerald-100 text-emerald-700"
                 )} 
                 colSpan={PERIODS.length}
               >
@@ -116,11 +116,11 @@ const WeeklyWorkSchedule = () => {
               </TableHead>
             ))}
           </TableRow>
-          <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black" : "bg-emerald-50/20 hover:bg-emerald-50/20")}>
+          <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-6" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-8")}>
             {DAYS.map(day => PERIODS.map(p => (
               <TableHead key={`${day.id}-${p}`} className={cn(
                 "text-center font-bold border",
-                isPrint ? "text-[9px] p-1 border-black text-black" : "text-[10px] p-2 border-emerald-100 text-slate-400"
+                isPrint ? "text-[9px] p-0.5 border-black text-black" : "text-[10px] p-1 border-emerald-100 text-slate-400"
               )}>
                 {p === "Morning" ? (isRTL ? "ص" : "M") : p === "Afternoon" ? (isRTL ? "م" : "A") : (isRTL ? "ل" : "E")}
               </TableHead>
@@ -130,10 +130,10 @@ const WeeklyWorkSchedule = () => {
 
         <TableBody>
           {filteredEmployees.map(emp => (
-            <TableRow key={emp.id} className={cn("group transition-colors h-14", isPrint ? "border-b border-black" : "hover:bg-emerald-50/30")}>
+            <TableRow key={emp.id} className={cn("group transition-colors", isPrint ? "h-7 border-b border-black" : "h-9 hover:bg-emerald-50/30")}>
               <TableCell className={cn(
                 "font-bold border bg-white truncate sticky left-0 z-10 shadow-sm",
-                isPrint ? "text-[10px] p-2 border-black text-black" : "text-[13px] p-4 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30"
+                isPrint ? "text-[10px] p-1.5 border-black text-black" : "text-[13px] p-2 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30"
               )}>
                 {emp.lastName} {emp.firstName}
               </TableCell>
@@ -150,7 +150,7 @@ const WeeklyWorkSchedule = () => {
                       "text-center border p-0 transition-all relative",
                       !isPrint && isAdmin && "cursor-pointer",
                       isActive ? (isPrint ? "bg-black text-white" : "bg-emerald-600 text-white shadow-inner") : (isPrint ? "bg-white" : "hover:bg-emerald-50/50"),
-                      isPrint ? "h-6 border-black" : "h-14 border-emerald-100"
+                      isPrint ? "h-7 border-black" : "h-9 border-emerald-100"
                     )}
                   >
                     {isActive && (
