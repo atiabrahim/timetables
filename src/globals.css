@@ -50,7 +50,7 @@
   input,
   select,
   .fixed,
-  [role="dialog"] {
+  .no-print {
     display: none !important;
   }
   
@@ -62,24 +62,50 @@
     padding: 0 !important;
     overflow: visible !important;
     background: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   #root {
     padding: 0 !important;
     margin: 0 !important;
+    display: block !important;
   }
 
   main {
     margin: 0 !important;
     padding: 0 !important;
     display: block !important;
+    overflow: visible !important;
   }
   
-  /* 3. إظهار حاوية الطباعة فقط */
+  /* 3. إظهار محتوى الطباعة */
   .print-content-master {
     display: block !important;
     width: 100% !important;
     visibility: visible !important;
+    position: relative !important;
+    z-index: 9999 !important;
+  }
+
+  /* السماح بطباعة الحوارات إذا كانت هي مصدر المعاينة */
+  [role="dialog"] {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    display: block !important;
+    background: white !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  /* إخفاء خلفية الحوار الداكنة عند الطباعة */
+  [data-state="open"] > div:first-child {
+    display: none !important;
   }
 
   /* 4. إزالة رابط الموقع والتاريخ (ترويسة المتصفح) */
@@ -89,9 +115,11 @@
 
   /* 5. منع تداخل الجداول بين الصفحات ومنع الصفحة البيضاء الأخيرة */
   .page-break-container {
+    display: block !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     margin-bottom: 0 !important;
+    position: relative !important;
   }
 
   /* يضيف فاصلاً فقط إذا لم يكن هذا هو العنصر الأخير */
@@ -102,10 +130,16 @@
 
   table {
     page-break-inside: auto;
+    width: 100% !important;
   }
 
   tr {
     page-break-inside: avoid;
     page-break-after: auto;
+  }
+
+  /* تحسين وضوح النصوص السوداء في الطباعة */
+  .text-black, .text-slate-900, .text-emerald-950 {
+    color: #000000 !important;
   }
 }
