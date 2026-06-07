@@ -42,17 +42,17 @@ const OfficialPrintWrapper = ({
   return (
     <div 
       className={cn(
-        "bg-white relative flex flex-col justify-between print:m-0 print:w-full print:shadow-none print:border-none",
+        "bg-white relative flex flex-col justify-between print:shadow-none print:border-none",
         !disablePageBreak && "page-break-container",
         doubleMode ? (
           orientation === "portrait" 
             ? "print:h-[148mm] print:py-[5mm] print:px-[8mm] border-b border-black/10" 
             : "print:h-[105mm] print:py-[3mm] print:px-[8mm] border-b border-black/10"
         ) : (
-          "px-[12mm] py-[12mm] print:px-[10mm] print:py-[10mm] print:min-h-screen print:h-auto"
+          "px-[12mm] py-[12mm] print:px-[5mm] print:py-[5mm] print:min-h-screen print:h-auto"
         ),
         // العرض للمعاينة فقط (الشاشة)
-        orientation === "portrait" ? "w-[210mm] mx-auto" : "w-[297mm] mx-auto",
+        orientation === "portrait" ? "w-[210mm] mx-auto print:w-full print:mx-0 print:max-w-none" : "w-[297mm] mx-auto print:w-full print:mx-0 print:max-w-none",
         "print:overflow-visible overflow-hidden"
       )}
       dir={isRTL ? "rtl" : "ltr"}

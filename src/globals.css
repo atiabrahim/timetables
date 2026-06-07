@@ -38,31 +38,21 @@
 }
 
 /* -----------------------------------------------------------
-   نظام الطباعة الاحترافي المطور (نسخة محسنة)
+   نظام الطباعة الاحترافي المطور (إصلاح مشكلة الانكماش)
    ----------------------------------------------------------- */
 @media print {
-  /* 1. إخفاء العناصر غير الضرورية */
-  header, 
-  aside, 
-  nav, 
-  footer,
-  button,
-  input,
-  select,
-  .print\:hidden,
-  .no-print,
-  [role="status"],
-  [data-radix-collection-item] {
+  /* 1. إخفاء كل شيء غير ضروري */
+  header, aside, nav, footer, button, input, select,
+  .print\:hidden, .no-print, [role="status"], [data-radix-collection-item] {
     display: none !important;
   }
 
-  /* 2. القاعدة الذهبية لمنع تداخل الجداول:
-     إذا كانت نافذة المعاينة (Dialog) مفتوحة، نخفي كل شيء آخر تماماً */
+  /* 2. إخفاء محتوى التطبيق الأساسي عند وجود نافذة طباعة */
   body:has([role="dialog"]) #root {
     display: none !important;
   }
 
-  /* 3. تهيئة المتصفح للطباعة النظيفة */
+  /* 3. تصفير هوامش المتصفح وجسم الصفحة */
   html, body {
     width: 100% !important;
     height: auto !important;
@@ -70,65 +60,43 @@
     padding: 0 !important;
     overflow: visible !important;
     background: white !important;
-    color: black !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
-  /* 4. إجبار المحتوى المطبوع على شغل كامل الصفحة */
+  /* 4. إجبار نافذة المعاينة على شغل كامل الصفحة بدون تحويلات */
   [role="dialog"] {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+    position: static !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     display: block !important;
     box-shadow: none !important;
-    background: white !important;
-    overflow: visible !important;
+    transform: none !important;
   }
 
-  /* إخفاء خلفية الـ Overlay الخاصة بالـ Dialog */
+  /* 5. إزالة أي تحجيم أو إزاحة تسببها مكتبة Radix UI */
   div[data-state="open"] {
     position: static !important;
-    background: transparent !important;
+    background: white !important;
   }
 
-  /* 5. التحكم في فواصل الصفحات */
+  /* 6. منع تقسيم الجداول عبر الصفحات بشكل خاطئ */
   .page-break-container {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     display: block !important;
     width: 100% !important;
-    position: relative !important;
-    overflow: visible !important;
   }
 
-  /* 6. إلغاء أي تحويلات (Scale/Transform) */
-  /* تم تصحيح الهروب هنا بإضافة \ قبل حرف التعجب */
-  .print\:\!transform-none {
-    transform: none !important;
-    transform-origin: 0 0 !important;
-  }
-
-  /* 7. تحسينات النصوص والجداول */
+  /* 7. تمدد الجداول لتملأ 100% */
   table {
-    border-collapse: collapse !important;
     width: 100% !important;
+    border-collapse: collapse !important;
     table-layout: fixed !important;
   }
 
-  th, td {
-    color: black !important;
-    border-color: black !important;
-    word-wrap: break-word !important;
-  }
-
-  /* إزالة أي انحناءات أو ظلال في الطباعة */
+  /* 8. إزالة الحواف المنحنية في الطباعة */
   * {
     border-radius: 0 !important;
     box-shadow: none !important;
-    text-shadow: none !important;
   }
 }
