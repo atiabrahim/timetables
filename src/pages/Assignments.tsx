@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, ChevronRight, UserPlus, History, UserCheck, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, UserPlus, History, UserCheck } from "lucide-react";
 import { PeriodPart } from "../types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,6 @@ import PageHeader from "../components/shared/PageHeader";
 
 const Assignments = () => {
   const { employees, periodConfigs, saveAssignment, getEffectiveAssignment, templateAssignments, t, isRTL, user } = useApp();
-  const isAdmin = user?.role === "Admin";
   const [currentDate, setCurrentDate] = useState(new Date());
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -36,10 +35,6 @@ const Assignments = () => {
   const allPeriods: PeriodPart[] = ["Morning", "Afternoon", "Evening"];
 
   const handleOpenAssignment = (date: Date, period: PeriodPart) => {
-    if (!isAdmin) {
-      showError(isRTL ? "عذراً، صلاحية التعديل للمسؤول فقط" : "Editing is restricted to Admin only");
-      return;
-    }
     const dateStr = format(date, "yyyy-MM-dd");
     const effectiveIds = getEffectiveAssignment(dateStr, period);
     setSelectedDate(dateStr);
@@ -49,7 +44,6 @@ const Assignments = () => {
   };
 
   const handleSave = () => {
-    if (!isAdmin) return;
     if (selectedDate && selectedPeriods.length > 0) {
       saveAssignment(selectedDate, selectedPeriods, selectedEmployeeIds);
       setIsDialogOpen(false);
@@ -58,21 +52,19 @@ const Assignments = () => {
   };
 
   const toggleEmployee = (id: string) => {
-    if (!isAdmin) return;
     setSelectedEmployeeIds(prev => 
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
 
   const togglePeriodSelection = (period: PeriodPart) => {
-    if (!isAdmin) return;
     setSelectedPeriods(prev => 
       prev.includes(period) ? prev.filter(p => p !== period) : [...prev, period]
     );
   };
 
   const resetToTemplate = () => {
-    if (!isAdmin || !selectedDate || selectedPeriods.length === 0) return;
+    if (!selectedDate || selectedPeriods.length === 0) return;
     const dayIdx = getDay(parseISO(selectedDate));
     const period = selectedPeriods[0];
     const template = templateAssignments.find(t => t.dayIdx === dayIdx && t.period === period);
@@ -88,12 +80,6 @@ const Assignments = () => {
         icon={UserCheck}
         isRTL={isRTL}
       >
-        {!isAdmin && (
-          <div className="flex items-center gap-2 bg-amber-50 text-amber-700 px-4 py-2 rounded-xl border border-amber-100 text-[10px] font-black uppercase">
-            <Lock size={14} />
-            {isRTL ? "للعرض فقط" : "View Only"}
-          </div>
-        )}
         <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm h-11">
           <Button variant="ghost" size="icon" onClick={() => setCurrentDate(addDays(currentDate, -7))} className="rounded-lg">
             {isRTL ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -139,7 +125,7 @@ const Assignments = () => {
                           {assignedCount > 3 && <div className="text-[10px] text-emerald-600 font-bold mt-1 bg-emerald-50 py-0.5 px-2 rounded-full w-fit">+ {assignedCount - 3}</div>}
                         </div>
                       ) : (
-                        <div className="flex items-center gap-1.5 text-slate-400 text-xs py-1"><UserPlus className="h-3.5 w-3.5" />{isAdmin ? t.assign : "---"}</div>
+                        <div className="flex items-center gap-1.5 text-slate-400 text-xs py-1"><UserPlus className="h-3.5 w-3.5" />{t.assign}</div>
                       )}
                     </button>
                   );

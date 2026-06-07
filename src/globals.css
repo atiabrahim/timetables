@@ -50,7 +50,8 @@
   input,
   select,
   .fixed,
-  .no-print {
+  .no-print,
+  .print-hide {
     display: none !important;
   }
   

@@ -39,7 +39,7 @@ const getSubjectColor = (index: number) => SUBJECT_COLORS[index % SUBJECT_COLORS
 
 const ScheduleTable = ({ 
   isRTL, days, timeSlots, getAssignment, onAddClick, onDeleteClick, 
-  subjects, employees, classes, viewMode, isPrint = false, summaryData = [], totalHours = 0, isTransposed = false, allAssignments = [], isAdmin = false
+  subjects, employees, classes, viewMode, isPrint = false, summaryData = [], totalHours = 0, isTransposed = false, allAssignments = [], isAdmin = true
 }: ScheduleTableProps) => {
 
   const checkConflict = (day: number, period: string, assignment: any) => {
@@ -60,7 +60,7 @@ const ScheduleTable = ({
           <thead>
             <tr className={cn(isPrint ? "bg-emerald-50 border-b-2 border-emerald-950" : "bg-emerald-950 text-white")}>
               <th className={cn("p-1 font-black uppercase border-b w-[65%]", isPrint ? "text-[8px] text-emerald-950 border-emerald-950" : "text-[11px] border-emerald-900", isRTL ? "text-right" : "text-left")}>{isRTL ? "المادة" : "Subject"}</th>
-              <th className={cn("p-1 font-black uppercase text-center border-s-2 border-b w-[35%]", isPrint ? "text-[8px] text-emerald-950 border-emerald-950" : "text-[11px] border-emerald-900")}>{isRTL ? "الإجمالي" : "Total"}</th>
+              <th className={cn("p-1 font-black uppercase text-center border-s-2 border-b w-[35%]", isPrint ? "text-[8px] text-emerald-950 border-emerald-950" : "text-[11px] border-emerald-900")}>{isRTL ? "Total" : "Total"}</th>
             </tr>
           </thead>
           <tbody className={cn(isPrint ? "divide-y divide-emerald-950" : "divide-y divide-slate-100")}>
