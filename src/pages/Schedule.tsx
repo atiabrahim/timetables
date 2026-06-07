@@ -119,6 +119,18 @@ const Schedule = () => {
 
   return (
     <div className="space-y-6">
+      {/* حقن إعدادات الطباعة ديناميكياً */}
+      <style>
+        {`
+          @media print {
+            @page {
+              size: A4 ${orientation};
+              margin: 0 !important;
+            }
+          }
+        `}
+      </style>
+
       <ScheduleHeader 
         isRTL={isRTL} viewMode={viewMode} setViewMode={setViewMode}
         selectedId={selectedId} setSelectedId={setSelectedId}
