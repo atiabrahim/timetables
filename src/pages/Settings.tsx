@@ -9,7 +9,9 @@ import {
   AlertTriangle, 
   Clock,
   FileCode,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  CloudUpload,
+  CloudDownload
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { parseXml } from "../lib/export-utils";
@@ -31,7 +33,7 @@ const Settings = () => {
   const { 
     t, 
     periodConfigs, setPeriodConfigs,
-    importAllData,
+    importAllData, saveDataToCloud, loadDataFromCloud,
     isRTL 
   } = useApp();
   
@@ -94,6 +96,24 @@ const Settings = () => {
         icon={SettingsIcon}
         isRTL={isRTL}
       >
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            className="rounded-xl border-emerald-200 gap-2 font-bold text-emerald-700 bg-white h-11" 
+            onClick={saveDataToCloud}
+          >
+            <CloudUpload size={18} />
+            {isRTL ? "حفظ سحابي" : "Cloud Save"}
+          </Button>
+          <Button 
+            variant="outline" 
+            className="rounded-xl border-emerald-200 gap-2 font-bold text-emerald-700 bg-white h-11" 
+            onClick={loadDataFromCloud}
+          >
+            <CloudDownload size={18} />
+            {isRTL ? "استرداد سحابي" : "Cloud Load"}
+          </Button>
+        </div>
         <input type="file" ref={xmlInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
         <Button 
           variant="outline" 

@@ -6,6 +6,8 @@ import {
   User, Institution, Employee, Assignment, Department,
   AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment 
 } from "../types";
+import { supabase } from "../lib/supabase";
+import { showSuccess, showError } from "../utils/toast";
 
 interface AppContextType {
   language: Language;
@@ -37,6 +39,8 @@ interface AppContextType {
   periodConfigs: PeriodConfig[];
   setPeriodConfigs: React.Dispatch<React.SetStateAction<PeriodConfig[]>>;
   importAllData: (data: Partial<AppState>) => void;
+  saveDataToCloud: () => Promise<void>;
+  loadDataFromCloud: () => Promise<void>;
   t: any;
   isRTL: boolean;
 }
@@ -103,47 +107,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     document.documentElement.lang = language;
   }, [language, isRTL]);
 
+  // تحميل البيانات الأولية من LocalStorage ثم محاولة المزامنة مع السحابة
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        if (parsed.systemUsers?.length > 0) setSystemUsers(parsed.systemUsers);
-        if (parsed.institution) setInstitution({ ...DEFAULT_INSTITUTION, ...parsed.institution });
-        setEmployees(parsed.employees || []);
-        setAssignments(parsed.assignments || []);
-        setTemplateAssignments(parsed.templateAssignments || []);
-        setDailyAssignments(parsed.dailyAssignments || []);
-        setRooms(parsed.rooms || []);
-        setClasses(parsed.classes || []);
-        setSubjects(parsed.subjects || []);
-        if (parsed.periodConfigs && parsed.periodConfigs.length > 0) {
-          setPeriodConfigs(parsed.periodConfigs);
-        }
-
-        // الهجرة الآمنة لبيانات المصالح القديمة (من نصوص إلى كائنات)
-        if (parsed.departments) {
-          const migratedDepts = parsed.departments.map((d: any, idx: number) => {
-            if (typeof d === 'string') {
-              return {
-                id: `dept-${idx}-${Math.random().toString(36).substr(2, 4)}`,
-                number: (idx + 1).toString(),
-                name: d,
-                head: "",
-                code: "",
-                observation: ""
-              };
-            }
-            return d;
-          });
-          setDepartments(migratedDepts);
-        }
+        importAllData(parsed);
       } catch (e) {
         console.error("Failed to parse saved data", e);
       }
     }
+    loadDataFromCloud();
   }, []);
 
+  // حفظ تلقائي في LocalStorage عند كل تغيير
   useEffect(() => {
     const dataToSave = { 
       systemUsers, institution, employees, assignments, 
@@ -151,6 +129,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
   }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs]);
+
+  const loadDataFromCloud = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('app_sessions')
+        .select('data')
+        .eq('id', 'default_session')
+        .single();
+
+      if (data && data.data) {
+        importAllData(data.data);
+        console.log("Data loaded from cloud successfully");
+      }
+    } catch (err) {
+      console.warn("Could not load from cloud, using local data", err);
+    }
+  };
+
+  const saveDataToCloud = async () => {
+    const dataToSave = { 
+      systemUsers, institution, employees, assignments, 
+      templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs 
+    };
+
+    try {
+      const { error } = await supabase
+        .from('app_sessions')
+        .upsert({ id: 'default_session', data: dataToSave, updated_at: new Date() });
+
+      if (error) throw error;
+      showSuccess(isRTL ? "تمت المزامنة مع السحابة" : "Synced with cloud");
+    } catch (err) {
+      console.error("Cloud save error:", err);
+      showError(isRTL ? "فشل حفظ البيانات سحابياً" : "Failed to save data to cloud");
+    }
+  };
 
   const updateTemplateAssignment = (dayIdx: number, period: PeriodPart, employeeIds: string[]) => {
     setTemplateAssignments(prev => {
@@ -254,7 +268,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       institution, setInstitution, employees, setEmployees, assignments, setAssignments,
       templateAssignments, updateTemplateAssignment, dailyAssignments, saveAssignment, getEffectiveAssignment,
       departments, setDepartments, rooms, setRooms, classes, setClasses, subjects, setSubjects,
-      periodConfigs, setPeriodConfigs, importAllData, t, isRTL 
+      periodConfigs, setPeriodConfigs, importAllData, saveDataToCloud, loadDataFromCloud, t, isRTL 
     }}>
       <div className={isRTL ? "font-arabic" : ""}>
         {children}
