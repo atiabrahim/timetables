@@ -107,7 +107,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     document.documentElement.lang = language;
   }, [language, isRTL]);
 
-  // تحميل البيانات الأولية من LocalStorage ثم محاولة المزامنة مع السحابة
   useEffect(() => {
     const savedData = localStorage.getItem(STORAGE_KEY);
     if (savedData) {
@@ -121,7 +120,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     loadDataFromCloud();
   }, []);
 
-  // حفظ تلقائي في LocalStorage عند كل تغيير
   useEffect(() => {
     const dataToSave = { 
       systemUsers, institution, employees, assignments, 
@@ -136,7 +134,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         .from('app_sessions')
         .select('data')
         .eq('id', 'default_session')
-        .single();
+        .maybeSingle();
+
+      if (error) throw error;
 
       if (data && data.data) {
         importAllData(data.data);
@@ -156,13 +156,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const { error } = await supabase
         .from('app_sessions')
-        .upsert({ id: 'default_session', data: dataToSave, updated_at: new Date() });
+        .upsert({ 
+          id: 'default_session', 
+          data: dataToSave, 
+          updated_at: new Date().toISOString() 
+        });
 
-      if (error) throw error;
-      showSuccess(isRTL ? "تمت المزامنة مع السحابة" : "Synced with cloud");
-    } catch (err) {
+      if (error) {
+        console.error("Supabase Error Details:", error);
+        throw error;
+      }
+      
+      showSuccess(isRTL ? "تمت المزامنة مع السحابة بنجاح" : "Synced with cloud successfully");
+    } catch (err: any) {
       console.error("Cloud save error:", err);
-      showError(isRTL ? "فشل حفظ البيانات سحابياً" : "Failed to save data to cloud");
+      showError(isRTL ? `فشل الحفظ: ${err.message || "خطأ غير معروف"}` : `Save failed: ${err.message || "Unknown error"}`);
     }
   };
 
