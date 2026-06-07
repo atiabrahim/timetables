@@ -130,12 +130,26 @@ const ScheduleTable = ({
       <div className={cn("flex items-stretch w-full gap-0", isPrint ? "overflow-hidden" : "overflow-x-auto pb-2", isRTL ? "flex-row" : "flex-row-reverse")}>
         <div className="flex-1 min-w-0">
           <table className={cn("w-full border-collapse h-full table-fixed", isPrint ? "border-2 border-emerald-950" : "")}>
+            <colgroup>
+              <col className={isPrint ? "w-[40px]" : "w-[65px]"} />
+              {timeSlots.map(slot => (
+                <React.Fragment key={slot.id}>
+                  <col />
+                  {(slot.id === "2" || slot.id === "4") && <col className={isPrint ? "w-[12px]" : "w-[20px]"} />}
+                </React.Fragment>
+              ))}
+            </colgroup>
             <thead>
               <tr className={isPrint ? "h-7" : "h-14"}>
                 <th className={cn("font-black text-center", isPrint ? "border border-emerald-950 text-[8.5px] bg-emerald-50" : "rounded-2xl bg-slate-50 text-slate-500 p-2 uppercase text-[11px]")}>{isRTL ? "اليوم" : "Day"}</th>
                 {timeSlots.map(slot => (
                   <React.Fragment key={slot.id}>
-                    <th className={cn("font-black text-center px-1", isPrint ? "border border-emerald-950 text-[8.5px] bg-emerald-50" : "rounded-2xl bg-emerald-950 text-emerald-400 p-2 text-[11px]")}>{slot.label}</th>
+                    <th className={cn("font-black text-center px-1", isPrint ? "border border-emerald-950 text-[8.5px] bg-emerald-50" : "rounded-2xl bg-emerald-950 text-emerald-400 p-2 text-[11px]")}>
+                      <div className="flex flex-col items-center">
+                        <span>{slot.label}</span>
+                        <span className={cn("font-bold opacity-70 mt-0.5", isPrint ? "text-[5px]" : "text-[8px]")}>{slot.time}</span>
+                      </div>
+                    </th>
                     {(slot.id === "2" || slot.id === "4") && <th className="border border-emerald-950 bg-emerald-50/50 text-[7px] font-black [writing-mode:vertical-rl] rotate-180 p-0.5">{isRTL ? "راحة" : "BREAK"}</th>}
                   </React.Fragment>
                 ))}
@@ -167,6 +181,10 @@ const ScheduleTable = ({
     <div className={cn("flex items-stretch w-full gap-0", isPrint ? "overflow-hidden" : "overflow-x-auto pb-2", isRTL ? "flex-row" : "flex-row-reverse")}>
       <div className="flex-1 min-w-0">
         <table className={cn("w-full border-collapse h-full table-fixed", isPrint ? "border-2 border-emerald-950" : "")}>
+          <colgroup>
+            <col className={isPrint ? "w-[40px]" : "w-[65px]"} />
+            {days.map(day => <col key={day.id} />)}
+          </colgroup>
           <thead>
             <tr className={isPrint ? "h-7" : "h-14"}>
               <th className={cn("font-black text-center", isPrint ? "border border-emerald-950 text-[8.5px] bg-emerald-50" : "rounded-2xl bg-emerald-950 text-emerald-400 p-2 text-[11px]")}>{isRTL ? "الحصة" : "Slot"}</th>
@@ -177,7 +195,12 @@ const ScheduleTable = ({
             {timeSlots.map(slot => (
               <React.Fragment key={slot.id}>
                 <tr className={isPrint ? "h-12" : "h-24"}>
-                  <td className={cn(isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10" : "p-2 border-e border-slate-100")}><span className={cn("font-black", isPrint ? "text-[10px]" : "text-[14px] text-slate-600")}>{slot.label}</span></td>
+                  <td className={cn(isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10" : "p-2 border-e border-slate-100")}>
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <span className={cn("font-black leading-none", isPrint ? "text-[10px]" : "text-[14px] text-slate-600")}>{slot.label}</span>
+                      <span className={cn("font-bold opacity-60 mt-1", isPrint ? "text-[5px]" : "text-[9px]")}>{slot.time}</span>
+                    </div>
+                  </td>
                   {days.map(day => {
                     const assignment = getAssignment(day.id, slot.id);
                     return (
