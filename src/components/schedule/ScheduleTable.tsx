@@ -146,8 +146,8 @@ const ScheduleTable = ({
                   <React.Fragment key={slot.id}>
                     <th className={cn("font-black text-center px-1", isPrint ? "border border-emerald-950 text-[8.5px] bg-emerald-50" : "rounded-2xl bg-emerald-950 text-emerald-400 p-2 text-[11px]")}>
                       <div className="flex flex-col items-center justify-center">
-                        <span>{slot.label}</span>
-                        <span className={cn("font-bold opacity-70 mt-0.5", isPrint ? "text-[5px]" : "text-[8px]")}>{slot.time}</span>
+                        <span className="whitespace-nowrap">{slot.label}</span>
+                        <span className={cn("font-bold opacity-70 mt-0.5 whitespace-nowrap", isPrint ? "text-[5px]" : "text-[8px]")}>{slot.time}</span>
                       </div>
                     </th>
                     {(slot.id === "2" || slot.id === "4") && <th className="border border-emerald-950 bg-emerald-50/50 text-[7px] font-black [writing-mode:vertical-rl] rotate-180 p-0.5 text-center">{isRTL ? "راحة" : "BREAK"}</th>}
@@ -197,8 +197,8 @@ const ScheduleTable = ({
                 <tr className={isPrint ? "h-12" : "h-24"}>
                   <td className={cn(isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10 text-center" : "p-2 border-e border-slate-100 text-center")}>
                     <div className="flex flex-col items-center justify-center h-full text-center">
-                      <span className={cn("font-black leading-none", isPrint ? "text-[10px]" : "text-[14px] text-slate-600")}>{slot.label}</span>
-                      <span className={cn("font-bold opacity-60 mt-1", isPrint ? "text-[5px]" : "text-[9px]")}>{slot.time}</span>
+                      <span className={cn("font-black leading-none whitespace-nowrap", isPrint ? "text-[10px]" : "text-[14px] text-slate-600")}>{slot.label}</span>
+                      <span className={cn("font-bold opacity-60 mt-1 whitespace-nowrap", isPrint ? "text-[5px]" : "text-[9px]")}>{slot.time}</span>
                     </div>
                   </td>
                   {days.map(day => {
