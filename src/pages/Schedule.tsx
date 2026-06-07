@@ -46,6 +46,8 @@ const Schedule = () => {
     employeeId: "", subjectId: "", classId: "", room: "", department: ""
   });
 
+  const isAdmin = user?.role === "Admin";
+
   const filteredAssignments = useMemo(() => {
     if (!selectedId) return [];
     return assignments.filter(a => 
@@ -71,6 +73,7 @@ const Schedule = () => {
     filteredAssignments.find(a => a.day === day && a.period === period);
 
   const handleAddClick = (day: number, period: string) => {
+    if (!isAdmin) return;
     if (viewMode === "class") {
       setNewAssignment({ ...newAssignment, classId: selectedId, employeeId: "", subjectId: "", room: "", department: "" });
     } else {
@@ -81,7 +84,7 @@ const Schedule = () => {
   };
 
   const handleSaveLesson = () => {
-    if (!editingCell) return;
+    if (!isAdmin || !editingCell) return;
     if (!newAssignment.subjectId || (viewMode === "class" ? !newAssignment.employeeId : !newAssignment.classId)) {
       showError(isRTL ? "يرجى إكمال البيانات" : "Please complete data");
       return;
@@ -93,6 +96,7 @@ const Schedule = () => {
   };
 
   const handleDeleteLesson = (id: string) => {
+    if (!isAdmin) return;
     setAssignments(assignments.filter(a => a.id !== id));
     showSuccess(isRTL ? "تم حذف الحصة" : "Lesson deleted");
   };
@@ -129,37 +133,37 @@ const Schedule = () => {
               {isRTL ? "تبديل المحاور" : "Transpose"}
             </Button>
             
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 rounded-xl gap-2 font-bold">
-                  <Trash2 size={14} />
-                  {isRTL ? "مسح الجدول" : "Clear Schedule"}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="rounded-3xl">
-                <AlertDialogHeader><AlertDialogTitle>{isRTL ? "هل أنت متأكد؟" : "Are you sure?"}</AlertDialogTitle></AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => setAssignments(assignments.filter(a => viewMode === "class" ? a.classId !== selectedId : a.employeeId !== selectedId))} className="bg-red-600 rounded-xl">
-                    {isRTL ? "نعم، امسح" : "Yes, Clear"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {isAdmin && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 rounded-xl gap-2 font-bold">
+                    <Trash2 size={14} />
+                    {isRTL ? "مسح الجدول" : "Clear Schedule"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-3xl">
+                  <AlertDialogHeader><AlertDialogTitle>{isRTL ? "هل أنت متأكد؟" : "Are you sure?"}</AlertDialogTitle></AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => setAssignments(assignments.filter(a => viewMode === "class" ? a.classId !== selectedId : a.employeeId !== selectedId))} className="bg-red-600 rounded-xl">
+                      {isRTL ? "نعم، امسح" : "Yes, Clear"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
 
-          {/* العرض في الشاشة */}
           <div className="print:hidden">
             <ScheduleTable 
               isRTL={isRTL} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment}
               onAddClick={handleAddClick} onDeleteClick={handleDeleteLesson}
               subjects={subjects} employees={employees} classes={classes}
               viewMode={viewMode} summaryData={summaryData} totalHours={filteredAssignments.length}
-              isTransposed={isTransposed} allAssignments={assignments} isAdmin={true}
+              isTransposed={isTransposed} allAssignments={assignments} isAdmin={isAdmin}
             />
           </div>
 
-          {/* محتوى الطباعة المباشرة */}
           <div className="print-content-master hidden print:block">
             <OfficialPrintWrapper
               title={isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Schedule"}

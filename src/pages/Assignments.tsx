@@ -29,6 +29,8 @@ const Assignments = () => {
   const [selectedPeriods, setSelectedPeriods] = useState<PeriodPart[]>([]);
   const [selectedEmployeeIds, setSelectedEmployeeIds] = useState<string[]>([]);
 
+  const isAdmin = user?.role === "Admin";
+
   const weekStart = startOfWeek(currentDate, { weekStartsOn: 0 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
@@ -44,6 +46,7 @@ const Assignments = () => {
   };
 
   const handleSave = () => {
+    if (!isAdmin) return;
     if (selectedDate && selectedPeriods.length > 0) {
       saveAssignment(selectedDate, selectedPeriods, selectedEmployeeIds);
       setIsDialogOpen(false);
@@ -52,18 +55,21 @@ const Assignments = () => {
   };
 
   const toggleEmployee = (id: string) => {
+    if (!isAdmin) return;
     setSelectedEmployeeIds(prev => 
       prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
     );
   };
 
   const togglePeriodSelection = (period: PeriodPart) => {
+    if (!isAdmin) return;
     setSelectedPeriods(prev => 
       prev.includes(period) ? prev.filter(p => p !== period) : [...prev, period]
     );
   };
 
   const resetToTemplate = () => {
+    if (!isAdmin) return;
     if (!selectedDate || selectedPeriods.length === 0) return;
     const dayIdx = getDay(parseISO(selectedDate));
     const period = selectedPeriods[0];
@@ -142,7 +148,9 @@ const Assignments = () => {
             <DialogTitle className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold">{t.assignStaff}</span>
-                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 gap-2 border border-white/20" onClick={resetToTemplate}><History className="h-4 w-4" />{isRTL ? "استعادة" : "Restore"}</Button>
+                {isAdmin && (
+                  <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 gap-2 border border-white/20" onClick={resetToTemplate}><History className="h-4 w-4" />{isRTL ? "استعادة" : "Restore"}</Button>
+                )}
               </div>
               {selectedDate && <span className="text-emerald-100 font-normal">{format(parseISO(selectedDate), "EEEE, d MMMM yyyy")}</span>}
             </DialogTitle>
@@ -158,7 +166,7 @@ const Assignments = () => {
                   if (!config?.isActive) return null;
                   const isSelected = selectedPeriods.includes(period);
                   return (
-                    <div key={period} onClick={() => togglePeriodSelection(period)} className={cn("flex items-center gap-3 px-5 py-2.5 rounded-2xl border-2 cursor-pointer transition-all", isSelected ? "bg-emerald-600 border-emerald-600 text-white shadow-lg" : "bg-white border-slate-200 text-slate-600")}>
+                    <div key={period} onClick={() => togglePeriodSelection(period)} className={cn("flex items-center gap-3 px-5 py-2.5 rounded-2xl border-2 cursor-pointer transition-all", isSelected ? "bg-emerald-600 border-emerald-600 text-white shadow-lg" : "bg-white border-slate-200 text-slate-600", !isAdmin && "pointer-events-none opacity-80")}>
                       <Checkbox checked={isSelected} className="border-white/50 data-[state=checked]:bg-white data-[state=checked]:text-emerald-600 pointer-events-none" />
                       <span className="text-sm font-bold">{period === "Morning" ? t.morning : period === "Afternoon" ? t.afternoon : t.evening}</span>
                     </div>
@@ -172,7 +180,7 @@ const Assignments = () => {
                 {employees.map(emp => {
                   const isSelected = selectedEmployeeIds.includes(emp.id);
                   return (
-                    <div key={emp.id} className={cn("flex items-center justify-between p-4 rounded-2xl border-2 cursor-pointer transition-all", isSelected ? "bg-emerald-50 border-emerald-500" : "bg-white border-slate-100")} onClick={() => toggleEmployee(emp.id)}>
+                    <div key={emp.id} className={cn("flex items-center justify-between p-4 rounded-2xl border-2 transition-all", isSelected ? "bg-emerald-50 border-emerald-500" : "bg-white border-slate-100", isAdmin ? "cursor-pointer" : "pointer-events-none opacity-80")} onClick={() => toggleEmployee(emp.id)}>
                       <div className="flex items-center gap-4">
                         <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center font-bold", isSelected ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500")}>{emp.firstName[0]}{emp.lastName[0]}</div>
                         <div><div className="font-bold text-slate-800">{emp.firstName} {emp.lastName}</div><div className="text-[10px] text-slate-500 font-medium">ID: {emp.id}</div></div>
@@ -186,7 +194,9 @@ const Assignments = () => {
           </div>
           <DialogFooter className="p-8 border-t bg-white flex items-center gap-4">
             <Button variant="ghost" onClick={() => setIsDialogOpen(false)} className="rounded-xl px-8 font-bold">{t.cancel}</Button>
-            <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-12 h-12 shadow-xl text-white font-bold">{t.save}</Button>
+            {isAdmin && (
+              <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-12 h-12 shadow-xl text-white font-bold">{t.save}</Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
