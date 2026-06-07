@@ -161,7 +161,8 @@ const PrintPreview = ({
                 padding: 0 !important;
               }
               /* إجبار المحتوى على عدم التأثر بالتكبير الخاص بالمعاينة */
-              .print\\:!transform-none {
+              /* تم تصحيح الهروب هنا بإضافة \\! قبل حرف التعجب */
+              .print\\:\\!transform-none {
                 transform: none !important;
               }
             }
