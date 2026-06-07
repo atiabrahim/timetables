@@ -119,7 +119,6 @@ const Schedule = () => {
 
   return (
     <div className="space-y-6">
-      {/* حقن إعدادات الطباعة ديناميكياً */}
       <style>
         {`
           @media print {
@@ -176,21 +175,24 @@ const Schedule = () => {
             />
           </div>
 
-          <div className="print-content-master hidden print:block">
-            <OfficialPrintWrapper
-              title={isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Schedule"}
-              subtitle={isRTL ? (viewMode === "class" ? `لفوج : ${selectedEntityName}` : `للأستاذ : ${selectedEntityName}`) : (viewMode === "class" ? `for Class: ${selectedEntityName}` : `for Teacher: ${selectedEntityName}`)}
-              orientation={orientation}
-            >
-              <ScheduleTable 
-                isRTL={isRTL} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment}
-                onAddClick={() => {}} onDeleteClick={() => {}}
-                subjects={subjects} employees={employees} classes={classes}
-                viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={filteredAssignments.length}
-                isTransposed={isTransposed}
-              />
-            </OfficialPrintWrapper>
-          </div>
+          {/* نعرض محتوى الخلفية للطباعة فقط إذا كانت نافذة المعاينة مغلقة */}
+          {!isPreviewOpen && (
+            <div className="print-content-master hidden print:block">
+              <OfficialPrintWrapper
+                title={isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Schedule"}
+                subtitle={isRTL ? (viewMode === "class" ? `لفوج : ${selectedEntityName}` : `للأستاذ : ${selectedEntityName}`) : (viewMode === "class" ? `for Class: ${selectedEntityName}` : `for Teacher: ${selectedEntityName}`)}
+                orientation={orientation}
+              >
+                <ScheduleTable 
+                  isRTL={isRTL} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment}
+                  onAddClick={() => {}} onDeleteClick={() => {}}
+                  subjects={subjects} employees={employees} classes={classes}
+                  viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={filteredAssignments.length}
+                  isTransposed={isTransposed}
+                />
+              </OfficialPrintWrapper>
+            </div>
+          )}
         </div>
       ) : (
         <div className="text-center py-32 bg-white rounded-[3rem] border border-dashed border-emerald-200 print:hidden">
