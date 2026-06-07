@@ -42,16 +42,18 @@ const OfficialPrintWrapper = ({
   return (
     <div 
       className={cn(
-        "bg-white mx-auto relative flex flex-col justify-between overflow-hidden",
+        "bg-white relative flex flex-col justify-between print:m-0 print:w-full print:shadow-none print:border-none",
         !disablePageBreak && "page-break-container",
         doubleMode ? (
           orientation === "portrait" 
             ? "print:h-[148mm] print:py-[5mm] print:px-[8mm] border-b border-black/10" 
             : "print:h-[105mm] print:py-[3mm] print:px-[8mm] border-b border-black/10"
         ) : (
-          "px-[12mm] py-[12mm] print:px-[10mm] print:py-[10mm] print:min-h-screen print:w-full"
+          "px-[12mm] py-[12mm] print:px-[10mm] print:py-[10mm] print:min-h-screen print:h-auto"
         ),
-        orientation === "portrait" ? "w-[210mm]" : "w-[297mm]",
+        // العرض للمعاينة فقط (الشاشة)
+        orientation === "portrait" ? "w-[210mm] mx-auto" : "w-[297mm] mx-auto",
+        "print:overflow-visible overflow-hidden"
       )}
       dir={isRTL ? "rtl" : "ltr"}
     >
@@ -86,7 +88,7 @@ const OfficialPrintWrapper = ({
         </div>
       )}
 
-      <div className="flex-1 w-full bg-white mb-6 print:mb-4">
+      <div className="flex-1 w-full bg-white mb-6 print:mb-4 overflow-visible">
         {children}
       </div>
 
