@@ -30,7 +30,7 @@ const PERIOD_TIMES: Record<string, string> = {
 
 const Schedule = () => {
   const { 
-    isRTL, t, employees, classes, subjects, rooms, assignments, setAssignments, user
+    isRTL, t, employees, classes, subjects, rooms, assignments, setAssignments
   } = useApp();
 
   const [viewMode, setViewMode] = useState<"class" | "teacher">("class");
@@ -45,8 +45,6 @@ const Schedule = () => {
   const [newAssignment, setNewAssignment] = useState({
     employeeId: "", subjectId: "", classId: "", room: "", department: ""
   });
-
-  const isAdmin = user?.role === "Admin";
 
   const filteredAssignments = useMemo(() => {
     if (!selectedId) return [];
@@ -73,7 +71,6 @@ const Schedule = () => {
     filteredAssignments.find(a => a.day === day && a.period === period);
 
   const handleAddClick = (day: number, period: string) => {
-    if (!isAdmin) return;
     if (viewMode === "class") {
       setNewAssignment({ ...newAssignment, classId: selectedId, employeeId: "", subjectId: "", room: "", department: "" });
     } else {
@@ -84,7 +81,7 @@ const Schedule = () => {
   };
 
   const handleSaveLesson = () => {
-    if (!isAdmin || !editingCell) return;
+    if (!editingCell) return;
     if (!newAssignment.subjectId || (viewMode === "class" ? !newAssignment.employeeId : !newAssignment.classId)) {
       showError(isRTL ? "يرجى إكمال البيانات" : "Please complete data");
       return;
@@ -96,7 +93,6 @@ const Schedule = () => {
   };
 
   const handleDeleteLesson = (id: string) => {
-    if (!isAdmin) return;
     setAssignments(assignments.filter(a => a.id !== id));
     showSuccess(isRTL ? "تم حذف الحصة" : "Lesson deleted");
   };
@@ -144,25 +140,23 @@ const Schedule = () => {
               {isRTL ? "تبديل المحاور" : "Transpose"}
             </Button>
             
-            {isAdmin && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 rounded-xl gap-2 font-bold">
-                    <Trash2 size={14} />
-                    {isRTL ? "مسح الجدول" : "Clear Schedule"}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent className="rounded-3xl">
-                  <AlertDialogHeader><AlertDialogTitle>{isRTL ? "هل أنت متأكد؟" : "Are you sure?"}</AlertDialogTitle></AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => setAssignments(assignments.filter(a => viewMode === "class" ? a.classId !== selectedId : a.employeeId !== selectedId))} className="bg-red-600 rounded-xl">
-                      {isRTL ? "نعم، امسح" : "Yes, Clear"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 rounded-xl gap-2 font-bold">
+                  <Trash2 size={14} />
+                  {isRTL ? "مسح الجدول" : "Clear Schedule"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-3xl">
+                <AlertDialogHeader><AlertDialogTitle>{isRTL ? "هل أنت متأكد؟" : "Are you sure?"}</AlertDialogTitle></AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => setAssignments(assignments.filter(a => viewMode === "class" ? a.classId !== selectedId : a.employeeId !== selectedId))} className="bg-red-600 rounded-xl">
+                    {isRTL ? "نعم، امسح" : "Yes, Clear"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
           <div className="print:hidden">
@@ -171,11 +165,10 @@ const Schedule = () => {
               onAddClick={handleAddClick} onDeleteClick={handleDeleteLesson}
               subjects={subjects} employees={employees} classes={classes}
               viewMode={viewMode} summaryData={summaryData} totalHours={filteredAssignments.length}
-              isTransposed={isTransposed} allAssignments={assignments} isAdmin={isAdmin}
+              isTransposed={isTransposed} allAssignments={assignments} isAdmin={true}
             />
           </div>
 
-          {/* نعرض محتوى الخلفية للطباعة فقط إذا كانت نافذة المعاينة مغلقة */}
           {!isPreviewOpen && (
             <div className="print-content-master hidden print:block">
               <OfficialPrintWrapper
