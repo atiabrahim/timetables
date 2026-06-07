@@ -101,6 +101,7 @@ const PrintPreview = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 flex flex-col rounded-none z-[9999] print:bg-white print:h-auto print:block">
+        {/* شريط التحكم (يختفي عند الطباعة) */}
         <div className="h-16 bg-black/40 border-b border-white/10 flex items-center justify-between px-8 shrink-0 print:hidden">
           <div className="flex items-center gap-4 text-white">
             <FileText size={20} />
@@ -134,13 +135,14 @@ const PrintPreview = ({
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white grid place-items-center p-8 print:p-0">
+        {/* منطقة العرض */}
+        <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white flex justify-center p-8 print:p-0">
           <div 
             className={cn(
-              "transition-all duration-300 flex flex-col print:gap-0 print:justify-start",
-              doubleMode ? "gap-8 print:flex print:flex-col print:h-screen" : "gap-8 print:block"
+              "origin-top print:!transform-none print:!p-0", // منع التكبير أثناء الطباعة
+              doubleMode ? "flex flex-col gap-8 print:gap-0" : "block"
             )}
-            style={{ transform: `scale(${printScale / 100})`, transformOrigin: 'center center' }}
+            style={{ transform: `scale(${printScale / 100})` }}
           >
             <ScheduleContent disablePageBreak={doubleMode} />
             {doubleMode && <ScheduleContent disablePageBreak={false} />}
@@ -149,9 +151,19 @@ const PrintPreview = ({
 
         <style>
           {`
-            @page {
-              size: A4 ${orientation};
-              margin: 0 !important;
+            @media print {
+              @page {
+                size: A4 ${orientation};
+                margin: 0mm !important;
+              }
+              body {
+                margin: 0 !important;
+                padding: 0 !important;
+              }
+              /* إجبار المحتوى على عدم التأثر بالتكبير الخاص بالمعاينة */
+              .print\\:!transform-none {
+                transform: none !important;
+              }
             }
           `}
         </style>
