@@ -117,7 +117,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error("Failed to parse saved data", e);
       }
     }
-    loadDataFromCloud();
+    // نقوم بالتحميل الصامت عند البداية فقط
+    loadDataFromCloud(true);
   }, []);
 
   useEffect(() => {
@@ -128,7 +129,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
   }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs]);
 
-  const loadDataFromCloud = async () => {
+  const loadDataFromCloud = async (silent = false) => {
     try {
       const { data, error } = await supabase
         .from('app_sessions')
@@ -140,10 +141,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (data && data.data) {
         importAllData(data.data);
-        console.log("Data loaded from cloud successfully");
+        if (!silent) {
+          showSuccess(isRTL ? "تم استرداد البيانات بنجاح" : "Data loaded successfully");
+        }
+      } else {
+        if (!silent) {
+          showError(isRTL ? "لا توجد بيانات محفوظة سحابياً" : "No cloud data found");
+        }
       }
-    } catch (err) {
-      console.warn("Could not load from cloud, using local data", err);
+    } catch (err: any) {
+      console.error("Cloud load error:", err);
+      if (!silent) {
+        showError(isRTL ? `فشل الاسترداد: ${err.message}` : `Load failed: ${err.message}`);
+      }
     }
   };
 
@@ -276,7 +286,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       institution, setInstitution, employees, setEmployees, assignments, setAssignments,
       templateAssignments, updateTemplateAssignment, dailyAssignments, saveAssignment, getEffectiveAssignment,
       departments, setDepartments, rooms, setRooms, classes, setClasses, subjects, setSubjects,
-      periodConfigs, setPeriodConfigs, importAllData, saveDataToCloud, loadDataFromCloud, t, isRTL 
+      periodConfigs, setPeriodConfigs, importAllData, saveDataToCloud, loadDataFromCloud: () => loadDataFromCloud(false), t, isRTL 
     }}>
       <div className={isRTL ? "font-arabic" : ""}>
         {children}
