@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { format } from "date-fns";
 import { Clock, Calendar, Hash, User, PenTool, FileText } from "lucide-react";
@@ -49,12 +47,13 @@ const AttendanceSheet = ({
         doubleMode ? "py-2 px-[8mm]" : "py-6 px-[12mm]",
         "print:shadow-none print:border-none print:my-0 print:mx-auto print:rounded-none print:w-full",
         doubleMode
-          ? "print:h-[148.2mm] print:pt-[3mm] print:pb-0 print:px-[8mm] print:border-b print:border-black/5"
+          ? "print:h-[148mm] print:pt-[3mm] print:pb-0 print:px-[8mm] print:border-b print:border-black/5"
           : "print:pt-[5mm] print:pb-0 print:px-[10mm]"
       )}
       dir={isRTL ? "rtl" : "ltr"}
       style={{ fontFamily: reportStyles.fontFamily }}
     >
+      {/* Header Section */}
       <div className={cn("flex flex-col items-center text-center space-y-0.5", doubleMode ? "mb-2" : "mb-4")}>
         <p className={cn("font-black text-black tracking-widest uppercase", doubleMode ? "text-[10px]" : "text-xs")}>{t.republic}</p>
         <div className="w-12 h-px bg-black/20 my-0.5"></div>
