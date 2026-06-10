@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Printer, Search, Eye, ClipboardList, BookOpen, ShieldAlert, RotateCw } from "lucide-react";
+import { Printer, Search, Eye, ClipboardList, BookOpen, ShieldAlert, RotateCw, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { 
   Select, 
@@ -25,6 +25,7 @@ import { PeriodPart } from "../types";
 import PageHeader from "../components/shared/PageHeader";
 import { DAYS } from "../constants/schedule";
 import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const PERIODS: PeriodPart[] = ["Morning", "Afternoon", "Evening"];
 
@@ -234,6 +235,43 @@ const WeeklyWorkSchedule = () => {
           <ScheduleTable isPrint={true} />
         </OfficialPrintWrapper>
       </div>
+
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-[98vw] w-full h-[95vh] p-0 bg-zinc-900/95 border-none rounded-none flex flex-col z-[9999] print:bg-white print:h-auto print:block">
+          <div className="h-16 bg-black/40 border-b border-white/10 flex items-center justify-between px-8 shrink-0 print:hidden">
+            <div className="flex items-center gap-3 text-white">
+              <Eye className="text-emerald-500" />
+              <h3 className="font-black text-lg">{isRTL ? "معاينة جدول العمل" : "Work Schedule Preview"}</h3>
+            </div>
+            <div className="flex gap-4">
+              <Button variant="outline" onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")} className="text-white border-white/20 bg-transparent rounded-xl">
+                <RotateCw size={16} className="mr-2" />
+                {isRTL ? (orientation === "portrait" ? "عرضي" : "طولي") : "Orientation"}
+              </Button>
+              <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black px-8">
+                <Printer size={18} className="mr-2" />
+                {t.print}
+              </Button>
+              <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="text-white/70 hover:text-white">
+                <X size={20} />
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white p-12 print:p-0">
+            <OfficialPrintWrapper
+              title={t.weeklyWorkSchedule}
+              subtitle={printSubtitle}
+              orientation={orientation}
+              leftSignatureTitle={isRTL ? "توقيع الأستاذ" : "Teacher Signature"}
+              rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+              showSystemFooter={false}
+            >
+              <ScheduleTable isPrint={true} />
+            </OfficialPrintWrapper>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
