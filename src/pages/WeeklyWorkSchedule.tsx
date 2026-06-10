@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Printer, Search, Eye, ClipboardList, RotateCw, X } from "lucide-react";
+import { Printer, Search, Eye, ClipboardList, RotateCw, X, ArrowLeftRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { 
   Select, 
@@ -46,6 +46,7 @@ const WeeklyWorkSchedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
+  const [isTransposed, setIsTransposed] = useState(false);
 
   const filteredEmployees = useMemo(() => {
     return employees.filter(emp => 
@@ -74,7 +75,7 @@ const WeeklyWorkSchedule = () => {
     return DAYS.reduce((sum, day) => sum + (activePeriodsPerDay[day.id]?.length || 0), 0);
   }, [activePeriodsPerDay]);
 
-  // خوارزمية حساب دمج الخلايا المتتالية لنفس الأستاذ، المادة، والقسم في نفس اليوم
+  // خوارزمية حساب دمج الخلايا المتتالية لنفس الأستاذ، المادة، والقسم في نفس اليوم (أفقياً)
   const getDayCells = (empId: string, dayId: number) => {
     const activePeriods = activePeriodsPerDay[dayId] || [];
     const cells = activePeriods.map(p => ({
@@ -103,122 +104,276 @@ const WeeklyWorkSchedule = () => {
     return cells;
   };
 
-  const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => (
-    <div className={cn(
-      "bg-white",
-      isPrint ? "p-0 w-full" : "rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-50/50 overflow-hidden"
-    )}>
-      <div className={cn(!isPrint && "overflow-x-auto")}>
-        <Table className={cn(
-          "border-collapse border-spacing-0 table-fixed", 
-          isPrint ? "w-full border-2 border-black" : "w-full min-w-[1200px]"
+  // خوارزمية حساب دمج الخلايا المتتالية لنفس الأستاذ، المادة، والقسم في نفس اليوم (عمودياً للوضع المتبادل)
+  const getTransposedDayCells = (empId: string, dayId: number) => {
+    const activePeriods = activePeriodsPerDay[dayId] || [];
+    const cells = activePeriods.map(p => ({
+      period: p,
+      rowSpan: 1,
+      assignment: assignments.find(a => a.employeeId === empId && a.day === dayId && a.period === p),
+      skip: false
+    }));
+
+    for (let i = 0; i < cells.length; i++) {
+      if (cells[i].skip) continue;
+      const asgn1 = cells[i].assignment;
+      if (!asgn1) continue;
+
+      for (let j = i + 1; j < cells.length; j++) {
+        const asgn2 = cells[j].assignment;
+        // دمج إذا كانت نفس المادة ونفس القسم متتاليين
+        if (asgn2 && asgn2.subjectId === asgn1.subjectId && asgn2.classId === asgn1.classId) {
+          cells[i].rowSpan++;
+          cells[j].skip = true;
+        } else {
+          break;
+        }
+      }
+    }
+    return cells;
+  };
+
+  const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => {
+    if (isTransposed) {
+      // الوضع المتبادل (Transposed Mode): الأسطر تمثل الأيام والحصص، والأعمدة تمثل الأساتذة
+      return (
+        <div className={cn(
+          "bg-white",
+          isPrint ? "p-0 w-full" : "rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-50/50 overflow-hidden"
         )}>
-          <colgroup>
-            <col className={isPrint ? "w-[15%]" : "w-[180px]"} />
-            {Array.from({ length: totalActiveColumns }).map((_, i) => (
-              <col key={i} className={isPrint ? `${85 / totalActiveColumns}%` : "w-[85px]"} />
-            ))}
-          </colgroup>
-          <TableHeader>
-            <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-7" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-9")}>
-              <TableHead className={cn(
-                "font-black text-emerald-900 border text-center sticky left-0 z-20 bg-emerald-50/50",
-                isPrint ? "text-[10px] p-1 border-black text-black" : "text-sm p-2 border-emerald-100"
-              )} rowSpan={2}>
-                {isRTL ? "المعلم" : "Teacher"}
-              </TableHead>
-              {DAYS.map(day => {
-                const colSpan = activePeriodsPerDay[day.id]?.length || 0;
-                if (colSpan === 0) return null; // إخفاء اليوم بالكامل إذا لم تكن به حصص نشطة
-                return (
-                  <TableHead 
-                    key={day.id} 
-                    className={cn(
-                      "text-center font-black border",
-                      isPrint ? "text-[10px] p-0.5 border-black bg-slate-50 text-black" : "text-[12px] p-1.5 bg-emerald-50/30 border-emerald-100 text-emerald-700"
-                    )} 
-                    colSpan={colSpan}
-                  >
-                    {isRTL ? day.name : day.en.substr(0, 3)}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-            <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-8" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-10")}>
-              {DAYS.map(day => {
-                const activePeriods = activePeriodsPerDay[day.id] || [];
-                return activePeriods.map(p => (
-                  <TableHead key={`${day.id}-${p}`} className={cn(
-                    "text-center font-bold border p-1",
-                    isPrint ? "text-[8px] border-black text-black" : "text-[10px] border-emerald-100 text-slate-400"
+          <div className={cn(!isPrint && "overflow-x-auto")}>
+            <Table className={cn(
+              "border-collapse border-spacing-0 table-fixed", 
+              isPrint ? "w-full border-2 border-black" : "w-full min-w-[1200px]"
+            )}>
+              <colgroup>
+                <col className={isPrint ? "w-[10%]" : "w-[100px]"} />
+                <col className={isPrint ? "w-[10%]" : "w-[100px]"} />
+                {filteredEmployees.map(emp => (
+                  <col key={emp.id} className={isPrint ? `${80 / filteredEmployees.length}%` : "w-[120px]"} />
+                ))}
+              </colgroup>
+              <TableHeader>
+                <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-8" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-10")}>
+                  <TableHead className={cn(
+                    "font-black text-emerald-900 border text-center",
+                    isPrint ? "text-[10px] p-1 border-black text-black" : "text-sm p-2 border-emerald-100"
                   )}>
-                    <div className="flex flex-col items-center justify-center leading-none">
-                      <span className="font-black">{isRTL ? `ح${p}` : `P${p}`}</span>
-                      <span className={cn("font-normal opacity-75 mt-0.5 block tracking-tighter", isPrint ? "text-[5px]" : "text-[8px]")}>
-                        {PERIOD_TIMES[p]}
-                      </span>
-                    </div>
+                    {isRTL ? "اليوم" : "Day"}
                   </TableHead>
-                ));
-              })}
-            </TableRow>
-          </TableHeader>
+                  <TableHead className={cn(
+                    "font-black text-emerald-900 border text-center",
+                    isPrint ? "text-[10px] p-1 border-black text-black" : "text-sm p-2 border-emerald-100"
+                  )}>
+                    {isRTL ? "الحصة" : "Period"}
+                  </TableHead>
+                  {filteredEmployees.map(emp => (
+                    <TableHead 
+                      key={emp.id} 
+                      className={cn(
+                        "text-center font-black border truncate",
+                        isPrint ? "text-[10px] p-1 border-black bg-slate-50 text-black" : "text-[12px] p-1.5 bg-emerald-50/30 border-emerald-100 text-emerald-700"
+                      )}
+                    >
+                      {emp.lastName} {emp.firstName}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
 
-          <TableBody>
-            {filteredEmployees.map(emp => (
-              <TableRow key={emp.id} className={cn("group transition-colors", isPrint ? "h-10 border-b border-black" : "h-14 hover:bg-emerald-50/30")}>
-                <TableCell className={cn(
-                  "font-bold border bg-white truncate sticky left-0 z-10 shadow-sm",
-                  isPrint ? "text-[10px] p-1.5 border-black text-black" : "text-[13px] p-2 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30"
-                )}>
-                  {emp.lastName} {emp.firstName}
-                </TableCell>
+              <TableBody>
                 {DAYS.map(day => {
-                  const dayCells = getDayCells(emp.id, day.id);
-                  return dayCells.map(cell => {
-                    if (cell.skip) return null;
-                    const isActive = !!cell.assignment;
-                    const subject = cell.assignment ? subjects.find(s => s.id === cell.assignment.subjectId) : null;
-                    const cls = cell.assignment ? classes.find(c => c.id === cell.assignment.classId) : null;
+                  const activePeriods = activePeriodsPerDay[day.id] || [];
+                  if (activePeriods.length === 0) return null;
 
-                    return (
-                      <TableCell
-                        key={`${emp.id}-${day.id}-${cell.period}`}
-                        colSpan={cell.colSpan}
-                        className={cn(
-                          "text-center border p-1 transition-all relative overflow-hidden",
-                          isActive ? (isPrint ? "bg-slate-100 text-black border-black" : "bg-emerald-600 text-white shadow-inner") : (isPrint ? "bg-white border-black" : "hover:bg-emerald-50/50"),
-                          isPrint ? "h-10 border-black" : "h-14 border-emerald-100"
-                        )}
-                      >
-                        {isActive ? (
-                          <div className="flex flex-col items-center justify-center leading-tight">
-                            <span className={cn("font-black truncate max-w-full", isPrint ? "text-[8px]" : "text-[11px]")}>
-                              {subject?.name || "---"}
-                            </span>
-                            <span className={cn("font-bold opacity-80 truncate max-w-full", isPrint ? "text-[7px]" : "text-[9px]")}>
-                              {cls?.name || "---"}
-                            </span>
-                            {cell.assignment.room && (
-                              <span className={cn("font-medium opacity-70 truncate max-w-full", isPrint ? "text-[6px]" : "text-[8px]")}>
-                                {cell.assignment.room}
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-slate-200 opacity-20 text-[8px]">---</span>
-                        )}
+                  return activePeriods.map((p, pIdx) => (
+                    <TableRow key={`${day.id}-${p}`} className={cn("group transition-colors", isPrint ? "h-10 border-b border-black" : "h-14 hover:bg-emerald-50/30")}>
+                      {pIdx === 0 && (
+                        <TableCell 
+                          rowSpan={activePeriods.length}
+                          className={cn(
+                            "font-black border bg-slate-50/50 text-center",
+                            isPrint ? "text-[10px] p-1.5 border-black text-black" : "text-[13px] p-2 border-emerald-100 text-emerald-950"
+                          )}
+                        >
+                          {isRTL ? day.name : day.en}
+                        </TableCell>
+                      )}
+                      <TableCell className={cn(
+                        "font-bold border bg-white text-center leading-none",
+                        isPrint ? "text-[9px] p-1 border-black text-black" : "text-[11px] p-2 border-emerald-100 text-slate-500"
+                      )}>
+                        <span className="font-black block">{isRTL ? `ح${p}` : `P${p}`}</span>
+                        <span className="text-[8px] font-normal opacity-75 mt-0.5 block">{PERIOD_TIMES[p]}</span>
                       </TableCell>
-                    );
-                  });
+
+                      {filteredEmployees.map(emp => {
+                        const dayCells = getTransposedDayCells(emp.id, day.id);
+                        const cell = dayCells.find(c => c.period === p);
+                        if (!cell || cell.skip) return null;
+
+                        const isActive = !!cell.assignment;
+                        const subject = cell.assignment ? subjects.find(s => s.id === cell.assignment.subjectId) : null;
+                        const cls = cell.assignment ? classes.find(c => c.id === cell.assignment.classId) : null;
+
+                        return (
+                          <TableCell
+                            key={`${emp.id}-${day.id}-${p}`}
+                            rowSpan={cell.rowSpan}
+                            className={cn(
+                              "text-center border p-1 transition-all relative overflow-hidden",
+                              isActive ? (isPrint ? "bg-slate-100 text-black border-black" : "bg-emerald-600 text-white shadow-inner") : (isPrint ? "bg-white border-black" : "hover:bg-emerald-50/50"),
+                              isPrint ? "h-10 border-black" : "h-14 border-emerald-100"
+                            )}
+                          >
+                            {isActive ? (
+                              <div className="flex flex-col items-center justify-center leading-tight">
+                                <span className={cn("font-black truncate max-w-full", isPrint ? "text-[8px]" : "text-[11px]")}>
+                                  {subject?.name || "---"}
+                                </span>
+                                <span className={cn("font-bold opacity-80 truncate max-w-full", isPrint ? "text-[7px]" : "text-[9px]")}>
+                                  {cls?.name || "---"}
+                                </span>
+                                {cell.assignment.room && (
+                                  <span className={cn("font-medium opacity-70 truncate max-w-full", isPrint ? "text-[6px]" : "text-[8px]")}>
+                                    {cell.assignment.room}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-slate-200 opacity-20 text-[8px]">---</span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  ));
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      );
+    }
+
+    // الوضع العادي (Normal Mode): الأسطر تمثل الأساتذة، والأعمدة تمثل الأيام والحصص
+    return (
+      <div className={cn(
+        "bg-white",
+        isPrint ? "p-0 w-full" : "rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-50/50 overflow-hidden"
+      )}>
+        <div className={cn(!isPrint && "overflow-x-auto")}>
+          <Table className={cn(
+            "border-collapse border-spacing-0 table-fixed", 
+            isPrint ? "w-full border-2 border-black" : "w-full min-w-[1200px]"
+          )}>
+            <colgroup>
+              <col className={isPrint ? "w-[15%]" : "w-[180px]"} />
+              {Array.from({ length: totalActiveColumns }).map((_, i) => (
+                <col key={i} className={isPrint ? `${85 / totalActiveColumns}%` : "w-[85px]"} />
+              ))}
+            </colgroup>
+            <TableHeader>
+              <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-7" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-9")}>
+                <TableHead className={cn(
+                  "font-black text-emerald-900 border text-center sticky left-0 z-20 bg-emerald-50/50",
+                  isPrint ? "text-[10px] p-1 border-black text-black" : "text-sm p-2 border-emerald-100"
+                )} rowSpan={2}>
+                  {isRTL ? "المعلم" : "Teacher"}
+                </TableHead>
+                {DAYS.map(day => {
+                  const colSpan = activePeriodsPerDay[day.id]?.length || 0;
+                  if (colSpan === 0) return null;
+                  return (
+                    <TableHead 
+                      key={day.id} 
+                      className={cn(
+                        "text-center font-black border",
+                        isPrint ? "text-[10px] p-0.5 border-black bg-slate-50 text-black" : "text-[12px] p-1.5 bg-emerald-50/30 border-emerald-100 text-emerald-700"
+                      )} 
+                      colSpan={colSpan}
+                    >
+                      {isRTL ? day.name : day.en.substr(0, 3)}
+                    </TableHead>
+                  );
                 })}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+              <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-8" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-10")}>
+                {DAYS.map(day => {
+                  const activePeriods = activePeriodsPerDay[day.id] || [];
+                  return activePeriods.map(p => (
+                    <TableHead key={`${day.id}-${p}`} className={cn(
+                      "text-center font-bold border p-1",
+                      isPrint ? "text-[8px] border-black text-black" : "text-[10px] border-emerald-100 text-slate-400"
+                    )}>
+                      <div className="flex flex-col items-center justify-center leading-none">
+                        <span className="font-black">{isRTL ? `ح${p}` : `P${p}`}</span>
+                        <span className={cn("font-normal opacity-75 mt-0.5 block tracking-tighter", isPrint ? "text-[5px]" : "text-[8px]")}>
+                          {PERIOD_TIMES[p]}
+                        </span>
+                      </div>
+                    </TableHead>
+                  ));
+                })}
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {filteredEmployees.map(emp => (
+                <TableRow key={emp.id} className={cn("group transition-colors", isPrint ? "h-10 border-b border-black" : "h-14 hover:bg-emerald-50/30")}>
+                  <TableCell className={cn(
+                    "font-bold border bg-white truncate sticky left-0 z-10 shadow-sm",
+                    isPrint ? "text-[10px] p-1.5 border-black text-black" : "text-[13px] p-2 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30"
+                  )}>
+                    {emp.lastName} {emp.firstName}
+                  </TableCell>
+                  {DAYS.map(day => {
+                    const dayCells = getDayCells(emp.id, day.id);
+                    return dayCells.map(cell => {
+                      if (cell.skip) return null;
+                      const isActive = !!cell.assignment;
+                      const subject = cell.assignment ? subjects.find(s => s.id === cell.assignment.subjectId) : null;
+                      const cls = cell.assignment ? classes.find(c => c.id === cell.assignment.classId) : null;
+
+                      return (
+                        <TableCell
+                          key={`${emp.id}-${day.id}-${cell.period}`}
+                          colSpan={cell.colSpan}
+                          className={cn(
+                            "text-center border p-1 transition-all relative overflow-hidden",
+                            isActive ? (isPrint ? "bg-slate-100 text-black border-black" : "bg-emerald-600 text-white shadow-inner") : (isPrint ? "bg-white border-black" : "hover:bg-emerald-50/50"),
+                            isPrint ? "h-10 border-black" : "h-14 border-emerald-100"
+                          )}
+                        >
+                          {isActive ? (
+                            <div className="flex flex-col items-center justify-center leading-tight">
+                              <span className={cn("font-black truncate max-w-full", isPrint ? "text-[8px]" : "text-[11px]")}>
+                                {subject?.name || "---"}
+                              </span>
+                              <span className={cn("font-bold opacity-80 truncate max-w-full", isPrint ? "text-[7px]" : "text-[9px]")}>
+                                {cls?.name || "---"}
+                              </span>
+                              {cell.assignment.room && (
+                                <span className={cn("font-medium opacity-70 truncate max-w-full", isPrint ? "text-[6px]" : "text-[8px]")}>
+                                  {cell.assignment.room}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-slate-200 opacity-20 text-[8px]">---</span>
+                          )}
+                        </TableCell>
+                      );
+                    });
+                  })}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const printSubtitle = (
     <span className="font-bold">{isRTL ? "توزيع المهام والحصص الأسبوعية" : "Weekly Tasks & Lessons Distribution"}</span>
@@ -232,6 +387,15 @@ const WeeklyWorkSchedule = () => {
         icon={ClipboardList}
         isRTL={isRTL}
       >
+        <Button 
+          variant="outline" 
+          onClick={() => setIsTransposed(!isTransposed)} 
+          className="rounded-2xl border-emerald-100 text-emerald-700 font-bold gap-2 h-11 bg-white px-4"
+        >
+          <ArrowLeftRight size={16} />
+          {isRTL ? "تبديل المحاور" : "Transpose"}
+        </Button>
+
         <Select value={orientation} onValueChange={(v: any) => setOrientation(v)}>
           <SelectTrigger className="w-[140px] rounded-2xl border-emerald-100 bg-white h-11 font-bold">
             <SelectValue placeholder={isRTL ? "اتجاه الصفحة" : "Orientation"} />

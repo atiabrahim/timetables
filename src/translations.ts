@@ -4,7 +4,7 @@ export const translations = {
   ar: {
     dashboard: "لوحة التحكم",
     schedule: "الجدول",
-    weeklyWorkSchedule: "جدول العمل الأسبوعي",
+    weeklyWorkSchedule: "الجدول الكلي لعمل الأساتذة",
     employees: "المعلمون",
     classes: "الفروع",
     subjects: "المواد",
@@ -86,7 +86,7 @@ export const translations = {
   en: {
     dashboard: "Dashboard",
     schedule: "Schedule",
-    weeklyWorkSchedule: "Weekly Work Schedule",
+    weeklyWorkSchedule: "Master Work Schedule",
     employees: "Teachers",
     classes: "Branches",
     subjects: "Subjects",
