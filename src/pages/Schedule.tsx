@@ -9,6 +9,7 @@ import ScheduleTable from "../components/schedule/ScheduleTable";
 import AddLessonDialog from "../components/schedule/AddLessonDialog";
 import PrintPreview from "../components/schedule/PrintPreview";
 import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
+import ConflictPanel from "../components/schedule/ConflictPanel";
 import { Button } from "@/components/ui/button";
 import { DAYS, PERIOD_MAP, PERIODS } from "../constants/schedule";
 import {
@@ -133,59 +134,72 @@ const Schedule = () => {
       />
 
       {selectedId ? (
-        <div className="space-y-4">
-          <div className="flex justify-end gap-2 print:hidden">
-            <Button variant="outline" size="sm" onClick={() => setIsTransposed(!isTransposed)} className="rounded-xl border-emerald-100 text-emerald-700 font-bold gap-2">
-              <ArrowLeftRight size={14} />
-              {isRTL ? "تبديل المحاور" : "Transpose"}
-            </Button>
-            
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 rounded-xl gap-2 font-bold">
-                  <Trash2 size={14} />
-                  {isRTL ? "مسح الجدول" : "Clear Schedule"}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="rounded-3xl">
-                <AlertDialogHeader><AlertDialogTitle>{isRTL ? "هل أنت متأكد؟" : "Are you sure?"}</AlertDialogTitle></AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => setAssignments(assignments.filter(a => viewMode === "class" ? a.classId !== selectedId : a.employeeId !== selectedId))} className="bg-red-600 rounded-xl">
-                    {isRTL ? "نعم، امسح" : "Yes, Clear"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
+          <div className="xl:col-span-3 space-y-4">
+            <div className="flex justify-end gap-2 print:hidden">
+              <Button variant="outline" size="sm" onClick={() => setIsTransposed(!isTransposed)} className="rounded-xl border-emerald-100 text-emerald-700 font-bold gap-2">
+                <ArrowLeftRight size={14} />
+                {isRTL ? "تبديل المحاور" : "Transpose"}
+              </Button>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 rounded-xl gap-2 font-bold">
+                    <Trash2 size={14} />
+                    {isRTL ? "مسح الجدول" : "Clear Schedule"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-3xl">
+                  <AlertDialogHeader><AlertDialogTitle>{isRTL ? "هل أنت متأكد؟" : "Are you sure?"}</AlertDialogTitle></AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => setAssignments(assignments.filter(a => viewMode === "class" ? a.classId !== selectedId : a.employeeId !== selectedId))} className="bg-red-600 rounded-xl">
+                      {isRTL ? "نعم، امسح" : "Yes, Clear"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+
+            <div className="print:hidden">
+              <ScheduleTable 
+                isRTL={isRTL} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment}
+                onAddClick={handleAddClick} onDeleteClick={handleDeleteLesson}
+                subjects={subjects} employees={employees} classes={classes}
+                viewMode={viewMode} summaryData={summaryData} totalHours={filteredAssignments.length}
+                isTransposed={isTransposed} allAssignments={assignments} isAdmin={true}
+              />
+            </div>
+
+            {!isPreviewOpen && (
+              <div className="print-content-master hidden print:block">
+                <OfficialPrintWrapper
+                  title={isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Schedule"}
+                  subtitle={isRTL ? (viewMode === "class" ? `لفوج : ${selectedEntityName}` : `للأستاذ : ${selectedEntityName}`) : (viewMode === "class" ? `for Class: ${selectedEntityName}` : `for Teacher: ${selectedEntityName}`)}
+                  orientation={orientation}
+                >
+                  <ScheduleTable 
+                    isRTL={isRTL} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment}
+                    onAddClick={() => {}} onDeleteClick={() => {}}
+                    subjects={subjects} employees={employees} classes={classes}
+                    viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={filteredAssignments.length}
+                    isTransposed={isTransposed}
+                  />
+                </OfficialPrintWrapper>
+              </div>
+            )}
           </div>
 
-          <div className="print:hidden">
-            <ScheduleTable 
-              isRTL={isRTL} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment}
-              onAddClick={handleAddClick} onDeleteClick={handleDeleteLesson}
-              subjects={subjects} employees={employees} classes={classes}
-              viewMode={viewMode} summaryData={summaryData} totalHours={filteredAssignments.length}
-              isTransposed={isTransposed} allAssignments={assignments} isAdmin={true}
+          {/* Conflict Panel Sidebar */}
+          <div className="xl:col-span-1 print:hidden">
+            <ConflictPanel 
+              assignments={assignments}
+              employees={employees}
+              classes={classes}
+              subjects={subjects}
+              isRTL={isRTL}
             />
           </div>
-
-          {!isPreviewOpen && (
-            <div className="print-content-master hidden print:block">
-              <OfficialPrintWrapper
-                title={isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Schedule"}
-                subtitle={isRTL ? (viewMode === "class" ? `لفوج : ${selectedEntityName}` : `للأستاذ : ${selectedEntityName}`) : (viewMode === "class" ? `for Class: ${selectedEntityName}` : `for Teacher: ${selectedEntityName}`)}
-                orientation={orientation}
-              >
-                <ScheduleTable 
-                  isRTL={isRTL} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment}
-                  onAddClick={() => {}} onDeleteClick={() => {}}
-                  subjects={subjects} employees={employees} classes={classes}
-                  viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={filteredAssignments.length}
-                  isTransposed={isTransposed}
-                />
-              </OfficialPrintWrapper>
-            </div>
-          )}
         </div>
       ) : (
         <div className="text-center py-32 bg-white rounded-[3rem] border border-dashed border-emerald-200 print:hidden">
