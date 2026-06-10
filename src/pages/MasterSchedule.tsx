@@ -31,6 +31,7 @@ const MasterSchedule = () => {
   const [hideEmptyPeriods, setHideEmptyPeriods] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
+  const [hoveredCell, setHoveredCell] = useState<{ classId: string; period: string } | null>(null);
 
   const visibleClasses = useMemo(() => {
     let list = classes.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -83,59 +84,72 @@ const MasterSchedule = () => {
               )}>
                 {isRTL ? "الفوج" : "Class"}
               </th>
-              {visiblePeriods.map(p => (
-                <th key={p} className={cn(
-                  "p-0.5 border text-center font-black",
-                  isPrint ? "text-[8px] border-black text-black" : "text-[10px] border-white/10"
-                )}>
-                  {isRTL ? `ح${p}` : `P${p}`}
-                </th>
-              ))}
+              {visiblePeriods.map(p => {
+                const isColHovered = hoveredCell?.period === p;
+                return (
+                  <th key={p} className={cn(
+                    "p-0.5 border text-center font-black transition-colors duration-150",
+                    isPrint ? "text-[8px] border-black text-black" : cn("text-[10px] border-white/10", isColHovered && "bg-emerald-900 text-white")
+                  )}>
+                    {isRTL ? `ح${p}` : `P${p}`}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
-            {visibleClasses.map((cls, idx) => (
-              <tr key={cls.id} className={cn(
-                "group transition-colors",
-                isPrint ? "h-6" : "h-9",
-                idx % 2 === 0 ? "bg-white" : "bg-emerald-50/10",
-                !isPrint && "hover:bg-emerald-100/20"
-              )}>
-                <td className={cn(
-                  "p-0.5 font-black border sticky left-0 z-10 transition-colors shadow-sm whitespace-normal break-words text-center",
-                  idx % 2 === 0 ? "bg-white" : "bg-[#fcfdfd]",
-                  isPrint ? "text-[7.5px] p-0.5 border-black text-black" : "text-[10px] text-emerald-950 border-emerald-50"
+            {visibleClasses.map((cls, idx) => {
+              const isRowHovered = hoveredCell?.classId === cls.id;
+              return (
+                <tr key={cls.id} className={cn(
+                  "group transition-colors duration-150",
+                  isPrint ? "h-6" : "h-9",
+                  idx % 2 === 0 ? "bg-white" : "bg-emerald-50/10",
+                  !isPrint && (isRowHovered ? "bg-emerald-50/20" : "hover:bg-emerald-100/20")
                 )}>
-                  {cls.name}
-                </td>
-                {visiblePeriods.map(p => {
-                  const lesson = getLesson(cls.id, p);
-                  const teacher = lesson ? employees.find(e => e.id === lesson.employeeId) : null;
-                  const subject = lesson ? subjects.find(s => s.id === lesson.subjectId) : null;
+                  <td className={cn(
+                    "p-0.5 font-black border sticky left-0 z-10 transition-colors duration-150 shadow-sm whitespace-normal break-words text-center",
+                    idx % 2 === 0 ? "bg-white" : "bg-[#fcfdfd]",
+                    isPrint ? "text-[7.5px] p-0.5 border-black text-black" : cn("text-[10px] text-emerald-950 border-emerald-50", isRowHovered && "bg-emerald-50/40")
+                  )}>
+                    {cls.name}
+                  </td>
+                  {visiblePeriods.map(p => {
+                    const lesson = getLesson(cls.id, p);
+                    const teacher = lesson ? employees.find(e => e.id === lesson.employeeId) : null;
+                    const subject = lesson ? subjects.find(s => s.id === lesson.subjectId) : null;
+                    const isCellHovered = hoveredCell?.classId === cls.id || hoveredCell?.period === p;
+                    const isExactHovered = hoveredCell?.classId === cls.id && hoveredCell?.period === p;
 
-                  return (
-                    <td key={p} className={cn(
-                      "p-0.5 text-center border",
-                      isPrint ? "border-black" : "border-emerald-50"
-                    )}>
-                      {lesson ? (
-                        <div className={cn(
-                          "flex flex-col gap-0 overflow-hidden leading-none",
-                          isPrint ? "text-[7px] text-black" : "text-[9px]"
-                        )}>
-                          <span className={cn("font-black truncate", isPrint ? "" : "text-emerald-700")}>{subject?.name}</span>
-                          <span className={cn("font-bold opacity-80 truncate", isPrint ? "text-[6.5px]" : "text-slate-500")}>
-                            {teacher ? `${teacher.lastName}` : "---"}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-slate-200 opacity-20 text-[7px]">---</span>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
+                    return (
+                      <td 
+                        key={p} 
+                        className={cn(
+                          "p-0.5 text-center border transition-colors duration-150",
+                          isPrint ? "border-black" : cn("border-emerald-50", isCellHovered && "bg-emerald-50/30", isExactHovered && "bg-emerald-100/50")
+                        )}
+                        onMouseEnter={() => !isPrint && setHoveredCell({ classId: cls.id, period: p })}
+                        onMouseLeave={() => !isPrint && setHoveredCell(null)}
+                      >
+                        {lesson ? (
+                          <div className={cn(
+                            "flex flex-col gap-0 overflow-hidden leading-none",
+                            isPrint ? "text-[7px] text-black" : "text-[9px]"
+                          )}>
+                            <span className={cn("font-black truncate", isPrint ? "" : "text-emerald-700")}>{subject?.name}</span>
+                            <span className={cn("font-bold opacity-80 truncate", isPrint ? "text-[6.5px]" : "text-slate-500")}>
+                              {teacher ? `${teacher.lastName}` : "---"}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-200 opacity-20 text-[7px]">---</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         {visibleClasses.length === 0 && (

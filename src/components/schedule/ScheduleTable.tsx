@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Plus, Trash2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -41,6 +41,7 @@ const ScheduleTable = ({
   isRTL, days, timeSlots, getAssignment, onAddClick, onDeleteClick, 
   subjects, employees, classes, viewMode, isPrint = false, summaryData = [], totalHours = 0, isTransposed = false, allAssignments = [], isAdmin = true
 }: ScheduleTableProps) => {
+  const [hoveredCell, setHoveredCell] = useState<{ day: number; period: string } | null>(null);
 
   const checkConflict = (day: number, period: string, assignment: any) => {
     if (isPrint || !allAssignments) return null;
@@ -88,10 +89,14 @@ const ScheduleTable = ({
     const subjectIndex = subjects.findIndex(s => s.id === assignment.subjectId);
     const colorClass = getSubjectColor(subjectIndex);
     const conflict = checkConflict(day, period, assignment);
+    const isExactHovered = hoveredCell?.day === day && hoveredCell?.period === period;
 
     return (
       <TooltipProvider>
-        <div className={cn("h-full w-full flex flex-col justify-center items-center text-center relative transition-all group/card", isPrint ? "p-0.5 text-black bg-white" : cn("text-white shadow-sm rounded-lg p-1", colorClass, "hover:scale-[1.01]", conflict && "ring-1 ring-red-500"))}>
+        <div className={cn(
+          "h-full w-full flex flex-col justify-center items-center text-center relative transition-all group/card", 
+          isPrint ? "p-0.5 text-black bg-white" : cn("text-white shadow-sm rounded-lg p-1", colorClass, "hover:scale-[1.01]", conflict && "ring-1 ring-red-500", isExactHovered && "ring-2 ring-emerald-400 scale-[1.02]")
+        )}>
           <p className={cn("font-bold leading-none truncate w-full mb-0.5", isPrint ? "text-[6.5px] opacity-70" : "text-[8px] opacity-80")}>
             {viewMode === "class" ? employees.find(emp => emp.id === assignment.employeeId)?.lastName : classes.find(c => c.id === assignment.classId)?.name}
           </p>
@@ -142,33 +147,57 @@ const ScheduleTable = ({
             <thead>
               <tr className={isPrint ? "h-5" : "h-8"}>
                 <th className={cn("font-black text-center", isPrint ? "border border-emerald-950 text-[7.5px] bg-emerald-50" : "rounded-lg bg-slate-50 text-slate-500 p-1 uppercase text-[9px]")}>{isRTL ? "اليوم" : "Day"}</th>
-                {timeSlots.map(slot => (
-                  <React.Fragment key={slot.id}>
-                    <th className={cn("font-black text-center px-0.5", isPrint ? "border border-emerald-950 text-[7.5px] bg-emerald-50" : "rounded-lg bg-emerald-950 text-emerald-400 p-1 text-[9px]")}>
-                      <div className="flex flex-col items-center justify-center">
-                        <span className="whitespace-nowrap">{slot.label}</span>
-                        <span className={cn("font-bold opacity-70 mt-0.5 whitespace-nowrap", isPrint ? "text-[4.5px]" : "text-[7px]")}>{slot.time}</span>
-                      </div>
-                    </th>
-                    {(slot.id === "2" || slot.id === "4") && <th className="border border-emerald-950 bg-emerald-50/50 text-[6px] font-black [writing-mode:vertical-rl] rotate-180 p-0.5 text-center">{isRTL ? "راحة" : "BREAK"}</th>}
-                  </React.Fragment>
-                ))}
+                {timeSlots.map(slot => {
+                  const isColHovered = hoveredCell?.period === slot.id;
+                  return (
+                    <React.Fragment key={slot.id}>
+                      <th className={cn(
+                        "font-black text-center px-0.5 transition-colors duration-150", 
+                        isPrint ? "border border-emerald-950 text-[7.5px] bg-emerald-50" : cn("rounded-lg p-1 text-[9px]", isColHovered ? "bg-emerald-800 text-white" : "bg-emerald-950 text-emerald-400")
+                      )}>
+                        <div className="flex flex-col items-center justify-center">
+                          <span className="whitespace-nowrap">{slot.label}</span>
+                          <span className={cn("font-bold opacity-70 mt-0.5 whitespace-nowrap", isPrint ? "text-[4.5px]" : "text-[7px]")}>{slot.time}</span>
+                        </div>
+                      </th>
+                      {(slot.id === "2" || slot.id === "4") && <th className="border border-emerald-950 bg-emerald-50/50 text-[6px] font-black [writing-mode:vertical-rl] rotate-180 p-0.5 text-center">{isRTL ? "راحة" : "BREAK"}</th>}
+                    </React.Fragment>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
-              {days.map(day => (
-                <tr key={day.id} className={isPrint ? "h-8" : "h-12"}>
-                  <td className={cn(isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10" : "p-1 border-e border-slate-100 text-center")}><span className={cn("font-black", isPrint ? "text-[8px]" : "text-[11px] text-slate-600")}>{isRTL ? day.name : day.en.substr(0, 3)}</span></td>
-                  {timeSlots.map(slot => (
-                    <React.Fragment key={slot.id}>
-                      <td className={cn("relative h-full", isPrint ? "border border-emerald-950" : "p-0.5")}>
-                        {getAssignment(day.id, slot.id) ? <LessonCard assignment={getAssignment(day.id, slot.id)} day={day.id} period={slot.id} /> : (!isPrint && isAdmin && <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}><Plus size={10} className="text-slate-200" /></div>)}
-                      </td>
-                      {(slot.id === "2" || slot.id === "4") && <td className="border border-emerald-950 bg-emerald-50/20"></td>}
-                    </React.Fragment>
-                  ))}
-                </tr>
-              ))}
+              {days.map(day => {
+                const isRowHovered = hoveredCell?.day === day.id;
+                return (
+                  <tr key={day.id} className={cn(isPrint ? "h-8" : "h-12", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                    <td className={cn(
+                      "transition-colors duration-150",
+                      isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10" : cn("p-1 border-e border-slate-100 text-center", isRowHovered && "bg-emerald-50/40")
+                    )}>
+                      <span className={cn("font-black", isPrint ? "text-[8px]" : "text-[11px] text-slate-600")}>{isRTL ? day.name : day.en.substr(0, 3)}</span>
+                    </td>
+                    {timeSlots.map(slot => {
+                      const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id;
+                      return (
+                        <React.Fragment key={slot.id}>
+                          <td 
+                            className={cn(
+                              "relative h-full transition-colors duration-150", 
+                              isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30")
+                            )}
+                            onMouseEnter={() => !isPrint && setHoveredCell({ day: day.id, period: slot.id })}
+                            onMouseLeave={() => !isPrint && setHoveredCell(null)}
+                          >
+                            {getAssignment(day.id, slot.id) ? <LessonCard assignment={getAssignment(day.id, slot.id)} day={day.id} period={slot.id} /> : (!isPrint && isAdmin && <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}><Plus size={10} className="text-slate-200" /></div>)}
+                          </td>
+                          {(slot.id === "2" || slot.id === "4") && <td className="border border-emerald-950 bg-emerald-50/20"></td>}
+                        </React.Fragment>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -188,32 +217,60 @@ const ScheduleTable = ({
           <thead>
             <tr className={isPrint ? "h-5" : "h-8"}>
               <th className={cn("font-black text-center", isPrint ? "border border-emerald-950 text-[7.5px] bg-emerald-50" : "rounded-lg bg-emerald-950 text-emerald-400 p-1 text-[9px]")}>{isRTL ? "الحصة" : "Slot"}</th>
-              {days.map(day => <th key={day.id} className={cn("font-black text-center px-0.5", isPrint ? "border border-emerald-950 text-[8.5px] bg-emerald-50" : "rounded-lg bg-slate-50 text-slate-500 p-1 uppercase text-[9px]")}>{isRTL ? day.name : day.en.substr(0, 3)}</th>)}
+              {days.map(day => {
+                const isColHovered = hoveredCell?.day === day.id;
+                return (
+                  <th 
+                    key={day.id} 
+                    className={cn(
+                      "font-black text-center px-0.5 transition-colors duration-150", 
+                      isPrint ? "border border-emerald-950 text-[8.5px] bg-emerald-50" : cn("rounded-lg p-1 uppercase text-[9px]", isColHovered ? "bg-emerald-100 text-emerald-900" : "bg-slate-50 text-slate-500")
+                    )}
+                  >
+                    {isRTL ? day.name : day.en.substr(0, 3)}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
-            {timeSlots.map(slot => (
-              <React.Fragment key={slot.id}>
-                <tr className={isPrint ? "h-8" : "h-12"}>
-                  <td className={cn(isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10 text-center" : "p-1 border-e border-slate-100 text-center")}>
-                    <div className="flex flex-col items-center justify-center h-full text-center">
-                      <span className={cn("font-black leading-none whitespace-nowrap", isPrint ? "text-[8px]" : "text-[11px] text-slate-600")}>{slot.label}</span>
-                      <span className={cn("font-bold opacity-60 mt-0.5 whitespace-nowrap", isPrint ? "text-[4.5px]" : "text-[7px]")}>{slot.time}</span>
-                    </div>
-                  </td>
-                  {days.map(day => {
-                    const assignment = getAssignment(day.id, slot.id);
-                    return (
-                      <td key={day.id} className={cn("relative h-full", isPrint ? "border border-emerald-950" : "p-0.5")}>
-                        {assignment ? <LessonCard assignment={assignment} day={day.id} period={slot.id} /> : (!isPrint && isAdmin && <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}><Plus size={10} className="text-slate-200" /></div>)}
-                      </td>
-                    );
-                  })}
-                </tr>
-                {slot.id === "2" && <BreakRow title={isRTL ? "راحة" : "BREAK"} />}
-                {slot.id === "4" && <BreakRow title={isRTL ? "راحة الزوال" : "NOON BREAK"} />}
-              </React.Fragment>
-            ))}
+            {timeSlots.map(slot => {
+              const isRowHovered = hoveredCell?.period === slot.id;
+              return (
+                <React.Fragment key={slot.id}>
+                  <tr className={cn(isPrint ? "h-8" : "h-12", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                    <td className={cn(
+                      "transition-colors duration-150",
+                      isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10 text-center" : cn("p-1 border-e border-slate-100 text-center", isRowHovered && "bg-emerald-50/40")
+                    )}>
+                      <div className="flex flex-col items-center justify-center h-full text-center">
+                        <span className={cn("font-black leading-none whitespace-nowrap", isPrint ? "text-[8px]" : "text-[11px] text-slate-600")}>{slot.label}</span>
+                        <span className={cn("font-bold opacity-60 mt-0.5 whitespace-nowrap", isPrint ? "text-[4.5px]" : "text-[7px]")}>{slot.time}</span>
+                      </div>
+                    </td>
+                    {days.map(day => {
+                      const assignment = getAssignment(day.id, slot.id);
+                      const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id;
+                      return (
+                        <td 
+                          key={day.id} 
+                          className={cn(
+                            "relative h-full transition-colors duration-150", 
+                            isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30")
+                          )}
+                          onMouseEnter={() => !isPrint && setHoveredCell({ day: day.id, period: slot.id })}
+                          onMouseLeave={() => !isPrint && setHoveredCell(null)}
+                        >
+                          {assignment ? <LessonCard assignment={assignment} day={day.id} period={slot.id} /> : (!isPrint && isAdmin && <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}><Plus size={10} className="text-slate-200" /></div>)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                  {slot.id === "2" && <BreakRow title={isRTL ? "راحة" : "BREAK"} />}
+                  {slot.id === "4" && <BreakRow title={isRTL ? "راحة الزوال" : "NOON BREAK"} />}
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
