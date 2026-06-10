@@ -53,9 +53,31 @@ const WeeklyWorkSchedule = () => {
     );
   }, [employees, searchTerm]);
 
+  // تحديد الحصص النشطة فقط لكل يوم (التي تحتوي على حصة واحدة على الأقل لأي من الأساتذة المفلترين)
+  const activePeriodsPerDay = useMemo(() => {
+    const map: Record<number, string[]> = {};
+    DAYS.forEach(day => {
+      const activePeriods = PERIODS.filter(p => 
+        assignments.some(a => 
+          a.day === day.id && 
+          a.period === p && 
+          filteredEmployees.some(emp => emp.id === a.employeeId)
+        )
+      );
+      map[day.id] = activePeriods;
+    });
+    return map;
+  }, [assignments, filteredEmployees]);
+
+  // حساب إجمالي الأعمدة النشطة لتوزيع العرض بالتساوي
+  const totalActiveColumns = useMemo(() => {
+    return DAYS.reduce((sum, day) => sum + (activePeriodsPerDay[day.id]?.length || 0), 0);
+  }, [activePeriodsPerDay]);
+
   // خوارزمية حساب دمج الخلايا المتتالية لنفس الأستاذ، المادة، والقسم في نفس اليوم
   const getDayCells = (empId: string, dayId: number) => {
-    const cells = PERIODS.map(p => ({
+    const activePeriods = activePeriodsPerDay[dayId] || [];
+    const cells = activePeriods.map(p => ({
       period: p,
       colSpan: 1,
       assignment: assignments.find(a => a.employeeId === empId && a.day === dayId && a.period === p),
@@ -93,8 +115,8 @@ const WeeklyWorkSchedule = () => {
         )}>
           <colgroup>
             <col className={isPrint ? "w-[15%]" : "w-[180px]"} />
-            {Array.from({ length: 5 * PERIODS.length }).map((_, i) => (
-              <col key={i} className={isPrint ? `${85 / (5 * PERIODS.length)}%` : "w-[85px]"} />
+            {Array.from({ length: totalActiveColumns }).map((_, i) => (
+              <col key={i} className={isPrint ? `${85 / totalActiveColumns}%` : "w-[85px]"} />
             ))}
           </colgroup>
           <TableHeader>
@@ -105,33 +127,40 @@ const WeeklyWorkSchedule = () => {
               )} rowSpan={2}>
                 {isRTL ? "المعلم" : "Teacher"}
               </TableHead>
-              {DAYS.map(day => (
-                <TableHead 
-                  key={day.id} 
-                  className={cn(
-                    "text-center font-black border",
-                    isPrint ? "text-[10px] p-0.5 border-black bg-slate-50 text-black" : "text-[12px] p-1.5 bg-emerald-50/30 border-emerald-100 text-emerald-700"
-                  )} 
-                  colSpan={PERIODS.length}
-                >
-                  {isRTL ? day.name : day.en.substr(0, 3)}
-                </TableHead>
-              ))}
+              {DAYS.map(day => {
+                const colSpan = activePeriodsPerDay[day.id]?.length || 0;
+                if (colSpan === 0) return null; // إخفاء اليوم بالكامل إذا لم تكن به حصص نشطة
+                return (
+                  <TableHead 
+                    key={day.id} 
+                    className={cn(
+                      "text-center font-black border",
+                      isPrint ? "text-[10px] p-0.5 border-black bg-slate-50 text-black" : "text-[12px] p-1.5 bg-emerald-50/30 border-emerald-100 text-emerald-700"
+                    )} 
+                    colSpan={colSpan}
+                  >
+                    {isRTL ? day.name : day.en.substr(0, 3)}
+                  </TableHead>
+                );
+              })}
             </TableRow>
             <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-8" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-10")}>
-              {DAYS.map(day => PERIODS.map(p => (
-                <TableHead key={`${day.id}-${p}`} className={cn(
-                  "text-center font-bold border p-1",
-                  isPrint ? "text-[8px] border-black text-black" : "text-[10px] border-emerald-100 text-slate-400"
-                )}>
-                  <div className="flex flex-col items-center justify-center leading-none">
-                    <span className="font-black">{isRTL ? `ح${p}` : `P${p}`}</span>
-                    <span className={cn("font-normal opacity-75 mt-0.5 block tracking-tighter", isPrint ? "text-[5px]" : "text-[8px]")}>
-                      {PERIOD_TIMES[p]}
-                    </span>
-                  </div>
-                </TableHead>
-              )))}
+              {DAYS.map(day => {
+                const activePeriods = activePeriodsPerDay[day.id] || [];
+                return activePeriods.map(p => (
+                  <TableHead key={`${day.id}-${p}`} className={cn(
+                    "text-center font-bold border p-1",
+                    isPrint ? "text-[8px] border-black text-black" : "text-[10px] border-emerald-100 text-slate-400"
+                  )}>
+                    <div className="flex flex-col items-center justify-center leading-none">
+                      <span className="font-black">{isRTL ? `ح${p}` : `P${p}`}</span>
+                      <span className={cn("font-normal opacity-75 mt-0.5 block tracking-tighter", isPrint ? "text-[5px]" : "text-[8px]")}>
+                        {PERIOD_TIMES[p]}
+                      </span>
+                    </div>
+                  </TableHead>
+                ));
+              })}
             </TableRow>
           </TableHeader>
 
