@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Printer, Search, Eye, ClipboardList, RotateCw, X, ArrowLeftRight } from "lucide-react";
+import { Printer, Search, Eye, ClipboardList, RotateCw, X, ArrowLeftRight, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { 
   Select, 
@@ -47,6 +47,7 @@ const WeeklyWorkSchedule = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
   const [isTransposed, setIsTransposed] = useState(false);
+  const [showControls, setShowControls] = useState(true);
 
   const filteredEmployees = useMemo(() => {
     return employees.filter(emp => 
@@ -380,7 +381,7 @@ const WeeklyWorkSchedule = () => {
   );
 
   return (
-    <div className="space-y-8 pb-20">
+    <div className="space-y-6 pb-20">
       <PageHeader
         title={t.weeklyWorkSchedule}
         subtitle={isRTL ? "مزامنة تلقائية مع جدول الحصص وتكليفات العمل" : "Auto-sync with timetable and work assignments"}
@@ -389,32 +390,15 @@ const WeeklyWorkSchedule = () => {
       >
         <Button 
           variant="outline" 
-          onClick={() => setIsTransposed(!isTransposed)} 
-          className="rounded-2xl border-emerald-100 text-emerald-700 font-bold gap-2 h-11 bg-white px-4"
+          onClick={() => setShowControls(!showControls)} 
+          className={cn(
+            "rounded-2xl border-emerald-100 font-bold gap-2 h-11 px-4 transition-all",
+            showControls ? "bg-emerald-50 text-emerald-900 border-emerald-300" : "bg-white text-slate-700"
+          )}
         >
-          <ArrowLeftRight size={16} />
-          {isRTL ? "تبديل المحاور" : "Transpose"}
+          <SlidersHorizontal size={16} />
+          {isRTL ? "أدوات التحكم" : "Controls"}
         </Button>
-
-        <Select value={orientation} onValueChange={(v: any) => setOrientation(v)}>
-          <SelectTrigger className="w-[140px] rounded-2xl border-emerald-100 bg-white h-11 font-bold">
-            <SelectValue placeholder={isRTL ? "اتجاه الصفحة" : "Orientation"} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="landscape">{isRTL ? "عرضي" : "Landscape"}</SelectItem>
-            <SelectItem value="portrait">{isRTL ? "طولي" : "Portrait"}</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <div className="relative w-full md:w-48">
-          <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
-          <Input 
-            placeholder={t.search} 
-            className={cn("rounded-2xl border-emerald-100 bg-white h-11", isRTL ? "pr-10" : "pl-10")}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
         <Button variant="outline" className="rounded-2xl border-emerald-200 text-emerald-700 gap-2 font-bold px-6 h-11 bg-white" onClick={() => setIsPreviewOpen(true)}>
           <Eye size={18} /> {t.preview}
         </Button>
@@ -422,6 +406,55 @@ const WeeklyWorkSchedule = () => {
           <Printer size={18} /> {t.print}
         </Button>
       </PageHeader>
+
+      {/* Collapsible Control Panel */}
+      {showControls && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-5 rounded-3xl border border-emerald-100 shadow-sm transition-all duration-300 print:hidden">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">
+              {isRTL ? "بحث عن معلم" : "Search Teacher"}
+            </label>
+            <div className="relative">
+              <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
+              <Input 
+                placeholder={t.search} 
+                className={cn("rounded-xl border-emerald-100 bg-slate-50/30 h-11", isRTL ? "pr-10" : "pl-10")}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">
+              {isRTL ? "اتجاه الصفحة" : "Page Orientation"}
+            </label>
+            <Select value={orientation} onValueChange={(v: any) => setOrientation(v)}>
+              <SelectTrigger className="rounded-xl border-emerald-100 bg-slate-50/30 h-11 font-bold">
+                <SelectValue placeholder={isRTL ? "اتجاه الصفحة" : "Orientation"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="landscape">{isRTL ? "عرضي" : "Landscape"}</SelectItem>
+                <SelectItem value="portrait">{isRTL ? "طولي" : "Portrait"}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5 flex flex-col justify-end">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsTransposed(!isTransposed)} 
+              className={cn(
+                "rounded-xl border-emerald-100 font-bold gap-2 h-11 w-full transition-all",
+                isTransposed ? "bg-emerald-600 text-white border-emerald-600" : "bg-slate-50/30 text-emerald-700 hover:bg-emerald-50"
+              )}
+            >
+              <ArrowLeftRight size={16} />
+              {isRTL ? "تبديل المحاور (أسطر/أعمدة)" : "Transpose Axes"}
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="print:hidden">
         <ScheduleTable />
