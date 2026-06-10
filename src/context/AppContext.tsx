@@ -47,6 +47,8 @@ interface AppContextType {
   loadDataFromCloud: () => Promise<void>;
   t: any;
   isRTL: boolean;
+  isSidebarCollapsed: boolean;
+  setIsSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -107,6 +109,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [classes, setClasses] = useState<AcademicClass[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>(generateDefaultPeriodConfigs);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const isRTL = language === "ar";
 
@@ -308,7 +311,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       institution, setInstitution, employees, setEmployees, assignments, setAssignments,
       templateAssignments, updateTemplateAssignment, dailyAssignments, saveAssignment, getEffectiveAssignment,
       departments, setDepartments, rooms, setRooms, classes, setClasses, subjects, setSubjects,
-      periodConfigs, setPeriodConfigs, importAllData, saveDataToCloud, loadDataFromCloud: () => loadDataFromCloud(false), t, isRTL 
+      periodConfigs, setPeriodConfigs, importAllData, saveDataToCloud, loadDataFromCloud: () => loadDataFromCloud(false), t, isRTL,
+      isSidebarCollapsed, setIsSidebarCollapsed
     }}>
       <div className={isRTL ? "font-arabic" : ""}>
         {children}
