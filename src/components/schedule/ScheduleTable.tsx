@@ -57,29 +57,29 @@ const ScheduleTable = ({
   };
   
   const SummaryTable = () => (
-    <div className={cn("shrink-0", isPrint ? "w-[110px]" : "w-[180px] h-fit")}>
+    <div className={cn("shrink-0", isPrint ? "w-[110px]" : "w-auto min-w-[180px] h-fit")}>
       <div className={cn("bg-white border", isPrint ? "border-emerald-950" : "rounded-xl border-slate-200 shadow-sm")}>
         <table className="w-full border-collapse table-auto">
           <thead>
             <tr className={cn(isPrint ? "bg-emerald-50 border-b" : "bg-emerald-950 text-white")}>
-              <th className={cn("p-1 font-black uppercase border-b w-[70%]", isPrint ? "text-[7px] text-emerald-950 border-emerald-950" : "text-[10px] border-emerald-900", isRTL ? "text-right" : "text-left")}>{isRTL ? "المادة" : "Subject"}</th>
-              <th className={cn("p-1 font-black uppercase text-center border-s border-b w-[30%]", isPrint ? "text-[7px] text-emerald-950 border-emerald-950" : "text-[10px] border-emerald-900")}>{isRTL ? "Total" : "Total"}</th>
+              <th className={cn("p-2 font-black uppercase border-b w-[70%] whitespace-nowrap", isPrint ? "text-[7px] text-emerald-950 border-emerald-950" : "text-[10px] border-emerald-900", isRTL ? "text-right" : "text-left")}>{isRTL ? "المادة" : "Subject"}</th>
+              <th className={cn("p-2 font-black uppercase text-center border-s border-b w-[30%] whitespace-nowrap", isPrint ? "text-[7px] text-emerald-950 border-emerald-950" : "text-[10px] border-emerald-900")}>{isRTL ? "Total" : "Total"}</th>
             </tr>
           </thead>
           <tbody className={cn(isPrint ? "divide-y divide-emerald-950" : "divide-y divide-slate-100")}>
             {summaryData.map((item, idx) => (
               <tr key={idx}>
-                <td className={cn("p-1 leading-tight", isRTL ? "text-right" : "text-left")}>
+                <td className={cn("p-2 leading-tight", isRTL ? "text-right" : "text-left")}>
                   <span className={cn("font-bold block whitespace-nowrap", isPrint ? "text-[7px] text-black" : "text-[10px] text-slate-800")}>{item.subject}</span>
                 </td>
-                <td className="p-1 text-center border-s border-emerald-900/10">
+                <td className="p-2 text-center border-s border-emerald-900/10">
                   <span className={cn("font-black", isPrint ? "text-[7.5px] text-black" : "text-[11px] text-emerald-700")}>{item.count}</span>
                 </td>
               </tr>
             ))}
             <tr className={cn("font-black", isPrint ? "bg-emerald-50 border-t" : "bg-emerald-50/50")}>
-              <td className={cn("p-1", isPrint ? "text-[7.5px] text-emerald-950" : "text-[10px] text-emerald-900", isRTL ? "text-right" : "text-left")}>{isRTL ? "الحجم الساعي" : "Weekly Total"}</td>
-              <td className="p-1 text-center border-s border-emerald-950"><span className={cn("font-black", isPrint ? "text-[8px]" : "text-[12px]")}>{totalHours}</span></td>
+              <td className={cn("p-2", isPrint ? "text-[7.5px] text-emerald-950" : "text-[10px] text-emerald-900", isRTL ? "text-right" : "text-left")}>{isRTL ? "الحجم الساعي" : "Weekly Total"}</td>
+              <td className="p-2 text-center border-s border-emerald-950"><span className={cn("font-black", isPrint ? "text-[8px]" : "text-[12px]")}>{totalHours}</span></td>
             </tr>
           </tbody>
         </table>
@@ -274,19 +274,42 @@ const ScheduleTable = ({
                       </div>
                     </td>
                     {days.map(day => {
-                      const assignment = getAssignment(day.id, slot.id);
-                      const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id;
+                      const currentAssignment = getAssignment(day.id, slot.id);
+                      const isSpannedHovered = !!(
+                        hoveredAssignment && 
+                        currentAssignment && 
+                        currentAssignment.day === hoveredAssignment.day &&
+                        currentAssignment.subjectId === hoveredAssignment.subjectId &&
+                        currentAssignment.employeeId === hoveredAssignment.employeeId &&
+                        currentAssignment.classId === hoveredAssignment.classId
+                      );
+                      const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id || isSpannedHovered;
+                      const isExactHovered = (hoveredCell?.day === day.id && hoveredCell?.period === slot.id) || isSpannedHovered;
+
                       return (
                         <td 
                           key={day.id} 
                           className={cn(
                             "relative h-full transition-colors duration-150", 
-                            isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30")
+                            isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30", isSpannedHovered && "bg-emerald-100/40")
                           )}
                           onMouseEnter={() => !isPrint && setHoveredCell({ day: day.id, period: slot.id })}
                           onMouseLeave={() => !isPrint && setHoveredCell(null)}
                         >
-                          {assignment ? <LessonCard assignment={assignment} day={day.id} period={slot.id} /> : (!isPrint && isAdmin && <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}><Plus size={10} className="text-slate-200" /></div>)}
+                          {currentAssignment ? (
+                            <LessonCard 
+                              assignment={currentAssignment} 
+                              day={day.id} 
+                              period={slot.id} 
+                              isHovered={isExactHovered}
+                            />
+                          ) : (
+                            !isPrint && isAdmin && (
+                              <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}>
+                                <Plus size={10} className="text-slate-200" />
+                              </div>
+                            )
+                          )}
                         </td>
                       );
                     })}
