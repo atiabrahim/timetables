@@ -57,14 +57,13 @@ const MasterSchedule = () => {
   };
 
   const MasterTable = ({ isPrint = false }: { isPrint?: boolean }) => {
-    // توزيع العرض بنسب مئوية دقيقة لمنع التجاوز الأفقي نهائياً عند الطباعة
-    const classColWidth = isPrint ? "15%" : "140px";
+    const classColWidth = isPrint ? "15%" : "110px";
     const periodColWidth = isPrint ? `${85 / visiblePeriods.length}%` : "auto";
 
     return (
       <div className={cn(
-        "bg-white overflow-x-auto pb-4",
-        isPrint ? "p-0" : "rounded-[2rem] border border-emerald-100 shadow-xl shadow-emerald-50/50"
+        "bg-white overflow-x-auto pb-2",
+        isPrint ? "p-0" : "rounded-2xl border border-emerald-100 shadow-md"
       )}>
         <table className={cn(
           "w-full border-collapse table-fixed",
@@ -77,17 +76,17 @@ const MasterSchedule = () => {
             ))}
           </colgroup>
           <thead>
-            <tr className={cn(isPrint ? "bg-slate-100 h-8" : "bg-emerald-950 text-white")}>
+            <tr className={cn(isPrint ? "bg-slate-100 h-6" : "bg-emerald-950 text-white h-8")}>
               <th className={cn(
-                "p-1 border sticky left-0 z-20 text-center",
-                isPrint ? "text-[9px] font-black border-black text-black bg-slate-100" : "text-[12px] uppercase tracking-tighter font-black border-white/10 bg-emerald-950"
+                "p-0.5 border sticky left-0 z-20 text-center",
+                isPrint ? "text-[8px] font-black border-black text-black bg-slate-100" : "text-[10px] uppercase tracking-tighter font-black border-white/10 bg-emerald-950"
               )}>
                 {isRTL ? "الفوج" : "Class"}
               </th>
               {visiblePeriods.map(p => (
                 <th key={p} className={cn(
-                  "p-1 border text-center font-black",
-                  isPrint ? "text-[9px] border-black text-black" : "text-[12px] border-white/10"
+                  "p-0.5 border text-center font-black",
+                  isPrint ? "text-[8px] border-black text-black" : "text-[10px] border-white/10"
                 )}>
                   {isRTL ? `ح${p}` : `P${p}`}
                 </th>
@@ -98,14 +97,14 @@ const MasterSchedule = () => {
             {visibleClasses.map((cls, idx) => (
               <tr key={cls.id} className={cn(
                 "group transition-colors",
-                isPrint ? "h-8" : "h-14",
+                isPrint ? "h-6" : "h-9",
                 idx % 2 === 0 ? "bg-white" : "bg-emerald-50/10",
-                !isPrint && "hover:bg-emerald-100/30"
+                !isPrint && "hover:bg-emerald-100/20"
               )}>
                 <td className={cn(
-                  "p-1 font-black border sticky left-0 z-10 transition-colors shadow-sm whitespace-normal break-words text-center",
+                  "p-0.5 font-black border sticky left-0 z-10 transition-colors shadow-sm whitespace-normal break-words text-center",
                   idx % 2 === 0 ? "bg-white" : "bg-[#fcfdfd]",
-                  isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-[12px] text-emerald-950 border-emerald-50"
+                  isPrint ? "text-[7.5px] p-0.5 border-black text-black" : "text-[10px] text-emerald-950 border-emerald-50"
                 )}>
                   {cls.name}
                 </td>
@@ -121,16 +120,16 @@ const MasterSchedule = () => {
                     )}>
                       {lesson ? (
                         <div className={cn(
-                          "flex flex-col gap-0.5 overflow-hidden leading-tight",
-                          isPrint ? "text-[7.5px] text-black" : "text-[11px]"
+                          "flex flex-col gap-0 overflow-hidden leading-none",
+                          isPrint ? "text-[7px] text-black" : "text-[9px]"
                         )}>
                           <span className={cn("font-black truncate", isPrint ? "" : "text-emerald-700")}>{subject?.name}</span>
-                          <span className={cn("font-bold opacity-80 truncate", isPrint ? "text-[7px]" : "text-slate-500")}>
+                          <span className={cn("font-bold opacity-80 truncate", isPrint ? "text-[6.5px]" : "text-slate-500")}>
                             {teacher ? `${teacher.lastName}` : "---"}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-slate-200 opacity-20 text-[8px]">---</span>
+                        <span className="text-slate-200 opacity-20 text-[7px]">---</span>
                       )}
                     </td>
                   );
@@ -140,7 +139,7 @@ const MasterSchedule = () => {
           </tbody>
         </table>
         {visibleClasses.length === 0 && (
-          <div className="p-20 text-center text-slate-400 font-bold">
+          <div className="p-12 text-center text-slate-400 font-bold text-xs">
             {isRTL ? "لا توجد بيانات" : "No data"}
           </div>
         )}
@@ -149,14 +148,14 @@ const MasterSchedule = () => {
   };
 
   return (
-    <div className="space-y-8 pb-20">
+    <div className="space-y-4 pb-12">
       <PageHeader
         title={isRTL ? "الجدول العام للمؤسسة" : "Master Institution Schedule"}
         subtitle={isRTL ? "عرض بانورامي شامل لكافة الأفواج" : "Panoramic view of all classes"}
         icon={LayoutGrid}
         isRTL={isRTL}
       >
-        <div className="flex bg-white p-1 rounded-2xl border border-emerald-100 shadow-sm h-11">
+        <div className="flex bg-white p-0.5 rounded-xl border border-emerald-100 shadow-sm h-9">
           {DAYS.map(day => (
             <Button
               key={day.id}
@@ -164,9 +163,9 @@ const MasterSchedule = () => {
               size="sm"
               onClick={() => setSelectedDay(day.id)}
               className={cn(
-                "rounded-xl px-4 font-black text-[10px] uppercase transition-all",
+                "rounded-lg px-3 font-black text-[9px] uppercase transition-all h-8",
                 selectedDay === day.id 
-                  ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" 
+                  ? "bg-emerald-600 text-white shadow-md" 
                   : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
               )}
             >
@@ -175,31 +174,31 @@ const MasterSchedule = () => {
           ))}
         </div>
         
-        <div className="relative w-full md:w-64">
-          <Search className={cn("absolute top-1/2 -translate-y-1/2 text-slate-400", isRTL ? "right-3" : "left-3")} size={16} />
+        <div className="relative w-full md:w-48">
+          <Search className={cn("absolute top-1/2 -translate-y-1/2 text-slate-400", isRTL ? "right-2.5" : "left-2.5")} size={14} />
           <Input 
             placeholder={isRTL ? "بحث عن فوج..." : "Search class..."} 
-            className={cn("rounded-2xl border-emerald-100 bg-white h-11", isRTL ? "pr-10" : "pl-10")}
+            className={cn("rounded-xl border-emerald-100 bg-white h-9 text-xs", isRTL ? "pr-8" : "pl-8")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
 
-        <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-2xl gap-2 font-black h-11 border-emerald-200 text-emerald-700 bg-white px-6">
-          <Eye size={18} />
+        <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl gap-1.5 font-black h-9 border-emerald-200 text-emerald-700 bg-white px-4 text-xs">
+          <Eye size={14} />
           {isRTL ? "معاينة" : "Preview"}
         </Button>
 
-        <Button onClick={() => window.print()} className="bg-emerald-950 hover:bg-black text-white rounded-2xl gap-2 font-black h-11 px-6">
-          <Printer size={18} />
+        <Button onClick={() => window.print()} className="bg-emerald-950 hover:bg-black text-white rounded-xl gap-1.5 font-black h-9 px-4 text-xs">
+          <Printer size={14} />
           {t.print}
         </Button>
       </PageHeader>
 
-      <div className="flex flex-wrap gap-6 bg-white p-5 rounded-3xl border border-emerald-100 shadow-sm mb-6 print:hidden">
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-xl border border-emerald-100">
-          <Filter size={16} className="text-emerald-600" />
-          <span className="text-xs font-black text-emerald-900 uppercase tracking-tighter">{isRTL ? "تصفية الجدول:" : "Table Filter:"}</span>
+      <div className="flex flex-wrap gap-4 bg-white p-3 rounded-2xl border border-emerald-100 shadow-sm mb-4 print:hidden">
+        <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 rounded-lg border border-emerald-100">
+          <Filter size={14} className="text-emerald-600" />
+          <span className="text-[10px] font-black text-emerald-900 uppercase tracking-tighter">{isRTL ? "تصفية الجدول:" : "Table Filter:"}</span>
         </div>
 
         <div className="flex items-center space-x-2 space-x-reverse group cursor-pointer" onClick={() => setHideEmptyRows(!hideEmptyRows)}>
@@ -207,25 +206,25 @@ const MasterSchedule = () => {
             id="hide-rows" 
             checked={hideEmptyRows} 
             onCheckedChange={(v: boolean) => setHideEmptyRows(v)}
-            className="rounded-md border-emerald-200 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+            className="rounded border-emerald-200 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600 h-3.5 w-3.5"
           />
-          <Label htmlFor="hide-rows" className="text-xs font-bold text-slate-600 cursor-pointer flex items-center gap-2">
-            <Rows size={14} className="text-slate-400" />
+          <Label htmlFor="hide-rows" className="text-[10px] font-bold text-slate-600 cursor-pointer flex items-center gap-1.5">
+            <Rows size={12} className="text-slate-400" />
             {isRTL ? "إخفاء الأفواج الفارغة اليوم" : "Hide empty classes today"}
           </Label>
         </div>
 
-        <div className="w-px h-6 bg-emerald-100 mx-2 hidden md:block" />
+        <div className="w-px h-4 bg-emerald-100 mx-1 hidden md:block" />
 
         <div className="flex items-center space-x-2 space-x-reverse group cursor-pointer" onClick={() => setHideEmptyPeriods(!hideEmptyPeriods)}>
           <Checkbox 
             id="hide-periods" 
             checked={hideEmptyPeriods} 
             onCheckedChange={(v: boolean) => setHideEmptyPeriods(v)}
-            className="rounded-md border-emerald-200 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+            className="rounded border-emerald-200 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600 h-3.5 w-3.5"
           />
-          <Label htmlFor="hide-periods" className="text-xs font-bold text-slate-600 cursor-pointer flex items-center gap-2">
-            <Columns size={14} className="text-slate-400" />
+          <Label htmlFor="hide-periods" className="text-[10px] font-bold text-slate-600 cursor-pointer flex items-center gap-1.5">
+            <Columns size={12} className="text-slate-400" />
             {isRTL ? "إخفاء الحصص الفارغة اليوم" : "Hide empty periods today"}
           </Label>
         </div>
@@ -237,24 +236,24 @@ const MasterSchedule = () => {
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[98vw] w-full h-[95vh] p-0 bg-zinc-900/95 border-none rounded-none flex flex-col z-[9999] print:bg-white print:h-auto print:block">
-          <div className="h-16 bg-black/40 border-b border-white/10 flex items-center justify-between px-8 shrink-0 print:hidden">
-            <div className="flex items-center gap-3 text-white">
-              <Eye className="text-emerald-500" />
-              <h3 className="font-black text-lg">{isRTL ? "معاينة الجدول العام" : "Master Schedule Preview"}</h3>
+          <div className="h-14 bg-black/40 border-b border-white/10 flex items-center justify-between px-6 shrink-0 print:hidden">
+            <div className="flex items-center gap-2 text-white">
+              <Eye className="text-emerald-500" size={16} />
+              <h3 className="font-black text-sm">{isRTL ? "معاينة الجدول العام" : "Master Schedule Preview"}</h3>
             </div>
-            <div className="flex gap-4">
-              <Button variant="outline" onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")} className="text-white border-white/20 bg-transparent rounded-xl">
-                <RotateCw size={16} className="mr-2" />
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")} className="text-white border-white/20 bg-transparent rounded-xl h-9 text-xs">
+                <RotateCw size={14} className="mr-1.5" />
                 {isRTL ? (orientation === "portrait" ? "عرضي" : "طولي") : "Orientation"}
               </Button>
-              <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black px-10">
-                <Printer size={18} className="mr-2" />
+              <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black px-6 h-9 text-xs">
+                <Printer size={14} className="mr-1.5" />
                 {t.print}
               </Button>
-              <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="text-white/50"><X size={20} /></Button>
+              <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="text-white/50"><X size={18} /></Button>
             </div>
           </div>
-          <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white p-12 print:p-0">
+          <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white p-6 print:p-0">
             <OfficialPrintWrapper
               title={isRTL ? `الجدول العام - يوم ${DAYS.find(d => d.id === selectedDay)?.name}` : `Master Schedule - ${DAYS.find(d => d.id === selectedDay)?.en}`}
               subtitle={isRTL ? "خارطة الحصص الأسبوعية للمؤسسة" : "Institutional weekly lesson map"}

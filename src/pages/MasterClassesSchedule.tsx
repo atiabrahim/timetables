@@ -140,31 +140,31 @@ const MasterClassesSchedule = () => {
       return (
         <div className={cn(
           "bg-white",
-          isPrint ? "p-0 w-full" : "rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-50/50 overflow-hidden"
+          isPrint ? "p-0 w-full" : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden"
         )}>
           <div className={cn(!isPrint && "overflow-x-auto")}>
             <Table className={cn(
               "border-collapse border-spacing-0 table-fixed", 
-              isPrint ? "w-full border-2 border-black" : "w-full min-w-[1200px]"
+              isPrint ? "w-full border-2 border-black" : "w-full min-w-[1000px]"
             )}>
               <colgroup>
-                <col className={isPrint ? "w-[10%]" : "w-[100px]"} />
-                <col className={isPrint ? "w-[10%]" : "w-[100px]"} />
+                <col className={isPrint ? "w-[10%]" : "w-[80px]"} />
+                <col className={isPrint ? "w-[10%]" : "w-[80px]"} />
                 {filteredClasses.map(cls => (
-                  <col key={cls.id} className={isPrint ? `${80 / filteredClasses.length}%` : "w-[120px]"} />
+                  <col key={cls.id} className={isPrint ? `${80 / filteredClasses.length}%` : "w-[100px]"} />
                 ))}
               </colgroup>
               <TableHeader>
-                <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-8" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-10")}>
+                <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-6" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-8")}>
                   <TableHead className={cn(
                     "font-black text-emerald-900 border text-center",
-                    isPrint ? "text-[10px] p-1 border-black text-black" : "text-sm p-2 border-emerald-100"
+                    isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100"
                   )}>
                     {isRTL ? "اليوم" : "Day"}
                   </TableHead>
                   <TableHead className={cn(
                     "font-black text-emerald-900 border text-center",
-                    isPrint ? "text-[10px] p-1 border-black text-black" : "text-sm p-2 border-emerald-100"
+                    isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100"
                   )}>
                     {isRTL ? "الحصة" : "Period"}
                   </TableHead>
@@ -173,7 +173,7 @@ const MasterClassesSchedule = () => {
                       key={cls.id} 
                       className={cn(
                         "text-center font-black border truncate",
-                        isPrint ? "text-[10px] p-1 border-black bg-slate-50 text-black" : "text-[12px] p-1.5 bg-emerald-50/30 border-emerald-100 text-emerald-700"
+                        isPrint ? "text-[8px] p-0.5 border-black bg-slate-50 text-black" : "text-[10px] p-1 bg-emerald-50/30 border-emerald-100 text-emerald-700"
                       )}
                     >
                       {cls.name}
@@ -188,24 +188,24 @@ const MasterClassesSchedule = () => {
                   if (activePeriods.length === 0) return null;
 
                   return activePeriods.map((p, pIdx) => (
-                    <TableRow key={`${day.id}-${p}`} className={cn("group transition-colors", isPrint ? "h-10 border-b border-black" : "h-14 hover:bg-emerald-50/30")}>
+                    <TableRow key={`${day.id}-${p}`} className={cn("group transition-colors", isPrint ? "h-8 border-b border-black" : "h-10 hover:bg-emerald-50/30")}>
                       {pIdx === 0 && (
                         <TableCell 
                           rowSpan={activePeriods.length}
                           className={cn(
                             "font-black border bg-slate-50/50 text-center",
-                            isPrint ? "text-[10px] p-1.5 border-black text-black" : "text-[13px] p-2 border-emerald-100 text-emerald-950"
+                            isPrint ? "text-[8px] p-1 border-black text-black" : "text-[11px] p-1 border-emerald-100 text-emerald-950"
                           )}
                         >
-                          {isRTL ? day.name : day.en}
+                          {isRTL ? day.name : day.en.substr(0, 3)}
                         </TableCell>
                       )}
                       <TableCell className={cn(
                         "font-bold border bg-white text-center leading-none",
-                        isPrint ? "text-[9px] p-1 border-black text-black" : "text-[11px] p-2 border-emerald-100 text-slate-500"
+                        isPrint ? "text-[7.5px] p-0.5 border-black text-black" : "text-[9px] p-1 border-emerald-100 text-slate-500"
                       )}>
                         <span className="font-black block">{isRTL ? `ح${p}` : `P${p}`}</span>
-                        <span className="text-[8px] font-normal opacity-75 mt-0.5 block">{PERIOD_TIMES[p]}</span>
+                        <span className="text-[7px] font-normal opacity-75 mt-0.5 block">{PERIOD_TIMES[p]}</span>
                       </TableCell>
 
                       {filteredClasses.map(cls => {
@@ -222,27 +222,27 @@ const MasterClassesSchedule = () => {
                             key={`${cls.id}-${day.id}-${p}`}
                             rowSpan={cell.rowSpan}
                             className={cn(
-                              "text-center border p-1 transition-all relative overflow-hidden",
+                              "text-center border p-0.5 transition-all relative overflow-hidden",
                               isActive ? (isPrint ? "bg-slate-100 text-black border-black" : "bg-emerald-600 text-white shadow-inner") : (isPrint ? "bg-white border-black" : "hover:bg-emerald-50/50"),
-                              isPrint ? "h-10 border-black" : "h-14 border-emerald-100"
+                              isPrint ? "h-8 border-black" : "h-10 border-emerald-100"
                             )}
                           >
                             {isActive ? (
-                              <div className="flex flex-col items-center justify-center leading-tight">
-                                <span className={cn("font-black truncate max-w-full", isPrint ? "text-[8px]" : "text-[11px]")}>
+                              <div className="flex flex-col items-center justify-center leading-none">
+                                <span className={cn("font-black truncate max-w-full", isPrint ? "text-[7.5px]" : "text-[9.5px]")}>
                                   {subject?.name || "---"}
                                 </span>
-                                <span className={cn("font-bold opacity-80 truncate max-w-full", isPrint ? "text-[7px]" : "text-[9px]")}>
+                                <span className={cn("font-bold opacity-80 truncate max-w-full", isPrint ? "text-[6.5px]" : "text-[8px]")}>
                                   {emp ? `${emp.lastName} ${emp.firstName}` : "---"}
                                 </span>
                                 {cell.assignment.room && (
-                                  <span className={cn("font-medium opacity-70 truncate max-w-full", isPrint ? "text-[6px]" : "text-[8px]")}>
+                                  <span className={cn("font-medium opacity-70 truncate max-w-full", isPrint ? "text-[5.5px]" : "text-[7.5px]")}>
                                     {cell.assignment.room}
                                   </span>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-slate-200 opacity-20 text-[8px]">---</span>
+                              <span className="text-slate-200 opacity-20 text-[7px]">---</span>
                             )}
                           </TableCell>
                         );
@@ -261,24 +261,24 @@ const MasterClassesSchedule = () => {
     return (
       <div className={cn(
         "bg-white",
-        isPrint ? "p-0 w-full" : "rounded-3xl border border-emerald-100 shadow-xl shadow-emerald-50/50 overflow-hidden"
+        isPrint ? "p-0 w-full" : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden"
       )}>
         <div className={cn(!isPrint && "overflow-x-auto")}>
           <Table className={cn(
             "border-collapse border-spacing-0 table-fixed", 
-            isPrint ? "w-full border-2 border-black" : "w-full min-w-[1200px]"
+            isPrint ? "w-full border-2 border-black" : "w-full min-w-[1000px]"
           )}>
             <colgroup>
-              <col className={isPrint ? "w-[15%]" : "w-[180px]"} />
+              <col className={isPrint ? "w-[15%]" : "w-[140px]"} />
               {Array.from({ length: totalActiveColumns }).map((_, i) => (
-                <col key={i} className={isPrint ? `${85 / totalActiveColumns}%` : "w-[85px]"} />
+                <col key={i} className={isPrint ? `${85 / totalActiveColumns}%` : "w-[70px]"} />
               ))}
             </colgroup>
             <TableHeader>
-              <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-7" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-9")}>
+              <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-6" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-8")}>
                 <TableHead className={cn(
                   "font-black text-emerald-900 border text-center sticky left-0 z-20 bg-emerald-50/50",
-                  isPrint ? "text-[10px] p-1 border-black text-black" : "text-sm p-2 border-emerald-100"
+                  isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100"
                 )} rowSpan={2}>
                   {isRTL ? "الفرع" : "Branch"}
                 </TableHead>
@@ -290,7 +290,7 @@ const MasterClassesSchedule = () => {
                       key={day.id} 
                       className={cn(
                         "text-center font-black border",
-                        isPrint ? "text-[10px] p-0.5 border-black bg-slate-50 text-black" : "text-[12px] p-1.5 bg-emerald-50/30 border-emerald-100 text-emerald-700"
+                        isPrint ? "text-[8px] p-0.5 border-black bg-slate-50 text-black" : "text-[10px] p-1 bg-emerald-50/30 border-emerald-100 text-emerald-700"
                       )} 
                       colSpan={colSpan}
                     >
@@ -299,17 +299,17 @@ const MasterClassesSchedule = () => {
                   );
                 })}
               </TableRow>
-              <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-8" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-10")}>
+              <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-6" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-8")}>
                 {DAYS.map(day => {
                   const activePeriods = activePeriodsPerDay[day.id] || [];
                   return activePeriods.map(p => (
                     <TableHead key={`${day.id}-${p}`} className={cn(
-                      "text-center font-bold border p-1",
-                      isPrint ? "text-[8px] border-black text-black" : "text-[10px] border-emerald-100 text-slate-400"
+                      "text-center font-bold border p-0.5",
+                      isPrint ? "text-[7px] border-black text-black" : "text-[9px] border-emerald-100 text-slate-400"
                     )}>
                       <div className="flex flex-col items-center justify-center leading-none">
                         <span className="font-black">{isRTL ? `ح${p}` : `P${p}`}</span>
-                        <span className={cn("font-normal opacity-75 mt-0.5 block tracking-tighter", isPrint ? "text-[5px]" : "text-[8px]")}>
+                        <span className={cn("font-normal opacity-75 mt-0.5 block tracking-tighter", isPrint ? "text-[4.5px]" : "text-[7px]")}>
                           {PERIOD_TIMES[p]}
                         </span>
                       </div>
@@ -321,10 +321,10 @@ const MasterClassesSchedule = () => {
 
             <TableBody>
               {filteredClasses.map(cls => (
-                <TableRow key={cls.id} className={cn("group transition-colors", isPrint ? "h-10 border-b border-black" : "h-14 hover:bg-emerald-50/30")}>
+                <TableRow key={cls.id} className={cn("group transition-colors", isPrint ? "h-8 border-b border-black" : "h-10 hover:bg-emerald-50/30")}>
                   <TableCell className={cn(
                     "font-bold border bg-white truncate sticky left-0 z-10 shadow-sm",
-                    isPrint ? "text-[10px] p-1.5 border-black text-black" : "text-[13px] p-2 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30"
+                    isPrint ? "text-[8px] p-1 border-black text-black" : "text-[11px] p-1 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30"
                   )}>
                     {cls.name}
                   </TableCell>
@@ -341,27 +341,27 @@ const MasterClassesSchedule = () => {
                           key={`${cls.id}-${day.id}-${cell.period}`}
                           colSpan={cell.colSpan}
                           className={cn(
-                            "text-center border p-1 transition-all relative overflow-hidden",
+                            "text-center border p-0.5 transition-all relative overflow-hidden",
                             isActive ? (isPrint ? "bg-slate-100 text-black border-black" : "bg-emerald-600 text-white shadow-inner") : (isPrint ? "bg-white border-black" : "hover:bg-emerald-50/50"),
-                            isPrint ? "h-10 border-black" : "h-14 border-emerald-100"
+                            isPrint ? "h-8 border-black" : "h-10 border-emerald-100"
                           )}
                         >
                           {isActive ? (
-                            <div className="flex flex-col items-center justify-center leading-tight">
-                              <span className={cn("font-black truncate max-w-full", isPrint ? "text-[8px]" : "text-[11px]")}>
+                            <div className="flex flex-col items-center justify-center leading-none">
+                              <span className={cn("font-black truncate max-w-full", isPrint ? "text-[7.5px]" : "text-[9.5px]")}>
                                 {subject?.name || "---"}
                               </span>
-                              <span className={cn("font-bold opacity-80 truncate max-w-full", isPrint ? "text-[7px]" : "text-[9px]")}>
+                              <span className={cn("font-bold opacity-80 truncate max-w-full", isPrint ? "text-[6.5px]" : "text-[8px]")}>
                                 {emp ? `${emp.lastName} ${emp.firstName}` : "---"}
                               </span>
                               {cell.assignment.room && (
-                                <span className={cn("font-medium opacity-70 truncate max-w-full", isPrint ? "text-[6px]" : "text-[8px]")}>
+                                <span className={cn("font-medium opacity-70 truncate max-w-full", isPrint ? "text-[5.5px]" : "text-[7.5px]")}>
                                   {cell.assignment.room}
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-slate-200 opacity-20 text-[8px]">---</span>
+                            <span className="text-slate-200 opacity-20 text-[7px]">---</span>
                           )}
                         </TableCell>
                       );
@@ -381,7 +381,7 @@ const MasterClassesSchedule = () => {
   );
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-4 pb-12">
       <PageHeader
         title={t.masterClassesSchedule}
         subtitle={isRTL ? "مزامنة تلقائية مع جدول الحصص وتكليفات الفروع" : "Auto-sync with timetable and classes assignments"}
@@ -392,45 +392,45 @@ const MasterClassesSchedule = () => {
           variant="outline" 
           onClick={() => setShowControls(!showControls)} 
           className={cn(
-            "rounded-2xl border-emerald-100 font-bold gap-2 h-11 px-4 transition-all",
+            "rounded-xl border-emerald-100 font-bold gap-1.5 h-9 px-3 transition-all text-xs",
             showControls ? "bg-emerald-50 text-emerald-900 border-emerald-300" : "bg-white text-slate-700"
           )}
         >
-          <SlidersHorizontal size={16} />
+          <SlidersHorizontal size={14} />
           {isRTL ? "أدوات التحكم" : "Controls"}
         </Button>
-        <Button variant="outline" className="rounded-2xl border-emerald-200 text-emerald-700 gap-2 font-bold px-6 h-11 bg-white" onClick={() => setIsPreviewOpen(true)}>
-          <Eye size={18} /> {t.preview}
+        <Button variant="outline" className="rounded-xl border-emerald-200 text-emerald-700 gap-1.5 font-bold px-4 h-9 bg-white text-xs" onClick={() => setIsPreviewOpen(true)}>
+          <Eye size={14} /> {t.preview}
         </Button>
-        <Button className="bg-emerald-600 hover:bg-emerald-700 rounded-2xl gap-2 font-bold px-8 h-11 shadow-lg shadow-emerald-100 text-white" onClick={() => window.print()}>
-          <Printer size={18} /> {t.print}
+        <Button className="bg-emerald-600 hover:bg-emerald-700 rounded-xl gap-1.5 font-bold px-4 h-9 shadow-md shadow-emerald-100 text-white text-xs" onClick={() => window.print()}>
+          <Printer size={14} /> {t.print}
         </Button>
       </PageHeader>
 
       {/* Collapsible Control Panel */}
       {showControls && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white p-5 rounded-3xl border border-emerald-100 shadow-sm transition-all duration-300 print:hidden">
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm transition-all duration-300 print:hidden">
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest px-1">
               {isRTL ? "بحث عن فرع" : "Search Branch"}
             </label>
             <div className="relative">
-              <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-3" : "left-3")} size={16} />
+              <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-2.5" : "left-2.5")} size={14} />
               <Input 
                 placeholder={t.search} 
-                className={cn("rounded-xl border-emerald-100 bg-slate-50/30 h-11", isRTL ? "pr-10" : "pl-10")}
+                className={cn("rounded-xl border-emerald-100 bg-slate-50/30 h-9 text-xs", isRTL ? "pr-8" : "pl-8")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-emerald-700 uppercase tracking-widest px-1">
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest px-1">
               {isRTL ? "اتجاه الصفحة" : "Page Orientation"}
             </label>
             <Select value={orientation} onValueChange={(v: any) => setOrientation(v)}>
-              <SelectTrigger className="rounded-xl border-emerald-100 bg-slate-50/30 h-11 font-bold">
+              <SelectTrigger className="rounded-xl border-emerald-100 bg-slate-50/30 h-9 font-bold text-xs">
                 <SelectValue placeholder={isRTL ? "اتجاه الصفحة" : "Orientation"} />
               </SelectTrigger>
               <SelectContent>
@@ -440,16 +440,16 @@ const MasterClassesSchedule = () => {
             </Select>
           </div>
 
-          <div className="space-y-1.5 flex flex-col justify-end">
+          <div className="space-y-1 flex flex-col justify-end">
             <Button 
               variant="outline" 
               onClick={() => setIsTransposed(!isTransposed)} 
               className={cn(
-                "rounded-xl border-emerald-100 font-bold gap-2 h-11 w-full transition-all",
+                "rounded-xl border-emerald-100 font-bold gap-1.5 h-9 w-full transition-all text-xs",
                 isTransposed ? "bg-emerald-600 text-white border-emerald-600" : "bg-slate-50/30 text-emerald-700 hover:bg-emerald-50"
               )}
             >
-              <ArrowLeftRight size={16} />
+              <ArrowLeftRight size={14} />
               {isRTL ? "تبديل المحاور (أسطر/أعمدة)" : "Transpose Axes"}
             </Button>
           </div>
@@ -475,27 +475,27 @@ const MasterClassesSchedule = () => {
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-[98vw] w-full h-[95vh] p-0 bg-zinc-900/95 border-none rounded-none flex flex-col z-[9999] print:bg-white print:h-auto print:block">
-          <div className="h-16 bg-black/40 border-b border-white/10 flex items-center justify-between px-8 shrink-0 print:hidden">
-            <div className="flex items-center gap-3 text-white">
-              <Eye className="text-emerald-500" />
-              <h3 className="font-black text-lg">{isRTL ? "معاينة جدول الفروع" : "Classes Schedule Preview"}</h3>
+          <div className="h-14 bg-black/40 border-b border-white/10 flex items-center justify-between px-6 shrink-0 print:hidden">
+            <div className="flex items-center gap-2 text-white">
+              <Eye className="text-emerald-500" size={16} />
+              <h3 className="font-black text-sm">{isRTL ? "معاينة جدول الفروع" : "Classes Schedule Preview"}</h3>
             </div>
-            <div className="flex gap-4">
-              <Button variant="outline" onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")} className="text-white border-white/20 bg-transparent rounded-xl">
-                <RotateCw size={16} className="mr-2" />
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setOrientation(orientation === "portrait" ? "landscape" : "portrait")} className="text-white border-white/20 bg-transparent rounded-xl h-9 text-xs">
+                <RotateCw size={14} className="mr-1.5" />
                 {isRTL ? (orientation === "portrait" ? "عرضي" : "طولي") : "Orientation"}
               </Button>
-              <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black px-8">
-                <Printer size={18} className="mr-2" />
+              <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black px-6 h-9 text-xs">
+                <Printer size={18} className="mr-1.5" />
                 {t.print}
               </Button>
               <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="text-white/70 hover:text-white">
-                <X size={20} />
+                <X size={18} />
               </Button>
             </div>
           </div>
 
-          <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white p-12 print:p-0">
+          <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white p-6 print:p-0">
             <OfficialPrintWrapper
               title={t.masterClassesSchedule}
               subtitle={printSubtitle}
