@@ -20,6 +20,7 @@ import Login from "./pages/Login";
 import Rooms from "./pages/Rooms";
 import Institution from "./pages/Institution";
 import WeeklyWorkSchedule from "./pages/WeeklyWorkSchedule";
+import MasterClassesSchedule from "./pages/MasterClassesSchedule";
 import Assignments from "./pages/Assignments";
 import NotFound from "./pages/NotFound";
 
@@ -44,6 +45,7 @@ const AppRoutes = () => (
     <Route path="/schedule" element={<ProtectedRoute><Layout><Schedule /></Layout></ProtectedRoute>} />
     <Route path="/master-schedule" element={<ProtectedRoute><Layout><MasterSchedule /></Layout></ProtectedRoute>} />
     <Route path="/work-schedule" element={<ProtectedRoute><Layout><WeeklyWorkSchedule /></Layout></ProtectedRoute>} />
+    <Route path="/master-classes-schedule" element={<ProtectedRoute><Layout><MasterClassesSchedule /></Layout></ProtectedRoute>} />
     <Route path="/assignments" element={<ProtectedRoute><Layout><Assignments /></Layout></ProtectedRoute>} />
     <Route path="/reports" element={<ProtectedRoute><Layout><Reports /></Layout></ProtectedRoute>} />
     <Route path="/reports-new" element={<ProtectedRoute><Layout><ReportsNew /></Layout></ProtectedRoute>} />

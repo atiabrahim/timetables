@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Calendar, Users, Home, BookOpen, 
   MapPin, BarChart3, FileText, Building2, Settings, UserCog,
-  ClipboardList, ListChecks, UserCheck, LayoutGrid
+  ClipboardList, ListChecks, UserCheck, LayoutGrid, Layers
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,7 @@ const Sidebar = () => {
     { icon: LayoutGrid, label: isRTL ? "الجدول العام" : "Master Schedule", path: "/master-schedule" },
     { icon: Calendar, label: t.schedule, path: "/schedule" },
     { icon: ClipboardList, label: t.weeklyWorkSchedule, path: "/work-schedule" },
+    { icon: Layers, label: t.masterClassesSchedule, path: "/master-classes-schedule" },
     { icon: UserCheck, label: t.assignments, path: "/assignments" },
     { icon: ListChecks, label: t.lessons, path: "/lessons" },
     { icon: Users, label: t.employees, path: "/employees" },
