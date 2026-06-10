@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Printer, Search, Eye, ClipboardList, BookOpen, ShieldAlert, RotateCw, X } from "lucide-react";
+import { Printer, Search, Eye, ClipboardList, RotateCw, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { 
   Select, 
@@ -25,6 +25,12 @@ import PageHeader from "../components/shared/PageHeader";
 import { DAYS, PERIODS } from "../constants/schedule";
 import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+
+const PERIOD_TIMES: Record<string, string> = {
+  "1": "08:00-09:00", "2": "09:00-10:00", "3": "10:00-11:00", "4": "11:00-12:00",
+  "5": "13:00-14:00", "6": "14:00-15:00", "7": "15:00-16:00", "8": "16:00-17:00",
+  "9": "17:00-18:00", "10": "18:00-19:00", "11": "19:00-20:00", "12": "20:00-21:00",
+};
 
 const WeeklyWorkSchedule = () => {
   const { 
@@ -88,7 +94,7 @@ const WeeklyWorkSchedule = () => {
           <colgroup>
             <col className={isPrint ? "w-[15%]" : "w-[180px]"} />
             {Array.from({ length: 5 * PERIODS.length }).map((_, i) => (
-              <col key={i} className={isPrint ? `${85 / (5 * PERIODS.length)}%` : "w-[70px]"} />
+              <col key={i} className={isPrint ? `${85 / (5 * PERIODS.length)}%` : "w-[85px]"} />
             ))}
           </colgroup>
           <TableHeader>
@@ -112,13 +118,18 @@ const WeeklyWorkSchedule = () => {
                 </TableHead>
               ))}
             </TableRow>
-            <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-6" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-8")}>
+            <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-8" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-10")}>
               {DAYS.map(day => PERIODS.map(p => (
                 <TableHead key={`${day.id}-${p}`} className={cn(
-                  "text-center font-bold border",
-                  isPrint ? "text-[9px] p-0.5 border-black text-black" : "text-[10px] p-1 border-emerald-100 text-slate-400"
+                  "text-center font-bold border p-1",
+                  isPrint ? "text-[8px] border-black text-black" : "text-[10px] border-emerald-100 text-slate-400"
                 )}>
-                  {isRTL ? `ح${p}` : `P${p}`}
+                  <div className="flex flex-col items-center justify-center leading-none">
+                    <span className="font-black">{isRTL ? `ح${p}` : `P${p}`}</span>
+                    <span className={cn("font-normal opacity-75 mt-0.5 block tracking-tighter", isPrint ? "text-[5px]" : "text-[8px]")}>
+                      {PERIOD_TIMES[p]}
+                    </span>
+                  </div>
                 </TableHead>
               )))}
             </TableRow>
