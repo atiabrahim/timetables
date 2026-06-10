@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useMemo, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { 
@@ -58,7 +56,8 @@ const ReportsNew = () => {
     titleSize: 22,
     tableSize: 13,
     footerSize: 14,
-    orientation: "portrait" as "portrait" | "landscape"
+    orientation: "portrait" as "portrait" | "landscape",
+    doubleMode: false
   });
 
   // Initialize selectedDepartment when departments are loaded
@@ -118,6 +117,7 @@ const ReportsNew = () => {
           currentLocale={currentLocale}
           selectedDepartment={activeDept}
           reportStyles={reportStyles}
+          doubleMode={reportStyles.doubleMode}
           supervisors={supervisors}
         />
       );
@@ -149,6 +149,7 @@ const ReportsNew = () => {
                 currentLocale={currentLocale}
                 selectedDepartment={activeDept}
                 reportStyles={reportStyles}
+                doubleMode={reportStyles.doubleMode}
                 supervisors={supervisors}
               />
             );
@@ -194,6 +195,7 @@ const ReportsNew = () => {
         title={t.monthlyStats}
         subtitle={subtitle}
         orientation={reportStyles.orientation}
+        doubleMode={reportStyles.doubleMode}
         leftSignatureTitle={isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}
         rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
       >
@@ -247,11 +249,13 @@ const ReportsNew = () => {
         </Button>
       </PageHeader>
       
-      <ReportControls 
+      <ReportControls
         t={t}
         isRTL={isRTL}
         orientation={reportStyles.orientation}
         onOrientationChange={(v) => setReportStyles({...reportStyles, orientation: v})}
+        doubleMode={reportStyles.doubleMode}
+        onDoubleModeChange={(v) => setReportStyles({...reportStyles, doubleMode: v})}
         departments={departments}
         selectedDepartment={activeDept}
         onDepartmentChange={setSelectedDepartment}
@@ -296,12 +300,14 @@ const ReportsNew = () => {
         {currentContent()}
       </div>
 
-      <PrintPreviewDialog 
-        isOpen={isPreviewOpen} 
+      <PrintPreviewDialog
+        isOpen={isPreviewOpen}
         onOpenChange={setIsPreviewOpen}
         t={t}
         orientation={reportStyles.orientation}
         onToggleOrientation={() => setReportStyles({...reportStyles, orientation: reportStyles.orientation === 'portrait' ? 'landscape' : 'portrait'})}
+        doubleMode={reportStyles.doubleMode}
+        onToggleDoubleMode={() => setReportStyles({...reportStyles, doubleMode: !reportStyles.doubleMode})}
         onPrint={() => window.print()}
       >
         {currentContent()}

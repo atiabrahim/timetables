@@ -4,7 +4,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Layout as LayoutIcon, Clock, Building2 } from "lucide-react";
+import { Layout as LayoutIcon, Clock, Building2, Copy } from "lucide-react";
 import { PeriodPart, Department } from "@/types";
 
 interface ReportControlsProps {
@@ -12,6 +12,8 @@ interface ReportControlsProps {
   isRTL: boolean;
   orientation: "portrait" | "landscape";
   onOrientationChange: (val: "portrait" | "landscape") => void;
+  doubleMode: boolean;
+  onDoubleModeChange: (val: boolean) => void;
   departments: Department[];
   selectedDepartment: string;
   onDepartmentChange: (dept: string) => void;
@@ -22,8 +24,10 @@ interface ReportControlsProps {
 const ReportControls = ({ 
   t, 
   isRTL,
-  orientation, 
-  onOrientationChange, 
+  orientation,
+  onOrientationChange,
+  doubleMode,
+  onDoubleModeChange,
   departments,
   selectedDepartment,
   onDepartmentChange,
@@ -41,7 +45,7 @@ const ReportControls = ({
       ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-2 print:hidden">
+    <div className="grid grid-cols-1 md:grid-cols-6 gap-2 print:hidden">
       {/* Orientation */}
       <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1.5">
         <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
@@ -59,8 +63,30 @@ const ReportControls = ({
         </Select>
       </div>
 
-      {/* Department Selection */}
+      {/* Double Mode */}
       <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1.5">
+        <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+          <Copy size={12} />
+          {isRTL ? "نسختان" : "Double"}
+        </Label>
+        <div
+          className="flex items-center gap-2 h-9 px-3 rounded-xl border border-slate-100 bg-slate-50/50 cursor-pointer hover:bg-slate-100/50 transition-colors"
+          onClick={() => onDoubleModeChange(!doubleMode)}
+        >
+          <Checkbox
+            id="double-mode"
+            checked={doubleMode}
+            onCheckedChange={(v) => onDoubleModeChange(v === true)}
+            className="h-4 w-4 rounded border-slate-300 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+          />
+          <Label htmlFor="double-mode" className="text-[10px] font-black text-slate-700 cursor-pointer">
+            {isRTL ? "2 في ورقة" : "2 per sheet"}
+          </Label>
+        </div>
+      </div>
+
+      {/* Department Selection */}
+      <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1.5 md:col-span-1">
         <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
           <Building2 size={12} />
           {isRTL ? "المصلحة" : "Department"}
