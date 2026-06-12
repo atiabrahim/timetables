@@ -49,7 +49,7 @@ const OfficialPrintWrapper = ({
             ? "print:h-[148mm] print:py-[5mm] print:px-[8mm] border-b border-black/10" 
             : "print:h-[105mm] print:py-[3mm] print:px-[8mm] border-b border-black/10"
         ) : (
-          "px-[12mm] py-[12mm] print:px-[5mm] print:py-[5mm] print:h-screen print:max-h-screen print:overflow-hidden print:box-border"
+          "px-[12mm] py-[12mm] print:px-[5mm] print:py-[5mm] print:min-h-screen print:h-auto"
         ),
         // العرض للمعاينة فقط (الشاشة)
         orientation === "portrait" ? "w-[210mm] mx-auto print:w-full print:mx-0 print:max-w-none" : "w-[297mm] mx-auto print:w-full print:mx-0 print:max-w-none",

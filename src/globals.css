@@ -159,7 +159,7 @@
 }
 
 /* -----------------------------------------------------------
-   نظام الطباعة الاحترافي المطور (إصلاح مشكلة الانكماش وفرض ورقة واحدة)
+   نظام الطباعة الاحترافي المطور (إصلاح مشكلة الانكماش)
    ----------------------------------------------------------- */
 @media print {
   /* 1. إخفاء كل شيء غير ضروري */
@@ -173,31 +173,25 @@
     display: none !important;
   }
 
-  /* 3. تصفير هوامش المتصفح وجسم الصفحة وفرض ورقة واحدة */
+  /* 3. تصفير هوامش المتصفح وجسم الصفحة */
   html, body {
     width: 100% !important;
-    height: 100% !important;
-    max-height: 100% !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     background: white !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
   /* 4. إجبار نافذة المعاينة على شغل كامل الصفحة بدون تحويلات */
   [role="dialog"] {
     position: static !important;
     width: 100% !important;
-    height: 100% !important;
-    max-height: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
     display: block !important;
     box-shadow: none !important;
     transform: none !important;
-    overflow: hidden !important;
   }
 
   /* 5. إزالة أي تحجيم أو إزاحة تسببها مكتبة Radix UI */
@@ -206,18 +200,12 @@
     background: white !important;
   }
 
-  /* 6. منع تقسيم الجداول عبر الصفحات بشكل خاطئ وفرض ورقة واحدة */
-  .page-break-container, .print-content-master {
+  /* 6. منع تقسيم الجداول عبر الصفحات بشكل خاطئ */
+  .page-break-container {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    page-break-after: avoid !important;
-    break-after: avoid !important;
     display: block !important;
     width: 100% !important;
-    height: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
-    box-sizing: border-box !important;
   }
 
   /* 7. تمدد الجداول لتملأ 100% */
