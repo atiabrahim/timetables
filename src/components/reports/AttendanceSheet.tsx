@@ -111,7 +111,7 @@ const AttendanceSheet = ({
               <TableHead className="w-[110px] text-center font-black text-black border-e-2 border-black p-0.5 text-[9px]">
                 <div className="flex items-center justify-center gap-1.5"><PenTool size={10}/>{t.signature}</div>
               </TableHead>
-              <TableHead className="text-center font-black text-black p-0.5 text-[9px]">
+              <TableHead className="text-center font-black text-black p-0.5 text-[9px] w-[140px]">
                 <div className="flex items-center justify-center gap-1.5"><FileText size={10}/>{t.notes}</div>
               </TableHead>
             </TableRow>
