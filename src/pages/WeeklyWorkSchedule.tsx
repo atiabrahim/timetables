@@ -12,8 +12,10 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Printer, Search, Eye, ClipboardList, RotateCw, X, ArrowLeftRight, SlidersHorizontal } from "lucide-react";
+import { Printer, Search, Eye, ClipboardList, RotateCw, X, ArrowLeftRight, SlidersHorizontal, BookOpen, Clock, GraduationCap } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { 
   Select, 
   SelectContent, 
@@ -25,6 +27,7 @@ import PageHeader from "../components/shared/PageHeader";
 import { DAYS, PERIODS } from "../constants/schedule";
 import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { PeriodPart } from "@/types";
 
 const PERIOD_TIMES: Record<string, string> = {
   "1": "08:00-09:00", "2": "09:00-10:00", "3": "10:00-11:00", "4": "11:00-12:00",
@@ -44,33 +47,47 @@ const WeeklyWorkSchedule = () => {
   } = useApp();
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClassId, setSelectedClassId] = useState<string>("all");
+  const [selectedPeriodParts, setSelectedPeriodParts] = useState<PeriodPart[]>(["Morning", "Afternoon", "Evening"]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
   const [isTransposed, setIsTransposed] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [hoveredCell, setHoveredCell] = useState<{ empId: string; dayId: number; period: string } | null>(null);
 
+  // تصفية الأساتذة بناءً على البحث والفرع المختار
   const filteredEmployees = useMemo(() => {
-    return employees.filter(emp => 
-      `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [employees, searchTerm]);
+    return employees.filter(emp => {
+      const matchesSearch = `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesClass = selectedClassId === "all" || assignments.some(a => a.employeeId === emp.id && a.classId === selectedClassId);
+      return matchesSearch && matchesClass;
+    });
+  }, [employees, searchTerm, selectedClassId, assignments]);
 
-  // تحديد الحصص النشطة فقط لكل يوم (التي تحتوي على حصة واحدة على الأقل لأي من الأساتذة المفلترين)
+  // تحديد الحصص النشطة لكل يوم بناءً على الفترات والفروع المحددة
   const activePeriodsPerDay = useMemo(() => {
     const map: Record<number, string[]> = {};
     DAYS.forEach(day => {
-      const activePeriods = PERIODS.filter(p => 
-        assignments.some(a => 
+      const activePeriods = PERIODS.filter(p => {
+        const pNum = parseInt(p);
+        let part: PeriodPart = "Morning";
+        if (pNum >= 5 && pNum <= 7) part = "Afternoon";
+        else if (pNum >= 8) part = "Evening";
+
+        // التحقق من تفعيل الفترة في الفلتر
+        if (!selectedPeriodParts.includes(part)) return false;
+
+        return assignments.some(a => 
           a.day === day.id && 
           a.period === p && 
-          filteredEmployees.some(emp => emp.id === a.employeeId)
-        )
-      );
+          filteredEmployees.some(emp => emp.id === a.employeeId) &&
+          (selectedClassId === "all" || a.classId === selectedClassId)
+        );
+      });
       map[day.id] = activePeriods;
     });
     return map;
-  }, [assignments, filteredEmployees]);
+  }, [assignments, filteredEmployees, selectedPeriodParts, selectedClassId]);
 
   // حساب إجمالي الأعمدة النشطة لتوزيع العرض بالتساوي
   const totalActiveColumns = useMemo(() => {
@@ -83,7 +100,7 @@ const WeeklyWorkSchedule = () => {
     const cells = activePeriods.map(p => ({
       period: p,
       colSpan: 1,
-      assignment: assignments.find(a => a.employeeId === empId && a.day === dayId && a.period === p),
+      assignment: assignments.find(a => a.employeeId === empId && a.day === dayId && a.period === p && (selectedClassId === "all" || a.classId === selectedClassId)),
       skip: false
     }));
 
@@ -112,7 +129,7 @@ const WeeklyWorkSchedule = () => {
     const cells = activePeriods.map(p => ({
       period: p,
       rowSpan: 1,
-      assignment: assignments.find(a => a.employeeId === empId && a.day === dayId && a.period === p),
+      assignment: assignments.find(a => a.employeeId === empId && a.day === dayId && a.period === p && (selectedClassId === "all" || a.classId === selectedClassId)),
       skip: false
     }));
 
@@ -133,6 +150,14 @@ const WeeklyWorkSchedule = () => {
       }
     }
     return cells;
+  };
+
+  const togglePeriodPart = (part: PeriodPart) => {
+    setSelectedPeriodParts(prev => 
+      prev.includes(part) 
+        ? (prev.length > 1 ? prev.filter(p => p !== part) : prev) // منع إلغاء تحديد الجميع
+        : [...prev, part]
+    );
   };
 
   const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => {
@@ -430,7 +455,8 @@ const WeeklyWorkSchedule = () => {
 
       {/* Collapsible Control Panel */}
       {showControls && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm transition-all duration-300 print:hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 bg-white p-5 rounded-2xl border border-emerald-100 shadow-sm transition-all duration-300 print:hidden">
+          {/* 1. البحث عن معلم */}
           <div className="space-y-1">
             <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest px-1">
               {isRTL ? "بحث عن معلم" : "Search Teacher"}
@@ -446,6 +472,50 @@ const WeeklyWorkSchedule = () => {
             </div>
           </div>
 
+          {/* 2. الفروع المعنية بالعرض */}
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest px-1">
+              {isRTL ? "الفروع المعنية بالعرض" : "Target Branches"}
+            </label>
+            <Select value={selectedClassId} onValueChange={setSelectedClassId}>
+              <SelectTrigger className="rounded-xl border-emerald-100 bg-slate-50/30 h-9 font-bold text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{isRTL ? "جميع الفروع" : "All Branches"}</SelectItem>
+                {classes.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* 3. الحصص المعنية بالعرض */}
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest px-1">
+              {isRTL ? "الحصص المعنية بالعرض" : "Target Periods"}
+            </label>
+            <div className="flex items-center gap-3 h-9 px-2 bg-slate-50/30 border border-emerald-100 rounded-xl">
+              {[
+                { id: "Morning" as PeriodPart, label: isRTL ? "ص" : "M" },
+                { id: "Afternoon" as PeriodPart, label: isRTL ? "م" : "A" },
+                { id: "Evening" as PeriodPart, label: isRTL ? "ل" : "E" }
+              ].map(part => {
+                const isChecked = selectedPeriodParts.includes(part.id);
+                return (
+                  <div key={part.id} className="flex items-center gap-1 cursor-pointer" onClick={() => togglePeriodPart(part.id)}>
+                    <Checkbox 
+                      checked={isChecked} 
+                      className="h-3.5 w-3.5 rounded border-emerald-200 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600" 
+                    />
+                    <span className="text-[10px] font-black text-slate-700">{part.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 4. اتجاه الصفحة */}
           <div className="space-y-1">
             <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest px-1">
               {isRTL ? "اتجاه الصفحة" : "Page Orientation"}
@@ -461,6 +531,7 @@ const WeeklyWorkSchedule = () => {
             </Select>
           </div>
 
+          {/* 5. تبديل المحاور */}
           <div className="space-y-1 flex flex-col justify-end">
             <Button 
               variant="outline" 
@@ -471,7 +542,7 @@ const WeeklyWorkSchedule = () => {
               )}
             >
               <ArrowLeftRight size={14} />
-              {isRTL ? "تبديل المحاور (أسطر/أعمدة)" : "Transpose Axes"}
+              {isRTL ? "تبديل المحاور" : "Transpose Axes"}
             </Button>
           </div>
         </div>
