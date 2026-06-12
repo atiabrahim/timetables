@@ -185,7 +185,7 @@
 
   @page {
     margin-top: 4mm !important; /* هامش علوي موحد ومتساوي لكافة الصفحات */
-    margin-bottom: 2mm !important;
+    margin-bottom: 1mm !important; /* تقليص الهامش السفلي للحد الأدنى */
     margin-left: 2mm !important;
     margin-right: 2mm !important;
   }
