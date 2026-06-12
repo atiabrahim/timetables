@@ -1,14 +1,6 @@
 "use client";
 
 import React from "react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { DAYS } from "../../constants/schedule";
 
@@ -60,7 +52,7 @@ const MasterClassesScheduleTable = ({
         isPrint ? cn("p-0 w-full", printHeightClass) : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden w-full"
       )}>
         <div className={cn(!isPrint && "overflow-x-auto", isPrint && "h-full")}>
-          <Table className={cn(
+          <table className={cn(
             "border-collapse border-spacing-0 table-fixed", 
             isPrint ? "w-full h-full border-2 border-black" : "w-full min-w-[1000px]"
           )}>
@@ -71,24 +63,24 @@ const MasterClassesScheduleTable = ({
                 <col key={cls.id} className={isPrint ? `${80 / filteredClasses.length}%` : "w-[100px]"} />
               ))}
             </colgroup>
-            <TableHeader>
-              <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-5" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
-                <TableHead className={cn(
+            <thead>
+              <tr className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-5" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
+                <th className={cn(
                   "font-black text-emerald-900 border text-center",
                   isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100"
                 )}>
                   {isRTL ? "اليوم" : "Day"}
-                </TableHead>
-                <TableHead className={cn(
+                </th>
+                <th className={cn(
                   "font-black text-emerald-900 border text-center",
                   isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100"
                 )}>
                   {isRTL ? "الحصة" : "Period"}
-                </TableHead>
+                </th>
                 {filteredClasses.map(cls => {
                   const isColHovered = hoveredCell?.classId === cls.id;
                   return (
-                    <TableHead 
+                    <th 
                       key={cls.id} 
                       className={cn(
                         "text-center font-black border truncate transition-colors duration-150",
@@ -96,13 +88,13 @@ const MasterClassesScheduleTable = ({
                       )}
                     >
                       {cls.name}
-                    </TableHead>
+                    </th>
                   );
                 })}
-              </TableRow>
-            </TableHeader>
+              </tr>
+            </thead>
 
-            <TableBody>
+            <tbody>
               {DAYS.map(day => {
                 const activePeriods = activePeriodsPerDay[day.id] || [];
                 if (activePeriods.length === 0) return null;
@@ -110,9 +102,9 @@ const MasterClassesScheduleTable = ({
                 return activePeriods.map((p, pIdx) => {
                   const isRowHovered = hoveredCell?.dayId === day.id && hoveredCell?.period === p;
                   return (
-                    <TableRow key={`${day.id}-${p}`} className={cn("group transition-colors duration-150", isPrint ? "border-b border-black" : "h-8 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                    <tr key={`${day.id}-${p}`} className={cn("group transition-colors duration-150", isPrint ? "border-b border-black" : "h-8 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
                       {pIdx === 0 && (
-                        <TableCell 
+                        <td 
                           rowSpan={activePeriods.length}
                           className={cn(
                             "font-black border bg-slate-50/50 text-center",
@@ -120,15 +112,15 @@ const MasterClassesScheduleTable = ({
                           )}
                         >
                           {isRTL ? day.name : day.en.substr(0, 3)}
-                        </TableCell>
+                        </td>
                       )}
-                      <TableCell className={cn(
+                      <td className={cn(
                         "font-bold border bg-white text-center leading-none",
                         isPrint ? "text-[7.5px] p-0.5 border-black text-black" : "text-[9px] p-1 border-emerald-100 text-slate-500"
                       )}>
                         <span className="font-black block">{isRTL ? `ح${p}` : `P${p}`}</span>
                         <span className="text-[7px] font-normal opacity-75 mt-0.5 block">{PERIOD_TIMES[p]}</span>
-                      </TableCell>
+                      </td>
 
                       {filteredClasses.map(cls => {
                         const dayCells = getTransposedDayCells(cls.id, day.id);
@@ -142,7 +134,7 @@ const MasterClassesScheduleTable = ({
                         const isExactHovered = hoveredCell?.classId === cls.id && hoveredCell?.dayId === day.id && hoveredCell?.period === p;
 
                         return (
-                          <TableCell
+                          <td
                             key={`${cls.id}-${day.id}-${p}`}
                             rowSpan={cell.rowSpan}
                             className={cn(
@@ -170,146 +162,146 @@ const MasterClassesScheduleTable = ({
                             ) : (
                               <span className="text-slate-200 opacity-20 text-[7px]">---</span>
                             )}
-                          </TableCell>
+                          </td>
                         );
                       })}
-                    </TableRow>
+                    </tr>
                   );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className={cn(
-        "bg-white mx-auto",
-        isPrint ? cn("p-0 w-full", printHeightClass) : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden w-full"
-      )}>
-        <div className={cn(!isPrint && "overflow-x-auto", isPrint && "h-full")}>
-          <Table className={cn(
-            "border-collapse border-spacing-0 table-fixed", 
-            isPrint ? "w-full h-full border-2 border-black" : "w-full min-w-[1000px]"
-          )}>
-            <colgroup>
-              <col className={isPrint ? "w-[15%]" : "w-[140px]"} />
-              {Array.from({ length: totalActiveColumns }).map((_, i) => (
-                <col key={i} className={isPrint ? `${85 / totalActiveColumns}%` : "w-[70px]"} />
-              ))}
-            </colgroup>
-            <TableHeader>
-              <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-5" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
-                <TableHead className={cn(
-                  "font-black text-emerald-900 border text-center sticky left-0 z-20 bg-emerald-50/50",
-                  isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100"
-                )} rowSpan={2}>
-                  {isRTL ? "الفرع" : "Branch"}
-                </TableHead>
-                {DAYS.map(day => {
-                  const colSpan = activePeriodsPerDay[day.id]?.length || 0;
-                  if (colSpan === 0) return null;
-                  return (
-                    <TableHead 
-                      key={day.id} 
-                      className={cn(
-                        "text-center font-black border",
-                        isPrint ? "text-[8px] p-0.5 border-black bg-slate-50 text-black" : "text-[10px] p-1 bg-emerald-50/30 border-emerald-100 text-emerald-700"
-                      )} 
-                      colSpan={colSpan}
-                    >
-                      {isRTL ? day.name : day.en.substr(0, 3)}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-              <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-5" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-7")}>
-                {DAYS.map(day => {
-                  const activePeriods = activePeriodsPerDay[day.id] || [];
-                  return activePeriods.map(p => {
-                    const isColHovered = hoveredCell?.dayId === day.id && hoveredCell?.period === p;
-                    return (
-                      <TableHead key={`${day.id}-${p}`} className={cn(
-                        "text-center font-bold border p-0.5 transition-colors duration-150",
-                        isPrint ? "text-[7px] border-black text-black" : cn("border-emerald-100 text-slate-400", isColHovered && "bg-emerald-100 text-emerald-900")
-                      )}>
-                        <div className="flex flex-col items-center justify-center leading-none">
-                          <span className="font-black">{isRTL ? `ح${p}` : `P${p}`}</span>
-                          <span className={cn("font-normal opacity-75 mt-0.5 block tracking-tighter", isPrint ? "text-[4.5px]" : "text-[7px]")}>
-                            {PERIOD_TIMES[p]}
-                          </span>
-                        </div>
-                      </TableHead>
-                    );
-                  });
-                })}
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              {filteredClasses.map(cls => {
-                const isRowHovered = hoveredCell?.classId === cls.id;
-                return (
-                  <TableRow key={cls.id} className={cn("group transition-colors duration-150", isPrint ? "border-b border-black" : "h-8 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
-                    <TableCell className={cn(
-                      "font-bold border bg-white truncate sticky left-0 z-10 shadow-sm transition-colors duration-150",
-                      isPrint ? "text-[8px] p-1 border-black text-black" : cn("text-[11px] p-1 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30", isRowHovered && "bg-emerald-50/40")
-                    )}>
-                      {cls.name}
-                    </TableCell>
-                    {DAYS.map(day => {
-                      const dayCells = getDayCells(cls.id, day.id);
-                      return dayCells.map(cell => {
-                        if (cell.skip) return null;
-                        const isActive = !!cell.assignment;
-                        const subject = cell.assignment ? subjects.find(s => s.id === cell.assignment.subjectId) : null;
-                        const emp = cell.assignment ? employees.find(e => e.id === cell.assignment.employeeId) : null;
-                        const isCellHovered = hoveredCell?.classId === cls.id || (hoveredCell?.dayId === day.id && hoveredCell?.period === cell.period);
-                        const isExactHovered = hoveredCell?.classId === cls.id && hoveredCell?.dayId === day.id && hoveredCell?.period === cell.period;
-
-                        return (
-                          <TableCell
-                            key={`${cls.id}-${day.id}-${cell.period}`}
-                            colSpan={cell.colSpan}
-                            className={cn(
-                              "text-center border p-0.5 transition-colors duration-150 relative overflow-hidden",
-                              isActive ? (isPrint ? "bg-slate-100 text-black border-black" : cn("text-white shadow-inner", isExactHovered ? "bg-emerald-800" : "bg-emerald-600")) : (isPrint ? "bg-white border-black" : cn(isCellHovered ? "bg-emerald-50/30" : "hover:bg-emerald-50/50")),
-                              isPrint ? "border-black" : "h-8 border-emerald-100"
-                            )}
-                            onMouseEnter={() => !isPrint && setHoveredCell({ classId: cls.id, dayId: day.id, period: cell.period })}
-                            onMouseLeave={() => !isPrint && setHoveredCell(null)}
-                          >
-                            {isActive ? (
-                              <div className="flex flex-col items-center justify-center leading-none">
-                                <span className={cn("font-black truncate max-w-full", isPrint ? "text-[7.5px]" : "text-[9.5px]")}>
-                                  {subject?.name || "---"}
-                                </span>
-                                <span className={cn("font-bold opacity-80 truncate max-w-full", isPrint ? "text-[6.5px]" : "text-[8px]")}>
-                                  {emp ? `${emp.lastName} ${emp.firstName}` : "---"}
-                                </span>
-                                {cell.assignment.room && (
-                                  <span className={cn("font-medium opacity-70 truncate max-w-full", isPrint ? "text-[5.5px]" : "text-[7.5px]")}>
-                                    {cell.assignment.room}
-                                  </span>
-                                )}
-                              </div>
-                            ) : (
-                              <span className="text-slate-200 opacity-20 text-[7px]">---</span>
-                            )}
-                          </TableCell>
-                        );
-                      });
-                    })}
-                  </TableRow>
-                );
+                });
               })}
-            </TableBody>
-          </Table>
+            </tbody>
+          </table>
         </div>
       </div>
     );
-  };
+  }
+
+  return (
+    <div className={cn(
+      "bg-white mx-auto",
+      isPrint ? cn("p-0 w-full", printHeightClass) : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden w-full"
+    )}>
+      <div className={cn(!isPrint && "overflow-x-auto", isPrint && "h-full")}>
+        <table className={cn(
+          "border-collapse border-spacing-0 table-fixed", 
+          isPrint ? "w-full h-full border-2 border-black" : "w-full min-w-[1000px]"
+        )}>
+          <colgroup>
+            <col className={isPrint ? "w-[15%]" : "w-[140px]"} />
+            {Array.from({ length: totalActiveColumns }).map((_, i) => (
+              <col key={i} className={isPrint ? `${85 / totalActiveColumns}%` : "w-[70px]"} />
+            ))}
+          </colgroup>
+          <thead>
+            <tr className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-5" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
+              <th className={cn(
+                "font-black text-emerald-900 border text-center sticky left-0 z-20 bg-emerald-50/50",
+                isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100"
+              )} rowSpan={2}>
+                {isRTL ? "الفرع" : "Branch"}
+              </th>
+              {DAYS.map(day => {
+                const colSpan = activePeriodsPerDay[day.id]?.length || 0;
+                if (colSpan === 0) return null;
+                return (
+                  <th 
+                    key={day.id} 
+                    className={cn(
+                      "text-center font-black border",
+                      isPrint ? "text-[8px] p-0.5 border-black bg-slate-50 text-black" : "text-[10px] p-1 bg-emerald-50/30 border-emerald-100 text-emerald-700"
+                    )} 
+                    colSpan={colSpan}
+                  >
+                    {isRTL ? day.name : day.en.substr(0, 3)}
+                  </th>
+                );
+              })}
+            </tr>
+            <tr className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-5" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-7")}>
+              {DAYS.map(day => {
+                const activePeriods = activePeriodsPerDay[day.id] || [];
+                return activePeriods.map(p => {
+                  const isColHovered = hoveredCell?.dayId === day.id && hoveredCell?.period === p;
+                  return (
+                    <th key={`${day.id}-${p}`} className={cn(
+                      "text-center font-bold border p-0.5 transition-colors duration-150",
+                      isPrint ? "text-[7px] border-black text-black" : cn("border-emerald-100 text-slate-400", isColHovered && "bg-emerald-100 text-emerald-900")
+                    )}>
+                      <div className="flex flex-col items-center justify-center leading-none">
+                        <span className="font-black">{isRTL ? `ح${p}` : `P${p}`}</span>
+                        <span className={cn("font-normal opacity-75 mt-0.5 block tracking-tighter", isPrint ? "text-[4.5px]" : "text-[7px]")}>
+                          {PERIOD_TIMES[p]}
+                        </span>
+                      </div>
+                    </th>
+                  );
+                });
+              })}
+            </tr>
+          </thead>
+
+          <tbody>
+            {filteredClasses.map(cls => {
+              const isRowHovered = hoveredCell?.classId === cls.id;
+              return (
+                <tr key={cls.id} className={cn("group transition-colors duration-150", isPrint ? "border-b border-black" : "h-8 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                  <td className={cn(
+                    "font-bold border bg-white truncate sticky left-0 z-10 shadow-sm transition-colors duration-150",
+                    isPrint ? "text-[8px] p-1 border-black text-black" : cn("text-[11px] p-1 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30", isRowHovered && "bg-emerald-50/40")
+                  )}>
+                    {cls.name}
+                  </td>
+                  {DAYS.map(day => {
+                    const dayCells = getDayCells(cls.id, day.id);
+                    return dayCells.map(cell => {
+                      if (cell.skip) return null;
+                      const isActive = !!cell.assignment;
+                      const subject = cell.assignment ? subjects.find(s => s.id === cell.assignment.subjectId) : null;
+                      const emp = cell.assignment ? employees.find(e => e.id === cell.assignment.employeeId) : null;
+                      const isCellHovered = hoveredCell?.classId === cls.id || (hoveredCell?.dayId === day.id && hoveredCell?.period === cell.period);
+                      const isExactHovered = hoveredCell?.classId === cls.id && hoveredCell?.dayId === day.id && hoveredCell?.period === cell.period;
+
+                      return (
+                        <td
+                          key={`${cls.id}-${day.id}-${cell.period}`}
+                          colSpan={cell.colSpan}
+                          className={cn(
+                            "text-center border p-0.5 transition-colors duration-150 relative overflow-hidden",
+                            isActive ? (isPrint ? "bg-slate-100 text-black border-black" : cn("text-white shadow-inner", isExactHovered ? "bg-emerald-800" : "bg-emerald-600")) : (isPrint ? "bg-white border-black" : cn(isCellHovered ? "bg-emerald-50/30" : "hover:bg-emerald-50/50")),
+                            isPrint ? "border-black" : "h-8 border-emerald-100"
+                          )}
+                          onMouseEnter={() => !isPrint && setHoveredCell({ classId: cls.id, dayId: day.id, period: cell.period })}
+                          onMouseLeave={() => !isPrint && setHoveredCell(null)}
+                        >
+                          {isActive ? (
+                            <div className="flex flex-col items-center justify-center leading-none">
+                              <span className={cn("font-black truncate max-w-full", isPrint ? "text-[7.5px]" : "text-[9.5px]")}>
+                                {subject?.name || "---"}
+                              </span>
+                              <span className={cn("font-bold opacity-80 truncate max-w-full", isPrint ? "text-[6.5px]" : "text-[8px]")}>
+                                {emp ? `${emp.lastName} ${emp.firstName}` : "---"}
+                              </span>
+                              {cell.assignment.room && (
+                                <span className={cn("font-medium opacity-70 truncate max-w-full", isPrint ? "text-[5.5px]" : "text-[7.5px]")}>
+                                  {cell.assignment.room}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-slate-200 opacity-20 text-[7px]">---</span>
+                          )}
+                        </td>
+                      );
+                    });
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 };
 
 export default MasterClassesScheduleTable;
