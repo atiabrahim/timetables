@@ -43,19 +43,16 @@ const MasterClassesScheduleTable = ({
   setHoveredCell,
   orientation
 }: MasterClassesScheduleTableProps) => {
-  // تقليص الارتفاع المخصص للجدول لترك مساحة كافية للتواقيع في أسفل الصفحة A4
-  const printHeightClass = orientation === "portrait" ? "print:h-[175mm] h-[175mm]" : "print:h-[115mm] h-[115mm]";
-
   if (isTransposed) {
     return (
       <div className={cn(
-        "bg-white mx-auto",
-        isPrint ? cn("p-0 w-full", printHeightClass) : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden w-full"
+        "bg-white mx-auto w-full",
+        isPrint ? "p-0 flex-1 flex flex-col justify-center" : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden w-full"
       )}>
-        <div className={cn(!isPrint && "overflow-x-auto", isPrint && "h-full")}>
+        <div className={cn(!isPrint && "overflow-x-auto", isPrint && "w-full")}>
           <table className={cn(
-            "border-collapse border-spacing-0 table-fixed", 
-            isPrint ? "w-full h-full border-2 border-black" : "w-full min-w-[1000px]"
+            "border-collapse border-spacing-0 table-fixed w-full", 
+            isPrint ? "border-2 border-black" : "min-w-[1000px]"
           )}>
             <colgroup>
               <col className={isPrint ? "w-[10%]" : "w-[80px]"} />
@@ -179,13 +176,13 @@ const MasterClassesScheduleTable = ({
 
   return (
     <div className={cn(
-      "bg-white mx-auto",
-      isPrint ? cn("p-0 w-full", printHeightClass) : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden w-full"
+      "bg-white mx-auto w-full",
+      isPrint ? "p-0 flex-1 flex flex-col justify-center" : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden w-full"
     )}>
-      <div className={cn(!isPrint && "overflow-x-auto", isPrint && "h-full")}>
+      <div className={cn(!isPrint && "overflow-x-auto", isPrint && "w-full")}>
         <table className={cn(
-          "border-collapse border-spacing-0 table-fixed", 
-          isPrint ? "w-full h-full border-2 border-black" : "w-full min-w-[1000px]"
+          "border-collapse border-spacing-0 table-fixed w-full", 
+          isPrint ? "border-2 border-black" : "min-w-[1000px]"
         )}>
           <colgroup>
             <col className={isPrint ? "w-[15%]" : "w-[140px]"} />
