@@ -50,8 +50,8 @@ const AttendanceSheet = ({
         doubleMode ? "py-2 px-[8mm]" : "py-6 px-[12mm]",
         "print:shadow-none print:border-none print:my-0 print:mx-auto print:rounded-none print:w-full",
         doubleMode
-          ? (isLandscape ? "print:h-[105mm]" : "print:h-[148.5mm]") + " print:pt-[2mm] print:pb-0 print:px-[8mm]"
-          : "print:pt-[5mm] print:pb-0 print:px-[10mm] print:min-h-[296mm] page-break-always"
+          ? (isLandscape ? "print:h-[105mm]" : "print:h-[148.5mm]") + " print:pt-[2mm] print:pb-0 print:px-[4mm]"
+          : "print:pt-[2mm] print:pb-0 print:px-[4mm] print:min-h-[296mm] page-break-always"
       )}
       dir={isRTL ? "rtl" : "ltr"}
       style={{ fontFamily: reportStyles.fontFamily }}
@@ -105,7 +105,7 @@ const AttendanceSheet = ({
               <TableHead className="w-[40px] text-center font-black text-black border-e-2 border-black p-0.5 text-[9px]">
                 <div className="flex items-center justify-center gap-0.5"><Hash size={9}/>{t.number}</div>
               </TableHead>
-              <TableHead className={cn("font-black text-black border-e-2 border-black px-3 p-0.5 text-[9px] w-[280px] whitespace-nowrap", isRTL ? "text-right" : "text-left")}>
+              <TableHead className={cn("font-black text-black border-e-2 border-black px-3 p-0.5 text-[9px] w-[200px] whitespace-nowrap", isRTL ? "text-right" : "text-left")}>
                 <div className="flex items-center gap-1.5"><User size={10}/>{t.employeeName}</div>
               </TableHead>
               <TableHead className="w-[120px] text-center font-black text-black border-e-2 border-black p-0.5 text-[9px]">

@@ -183,6 +183,10 @@
     background: white !important;
   }
 
+  @page {
+    margin: 2mm !important; /* ضبط هوامش الصفحة للحد الأدنى */
+  }
+
   /* 4. إجبار نافذة المعاينة على شغل كامل الصفحة بدون تحويلات */
   [role="dialog"] {
     position: static !important;
