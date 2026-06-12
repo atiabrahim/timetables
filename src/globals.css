@@ -184,7 +184,10 @@
   }
 
   @page {
-    margin: 2mm !important; /* ضبط هوامش الصفحة للحد الأدنى */
+    margin-top: 4mm !important; /* هامش علوي موحد ومتساوي لكافة الصفحات */
+    margin-bottom: 2mm !important;
+    margin-left: 2mm !important;
+    margin-right: 2mm !important;
   }
 
   /* 4. إجبار نافذة المعاينة على شغل كامل الصفحة بدون تحويلات */

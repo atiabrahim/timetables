@@ -46,12 +46,12 @@ const OfficialPrintWrapper = ({
         !disablePageBreak && "page-break-container",
         doubleMode ? (
           orientation === "portrait" 
-            ? "print:h-[148.5mm] print:py-[2mm] print:px-[4mm]" 
-            : "print:h-[105mm] print:py-[1mm] print:px-[4mm]"
+            ? "print:h-[148.5mm] print:pt-[2mm] print:pb-[2mm] print:px-[4mm]" 
+            : "print:h-[105mm] print:pt-[2mm] print:pb-[1mm] print:px-[4mm]"
         ) : (
           orientation === "portrait"
-            ? "px-[12mm] py-[12mm] print:px-[4mm] print:py-[4mm] print:h-[296mm] print:max-h-[296mm] print:overflow-hidden"
-            : "px-[12mm] py-[12mm] print:px-[4mm] print:py-[4mm] print:h-[209mm] print:max-h-[209mm] print:overflow-hidden"
+            ? "px-[12mm] py-[12mm] print:px-[4mm] print:pt-[4mm] print:pb-[4mm] print:h-[296mm] print:max-h-[296mm] print:overflow-hidden"
+            : "px-[12mm] py-[12mm] print:px-[4mm] print:pt-[4mm] print:pb-[4mm] print:h-[209mm] print:max-h-[209mm] print:overflow-hidden"
         ),
         // العرض للمعاينة فقط (الشاشة)
         orientation === "portrait" ? "w-[210mm] mx-auto print:w-full print:mx-0 print:max-w-none" : "w-[297mm] mx-auto print:w-full print:mx-0 print:max-w-none",
