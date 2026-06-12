@@ -41,6 +41,7 @@ const AttendanceSheet = ({
 }: AttendanceSheetProps) => {
   const maxRows = doubleMode ? 14 : 20;
   const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
+  const isLandscape = reportStyles.orientation === "landscape";
 
   return (
     <div
@@ -49,7 +50,7 @@ const AttendanceSheet = ({
         doubleMode ? "py-2 px-[8mm]" : "py-6 px-[12mm]",
         "print:shadow-none print:border-none print:my-0 print:mx-auto print:rounded-none print:w-full",
         doubleMode
-          ? "print:h-[148mm] print:pt-[3mm] print:pb-0 print:px-[8mm] print:border-b print:border-black/5"
+          ? (isLandscape ? "print:h-[105mm]" : "print:h-[148.5mm]") + " print:pt-[2mm] print:pb-0 print:px-[8mm]"
           : "print:pt-[5mm] print:pb-0 print:px-[10mm] print:min-h-[296mm] page-break-always"
       )}
       dir={isRTL ? "rtl" : "ltr"}

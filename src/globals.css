@@ -227,4 +227,25 @@
     border-radius: 0 !important;
     box-shadow: none !important;
   }
+
+  /* 9. تنسيق وضع النسختين في ورقة واحدة مع خط متقطع فاصل */
+  .double-mode-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    justify-content: space-between !important;
+  }
+
+  .double-mode-container > :first-child {
+    border-bottom: 2px dashed #94a3b8 !important; /* خط متقطع فاصل رمادي */
+    padding-bottom: 2mm !important;
+    margin-bottom: 2mm !important;
+  }
+
+  .double-mode-container > :last-child {
+    padding-top: 2mm !important;
+    margin-top: 2mm !important;
+  }
 }

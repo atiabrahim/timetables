@@ -46,8 +46,8 @@ const OfficialPrintWrapper = ({
         !disablePageBreak && "page-break-container",
         doubleMode ? (
           orientation === "portrait" 
-            ? "print:h-[148mm] print:py-[5mm] print:px-[8mm] border-b border-black/10" 
-            : "print:h-[105mm] print:py-[3mm] print:px-[8mm] border-b border-black/10"
+            ? "print:h-[148.5mm] print:py-[3mm] print:px-[8mm]" 
+            : "print:h-[105mm] print:py-[2mm] print:px-[8mm]"
         ) : (
           orientation === "portrait"
             ? "px-[12mm] py-[12mm] print:px-[8mm] print:py-[8mm] print:h-[296mm] print:max-h-[296mm] print:overflow-hidden"

@@ -94,6 +94,22 @@ const ReportsNew = () => {
 
   const activeDept = selectedDepartment || (departments[0] ? (typeof departments[0] === 'string' ? departments[0] : departments[0].name) : defaultDept);
 
+  // دالة لتجميع أوراق الحضور في أزواج (كل ورقتين معاً) عند تفعيل وضع النسختين
+  const renderDoubleModePairs = (sheets: React.ReactNode[]) => {
+    if (!reportStyles.doubleMode) return sheets;
+    
+    const pairs: React.ReactNode[] = [];
+    for (let i = 0; i < sheets.length; i += 2) {
+      pairs.push(
+        <div key={`pair-${i}`} className="double-mode-container page-break-always flex flex-col gap-0 print:gap-0 w-full items-center">
+          {sheets[i]}
+          {i + 1 < sheets.length && sheets[i + 1]}
+        </div>
+      );
+    }
+    return pairs;
+  };
+
   const renderDailyReport = () => {
     const date = parseISO(dailyDate);
     if (!isValid(date)) return null;
@@ -103,9 +119,10 @@ const ReportsNew = () => {
       selectedPeriods.includes(p) && 
       periodConfigs.find(c => c.day === dayIdx && c.period === p)?.isActive
     );
-    return activePeriods.map(p => {
+    
+    const sheets = activePeriods.map(p => {
       const assigned = getSheetData(date, p);
-      if (assigned.length === 0) return null; // تخطي الفترات الفارغة في التقرير اليومي
+      if (assigned.length === 0) return null;
       return (
         <AttendanceSheet 
           key={`${dailyDate}-${p}`}
@@ -122,6 +139,8 @@ const ReportsNew = () => {
         />
       );
     }).filter(Boolean);
+
+    return renderDoubleModePairs(sheets);
   };
 
   const renderMonthlyReport = () => {
@@ -137,7 +156,7 @@ const ReportsNew = () => {
       periods.forEach((p) => {
         if (selectedPeriods.includes(p) && periodConfigs.find(c => c.day === dayIdx && c.period === p)?.isActive) {
           const assigned = getSheetData(day, p);
-          if (assigned.length > 0) { // تخطي الفترات الفارغة في التقرير الشهري
+          if (assigned.length > 0) {
             sheets.push(
               <AttendanceSheet 
                 key={`${format(day, 'yyyy-MM-dd')}-${p}`}
@@ -158,7 +177,7 @@ const ReportsNew = () => {
       });
     });
     
-    return sheets.length > 0 ? sheets : (
+    return sheets.length > 0 ? renderDoubleModePairs(sheets) : (
       <div className="text-center p-6 bg-white rounded-2xl border border-dashed border-slate-200 w-full max-w-4xl">
         <Info className="mx-auto text-slate-200 mb-1" size={28} />
         <p className="text-slate-400 font-bold text-xs">{t.noAssignments}</p>
