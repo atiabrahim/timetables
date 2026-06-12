@@ -56,7 +56,7 @@ const MasterClassesSchedule = () => {
     );
   }, [classes, searchTerm]);
 
-  // تحديد الحصص النشطة فقط لكل يوم (التي تحتوي على حصة واحدة على الأقل لأي من الفروع المفلترة)
+  // تحديد الحصص النشطة لكل يوم (التي تحتوي على حصة واحدة على الأقل لأي من الفروع المفلترة)
   const activePeriodsPerDay = useMemo(() => {
     const map: Record<number, string[]> = {};
     DAYS.forEach(day => {
@@ -156,7 +156,7 @@ const MasterClassesSchedule = () => {
                 ))}
               </colgroup>
               <TableHeader>
-                <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-6" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-8")}>
+                <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-5" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
                   <TableHead className={cn(
                     "font-black text-emerald-900 border text-center",
                     isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100"
@@ -194,7 +194,7 @@ const MasterClassesSchedule = () => {
                   return activePeriods.map((p, pIdx) => {
                     const isRowHovered = hoveredCell?.dayId === day.id && hoveredCell?.period === p;
                     return (
-                      <TableRow key={`${day.id}-${p}`} className={cn("group transition-colors duration-150", isPrint ? "h-8 border-b border-black" : "h-10 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                      <TableRow key={`${day.id}-${p}`} className={cn("group transition-colors duration-150", isPrint ? "h-6 border-b border-black" : "h-8 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
                         {pIdx === 0 && (
                           <TableCell 
                             rowSpan={activePeriods.length}
@@ -232,7 +232,7 @@ const MasterClassesSchedule = () => {
                               className={cn(
                                 "text-center border p-0.5 transition-colors duration-150 relative overflow-hidden",
                                 isActive ? (isPrint ? "bg-slate-100 text-black border-black" : cn("text-white shadow-inner", isExactHovered ? "bg-emerald-800" : "bg-emerald-600")) : (isPrint ? "bg-white border-black" : cn(isCellHovered ? "bg-emerald-50/30" : "hover:bg-emerald-50/50")),
-                                isPrint ? "h-8 border-black" : "h-10 border-emerald-100"
+                                isPrint ? "h-6 border-black" : "h-8 border-emerald-100"
                               )}
                               onMouseEnter={() => !isPrint && setHoveredCell({ classId: cls.id, dayId: day.id, period: p })}
                               onMouseLeave={() => !isPrint && setHoveredCell(null)}
@@ -286,7 +286,7 @@ const MasterClassesSchedule = () => {
               ))}
             </colgroup>
             <TableHeader>
-              <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-6" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-8")}>
+              <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-5" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
                 <TableHead className={cn(
                   "font-black text-emerald-900 border text-center sticky left-0 z-20 bg-emerald-50/50",
                   isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100"
@@ -310,7 +310,7 @@ const MasterClassesSchedule = () => {
                   );
                 })}
               </TableRow>
-              <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-6" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-8")}>
+              <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-5" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-7")}>
                 {DAYS.map(day => {
                   const activePeriods = activePeriodsPerDay[day.id] || [];
                   return activePeriods.map(p => {
@@ -337,7 +337,7 @@ const MasterClassesSchedule = () => {
               {filteredClasses.map(cls => {
                 const isRowHovered = hoveredCell?.classId === cls.id;
                 return (
-                  <TableRow key={cls.id} className={cn("group transition-colors duration-150", isPrint ? "h-8 border-b border-black" : "h-10 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                  <TableRow key={cls.id} className={cn("group transition-colors duration-150", isPrint ? "h-6 border-b border-black" : "h-8 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
                     <TableCell className={cn(
                       "font-bold border bg-white truncate sticky left-0 z-10 shadow-sm transition-colors duration-150",
                       isPrint ? "text-[8px] p-1 border-black text-black" : cn("text-[11px] p-1 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30", isRowHovered && "bg-emerald-50/40")
@@ -361,7 +361,7 @@ const MasterClassesSchedule = () => {
                             className={cn(
                               "text-center border p-0.5 transition-colors duration-150 relative overflow-hidden",
                               isActive ? (isPrint ? "bg-slate-100 text-black border-black" : cn("text-white shadow-inner", isExactHovered ? "bg-emerald-800" : "bg-emerald-600")) : (isPrint ? "bg-white border-black" : cn(isCellHovered ? "bg-emerald-50/30" : "hover:bg-emerald-50/50")),
-                              isPrint ? "h-8 border-black" : "h-10 border-emerald-100"
+                              isPrint ? "h-6 border-black" : "h-8 border-emerald-100"
                             )}
                             onMouseEnter={() => !isPrint && setHoveredCell({ classId: cls.id, dayId: day.id, period: cell.period })}
                             onMouseLeave={() => !isPrint && setHoveredCell(null)}
@@ -430,7 +430,7 @@ const MasterClassesSchedule = () => {
 
       {/* Collapsible Control Panel */}
       {showControls && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm transition-all duration-300 print:hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm mb-4 print:hidden">
           <div className="space-y-1">
             <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest px-1">
               {isRTL ? "بحث عن فرع" : "Search Branch"}
@@ -439,7 +439,7 @@ const MasterClassesSchedule = () => {
               <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-2.5" : "left-2.5")} size={14} />
               <Input 
                 placeholder={t.search} 
-                className={cn("rounded-xl border-emerald-100 bg-slate-50/30 h-9 text-xs", isRTL ? "pr-8" : "pl-8")}
+                className={cn("rounded-xl border-emerald-100 bg-white h-9 text-xs", isRTL ? "pr-8" : "pl-8")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -507,7 +507,7 @@ const MasterClassesSchedule = () => {
                 {isRTL ? (orientation === "portrait" ? "عرضي" : "طولي") : "Orientation"}
               </Button>
               <Button onClick={() => window.print()} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black px-6 h-9 text-xs">
-                <Printer size={18} className="mr-1.5" />
+                <Printer size={14} className="mr-1.5" />
                 {t.print}
               </Button>
               <Button variant="ghost" onClick={() => setIsPreviewOpen(false)} className="text-white/70 hover:text-white">

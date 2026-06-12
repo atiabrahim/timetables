@@ -77,7 +77,7 @@ const MasterSchedule = () => {
             ))}
           </colgroup>
           <thead>
-            <tr className={cn(isPrint ? "bg-slate-100 h-6" : "bg-emerald-950 text-white h-8")}>
+            <tr className={cn(isPrint ? "bg-slate-100 h-5" : "bg-emerald-950 text-white h-7")}>
               <th className={cn(
                 "p-0.5 border sticky left-0 z-20 text-center",
                 isPrint ? "text-[8px] font-black border-black text-black bg-slate-100" : "text-[10px] uppercase tracking-tighter font-black border-white/10 bg-emerald-950"
@@ -103,7 +103,7 @@ const MasterSchedule = () => {
               return (
                 <tr key={cls.id} className={cn(
                   "group transition-colors duration-150",
-                  isPrint ? "h-6" : "h-9",
+                  isPrint ? "h-5" : "h-7",
                   idx % 2 === 0 ? "bg-white" : "bg-emerald-50/10",
                   !isPrint && (isRowHovered ? "bg-emerald-50/20" : "hover:bg-emerald-100/20")
                 )}>

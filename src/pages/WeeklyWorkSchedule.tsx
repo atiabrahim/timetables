@@ -202,7 +202,7 @@ const WeeklyWorkSchedule = () => {
                 ))}
               </colgroup>
               <TableHeader>
-                <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-6" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-8")}>
+                <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-5" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
                   <TableHead className={cn(
                     "font-black text-emerald-900 border text-center",
                     isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100"
@@ -240,7 +240,7 @@ const WeeklyWorkSchedule = () => {
                   return activePeriods.map((p, pIdx) => {
                     const isRowHovered = hoveredCell?.dayId === day.id && hoveredCell?.period === p;
                     return (
-                      <TableRow key={`${day.id}-${p}`} className={cn("group transition-colors duration-150", isPrint ? "h-8 border-b border-black" : "h-10 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                      <TableRow key={`${day.id}-${p}`} className={cn("group transition-colors duration-150", isPrint ? "h-6 border-b border-black" : "h-8 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
                         {pIdx === 0 && (
                           <TableCell 
                             rowSpan={activePeriods.length}
@@ -278,7 +278,7 @@ const WeeklyWorkSchedule = () => {
                               className={cn(
                                 "text-center border p-0.5 transition-colors duration-150 relative overflow-hidden",
                                 isActive ? (isPrint ? "bg-slate-100 text-black border-black" : cn("text-white shadow-inner", isExactHovered ? "bg-emerald-800" : "bg-emerald-600")) : (isPrint ? "bg-white border-black" : cn(isCellHovered ? "bg-emerald-50/30" : "hover:bg-emerald-50/50")),
-                                isPrint ? "h-8 border-black" : "h-10 border-emerald-100"
+                                isPrint ? "h-6 border-black" : "h-8 border-emerald-100"
                               )}
                               onMouseEnter={() => !isPrint && setHoveredCell({ empId: emp.id, dayId: day.id, period: p })}
                               onMouseLeave={() => !isPrint && setHoveredCell(null)}
@@ -332,7 +332,7 @@ const WeeklyWorkSchedule = () => {
               ))}
             </colgroup>
             <TableHeader>
-              <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-6" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-8")}>
+              <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-5" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
                 <TableHead className={cn(
                   "font-black text-emerald-900 border text-center sticky left-0 z-20 bg-emerald-50/50",
                   isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100"
@@ -356,7 +356,7 @@ const WeeklyWorkSchedule = () => {
                   );
                 })}
               </TableRow>
-              <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-6" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-8")}>
+              <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-5" : "bg-emerald-50/20 hover:bg-emerald-50/20 h-7")}>
                 {DAYS.map(day => {
                   const activePeriods = activePeriodsPerDay[day.id] || [];
                   return activePeriods.map(p => {
@@ -383,7 +383,7 @@ const WeeklyWorkSchedule = () => {
               {filteredEmployees.map(emp => {
                 const isRowHovered = hoveredCell?.empId === emp.id;
                 return (
-                  <TableRow key={emp.id} className={cn("group transition-colors duration-150", isPrint ? "h-8 border-b border-black" : "h-10 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                  <TableRow key={emp.id} className={cn("group transition-colors duration-150", isPrint ? "h-6 border-b border-black" : "h-8 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
                     <TableCell className={cn(
                       "font-bold border bg-white truncate sticky left-0 z-10 shadow-sm transition-colors duration-150",
                       isPrint ? "text-[8px] p-1 border-black text-black" : cn("text-[11px] p-1 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30", isRowHovered && "bg-emerald-50/40")
@@ -407,7 +407,7 @@ const WeeklyWorkSchedule = () => {
                             className={cn(
                               "text-center border p-0.5 transition-colors duration-150 relative overflow-hidden",
                               isActive ? (isPrint ? "bg-slate-100 text-black border-black" : cn("text-white shadow-inner", isExactHovered ? "bg-emerald-800" : "bg-emerald-600")) : (isPrint ? "bg-white border-black" : cn(isCellHovered ? "bg-emerald-50/30" : "hover:bg-emerald-50/50")),
-                              isPrint ? "h-8 border-black" : "h-10 border-emerald-100"
+                              isPrint ? "h-6 border-black" : "h-8 border-emerald-100"
                             )}
                             onMouseEnter={() => !isPrint && setHoveredCell({ empId: emp.id, dayId: day.id, period: cell.period })}
                             onMouseLeave={() => !isPrint && setHoveredCell(null)}

@@ -125,7 +125,7 @@ const ScheduleTable = ({
   };
 
   const BreakRow = ({ title }: { title: string }) => (
-    <tr className={cn(isPrint ? "h-2.5" : "h-4", "bg-emerald-50/30")}>
+    <tr className={cn(isPrint ? "h-1.5" : "h-2.5", "bg-emerald-50/30")}>
       <td className={cn("border border-emerald-950 text-center font-black", isPrint ? "text-[6px]" : "text-[8px]")}>---</td>
       <td colSpan={days.length} className={cn("border border-emerald-950 text-center font-black uppercase tracking-wider", isPrint ? "text-[7px] p-0" : "text-[9px] text-emerald-800")}>{title}</td>
     </tr>
@@ -146,7 +146,7 @@ const ScheduleTable = ({
               ))}
             </colgroup>
             <thead>
-              <tr className={isPrint ? "h-5" : "h-8"}>
+              <tr className={isPrint ? "h-4" : "h-7"}>
                 <th className={cn("font-black text-center", isPrint ? "border border-emerald-950 text-[7.5px] bg-emerald-50" : "rounded-lg bg-slate-50 text-slate-500 p-1 uppercase text-[9px]")}>{isRTL ? "اليوم" : "Day"}</th>
                 {timeSlots.map(slot => {
                   const isColHovered = hoveredCell?.period === slot.id;
@@ -171,7 +171,7 @@ const ScheduleTable = ({
               {days.map(day => {
                 const isRowHovered = hoveredCell?.day === day.id;
                 return (
-                  <tr key={day.id} className={cn(isPrint ? "h-8" : "h-12", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                  <tr key={day.id} className={cn(isPrint ? "h-6" : "h-10", !isPrint && isRowHovered && "bg-emerald-50/20")}>
                     <td className={cn(
                       "transition-colors duration-150",
                       isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10" : cn("p-1 border-e border-slate-100 text-center", isRowHovered && "bg-emerald-50/40")
@@ -240,7 +240,7 @@ const ScheduleTable = ({
             {days.map(day => <col key={day.id} />)}
           </colgroup>
           <thead>
-            <tr className={isPrint ? "h-5" : "h-8"}>
+            <tr className={isPrint ? "h-4" : "h-7"}>
               <th className={cn("font-black text-center", isPrint ? "border border-emerald-950 text-[7.5px] bg-emerald-50" : "rounded-lg bg-emerald-950 text-emerald-400 p-1 text-[9px]")}>{isRTL ? "الحصة" : "Slot"}</th>
               {days.map(day => {
                 const isColHovered = hoveredCell?.day === day.id;
@@ -263,7 +263,7 @@ const ScheduleTable = ({
               const isRowHovered = hoveredCell?.period === slot.id;
               return (
                 <React.Fragment key={slot.id}>
-                  <tr className={cn(isPrint ? "h-8" : "h-12", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                  <tr className={cn(isPrint ? "h-6" : "h-10", !isPrint && isRowHovered && "bg-emerald-50/20")}>
                     <td className={cn(
                       "transition-colors duration-150",
                       isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10 text-center" : cn("p-1 border-e border-slate-100 text-center", isRowHovered && "bg-emerald-50/40")

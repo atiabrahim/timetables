@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { format } from "date-fns";
 import { Clock, Calendar, Hash, User, PenTool, FileText } from "lucide-react";
@@ -37,7 +39,7 @@ const AttendanceSheet = ({
   doubleMode = false,
   supervisors
 }: AttendanceSheetProps) => {
-  const maxRows = doubleMode ? 12 : 18;
+  const maxRows = doubleMode ? 14 : 20;
   const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
 
   return (
@@ -98,7 +100,7 @@ const AttendanceSheet = ({
       <div className="flex-1 w-full overflow-hidden">
         <Table className="w-full border-collapse border-2 border-black">
           <TableHeader>
-            <TableRow className={cn("bg-slate-100/50 hover:bg-slate-100/50 border-b-2 border-black", doubleMode ? "h-7" : "h-8")}>
+            <TableRow className={cn("bg-slate-100/50 hover:bg-slate-100/50 border-b-2 border-black", doubleMode ? "h-5" : "h-6")}>
               <TableHead className="w-[40px] text-center font-black text-black border-e-2 border-black p-0.5 text-[9px]">
                 <div className="flex items-center justify-center gap-0.5"><Hash size={9}/>{t.number}</div>
               </TableHead>
@@ -115,7 +117,7 @@ const AttendanceSheet = ({
           </TableHeader>
           <TableBody>
             {assignedEmployees.map((emp, idx) => (
-              <TableRow key={emp?.id} className={cn("hover:bg-transparent border-b border-black", doubleMode ? "h-7" : "h-9")}>
+              <TableRow key={emp?.id} className={cn("hover:bg-transparent border-b border-black", doubleMode ? "h-5" : "h-7")}>
                 <TableCell className="text-center font-black border-e border-black p-1 text-[9px] bg-slate-50">{idx + 1}</TableCell>
                 <TableCell className={cn("font-black border-e border-black px-3 p-1 text-black whitespace-nowrap", isRTL ? "text-right" : "text-left", doubleMode ? "text-[10px]" : "text-[11px]")}>
                   {emp?.lastName} {emp?.firstName}
@@ -125,7 +127,7 @@ const AttendanceSheet = ({
               </TableRow>
             ))}
             {Array.from({ length: emptyRowsCount }).map((_, i) => (
-              <TableRow key={`empty-${i}`} className={cn("hover:bg-transparent border-b border-black", doubleMode ? "h-7" : "h-9")}>
+              <TableRow key={`empty-${i}`} className={cn("hover:bg-transparent border-b border-black", doubleMode ? "h-5" : "h-7")}>
                 <TableCell className="text-center border-e border-black p-1 text-[9px] font-bold text-black bg-slate-50/20">
                   {assignedEmployees.length + i + 1}
                 </TableCell>
