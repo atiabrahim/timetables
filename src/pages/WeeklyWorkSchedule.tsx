@@ -17,6 +17,11 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { 
   Select, 
   SelectContent, 
   SelectItem, 
@@ -47,7 +52,7 @@ const WeeklyWorkSchedule = () => {
   } = useApp();
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClassId, setSelectedClassId] = useState<string>("all");
+  const [selectedClassIds, setSelectedClassIds] = useState<string[]>(["all"]);
   const [selectedPeriodParts, setSelectedPeriodParts] = useState<PeriodPart[]>(["Morning", "Afternoon", "Evening"]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
@@ -55,14 +60,14 @@ const WeeklyWorkSchedule = () => {
   const [showControls, setShowControls] = useState(true);
   const [hoveredCell, setHoveredCell] = useState<{ empId: string; dayId: number; period: string } | null>(null);
 
-  // تصفية الأساتذة بناءً على البحث والفرع المختار
+  // تصفية الأساتذة بناءً على البحث والفروع المختارة
   const filteredEmployees = useMemo(() => {
     return employees.filter(emp => {
       const matchesSearch = `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesClass = selectedClassId === "all" || assignments.some(a => a.employeeId === emp.id && a.classId === selectedClassId);
+      const matchesClass = selectedClassIds.includes("all") || assignments.some(a => a.employeeId === emp.id && selectedClassIds.includes(a.classId));
       return matchesSearch && matchesClass;
     });
-  }, [employees, searchTerm, selectedClassId, assignments]);
+  }, [employees, searchTerm, selectedClassIds, assignments]);
 
   // تحديد الحصص النشطة لكل يوم بناءً على الفترات والفروع المحددة
   const activePeriodsPerDay = useMemo(() => {
@@ -81,13 +86,13 @@ const WeeklyWorkSchedule = () => {
           a.day === day.id && 
           a.period === p && 
           filteredEmployees.some(emp => emp.id === a.employeeId) &&
-          (selectedClassId === "all" || a.classId === selectedClassId)
+          (selectedClassIds.includes("all") || selectedClassIds.includes(a.classId))
         );
       });
       map[day.id] = activePeriods;
     });
     return map;
-  }, [assignments, filteredEmployees, selectedPeriodParts, selectedClassId]);
+  }, [assignments, filteredEmployees, selectedPeriodParts, selectedClassIds]);
 
   // حساب إجمالي الأعمدة النشطة لتوزيع العرض بالتساوي
   const totalActiveColumns = useMemo(() => {
@@ -100,7 +105,7 @@ const WeeklyWorkSchedule = () => {
     const cells = activePeriods.map(p => ({
       period: p,
       colSpan: 1,
-      assignment: assignments.find(a => a.employeeId === empId && a.day === dayId && a.period === p && (selectedClassId === "all" || a.classId === selectedClassId)),
+      assignment: assignments.find(a => a.employeeId === empId && a.day === dayId && a.period === p && (selectedClassIds.includes("all") || selectedClassIds.includes(a.classId))),
       skip: false
     }));
 
@@ -129,7 +134,7 @@ const WeeklyWorkSchedule = () => {
     const cells = activePeriods.map(p => ({
       period: p,
       rowSpan: 1,
-      assignment: assignments.find(a => a.employeeId === empId && a.day === dayId && a.period === p && (selectedClassId === "all" || a.classId === selectedClassId)),
+      assignment: assignments.find(a => a.employeeId === empId && a.day === dayId && a.period === p && (selectedClassIds.includes("all") || selectedClassIds.includes(a.classId))),
       skip: false
     }));
 
@@ -158,6 +163,22 @@ const WeeklyWorkSchedule = () => {
         ? (prev.length > 1 ? prev.filter(p => p !== part) : prev) // منع إلغاء تحديد الجميع
         : [...prev, part]
     );
+  };
+
+  const toggleClassId = (id: string) => {
+    if (id === "all") {
+      setSelectedClassIds(["all"]);
+    } else {
+      setSelectedClassIds(prev => {
+        const filtered = prev.filter(x => x !== "all");
+        if (filtered.includes(id)) {
+          const next = filtered.filter(x => x !== id);
+          return next.length === 0 ? ["all"] : next;
+        } else {
+          return [...filtered, id];
+        }
+      });
+    }
   };
 
   const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => {
@@ -472,22 +493,44 @@ const WeeklyWorkSchedule = () => {
             </div>
           </div>
 
-          {/* 2. الفروع المعنية بالعرض */}
+          {/* 2. الفروع المعنية بالعرض (تحديد متعدد) */}
           <div className="space-y-1">
             <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest px-1">
               {isRTL ? "الفروع المعنية بالعرض" : "Target Branches"}
             </label>
-            <Select value={selectedClassId} onValueChange={setSelectedClassId}>
-              <SelectTrigger className="rounded-xl border-emerald-100 bg-slate-50/30 h-9 font-bold text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">{isRTL ? "جميع الفروع" : "All Branches"}</SelectItem>
-                {classes.map(c => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="rounded-xl border-emerald-100 bg-slate-50/30 h-9 font-bold text-xs w-full justify-between">
+                  <span className="truncate">
+                    {selectedClassIds.includes("all") 
+                      ? (isRTL ? "جميع الفروع" : "All Branches") 
+                      : (isRTL ? `محدد (${selectedClassIds.length})` : `Selected (${selectedClassIds.length})`)}
+                  </span>
+                  <SlidersHorizontal size={12} className="opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-60 p-2 rounded-2xl bg-white border border-slate-100 shadow-xl max-h-64 overflow-y-auto z-[999]">
+                <div className="space-y-1">
+                  <div 
+                    className="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors"
+                    onClick={() => toggleClassId("all")}
+                  >
+                    <Checkbox checked={selectedClassIds.includes("all")} />
+                    <span className="text-xs font-bold">{isRTL ? "جميع الفروع" : "All Branches"}</span>
+                  </div>
+                  {classes.map(c => (
+                    <div 
+                      key={c.id} 
+                      className="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors"
+                      onClick={() => toggleClassId(c.id)}
+                    >
+                      <Checkbox checked={selectedClassIds.includes(c.id)} />
+                      <span className="text-xs font-bold">{c.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
           {/* 3. الحصص المعنية بالعرض */}
