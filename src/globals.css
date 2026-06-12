@@ -159,7 +159,7 @@
 }
 
 /* -----------------------------------------------------------
-   نظام الطباعة الاحترافي المطور (إصلاح مشكلة الانكماش)
+   نظام الطباعة الاحترافي المطور (إصلاح مشكلة الانكماش والصفحات المتعددة)
    ----------------------------------------------------------- */
 @media print {
   /* 1. إخفاء كل شيء غير ضروري */
@@ -173,13 +173,13 @@
     display: none !important;
   }
 
-  /* 3. تصفير هوامش المتصفح وجسم الصفحة */
+  /* 3. تصفير هوامش المتصفح وجسم الصفحة والسماح بالتمرير والصفحات المتعددة */
   html, body {
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     background: white !important;
   }
 
@@ -187,7 +187,7 @@
   [role="dialog"] {
     position: static !important;
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     display: block !important;
@@ -205,12 +205,14 @@
   .page-break-container {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    page-break-after: avoid !important;
-    break-after: avoid !important;
     display: block !important;
     width: 100% !important;
-    max-height: 100% !important;
-    overflow: hidden !important;
+  }
+
+  /* فئة لفرض كسر الصفحة والانتقال لصفحة جديدة */
+  .page-break-always {
+    page-break-after: always !important;
+    break-after: page !important;
   }
 
   /* 7. تمدد الجداول لتملأ 100% */
@@ -226,3 +228,4 @@
     box-shadow: none !important;
   }
 }
+</dyad-css>

@@ -50,7 +50,7 @@ const AttendanceSheet = ({
         "print:shadow-none print:border-none print:my-0 print:mx-auto print:rounded-none print:w-full",
         doubleMode
           ? "print:h-[148mm] print:pt-[3mm] print:pb-0 print:px-[8mm] print:border-b print:border-black/5"
-          : "print:pt-[5mm] print:pb-0 print:px-[10mm]"
+          : "print:pt-[5mm] print:pb-0 print:px-[10mm] print:min-h-[296mm] page-break-always"
       )}
       dir={isRTL ? "rtl" : "ltr"}
       style={{ fontFamily: reportStyles.fontFamily }}
