@@ -102,13 +102,13 @@ const AttendanceSheet = ({
         <Table className="w-full border-collapse border-2 border-black">
           <TableHeader>
             <TableRow className={cn("bg-slate-100/50 hover:bg-slate-100/50 border-b-2 border-black", doubleMode ? "h-5" : "h-6")}>
-              <TableHead className="w-[40px] text-center font-black text-black border-e-2 border-black p-0.5 text-[9px]">
+              <TableHead className="w-[36px] text-center font-black text-black border-e-2 border-black p-0.5 text-[9px]">
                 <div className="flex items-center justify-center gap-0.5"><Hash size={9}/>{t.number}</div>
               </TableHead>
-              <TableHead className={cn("font-black text-black border-e-2 border-black px-3 p-0.5 text-[9px] w-[200px] whitespace-nowrap", isRTL ? "text-right" : "text-left")}>
+              <TableHead className={cn("font-black text-black border-e-2 border-black px-3 p-0.5 text-[9px] w-[180px] whitespace-nowrap", isRTL ? "text-right" : "text-left")}>
                 <div className="flex items-center gap-1.5"><User size={10}/>{t.employeeName}</div>
               </TableHead>
-              <TableHead className="w-[120px] text-center font-black text-black border-e-2 border-black p-0.5 text-[9px]">
+              <TableHead className="w-[110px] text-center font-black text-black border-e-2 border-black p-0.5 text-[9px]">
                 <div className="flex items-center justify-center gap-1.5"><PenTool size={10}/>{t.signature}</div>
               </TableHead>
               <TableHead className="text-center font-black text-black p-0.5 text-[9px]">
