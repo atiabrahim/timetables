@@ -162,15 +162,15 @@ const MasterClassesSchedule = () => {
   };
 
   const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => {
-    // تحديد الارتفاع المناسب للطباعة بناءً على اتجاه الصفحة لتوزيع الأسطر بالتساوي
-    const printHeightClass = orientation === "portrait" ? "print:h-[180mm] h-[180mm]" : "print:h-[120mm] h-[120mm]";
+    // تحديد الارتفاع المناسب للطباعة ليمثل ثلثي الصفحة (2/3) بدقة تامة
+    const printHeightClass = orientation === "portrait" ? "print:h-[190mm] h-[190mm]" : "print:h-[135mm] h-[135mm]";
 
     if (isTransposed) {
       // الوضع المتبادل (Transposed Mode): الأسطر تمثل الأيام والحصص، والأعمدة تمثل الفروع
       return (
         <div className={cn(
           "bg-white mx-auto",
-          isPrint ? cn("p-0 w-2/3", printHeightClass) : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden w-full"
+          isPrint ? cn("p-0 w-full", printHeightClass) : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden w-full"
         )}>
           <div className={cn(!isPrint && "overflow-x-auto", isPrint && "h-full")}>
             <Table className={cn(
@@ -301,7 +301,7 @@ const MasterClassesSchedule = () => {
     return (
       <div className={cn(
         "bg-white mx-auto",
-        isPrint ? cn("p-0 w-2/3", printHeightClass) : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden w-full"
+        isPrint ? cn("p-0 w-full", printHeightClass) : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden w-full"
       )}>
         <div className={cn(!isPrint && "overflow-x-auto", isPrint && "h-full")}>
           <Table className={cn(
