@@ -14,6 +14,13 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Printer, Search, Eye, Layers, RotateCw, X, ArrowLeftRight, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { 
   Select, 
   SelectContent, 
@@ -44,17 +51,20 @@ const MasterClassesSchedule = () => {
   } = useApp();
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClassIds, setSelectedClassIds] = useState<string[]>(["all"]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [orientation, setOrientation] = useState<"landscape" | "portrait">("landscape");
   const [isTransposed, setIsTransposed] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [hoveredCell, setHoveredCell] = useState<{ classId: string; dayId: number; period: string } | null>(null);
 
+  // تصفية الفروع بناءً على البحث والتحديد المتعدد
   const filteredClasses = useMemo(() => {
     return classes.filter(cls => 
-      cls.name.toLowerCase().includes(searchTerm.toLowerCase())
+      cls.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (selectedClassIds.includes("all") || selectedClassIds.includes(cls.id))
     );
-  }, [classes, searchTerm]);
+  }, [classes, searchTerm, selectedClassIds]);
 
   // تحديد الحصص النشطة لكل يوم (التي تحتوي على حصة واحدة على الأقل لأي من الفروع المفلترة)
   const activePeriodsPerDay = useMemo(() => {
@@ -133,6 +143,22 @@ const MasterClassesSchedule = () => {
       }
     }
     return cells;
+  };
+
+  const toggleClassId = (id: string) => {
+    if (id === "all") {
+      setSelectedClassIds(["all"]);
+    } else {
+      setSelectedClassIds(prev => {
+        const filtered = prev.filter(x => x !== "all");
+        if (filtered.includes(id)) {
+          const next = filtered.filter(x => x !== id);
+          return next.length === 0 ? ["all"] : next;
+        } else {
+          return [...filtered, id];
+        }
+      });
+    }
   };
 
   const ScheduleTable = ({ isPrint = false }: { isPrint?: boolean }) => {
@@ -430,7 +456,8 @@ const MasterClassesSchedule = () => {
 
       {/* Collapsible Control Panel */}
       {showControls && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm mb-4 print:hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white p-4 rounded-2xl border border-emerald-100 shadow-sm mb-4 print:hidden">
+          {/* 1. البحث عن فرع */}
           <div className="space-y-1">
             <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest px-1">
               {isRTL ? "بحث عن فرع" : "Search Branch"}
@@ -446,6 +473,47 @@ const MasterClassesSchedule = () => {
             </div>
           </div>
 
+          {/* 2. الفروع المعنية بالعرض (تحديد متعدد) */}
+          <div className="space-y-1">
+            <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest px-1">
+              {isRTL ? "الفروع المعنية بالعرض" : "Target Branches"}
+            </label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="rounded-xl border-emerald-100 bg-slate-50/30 h-9 font-bold text-xs w-full justify-between">
+                  <span className="truncate">
+                    {selectedClassIds.includes("all") 
+                      ? (isRTL ? "جميع الفروع" : "All Branches") 
+                      : (isRTL ? `محدد (${selectedClassIds.length})` : `Selected (${selectedClassIds.length})`)}
+                  </span>
+                  <SlidersHorizontal size={12} className="opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-60 p-2 rounded-2xl bg-white border border-slate-100 shadow-xl max-h-64 overflow-y-auto z-[999]">
+                <div className="space-y-1">
+                  <div 
+                    className="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors"
+                    onClick={() => toggleClassId("all")}
+                  >
+                    <Checkbox checked={selectedClassIds.includes("all")} />
+                    <span className="text-xs font-bold">{isRTL ? "جميع الفروع" : "All Branches"}</span>
+                  </div>
+                  {classes.map(c => (
+                    <div 
+                      key={c.id} 
+                      className="flex items-center gap-2.5 p-2 hover:bg-slate-50 rounded-xl cursor-pointer transition-colors"
+                      onClick={() => toggleClassId(c.id)}
+                    >
+                      <Checkbox checked={selectedClassIds.includes(c.id)} />
+                      <span className="text-xs font-bold">{c.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* 3. اتجاه الصفحة */}
           <div className="space-y-1">
             <label className="text-[9px] font-black text-emerald-700 uppercase tracking-widest px-1">
               {isRTL ? "اتجاه الصفحة" : "Page Orientation"}
@@ -461,6 +529,7 @@ const MasterClassesSchedule = () => {
             </Select>
           </div>
 
+          {/* 4. تبديل المحاور */}
           <div className="space-y-1 flex flex-col justify-end">
             <Button 
               variant="outline" 
