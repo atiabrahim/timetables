@@ -43,6 +43,26 @@ const MasterClassesScheduleTable = ({
   setHoveredCell,
   orientation
 }: MasterClassesScheduleTableProps) => {
+  
+  // حساب عدد الأسطر الفعلي المعروض في الجدول
+  const rowCount = isTransposed 
+    ? DAYS.reduce((sum, day) => sum + (activePeriodsPerDay[day.id]?.length || 0), 0)
+    : filteredClasses.length;
+
+  // حساب الارتفاع الديناميكي للأسطر في الطباعة (بالمليمتر) لملء الصفحة بشكل مثالي
+  const printRowHeight = isPrint 
+    ? `${Math.min(25, Math.max(5, 145 / (rowCount + 2)))}mm` 
+    : undefined;
+
+  // حساب الارتفاع الديناميكي للأسطر على الشاشة (بالبكسل)
+  const screenRowHeight = !isPrint 
+    ? `${Math.min(96, Math.max(32, 380 / rowCount))}px` 
+    : undefined;
+
+  const dynamicRowStyle = {
+    height: isPrint ? printRowHeight : screenRowHeight
+  };
+
   if (isTransposed) {
     return (
       <div className={cn(
@@ -100,7 +120,7 @@ const MasterClassesScheduleTable = ({
                 return activePeriods.map((p, pIdx) => {
                   const isRowHovered = hoveredCell?.dayId === day.id && hoveredCell?.period === p;
                   return (
-                    <tr key={`${day.id}-${p}`} className={cn("group transition-colors duration-150", isPrint ? "border-b border-black" : "h-8 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                    <tr key={`${day.id}-${p}`} style={dynamicRowStyle} className={cn("group transition-colors duration-150", isPrint ? "border-b border-black" : "hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
                       {pIdx === 0 && (
                         <td 
                           rowSpan={activePeriods.length}
@@ -138,7 +158,7 @@ const MasterClassesScheduleTable = ({
                             className={cn(
                               "text-center border transition-colors duration-150 relative overflow-hidden",
                               isActive ? (isPrint ? "bg-slate-100 text-black border-black" : cn("text-white shadow-inner", isExactHovered ? "bg-emerald-800" : "bg-emerald-600")) : (isPrint ? "bg-white border-black" : cn(isCellHovered ? "bg-emerald-50/30" : "hover:bg-emerald-50/50")),
-                              isPrint ? "p-[1px] border-black" : "p-0.5 h-8 border-emerald-100"
+                              isPrint ? "p-[1px] border-black" : "p-0.5 border-emerald-100"
                             )}
                             onMouseEnter={() => !isPrint && setHoveredCell({ classId: cls.id, dayId: day.id, period: p })}
                             onMouseLeave={() => !isPrint && setHoveredCell(null)}
@@ -242,7 +262,7 @@ const MasterClassesScheduleTable = ({
             {filteredClasses.map(cls => {
               const isRowHovered = hoveredCell?.classId === cls.id;
               return (
-                <tr key={cls.id} className={cn("group transition-colors duration-150", isPrint ? "border-b border-black" : "h-8 hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                <tr key={cls.id} style={dynamicRowStyle} className={cn("group transition-colors duration-150", isPrint ? "border-b border-black" : "hover:bg-emerald-50/30", !isPrint && isRowHovered && "bg-emerald-50/40")}>
                   <td className={cn(
                     "font-bold border bg-white truncate sticky left-0 z-10 shadow-sm transition-colors duration-150",
                     isPrint ? "text-[7.5px] p-1 border-black text-black" : cn("text-[11px] p-1 border-emerald-100 text-emerald-950 group-hover:bg-emerald-50/30", isRowHovered && "bg-emerald-50/40")
@@ -266,7 +286,7 @@ const MasterClassesScheduleTable = ({
                           className={cn(
                             "text-center border transition-colors duration-150 relative overflow-hidden",
                             isActive ? (isPrint ? "bg-slate-100 text-black border-black" : cn("text-white shadow-inner", isExactHovered ? "bg-emerald-800" : "bg-emerald-600")) : (isPrint ? "bg-white border-black" : cn(isCellHovered ? "bg-emerald-50/30" : "hover:bg-emerald-50/50")),
-                            isPrint ? "p-[1px] border-black" : "p-0.5 h-8 border-emerald-100"
+                            isPrint ? "p-[1px] border-black" : "p-0.5 border-emerald-100"
                           )}
                           onMouseEnter={() => !isPrint && setHoveredCell({ classId: cls.id, dayId: day.id, period: cell.period })}
                           onMouseLeave={() => !isPrint && setHoveredCell(null)}
