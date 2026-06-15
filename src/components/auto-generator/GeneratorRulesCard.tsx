@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/popover";
 import { DAYS, PERIODS } from "../../constants/schedule";
 import { cn } from "@/lib/utils";
+import { PeriodPart } from "@/types";
 
 interface GeneratorRulesCardProps {
   isRTL: boolean;
@@ -28,6 +29,7 @@ interface GeneratorRulesCardProps {
     avoidTeacherGaps: boolean;
     selectedClassIds: string[];
     respectExistingLessons: boolean;
+    selectedPeriodParts: PeriodPart[];
   };
   setRules: (rules: any) => void;
 }
@@ -59,6 +61,13 @@ const GeneratorRulesCard = ({ isRTL, classes, rules, setRules }: GeneratorRulesC
         setRules({ ...rules, selectedClassIds: [...filtered, id] });
       }
     }
+  };
+
+  const togglePeriodPart = (part: PeriodPart) => {
+    const selectedPeriodParts = rules.selectedPeriodParts.includes(part)
+      ? (rules.selectedPeriodParts.length > 1 ? rules.selectedPeriodParts.filter(p => p !== part) : rules.selectedPeriodParts)
+      : [...rules.selectedPeriodParts, part];
+    setRules({ ...rules, selectedPeriodParts });
   };
 
   return (
@@ -111,7 +120,34 @@ const GeneratorRulesCard = ({ isRTL, classes, rules, setRules }: GeneratorRulesC
           </Popover>
         </div>
 
-        {/* 2. Respect Existing Lessons Switch */}
+        {/* 2. Target Periods Selection */}
+        <div className="space-y-3">
+          <Label className="text-xs font-black text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
+            <Clock size={14} className="text-emerald-600" />
+            {isRTL ? "الفترات المستهدفة بالجدولة" : "Target Periods for Scheduling"}
+          </Label>
+          <div className="flex flex-wrap gap-3 p-3 bg-slate-50/50 border border-slate-100 rounded-2xl">
+            {[
+              { id: "Morning" as PeriodPart, label: isRTL ? "الفترة الصباحية (1-4)" : "Morning (1-4)" },
+              { id: "Afternoon" as PeriodPart, label: isRTL ? "فترة بعد الزوال (5-7)" : "Afternoon (5-7)" },
+              { id: "Evening" as PeriodPart, label: isRTL ? "الفترة المسائية (8-12)" : "Evening (8-12)" }
+            ].map(part => {
+              const isChecked = rules.selectedPeriodParts.includes(part.id);
+              return (
+                <div 
+                  key={part.id} 
+                  className="flex items-center gap-2 cursor-pointer"
+                  onClick={() => togglePeriodPart(part.id)}
+                >
+                  <Checkbox checked={isChecked} className="rounded border-emerald-200 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600" />
+                  <span className="text-xs font-bold text-slate-700">{part.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 3. Respect Existing Lessons Switch */}
         <div className="flex items-center justify-between p-4 bg-emerald-50/20 rounded-2xl border border-emerald-100/50">
           <div className="space-y-0.5">
             <Label className="text-xs font-bold text-emerald-900">
@@ -129,7 +165,7 @@ const GeneratorRulesCard = ({ isRTL, classes, rules, setRules }: GeneratorRulesC
           />
         </div>
 
-        {/* 3. Days of the Week */}
+        {/* 4. Days of the Week */}
         <div className="space-y-3 border-t border-slate-100 pt-4">
           <Label className="text-xs font-black text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
             <Calendar size={14} className="text-emerald-600" />
@@ -157,7 +193,7 @@ const GeneratorRulesCard = ({ isRTL, classes, rules, setRules }: GeneratorRulesC
           </div>
         </div>
 
-        {/* 4. Allowed Periods */}
+        {/* 5. Allowed Periods */}
         <div className="space-y-3">
           <Label className="text-xs font-black text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
             <Clock size={14} className="text-emerald-600" />
@@ -185,7 +221,7 @@ const GeneratorRulesCard = ({ isRTL, classes, rules, setRules }: GeneratorRulesC
           </div>
         </div>
 
-        {/* 5. Teacher Constraints */}
+        {/* 6. Teacher Constraints */}
         <div className="space-y-4 border-t border-slate-100 pt-4">
           <Label className="text-xs font-black text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
             <User size={14} className="text-emerald-600" />
@@ -241,7 +277,7 @@ const GeneratorRulesCard = ({ isRTL, classes, rules, setRules }: GeneratorRulesC
           </div>
         </div>
 
-        {/* 6. Class Constraints */}
+        {/* 7. Class Constraints */}
         <div className="space-y-4 border-t border-slate-100 pt-4">
           <Label className="text-xs font-black text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
             <GraduationCap size={14} className="text-emerald-600" />

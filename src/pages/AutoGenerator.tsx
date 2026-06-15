@@ -7,6 +7,7 @@ import PageHeader from "../components/shared/PageHeader";
 import { DAYS, PERIODS } from "../constants/schedule";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PeriodPart } from "@/types";
 
 // Modular Sub-components
 import RequirementForm from "../components/auto-generator/RequirementForm";
@@ -44,7 +45,8 @@ const AutoGenerator = () => {
     maxClassHoursPerDay: 6,
     avoidTeacherGaps: false,
     selectedClassIds: ["all"], // Target branches
-    respectExistingLessons: true // Respect already scheduled lessons
+    respectExistingLessons: true, // Respect already scheduled lessons
+    selectedPeriodParts: ["Morning", "Afternoon", "Evening"] as PeriodPart[] // Target periods
   });
 
   // Form state for adding a new requirement manually
@@ -202,6 +204,11 @@ const AutoGenerator = () => {
       return;
     }
 
+    if (rules.selectedPeriodParts.length === 0) {
+      showError(isRTL ? "يرجى تفعيل فترة واحدة على الأقل (صباحية، بعد الزوال، مسائية)" : "Please select at least one active period part");
+      return;
+    }
+
     setIsTransolving(true);
     
     setTimeout(() => {
@@ -226,15 +233,23 @@ const AutoGenerator = () => {
       });
       lessonsToPlace.sort((a, b) => (teacherCounts[b.employeeId] || 0) - (teacherCounts[a.employeeId] || 0));
 
-      // Get active slots filtered by allowedDays and allowedPeriods
+      // Get active slots filtered by allowedDays, allowedPeriods, and selectedPeriodParts
       const activeSlots: { day: number; period: string }[] = [];
       DAYS.forEach(day => {
         if (rules.allowedDays.includes(day.id)) {
           PERIODS.forEach(period => {
             if (rules.allowedPeriods.includes(period)) {
-              const config = periodConfigs.find(c => c.day === day.id && c.period === period);
-              if (config?.isActive !== false) {
-                activeSlots.push({ day: day.id, period });
+              // Check if period belongs to selected period parts
+              const pNum = parseInt(period);
+              let part: PeriodPart = "Morning";
+              if (pNum >= 5 && pNum <= 7) part = "Afternoon";
+              else if (pNum >= 8) part = "Evening";
+
+              if (rules.selectedPeriodParts.includes(part)) {
+                const config = periodConfigs.find(c => c.day === day.id && c.period === period);
+                if (config?.isActive !== false) {
+                  activeSlots.push({ day: day.id, period });
+                }
               }
             }
           });
