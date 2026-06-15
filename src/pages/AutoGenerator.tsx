@@ -48,6 +48,25 @@ const shuffle = <T,>(items: T[]): T[] => {
   return [...items].sort(() => Math.random() - 0.5);
 };
 
+// دالة لتقسيم الساعات المطلوبة إلى كتل ثنائية أو ثلاثية حسب الرغبة
+const getBlockSizes = (count: number, maxConsecutive: number): number[] => {
+  const blocks: number[] = [];
+  let remaining = count;
+  while (remaining > 0) {
+    if (remaining >= 3 && maxConsecutive >= 3) {
+      blocks.push(3);
+      remaining -= 3;
+    } else if (remaining >= 2 && maxConsecutive >= 2) {
+      blocks.push(2);
+      remaining -= 2;
+    } else {
+      blocks.push(1);
+      remaining -= 1;
+    }
+  }
+  return blocks;
+};
+
 const AutoGenerator = () => {
   const { 
     employees, classes, subjects, rooms, assignments, setAssignments, isRTL, periodConfigs, teacherConstraints, classConstraints 
@@ -427,15 +446,22 @@ const AutoGenerator = () => {
     setIsGenerating(true);
 
     setTimeout(() => {
-      const lessonsToPlace = activeRequirements.flatMap(req => {
+      // تحويل المتطلبات إلى كتل (Blocks) ثنائية وثلاثية بدلاً من حصص مفردة عشوائية
+      const blockTasks: { id: string; employeeId: string; subjectId: string; classId: string; room: string; size: number }[] = [];
+      
+      activeRequirements.forEach(req => {
         const count = Math.max(1, Math.min(12, Number(req.count) || 1));
-        return Array.from({ length: count }, () => ({
-          id: `gen-${Math.random().toString(36).slice(2, 11)}`,
-          employeeId: req.employeeId,
-          subjectId: req.subjectId,
-          classId: req.classId,
-          room: req.room,
-        }));
+        const sizes = getBlockSizes(count, rules.maxTeacherConsecutiveHours);
+        sizes.forEach(size => {
+          blockTasks.push({
+            id: `gen-${Math.random().toString(36).slice(2, 11)}`,
+            employeeId: req.employeeId,
+            subjectId: req.subjectId,
+            classId: req.classId,
+            room: req.room,
+            size
+          });
+        });
       });
 
       const activeSlots: { day: number; period: string }[] = [];
@@ -475,28 +501,103 @@ const AutoGenerator = () => {
       for (let run = 0; run < attempts; run++) {
         const currentAssignments = [...baseAssignments];
         const unplaced: any[] = [];
-        const shuffledLessons = shuffle(lessonsToPlace);
-        const shuffledSlots = shuffle(activeSlots);
+        
+        // ترتيب الكتل تنازلياً (الكتل الكبيرة أولاً لضمان حجزها بسهولة)
+        const size3Tasks = shuffle(blockTasks.filter(t => t.size === 3));
+        const size2Tasks = shuffle(blockTasks.filter(t => t.size === 2));
+        const size1Tasks = shuffle(blockTasks.filter(t => t.size === 1));
+        let queue = [...size3Tasks, ...size2Tasks, ...size1Tasks];
 
-        for (const lesson of shuffledLessons) {
-          let placed = false;
-
-          for (const slot of shuffledSlots) {
-            if (!canPlaceLesson(lesson, slot, currentAssignments, activeSlots)) {
-              continue;
+        while (queue.length > 0) {
+          const task = queue.shift()!;
+          
+          // البحث عن جميع الأماكن المتاحة لوضع هذه الكتلة بشكل متتالي
+          const validPlacements: { day: number; startPeriod: string; slots: { day: number; period: string }[] }[] = [];
+          
+          // تجميع الحصص النشطة حسب اليوم
+          const slotsByDay: Record<number, string[]> = {};
+          activeSlots.forEach(s => {
+            slotsByDay[s.day] = slotsByDay[s.day] || [];
+            slotsByDay[s.day].push(s.period);
+          });
+          
+          Object.entries(slotsByDay).forEach(([dayStr, periods]) => {
+            const day = parseInt(dayStr, 10);
+            periods.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+            
+            // البحث عن تسلسلات متتالية بطول حجم الكتلة المطلوبة
+            for (let i = 0; i <= periods.length - task.size; i++) {
+              const sequence: string[] = [];
+              let isConsecutive = true;
+              
+              for (let j = 0; j < task.size; j++) {
+                const currentP = parseInt(periods[i + j], 10);
+                if (j > 0) {
+                  const prevP = parseInt(periods[i + j - 1], 10);
+                  if (currentP !== prevP + 1) {
+                    isConsecutive = false;
+                    break;
+                  }
+                }
+                sequence.push(periods[i + j]);
+              }
+              
+              if (isConsecutive) {
+                // محاكاة وضع الحصص للتأكد من عدم تعارض أي منها مع القواعد
+                const tempAssignments = [...currentAssignments];
+                let canPlaceAll = true;
+                const slotsInSeq = sequence.map(p => ({ day, period: p }));
+                
+                for (const slot of slotsInSeq) {
+                  if (!canPlaceLesson(task, slot, tempAssignments, activeSlots)) {
+                    canPlaceAll = false;
+                    break;
+                  }
+                  tempAssignments.push({
+                    ...task,
+                    day: slot.day,
+                    period: slot.period
+                  });
+                }
+                
+                if (canPlaceAll) {
+                  validPlacements.push({
+                    day,
+                    startPeriod: sequence[0],
+                    slots: slotsInSeq
+                  });
+                }
+              }
             }
-
-            currentAssignments.push({
-              ...lesson,
-              day: slot.day,
-              period: slot.period,
+          });
+          
+          if (validPlacements.length > 0) {
+            // اختيار مكان عشوائي من الأماكن المتاحة لضمان التنوع
+            const chosen = validPlacements[Math.floor(Math.random() * validPlacements.length)];
+            chosen.slots.forEach(slot => {
+              currentAssignments.push({
+                id: `gen-${Math.random().toString(36).slice(2, 11)}`,
+                employeeId: task.employeeId,
+                subjectId: task.subjectId,
+                classId: task.classId,
+                room: task.room,
+                day: slot.day,
+                period: slot.period
+              });
             });
-            placed = true;
-            break;
-          }
-
-          if (!placed) {
-            unplaced.push(lesson);
+          } else {
+            // تراجع ذكي: إذا تعذر وضع الكتلة الكبيرة، نقوم بتفكيكها وإعادة جدولتها
+            if (task.size === 3) {
+              queue.push({ ...task, size: 2 });
+              queue.push({ ...task, size: 1 });
+              queue.sort((a, b) => b.size - a.size);
+            } else if (task.size === 2) {
+              queue.push({ ...task, size: 1 });
+              queue.push({ ...task, size: 1 });
+              queue.sort((a, b) => b.size - a.size);
+            } else {
+              unplaced.push(task);
+            }
           }
         }
 
@@ -518,7 +619,7 @@ const AutoGenerator = () => {
           best = candidate;
         }
 
-        if (conflictCount === 0 && placed === lessonsToPlace.length) {
+        if (conflictCount === 0 && placed === blockTasks.reduce((acc, t) => acc + t.size, 0)) {
           break;
         }
       }
@@ -532,7 +633,7 @@ const AutoGenerator = () => {
       setGeneratedAssignments(best.assignments);
       setUnplacedLessons(best.unplaced);
 
-      const total = lessonsToPlace.length;
+      const total = blockTasks.reduce((acc, t) => acc + t.size, 0);
       const placed = best.placed;
       const successRate = total > 0 ? Math.round((placed / total) * 100) : 0;
 
@@ -548,6 +649,7 @@ const AutoGenerator = () => {
         showError(isRTL ? `تم توليد جدول جديد بأقل تعارضات ممكنة (${best.conflictCount})` : `Generated a new schedule with the lowest conflicts (${best.conflictCount})`);
       }
 
+      setIsGenerating(true);
       setIsGenerating(false);
     }, 600);
   };
