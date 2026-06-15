@@ -27,7 +27,7 @@ interface Requirement {
 
 const AutoGenerator = () => {
   const { 
-    employees, classes, subjects, rooms, assignments, setAssignments, isRTL, t, periodConfigs 
+    employees, classes, subjects, rooms, assignments, setAssignments, isRTL, t 
   } = useApp();
 
   const [requirements, setRequirements] = useState<Requirement[]>([]);
@@ -233,7 +233,7 @@ const AutoGenerator = () => {
       });
       lessonsToPlace.sort((a, b) => (teacherCounts[b.employeeId] || 0) - (teacherCounts[a.employeeId] || 0));
 
-      // Get active slots filtered by allowedDays, allowedPeriods, and selectedPeriodParts
+      // Get active slots filtered strictly by allowedDays, allowedPeriods, and selectedPeriodParts (ignoring global periodConfigs)
       const activeSlots: { day: number; period: string }[] = [];
       DAYS.forEach(day => {
         if (rules.allowedDays.includes(day.id)) {
@@ -246,10 +246,7 @@ const AutoGenerator = () => {
               else if (pNum >= 8) part = "Evening";
 
               if (rules.selectedPeriodParts.includes(part)) {
-                const config = periodConfigs.find(c => c.day === day.id && c.period === period);
-                if (config?.isActive !== false) {
-                  activeSlots.push({ day: day.id, period });
-                }
+                activeSlots.push({ day: day.id, period });
               }
             }
           });
