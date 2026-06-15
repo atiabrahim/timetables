@@ -35,7 +35,7 @@ const Sidebar = () => {
     { icon: BookOpen, label: t.subjects, path: "/subjects" },
     { icon: MapPin, label: t.rooms, path: "/rooms" },
     { icon: BarChart3, label: t.reports, path: "/reports" },
-    { icon: FileText, label: "تقارير الحضور", path: "/reports-new" },
+    { icon: FileText, label: t.attendanceReports, path: "/reports-new" },
     { icon: Building2, label: t.institution, path: "/institution" },
     { icon: Settings, label: t.settings, path: "/settings" },
     ...(isAdmin ? [{ icon: UserCog, label: t.users, path: "/users" }] : []),
