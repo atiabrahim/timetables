@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Plus, Trash2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -47,6 +47,96 @@ const ScheduleTable = ({
   const [dragOverCell, setDragOverCell] = useState<{ day: number; period: string } | null>(null);
 
   const hoveredAssignment = hoveredCell ? getAssignment(hoveredCell.day, hoveredCell.period) : null;
+
+  // Pre-calculate vertical spans for non-transposed layout (consecutive periods on the same day)
+  const verticalSpans = useMemo(() => {
+    const spans: Record<string, { rowSpan: number; skip: boolean }> = {};
+    days.forEach(day => {
+      let skipCount = 0;
+      for (let i = 0; i < timeSlots.length; i++) {
+        const slot = timeSlots[i];
+        const key = `${day.id}-${slot.id}`;
+        
+        if (skipCount > 0) {
+          spans[key] = { rowSpan: 1, skip: true };
+          skipCount--;
+          continue;
+        }
+        
+        const current = getAssignment(day.id, slot.id);
+        if (!current) {
+          spans[key] = { rowSpan: 1, skip: false };
+          continue;
+        }
+        
+        let rowSpan = 1;
+        for (let j = i + 1; j < timeSlots.length; j++) {
+          const nextSlot = timeSlots[j];
+          const next = getAssignment(day.id, nextSlot.id);
+          if (
+            next && 
+            next.subjectId === current.subjectId && 
+            next.employeeId === current.employeeId &&
+            next.classId === current.classId &&
+            timeSlots[j - 1].id !== "2" && 
+            timeSlots[j - 1].id !== "4"
+          ) {
+            rowSpan++;
+            skipCount++;
+          } else {
+            break;
+          }
+        }
+        spans[key] = { rowSpan, skip: false };
+      }
+    });
+    return spans;
+  }, [days, timeSlots, getAssignment]);
+
+  // Pre-calculate horizontal spans for transposed layout (consecutive periods on the same day)
+  const horizontalSpans = useMemo(() => {
+    const spans: Record<string, { colSpan: number; skip: boolean }> = {};
+    days.forEach(day => {
+      let skipCount = 0;
+      for (let i = 0; i < timeSlots.length; i++) {
+        const slot = timeSlots[i];
+        const key = `${day.id}-${slot.id}`;
+        
+        if (skipCount > 0) {
+          spans[key] = { colSpan: 1, skip: true };
+          skipCount--;
+          continue;
+        }
+        
+        const current = getAssignment(day.id, slot.id);
+        if (!current) {
+          spans[key] = { colSpan: 1, skip: false };
+          continue;
+        }
+        
+        let colSpan = 1;
+        for (let j = i + 1; j < timeSlots.length; j++) {
+          const nextSlot = timeSlots[j];
+          const next = getAssignment(day.id, nextSlot.id);
+          if (
+            next && 
+            next.subjectId === current.subjectId && 
+            next.employeeId === current.employeeId &&
+            next.classId === current.classId &&
+            timeSlots[j - 1].id !== "2" && 
+            timeSlots[j - 1].id !== "4"
+          ) {
+            colSpan++;
+            skipCount++;
+          } else {
+            break;
+          }
+        }
+        spans[key] = { colSpan, skip: false };
+      }
+    });
+    return spans;
+  }, [days, timeSlots, getAssignment]);
 
   const checkConflict = (day: number, period: string, assignment: any) => {
     if (isPrint || !allAssignments) return null;
@@ -190,6 +280,15 @@ const ScheduleTable = ({
                       <span className={cn("font-black", isPrint ? "text-[8px]" : "text-[11px] text-slate-600")}>{isRTL ? day.name : day.en.substr(0, 3)}</span>
                     </td>
                     {timeSlots.map(slot => {
+                      const span = horizontalSpans[`${day.id}-${slot.id}`];
+                      if (span?.skip) {
+                        return (
+                          <React.Fragment key={slot.id}>
+                            {(slot.id === "2" || slot.id === "4") && <td className="border border-emerald-950 bg-emerald-50/20"></td>}
+                          </React.Fragment>
+                        );
+                      }
+
                       const currentAssignment = getAssignment(day.id, slot.id);
                       const isSpannedHovered = !!(
                         hoveredAssignment && 
@@ -206,6 +305,7 @@ const ScheduleTable = ({
                       return (
                         <React.Fragment key={slot.id}>
                           <td 
+                            colSpan={span?.colSpan || 1}
                             className={cn(
                               "relative h-full transition-colors duration-150", 
                               isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30", isSpannedHovered && "bg-emerald-100/40", isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset")
@@ -307,6 +407,9 @@ const ScheduleTable = ({
                       </div>
                     </td>
                     {days.map(day => {
+                      const span = verticalSpans[`${day.id}-${slot.id}`];
+                      if (span?.skip) return null;
+
                       const currentAssignment = getAssignment(day.id, slot.id);
                       const isSpannedHovered = !!(
                         hoveredAssignment && 
@@ -323,6 +426,7 @@ const ScheduleTable = ({
                       return (
                         <td 
                           key={day.id} 
+                          rowSpan={span?.rowSpan || 1}
                           className={cn(
                             "relative h-full transition-colors duration-150", 
                             isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30", isSpannedHovered && "bg-emerald-100/40", isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset")
