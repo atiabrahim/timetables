@@ -10,6 +10,7 @@ import AddLessonDialog from "../components/schedule/AddLessonDialog";
 import PrintPreview from "../components/schedule/PrintPreview";
 import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
 import ConflictPanel from "../components/schedule/ConflictPanel";
+import RemainingLessonsPanel from "../components/schedule/RemainingLessonsPanel";
 import { Button } from "@/components/ui/button";
 import { DAYS, PERIOD_MAP, PERIODS } from "../constants/schedule";
 import {
@@ -198,8 +199,18 @@ const Schedule = () => {
             )}
           </div>
 
-          {/* Conflict Panel Sidebar */}
-          <div className="xl:col-span-1 print:hidden">
+          {/* Sidebar Panels */}
+          <div className="xl:col-span-1 space-y-6 print:hidden">
+            <RemainingLessonsPanel
+              isRTL={isRTL}
+              viewMode={viewMode}
+              selectedId={selectedId}
+              assignments={assignments}
+              employees={employees}
+              classes={classes}
+              subjects={subjects}
+            />
+            
             <ConflictPanel 
               assignments={assignments}
               employees={employees}
