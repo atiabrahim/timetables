@@ -93,6 +93,13 @@ export interface TeacherConstraint {
   isAvailable: boolean;
 }
 
+export interface ClassConstraint {
+  classId: string;
+  day: number;
+  period: string;
+  isAvailable: boolean;
+}
+
 export interface AppState {
   systemUsers: User[];
   institution: Institution;
@@ -106,4 +113,5 @@ export interface AppState {
   subjects: Subject[];
   periodConfigs: PeriodConfig[];
   teacherConstraints?: TeacherConstraint[];
+  classConstraints?: ClassConstraint[];
 }

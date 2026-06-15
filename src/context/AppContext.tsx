@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Language, translations } from "../translations";
 import { 
   User, Institution, Employee, Assignment, Department,
-  AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment, TeacherConstraint 
+  AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment, TeacherConstraint, ClassConstraint 
 } from "../types";
 import { supabase } from "../lib/supabase";
 import { showSuccess, showError } from "../utils/toast";
@@ -44,6 +44,8 @@ interface AppContextType {
   setPeriodConfigs: React.Dispatch<React.SetStateAction<PeriodConfig[]>>;
   teacherConstraints: TeacherConstraint[];
   setTeacherConstraints: React.Dispatch<React.SetStateAction<TeacherConstraint[]>>;
+  classConstraints: ClassConstraint[];
+  setClassConstraints: React.Dispatch<React.SetStateAction<ClassConstraint[]>>;
   importAllData: (data: Partial<AppState>) => void;
   saveDataToCloud: () => Promise<void>;
   loadDataFromCloud: () => Promise<void>;
@@ -112,6 +114,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>(generateDefaultPeriodConfigs);
   const [teacherConstraints, setTeacherConstraints] = useState<TeacherConstraint[]>([]);
+  const [classConstraints, setClassConstraints] = useState<ClassConstraint[]>([]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const isRTL = language === "ar";
@@ -147,10 +150,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const dataToSave = { 
       systemUsers, institution, employees, assignments, 
       templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs,
-      teacherConstraints
+      teacherConstraints, classConstraints
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs, teacherConstraints]);
+  }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs, teacherConstraints, classConstraints]);
 
   const loadDataFromCloud = async (silent = false) => {
     try {
@@ -184,7 +187,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const dataToSave = { 
       systemUsers, institution, employees, assignments, 
       templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs,
-      teacherConstraints
+      teacherConstraints, classConstraints
     };
 
     try {
@@ -269,6 +272,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data.periodConfigs && data.periodConfigs.length > 0) setPeriodConfigs(data.periodConfigs);
     if (data.systemUsers) setSystemUsers(data.systemUsers);
     if (data.teacherConstraints) setTeacherConstraints(data.teacherConstraints);
+    if (data.classConstraints) setClassConstraints(data.classConstraints);
     
     if (data.departments) {
       const migratedDepts = data.departments.map((d: any, idx: number) => {
@@ -316,6 +320,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       templateAssignments, updateTemplateAssignment, dailyAssignments, saveAssignment, getEffectiveAssignment,
       departments, setDepartments, rooms, setRooms, classes, setClasses, subjects, setSubjects,
       periodConfigs, setPeriodConfigs, teacherConstraints, setTeacherConstraints,
+      classConstraints, setClassConstraints,
       importAllData, saveDataToCloud, loadDataFromCloud: () => loadDataFromCloud(false), t, isRTL,
       isSidebarCollapsed, setIsSidebarCollapsed
     }}>

@@ -5,7 +5,7 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Calendar, Users, Home, BookOpen, 
   MapPin, BarChart3, FileText, Building2, Settings, UserCog,
-  ClipboardList, ListChecks, UserCheck, LayoutGrid, Layers, Sparkles, UserX
+  ClipboardList, ListChecks, UserCheck, LayoutGrid, Layers, Sparkles, UserX, CalendarX
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ const Sidebar = () => {
     { icon: Calendar, label: t.schedule, path: "/schedule" },
     { icon: Sparkles, label: isRTL ? "المولد التلقائي" : "Auto Generator", path: "/auto-generator" },
     { icon: UserX, label: isRTL ? "توافر الأساتذة" : "Constraints", path: "/constraints" },
+    { icon: CalendarX, label: isRTL ? "القيود الزمنية للفروع" : "Class Constraints", path: "/class-constraints" },
     { icon: ClipboardList, label: t.weeklyWorkSchedule, path: "/work-schedule" },
     { icon: Layers, label: t.masterClassesSchedule, path: "/master-classes-schedule" },
     { icon: UserCheck, label: t.assignments, path: "/assignments" },

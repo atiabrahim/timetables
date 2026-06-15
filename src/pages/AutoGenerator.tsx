@@ -50,7 +50,7 @@ const shuffle = <T,>(items: T[]): T[] => {
 
 const AutoGenerator = () => {
   const { 
-    employees, classes, subjects, rooms, assignments, setAssignments, isRTL, periodConfigs, teacherConstraints 
+    employees, classes, subjects, rooms, assignments, setAssignments, isRTL, periodConfigs, teacherConstraints, classConstraints 
   } = useApp();
 
   const [requirements, setRequirements] = useState<Requirement[]>(() => {
@@ -323,10 +323,16 @@ const AutoGenerator = () => {
     activeSlots: { day: number; period: string }[],
   ): boolean => {
     // 1. Check if teacher is available according to specific constraints
-    const constraint = teacherConstraints.find(
+    const tConstraint = teacherConstraints.find(
       c => c.employeeId === lesson.employeeId && c.day === slot.day && c.period === slot.period
     );
-    if (constraint && !constraint.isAvailable) return false;
+    if (tConstraint && !tConstraint.isAvailable) return false;
+
+    // 2. Check if class is available according to specific constraints
+    const cConstraint = classConstraints.find(
+      c => c.classId === lesson.classId && c.day === slot.day && c.period === slot.period
+    );
+    if (cConstraint && !cConstraint.isAvailable) return false;
 
     const teacherBusy = currentAssignments.some(a => 
       a.employeeId === lesson.employeeId && a.day === slot.day && a.period === slot.period
