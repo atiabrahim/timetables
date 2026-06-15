@@ -76,6 +76,50 @@ const Constraints = () => {
     return constraint ? constraint.isAvailable : true;
   };
 
+  // عكس حالة العمود بالكامل (الحصة) للأستاذ
+  const toggleColumnAvailability = (period: string) => {
+    if (!selectedEmployeeId) return;
+
+    const allAvailable = DAYS.every(day => isSlotAvailable(day.id, period));
+    const targetState = !allAvailable;
+
+    let updated = [...teacherConstraints];
+    DAYS.forEach(day => {
+      const existingIndex = updated.findIndex(
+        c => c.employeeId === selectedEmployeeId && c.day === day.id && c.period === period
+      );
+      if (existingIndex > -1) {
+        updated[existingIndex] = { ...updated[existingIndex], isAvailable: targetState };
+      } else {
+        updated.push({ employeeId: selectedEmployeeId, day: day.id, period, isAvailable: targetState });
+      }
+    });
+    setTeacherConstraints(updated);
+    showSuccess(isRTL ? "تم تعديل حالة العمود بالكامل" : "Column availability toggled");
+  };
+
+  // عكس حالة السطر بالكامل (اليوم) للأستاذ
+  const toggleRowAvailability = (dayId: number) => {
+    if (!selectedEmployeeId) return;
+
+    const allAvailable = PERIODS.every(p => isSlotAvailable(dayId, p));
+    const targetState = !allAvailable;
+
+    let updated = [...teacherConstraints];
+    PERIODS.forEach(p => {
+      const existingIndex = updated.findIndex(
+        c => c.employeeId === selectedEmployeeId && c.day === dayId && c.period === p
+      );
+      if (existingIndex > -1) {
+        updated[existingIndex] = { ...updated[existingIndex], isAvailable: targetState };
+      } else {
+        updated.push({ employeeId: selectedEmployeeId, day: dayId, period: p, isAvailable: targetState });
+      }
+    });
+    setTeacherConstraints(updated);
+    showSuccess(isRTL ? "تم تعديل حالة اليوم بالكامل" : "Row availability toggled");
+  };
+
   const handleClearTeacherConstraints = () => {
     if (!selectedEmployeeId) return;
     setTeacherConstraints(teacherConstraints.filter(c => c.employeeId !== selectedEmployeeId));
@@ -180,8 +224,8 @@ const Constraints = () => {
                       <h4 className="font-black text-emerald-950 text-sm">{isRTL ? "كيفية الاستخدام" : "How to use"}</h4>
                       <p className="text-[11px] text-emerald-700/80 font-bold leading-relaxed">
                         {isRTL 
-                          ? "انقر على المربعات في الجدول أدناه لتغيير حالة توافر الأستاذ. المولد التلقائي للجداول سيحترم هذه الإعدادات ولن يضع أي حصة في الساعات الحمراء."
-                          : "Click on the grid cells to toggle availability. The Auto Generator will never schedule lessons during red (unavailable) slots."}
+                          ? "انقر على المربعات في الجدول أدناه لتغيير حالة توافر الأستاذ. يمكنك النقر على اسم اليوم أو اسم الحصة لتعديل السطر أو العمود بالكامل."
+                          : "Click on the grid cells to toggle availability. You can also click on a Day name or Slot name to toggle the entire row or column."}
                       </p>
                     </div>
                   </div>
@@ -210,7 +254,12 @@ const Constraints = () => {
                       <tr>
                         <th className="p-3 border-b border-slate-100 w-[100px]"></th>
                         {PERIODS.map(p => (
-                          <th key={p} className="p-3 border-b border-slate-100 text-center font-black text-[10px] text-slate-400 uppercase tracking-widest">
+                          <th 
+                            key={p} 
+                            onClick={() => toggleColumnAvailability(p)}
+                            className="p-3 border-b border-slate-100 text-center font-black text-[10px] text-slate-400 uppercase tracking-widest cursor-pointer hover:text-emerald-600 hover:bg-emerald-50/50 transition-colors rounded-t-xl"
+                            title={isRTL ? "انقر لتعديل العمود بالكامل" : "Click to toggle entire column"}
+                          >
                             {isRTL ? `حصة ${p}` : `Slot ${p}`}
                           </th>
                         ))}
@@ -219,7 +268,11 @@ const Constraints = () => {
                     <tbody>
                       {DAYS.map(day => (
                         <tr key={day.id} className="group hover:bg-slate-50/50 transition-colors">
-                          <td className="p-4 border-e border-slate-100 font-black text-xs text-slate-600 text-center">
+                          <td 
+                            onClick={() => toggleRowAvailability(day.id)}
+                            className="p-4 border-e border-slate-100 font-black text-xs text-slate-600 text-center cursor-pointer hover:text-emerald-600 hover:bg-emerald-50/50 transition-colors rounded-l-xl"
+                            title={isRTL ? "انقر لتعديل اليوم بالكامل" : "Click to toggle entire day"}
+                          >
                             {isRTL ? day.name : day.en.substr(0, 3)}
                           </td>
                           {PERIODS.map(p => {

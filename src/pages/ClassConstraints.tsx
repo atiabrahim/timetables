@@ -98,6 +98,52 @@ const ClassConstraints = () => {
     return constraint ? constraint.isAvailable : true;
   };
 
+  // عكس حالة العمود بالكامل (الحصة)
+  const toggleColumnAvailability = (period: string) => {
+    if (!selectedClassId) return;
+    
+    // التحقق مما إذا كانت جميع الخانات في هذا العمود متاحة حالياً
+    const allAvailable = DAYS.every(day => isSlotAvailable(day.id, period));
+    const targetState = !allAvailable; // إذا كانت كلها متاحة، نجعلها غير متاحة، والعكس بالعكس
+
+    let updated = [...classConstraints];
+    DAYS.forEach(day => {
+      const existingIndex = updated.findIndex(
+        c => c.classId === selectedClassId && c.day === day.id && c.period === period
+      );
+      if (existingIndex > -1) {
+        updated[existingIndex] = { ...updated[existingIndex], isAvailable: targetState };
+      } else {
+        updated.push({ classId: selectedClassId, day: day.id, period, isAvailable: targetState });
+      }
+    });
+    setClassConstraints(updated);
+    showSuccess(isRTL ? "تم تعديل حالة العمود بالكامل" : "Column availability toggled");
+  };
+
+  // عكس حالة السطر بالكامل (اليوم)
+  const toggleRowAvailability = (dayId: number) => {
+    if (!selectedClassId) return;
+
+    // التحقق مما إذا كانت جميع الخانات في هذا السطر متاحة حالياً
+    const allAvailable = PERIODS.every(p => isSlotAvailable(dayId, p));
+    const targetState = !allAvailable;
+
+    let updated = [...classConstraints];
+    PERIODS.forEach(p => {
+      const existingIndex = updated.findIndex(
+        c => c.classId === selectedClassId && c.day === dayId && c.period === p
+      );
+      if (existingIndex > -1) {
+        updated[existingIndex] = { ...updated[existingIndex], isAvailable: targetState };
+      } else {
+        updated.push({ classId: selectedClassId, day: dayId, period: p, isAvailable: targetState });
+      }
+    });
+    setClassConstraints(updated);
+    showSuccess(isRTL ? "تم تعديل حالة اليوم بالكامل" : "Row availability toggled");
+  };
+
   const handleClearClassConstraints = () => {
     if (!selectedClassId) return;
     setClassConstraints(classConstraints.filter(c => c.classId !== selectedClassId));
@@ -237,7 +283,6 @@ const ClassConstraints = () => {
                 </div>
               </CardHeader>
               <CardContent className="p-8">
-                {/* ... (Keep existing content inside CardContent) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                   <div className="p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100 flex items-start gap-4">
                     <div className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-200">
@@ -247,8 +292,8 @@ const ClassConstraints = () => {
                       <h4 className="font-black text-blue-950 text-sm">{isRTL ? "كيفية الاستخدام" : "How to use"}</h4>
                       <p className="text-[11px] text-blue-700/80 font-bold leading-relaxed">
                         {isRTL 
-                          ? "انقر على المربعات لتحويلها للون الأحمر لمنع جدولة أي حصة لهذا الفوج في ذلك الوقت."
-                          : "Click cells to turn them red to prevent any lessons from being scheduled for this class at that time."}
+                          ? "انقر على المربعات لتحويلها للون الأحمر لمنع جدولة أي حصة لهذا الفوج في ذلك الوقت. يمكنك النقر على اسم اليوم أو اسم الحصة لتعديل السطر أو العمود بالكامل."
+                          : "Click cells to turn them red to block slots. You can also click on a Day name or Slot name to toggle the entire row or column."}
                       </p>
                     </div>
                   </div>
@@ -277,7 +322,12 @@ const ClassConstraints = () => {
                       <tr>
                         <th className="p-3 border-b border-slate-100 w-[100px]"></th>
                         {PERIODS.map(p => (
-                          <th key={p} className="p-3 border-b border-slate-100 text-center font-black text-[10px] text-slate-400 uppercase tracking-widest">
+                          <th 
+                            key={p} 
+                            onClick={() => toggleColumnAvailability(p)}
+                            className="p-3 border-b border-slate-100 text-center font-black text-[10px] text-slate-400 uppercase tracking-widest cursor-pointer hover:text-blue-600 hover:bg-blue-50/50 transition-colors rounded-t-xl"
+                            title={isRTL ? "انقر لتعديل العمود بالكامل" : "Click to toggle entire column"}
+                          >
                             {isRTL ? `حصة ${p}` : `Slot ${p}`}
                           </th>
                         ))}
@@ -286,7 +336,11 @@ const ClassConstraints = () => {
                     <tbody>
                       {DAYS.map(day => (
                         <tr key={day.id} className="group hover:bg-slate-50/50 transition-colors">
-                          <td className="p-4 border-e border-slate-100 font-black text-xs text-slate-600 text-center">
+                          <td 
+                            onClick={() => toggleRowAvailability(day.id)}
+                            className="p-4 border-e border-slate-100 font-black text-xs text-slate-600 text-center cursor-pointer hover:text-blue-600 hover:bg-blue-50/50 transition-colors rounded-l-xl"
+                            title={isRTL ? "انقر لتعديل اليوم بالكامل" : "Click to toggle entire day"}
+                          >
                             {isRTL ? day.name : day.en.substr(0, 3)}
                           </td>
                           {PERIODS.map(p => {
