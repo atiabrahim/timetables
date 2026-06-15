@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { showSuccess, showError } from "../utils/toast";
 import PageHeader from "../components/shared/PageHeader";
@@ -30,23 +30,38 @@ const AutoGenerator = () => {
     employees, classes, subjects, rooms, assignments, setAssignments, isRTL, t, periodConfigs 
   } = useApp();
 
-  const [requirements, setRequirements] = useState<Requirement[]>([]);
+  // Load requirements from localStorage if available
+  const [requirements, setRequirements] = useState<Requirement[]>(() => {
+    const saved = localStorage.getItem("auto_generator_requirements");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   const [isGenerating, setIsTransolving] = useState(false);
   const [generatedAssignments, setGeneratedAssignments] = useState<any[]>([]);
   const [unplacedLessons, setUnplacedLessons] = useState<any[]>([]);
   const [generationStats, setGenerationStats] = useState<{ successRate: number; total: number; placed: number } | null>(null);
 
-  // Rules and Constraints State
-  const [rules, setRules] = useState({
-    allowedDays: [0, 1, 2, 3, 4], // Sunday to Thursday by default
-    allowedPeriods: ["1", "2", "3", "4", "5", "6", "7", "8"], // Default active periods
-    maxTeacherHoursPerDay: 6,
-    maxTeacherConsecutiveHours: 3,
-    maxClassHoursPerDay: 6,
-    avoidTeacherGaps: false,
-    selectedClassIds: ["all"], // Target branches
-    respectExistingLessons: true, // Respect already scheduled lessons
-    selectedPeriodParts: ["Morning", "Afternoon", "Evening"] as PeriodPart[] // Target periods
+  // Load rules and constraints from localStorage if available
+  const [rules, setRules] = useState(() => {
+    const saved = localStorage.getItem("auto_generator_rules");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved rules", e);
+      }
+    }
+    return {
+      allowedDays: [0, 1, 2, 3, 4], // Sunday to Thursday by default
+      allowedPeriods: ["1", "2", "3", "4", "5", "6", "7", "8"], // Default active periods
+      maxTeacherHoursPerDay: 6,
+      maxTeacherConsecutiveHours: 3,
+      maxClassHoursPerDay: 6,
+      avoidTeacherGaps: false,
+      selectedClassIds: ["all"], // Target branches
+      respectExistingLessons: true, // Respect already scheduled lessons
+      selectedPeriodParts: ["Morning", "Afternoon", "Evening"] as PeriodPart[] // Target periods
+    };
   });
 
   // Form state for adding a new requirement manually
@@ -57,6 +72,16 @@ const AutoGenerator = () => {
     room: "",
     count: 1
   });
+
+  // Save rules to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("auto_generator_rules", JSON.stringify(rules));
+  }, [rules]);
+
+  // Save requirements to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("auto_generator_requirements", JSON.stringify(requirements));
+  }, [requirements]);
 
   // Extract requirements from current schedule
   const handleExtractFromCurrent = () => {
