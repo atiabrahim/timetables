@@ -54,7 +54,8 @@ const ReportsNew = () => {
     fontFamily: "'Cairo', sans-serif",
     headerSize: 14,
     titleSize: 22,
-    tableSize: 13,
+    tableSize: 11,
+    rowPadding: 4,
     footerSize: 14,
     orientation: "portrait" as "portrait" | "landscape",
     doubleMode: false
@@ -280,6 +281,8 @@ const ReportsNew = () => {
         onDepartmentChange={setSelectedDepartment}
         selectedPeriods={selectedPeriods}
         onTogglePeriod={togglePeriod}
+        reportStyles={reportStyles}
+        setReportStyles={setReportStyles}
       />
 
       <Tabs defaultValue="daily" onValueChange={setActiveTab} className="w-full print:hidden">

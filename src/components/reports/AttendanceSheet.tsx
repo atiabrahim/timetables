@@ -43,6 +43,13 @@ const AttendanceSheet = ({
   const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
   const isLandscape = reportStyles.orientation === "landscape";
 
+  // Dynamic styles based on sliders
+  const cellStyle = {
+    fontSize: `${reportStyles.tableSize || 11}px`,
+    paddingTop: `${reportStyles.rowPadding !== undefined ? reportStyles.rowPadding : 4}px`,
+    paddingBottom: `${reportStyles.rowPadding !== undefined ? reportStyles.rowPadding : 4}px`,
+  };
+
   return (
     <div
       className={cn(
@@ -136,27 +143,27 @@ const AttendanceSheet = ({
           <TableBody>
             {assignedEmployees.map((emp, idx) => (
               <TableRow key={emp?.id} className={cn("hover:bg-transparent border-b border-black", doubleMode ? "h-5" : "h-7")}>
-                <TableCell className="text-center font-black border-e border-black p-1 text-[9px] bg-slate-50">
+                <TableCell style={cellStyle} className="text-center font-black border-e border-black text-[9px] bg-slate-50">
                   {idx + 1}
                 </TableCell>
 
-                <TableCell className={cn("font-black border-e border-black px-3 p-1 text-black whitespace-nowrap", isRTL ? "text-right" : "text-left", doubleMode ? "text-[10px]" : "text-[11px]")}>
+                <TableCell style={cellStyle} className={cn("font-black border-e border-black px-3 text-black whitespace-nowrap", isRTL ? "text-right" : "text-left")}>
                   {emp?.lastName} {emp?.firstName}
                 </TableCell>
 
-                <TableCell className="border-e border-black p-1"></TableCell>
-                <TableCell className="p-1"></TableCell>
+                <TableCell style={cellStyle} className="border-e border-black"></TableCell>
+                <TableCell style={cellStyle}></TableCell>
               </TableRow>
             ))}
 
             {Array.from({ length: emptyRowsCount }).map((_, i) => (
               <TableRow key={`empty-${i}`} className={cn("hover:bg-transparent border-b border-black", doubleMode ? "h-5" : "h-7")}>
-                <TableCell className="text-center border-e border-black p-1 text-[9px] font-bold text-black bg-slate-50/20">
+                <TableCell style={cellStyle} className="text-center border-e border-black text-[9px] font-bold text-black bg-slate-50/20">
                   {assignedEmployees.length + i + 1}
                 </TableCell>
-                <TableCell className="border-e border-black p-1"></TableCell>
-                <TableCell className="border-e border-black p-1"></TableCell>
-                <TableCell className="p-1"></TableCell>
+                <TableCell style={cellStyle} className="border-e border-black"></TableCell>
+                <TableCell style={cellStyle} className="border-e border-black"></TableCell>
+                <TableCell style={cellStyle}></TableCell>
               </TableRow>
             ))}
           </TableBody>
