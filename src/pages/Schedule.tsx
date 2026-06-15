@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { Settings2, ArrowLeftRight, Trash2 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
@@ -43,10 +43,25 @@ const Schedule = () => {
   const [printScale, setPrintScale] = useState(100);
   const [editingCell, setEditingCell] = useState<{day: number, period: string} | null>(null);
   const [isTransposed, setIsTransposed] = useState(false);
+  const [requirements, setRequirements] = useState<any[]>([]);
   
   const [newAssignment, setNewAssignment] = useState({
     employeeId: "", subjectId: "", classId: "", room: "", department: ""
   });
+
+  // تحميل متطلبات التدريس عند فتح نافذة الإضافة
+  useEffect(() => {
+    if (isDialogOpen) {
+      const saved = localStorage.getItem("auto_generator_requirements");
+      if (saved) {
+        try {
+          setRequirements(JSON.parse(saved));
+        } catch (e) {
+          console.error("Failed to load requirements", e);
+        }
+      }
+    }
+  }, [isDialogOpen]);
 
   const filteredAssignments = useMemo(() => {
     if (!selectedId) return [];
@@ -54,6 +69,26 @@ const Schedule = () => {
       viewMode === "class" ? a.classId === selectedId : a.employeeId === selectedId
     );
   }, [assignments, selectedId, viewMode]);
+
+  // حساب الحصص المتبقية للكيان المختار لتمريرها للنافذة
+  const remainingLessonsForDialog = useMemo(() => {
+    if (!selectedId) return [];
+    
+    const relevantReqs = requirements.filter(req => 
+      viewMode === "class" ? req.classId === selectedId : req.employeeId === selectedId
+    );
+
+    return relevantReqs.map(req => {
+      const assignedCount = assignments.filter(asgn => 
+        asgn.subjectId === req.subjectId &&
+        asgn.employeeId === req.employeeId &&
+        asgn.classId === req.classId
+      ).length;
+
+      const remaining = Math.max(0, req.count - assignedCount);
+      return { ...req, remaining };
+    }).filter(r => r.remaining > 0);
+  }, [requirements, selectedId, viewMode, assignments]);
 
   const periodSlots = useMemo(() => {
     return PERIODS.map(id => ({
@@ -92,6 +127,24 @@ const Schedule = () => {
     setAssignments([...assignments, { id, ...newAssignment, day: editingCell.day, period: editingCell.period }]);
     setIsDialogOpen(false);
     showSuccess(isRTL ? "تمت إضافة الحصة" : "Lesson added");
+  };
+
+  const handleQuickAssign = (req: any) => {
+    if (!editingCell) return;
+    const id = Math.random().toString(36).substr(2, 9);
+    const assignmentData = {
+      id,
+      employeeId: req.employeeId,
+      subjectId: req.subjectId,
+      classId: req.classId,
+      room: req.room || "",
+      department: "",
+      day: editingCell.day,
+      period: editingCell.period
+    };
+    setAssignments([...assignments, assignmentData]);
+    setIsDialogOpen(false);
+    showSuccess(isRTL ? "تم إسناد الحصة بنجاح" : "Lesson assigned successfully");
   };
 
   const handleDeleteLesson = (id: string) => {
@@ -231,6 +284,7 @@ const Schedule = () => {
         isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} isRTL={isRTL} cancelText={t.cancel}
         subjects={subjects} employees={employees} classes={classes} rooms={rooms} viewMode={viewMode}
         newAssignment={newAssignment} setNewAssignment={setNewAssignment} onSave={handleSaveLesson}
+        remainingLessons={remainingLessonsForDialog} onQuickAssign={handleQuickAssign}
       />
 
       <PrintPreview 
