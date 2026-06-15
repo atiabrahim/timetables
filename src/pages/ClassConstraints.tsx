@@ -10,18 +10,28 @@ import {
   CheckCircle2, 
   XCircle, 
   Home, 
-  Info,
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
   RotateCw,
-  GraduationCap
+  GraduationCap,
+  CopyCheck,
+  Check,
+  X
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import PageHeader from "../components/shared/PageHeader";
 import { DAYS, PERIODS } from "../constants/schedule";
-import { showSuccess } from "../utils/toast";
+import { showSuccess, showError } from "../utils/toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const ClassConstraints = () => {
   const { 
@@ -34,6 +44,11 @@ const ClassConstraints = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClassId, setSelectedClassId] = useState<string>("");
+  
+  // حالات الحوار الجديد
+  const [isApplyToOthersOpen, setIsApplyToOthersOpen] = useState(false);
+  const [targetClassIds, setTargetClassIds] = useState<string[]>([]);
+  const [targetSearch, setTargetSearch] = useState("");
 
   const filteredClasses = useMemo(() => {
     return classes.filter(cls => 
@@ -45,6 +60,14 @@ const ClassConstraints = () => {
   const selectedClass = useMemo(() => 
     classes.find(c => c.id === selectedClassId)
   , [classes, selectedClassId]);
+
+  // قائمة الفروع المتاحة للتطبيق عليها (باستثناء الفوج الحالي)
+  const otherClasses = useMemo(() => {
+    return classes.filter(c => 
+      c.id !== selectedClassId && 
+      (c.name.toLowerCase().includes(targetSearch.toLowerCase()) || (c.code || "").toLowerCase().includes(targetSearch.toLowerCase()))
+    );
+  }, [classes, selectedClassId, targetSearch]);
 
   const toggleAvailability = (dayId: number, period: string) => {
     if (!selectedClassId) return;
@@ -79,6 +102,42 @@ const ClassConstraints = () => {
     if (!selectedClassId) return;
     setClassConstraints(classConstraints.filter(c => c.classId !== selectedClassId));
     showSuccess(isRTL ? "تمت إعادة تعيين توقيت الفوج بنجاح" : "Class schedule reset successfully");
+  };
+
+  const handleApplyToOthers = () => {
+    if (targetClassIds.length === 0) {
+      showError(isRTL ? "يرجى اختيار فرع واحد على الأقل" : "Please select at least one class");
+      return;
+    }
+
+    // استخراج قيود الفوج الحالي فقط
+    const currentSourceConstraints = classConstraints.filter(c => c.classId === selectedClassId);
+    
+    let newConstraints = [...classConstraints];
+
+    targetClassIds.forEach(targetId => {
+      // 1. حذف القيود القديمة للفوج الهدف
+      newConstraints = newConstraints.filter(c => c.classId !== targetId);
+      
+      // 2. نسخ القيود من المصدر للفوج الهدف
+      const copied = currentSourceConstraints.map(c => ({
+        ...c,
+        classId: targetId
+      }));
+      
+      newConstraints = [...newConstraints, ...copied];
+    });
+
+    setClassConstraints(newConstraints);
+    setIsApplyToOthersOpen(false);
+    setTargetClassIds([]);
+    showSuccess(isRTL ? `تم نسخ القيود إلى ${targetClassIds.length} فروع بنجاح` : `Constraints copied to ${targetClassIds.length} classes`);
+  };
+
+  const toggleTargetClass = (id: string) => {
+    setTargetClassIds(prev => 
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
   };
 
   return (
@@ -142,7 +201,7 @@ const ClassConstraints = () => {
         <div className="lg:col-span-3 space-y-6">
           {selectedClass ? (
             <Card className="border-none shadow-2xl shadow-emerald-900/5 rounded-[2.5rem] bg-white overflow-hidden">
-              <CardHeader className="bg-[#fcfdfd] p-8 border-b border-slate-100 flex flex-row justify-between items-center">
+              <CardHeader className="bg-[#fcfdfd] p-8 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-700 shadow-sm">
@@ -158,18 +217,27 @@ const ClassConstraints = () => {
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
+                  <Button 
+                    variant="outline"
+                    onClick={() => { setTargetClassIds([]); setIsApplyToOthersOpen(true); }}
+                    className="rounded-xl border-blue-200 text-blue-700 hover:bg-blue-50 gap-2 h-11 px-4 font-bold"
+                  >
+                    <CopyCheck size={16} />
+                    {isRTL ? "طبق أيضاً على..." : "Apply to others..."}
+                  </Button>
                   <Button 
                     variant="outline" 
                     onClick={handleClearClassConstraints}
                     className="rounded-xl border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 hover:border-red-100 gap-2 h-11 px-4 font-bold"
                   >
                     <RotateCw size={16} />
-                    {isRTL ? "إعادة ضبط كـ متاح دائماً" : "Reset to Always Available"}
+                    {isRTL ? "إعادة ضبط كـ متاح" : "Reset"}
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="p-8">
+                {/* ... (Keep existing content inside CardContent) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                   <div className="p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100 flex items-start gap-4">
                     <div className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-200">
@@ -179,8 +247,8 @@ const ClassConstraints = () => {
                       <h4 className="font-black text-blue-950 text-sm">{isRTL ? "كيفية الاستخدام" : "How to use"}</h4>
                       <p className="text-[11px] text-blue-700/80 font-bold leading-relaxed">
                         {isRTL 
-                          ? "انقر على المربعات لتحويلها للون الأحمر لمنع جدولة أي حصة لهذا الفوج في ذلك الوقت. مفيد جداً للأفواج التي تدرس بتوقيت جزئي أو في أيام محددة."
-                          : "Click cells to turn them red to prevent any lessons from being scheduled for this class at that time. Perfect for part-time classes or specific off-days."}
+                          ? "انقر على المربعات لتحويلها للون الأحمر لمنع جدولة أي حصة لهذا الفوج في ذلك الوقت."
+                          : "Click cells to turn them red to prevent any lessons from being scheduled for this class at that time."}
                       </p>
                     </div>
                   </div>
@@ -267,6 +335,99 @@ const ClassConstraints = () => {
           )}
         </div>
       </div>
+
+      {/* حوار التطبيق على فروع أخرى */}
+      <Dialog open={isApplyToOthersOpen} onOpenChange={setIsApplyToOthersOpen}>
+        <DialogContent className="sm:max-w-xl rounded-[2rem] p-0 overflow-hidden border-none shadow-2xl">
+          <DialogHeader className="p-8 bg-blue-600 text-white relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            <DialogTitle className="text-2xl font-black flex items-center gap-3 relative z-10">
+              <CopyCheck size={28} />
+              {isRTL ? "طبق القيود أيضاً على..." : "Apply Constraints also to..."}
+            </DialogTitle>
+            <p className="text-blue-100/80 font-bold mt-2 text-sm relative z-10">
+              {isRTL 
+                ? `سيتم نسخ كافة قيود فوج "${selectedClass?.name}" للفروع المحددة بالأسفل.` 
+                : `All constraints of "${selectedClass?.name}" will be copied to the selected classes.`}
+            </p>
+          </DialogHeader>
+
+          <div className="p-6 bg-white space-y-4">
+            <div className="relative">
+              <Search className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
+              <Input 
+                placeholder={isRTL ? "بحث عن فوج..." : "Search class..."}
+                value={targetSearch}
+                onChange={(e) => setTargetSearch(e.target.value)}
+                className={cn("h-12 rounded-2xl border-slate-100 bg-slate-50 focus:bg-white transition-all", isRTL ? "pr-12" : "pl-12")}
+              />
+            </div>
+
+            <div className="max-h-[300px] overflow-y-auto pr-2 custom-scrollbar grid grid-cols-1 md:grid-cols-2 gap-2">
+              {otherClasses.map(cls => (
+                <div 
+                  key={cls.id}
+                  onClick={() => toggleTargetClass(cls.id)}
+                  className={cn(
+                    "flex items-center gap-3 p-4 rounded-2xl border-2 transition-all cursor-pointer group",
+                    targetClassIds.includes(cls.id) 
+                      ? "bg-blue-50 border-blue-500 shadow-md" 
+                      : "bg-white border-slate-100 hover:border-blue-200"
+                  )}
+                >
+                  <div className={cn(
+                    "w-6 h-6 rounded-lg flex items-center justify-center border-2 transition-all",
+                    targetClassIds.includes(cls.id) 
+                      ? "bg-blue-600 border-blue-600 text-white" 
+                      : "border-slate-200 bg-white"
+                  )}>
+                    {targetClassIds.includes(cls.id) && <Check size={14} strokeWidth={4} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={cn("font-bold text-sm truncate", targetClassIds.includes(cls.id) ? "text-blue-900" : "text-slate-700")}>
+                      {cls.name}
+                    </p>
+                    {cls.code && <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{cls.code}</p>}
+                  </div>
+                </div>
+              ))}
+              {otherClasses.length === 0 && (
+                <div className="col-span-full py-12 text-center text-slate-300 font-bold text-xs uppercase">
+                  {isRTL ? "لا توجد فروع أخرى" : "No other classes found"}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black text-blue-600 bg-blue-100 px-3 py-1 rounded-full uppercase">
+                {targetClassIds.length} {isRTL ? "محدد" : "Selected"}
+              </span>
+              {targetClassIds.length > 0 && (
+                <button 
+                  onClick={() => setTargetClassIds([])}
+                  className="text-[10px] font-black text-red-500 hover:underline"
+                >
+                  {isRTL ? "إلغاء الجميع" : "Clear All"}
+                </button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => setIsApplyToOthersOpen(false)} className="rounded-xl h-11 px-6 font-bold text-slate-500">
+                <X size={18} className="mr-2" /> {t.cancel}
+              </Button>
+              <Button 
+                onClick={handleApplyToOthers}
+                disabled={targetClassIds.length === 0}
+                className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-11 px-10 font-black shadow-lg shadow-blue-200 transition-all disabled:opacity-50"
+              >
+                {isRTL ? "تأكيد النسخ" : "Confirm Apply"}
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
