@@ -42,7 +42,9 @@ const AutoGenerator = () => {
     maxTeacherHoursPerDay: 6,
     maxTeacherConsecutiveHours: 3,
     maxClassHoursPerDay: 6,
-    avoidTeacherGaps: false
+    avoidTeacherGaps: false,
+    selectedClassIds: ["all"], // Target branches
+    respectExistingLessons: true // Respect already scheduled lessons
   });
 
   // Form state for adding a new requirement manually
@@ -61,10 +63,20 @@ const AutoGenerator = () => {
       return;
     }
 
-    // Group current assignments to find weekly counts
+    // Filter assignments based on selected classes if not "all"
+    const targetAssignments = rules.selectedClassIds.includes("all")
+      ? assignments
+      : assignments.filter(a => rules.selectedClassIds.includes(a.classId));
+
+    if (targetAssignments.length === 0) {
+      showError(isRTL ? "لا توجد حصص للفروع المحددة لاستخراجها" : "No lessons found for the selected branches to extract");
+      return;
+    }
+
+    // Group assignments to find weekly counts
     const groups: Record<string, { req: Omit<Requirement, 'id' | 'count'>; count: number }> = {};
     
-    assignments.forEach(asgn => {
+    targetAssignments.forEach(asgn => {
       const key = `${asgn.employeeId}-${asgn.subjectId}-${asgn.classId}-${asgn.room || ""}`;
       if (!groups[key]) {
         groups[key] = {
@@ -96,6 +108,12 @@ const AutoGenerator = () => {
       return;
     }
 
+    // If target branches are specified, warn if adding a requirement for a non-selected branch
+    if (!rules.selectedClassIds.includes("all") && !rules.selectedClassIds.includes(newReq.classId)) {
+      showError(isRTL ? "الفوج المحدد ليس من ضمن الفروع المستهدفة بالجدولة حالياً" : "The selected class is not in the target branches list");
+      return;
+    }
+
     const id = `req-${Math.random().toString(36).substr(2, 9)}`;
     setRequirements([...requirements, { id, ...newReq }]);
     setNewReq({ employeeId: "", subjectId: "", classId: "", room: "", count: 1 });
@@ -121,7 +139,6 @@ const AutoGenerator = () => {
     currentAssignments: any[], 
     maxConsecutive: number
   ): boolean => {
-    // Get all periods the teacher has on this day, including the new one
     const periods = currentAssignments
       .filter(a => a.employeeId === teacherId && a.day === day)
       .map(a => parseInt(a.period));
@@ -129,7 +146,6 @@ const AutoGenerator = () => {
     periods.push(parseInt(newPeriod));
     periods.sort((a, b) => a - b);
 
-    // Find the maximum consecutive sequence
     let maxSeq = 0;
     let currentSeq = 0;
     let lastVal = -99;
@@ -158,17 +174,21 @@ const AutoGenerator = () => {
       .filter(a => a.employeeId === teacherId && a.day === day)
       .map(a => parseInt(a.period));
 
-    if (existingPeriods.length === 0) return true; // First lesson of the day is always fine
+    if (existingPeriods.length === 0) return true;
 
     const pNum = parseInt(newPeriod);
-    // The new period must be adjacent to at least one existing period to avoid gaps
     return existingPeriods.includes(pNum - 1) || existingPeriods.includes(pNum + 1);
   };
 
   // Smart Scheduling Algorithm with Rules Enforcement
   const handleGenerate = () => {
-    if (requirements.length === 0) {
-      showError(isRTL ? "يرجى إضافة متطلبات التدريس أولاً" : "Please add teaching requirements first");
+    // Filter requirements to only include selected classes if not "all"
+    const activeRequirements = rules.selectedClassIds.includes("all")
+      ? requirements
+      : requirements.filter(r => rules.selectedClassIds.includes(r.classId));
+
+    if (activeRequirements.length === 0) {
+      showError(isRTL ? "لا توجد متطلبات تدريس للفروع المحددة" : "No teaching requirements found for the selected branches");
       return;
     }
 
@@ -184,11 +204,10 @@ const AutoGenerator = () => {
 
     setIsTransolving(true);
     
-    // Run in a timeout to allow UI to render loading state
     setTimeout(() => {
       // Flatten requirements into individual lessons to place
       let lessonsToPlace: any[] = [];
-      requirements.forEach(req => {
+      activeRequirements.forEach(req => {
         for (let i = 0; i < req.count; i++) {
           lessonsToPlace.push({
             id: `gen-${Math.random().toString(36).substr(2, 9)}`,
@@ -200,7 +219,7 @@ const AutoGenerator = () => {
         }
       });
 
-      // Sort lessons to place: place harder ones first (e.g., teachers with most lessons)
+      // Sort lessons to place: place harder ones first
       const teacherCounts: Record<string, number> = {};
       lessonsToPlace.forEach(l => {
         teacherCounts[l.employeeId] = (teacherCounts[l.employeeId] || 0) + 1;
@@ -228,24 +247,25 @@ const AutoGenerator = () => {
         return;
       }
 
-      // Randomized Greedy Solver with multiple restarts
+      // Load existing assignments if "Respect Existing Lessons" is enabled
+      const baseAssignments = rules.respectExistingLessons ? [...assignments] : [];
+
       let bestAssignments: any[] = [];
       let bestUnplaced: any[] = [];
       let maxPlaced = -1;
 
-      const RESTARTS = 100; // Increased restarts to find better solutions under strict constraints
+      const RESTARTS = 100;
 
       for (let run = 0; run < RESTARTS; run++) {
-        const currentAssignments: any[] = [];
+        // Start with base assignments (existing scheduled lessons)
+        const currentAssignments = [...baseAssignments];
         const unplaced: any[] = [];
 
-        // Shuffle active slots slightly to introduce randomness
         const shuffledSlots = [...activeSlots].sort(() => Math.random() - 0.5);
 
         lessonsToPlace.forEach(lesson => {
           let placed = false;
 
-          // Find a valid slot
           for (const slot of shuffledSlots) {
             // 1. Teacher is free
             const teacherBusy = currentAssignments.some(a => 
@@ -315,13 +335,16 @@ const AutoGenerator = () => {
           }
         });
 
-        if (currentAssignments.length > maxPlaced) {
-          maxPlaced = currentAssignments.length;
-          bestAssignments = currentAssignments;
+        // We only count newly placed lessons for stats
+        const newlyPlacedCount = currentAssignments.length - baseAssignments.length;
+
+        if (newlyPlacedCount > maxPlaced) {
+          maxPlaced = newlyPlacedCount;
+          // Keep only the newly generated assignments for bestAssignments
+          bestAssignments = currentAssignments.slice(baseAssignments.length);
           bestUnplaced = unplaced;
         }
 
-        // Perfect solution found!
         if (unplaced.length === 0) break;
       }
 
@@ -330,7 +353,7 @@ const AutoGenerator = () => {
       
       const total = lessonsToPlace.length;
       const placed = bestAssignments.length;
-      const successRate = Math.round((placed / total) * 100);
+      const successRate = total > 0 ? Math.round((placed / total) * 100) : 0;
       
       setGenerationStats({ successRate, total, placed });
       setIsTransolving(false);
@@ -345,7 +368,23 @@ const AutoGenerator = () => {
 
   const handleApplyToSystem = () => {
     if (generatedAssignments.length === 0) return;
-    setAssignments(generatedAssignments);
+
+    let finalAssignments = [];
+
+    if (rules.respectExistingLessons) {
+      // Keep all existing assignments, and append the newly generated ones
+      finalAssignments = [...assignments, ...generatedAssignments];
+    } else {
+      // Overwrite only the assignments for the selected classes
+      if (rules.selectedClassIds.includes("all")) {
+        finalAssignments = generatedAssignments;
+      } else {
+        const nonSelectedAssignments = assignments.filter(a => !rules.selectedClassIds.includes(a.classId));
+        finalAssignments = [...nonSelectedAssignments, ...generatedAssignments];
+      }
+    }
+
+    setAssignments(finalAssignments);
     showSuccess(isRTL ? "تم تطبيق الجدول المولد على النظام بنجاح!" : "Generated schedule applied to system successfully!");
   };
 
@@ -399,6 +438,7 @@ const AutoGenerator = () => {
 
           <GeneratorRulesCard 
             isRTL={isRTL}
+            classes={classes}
             rules={rules}
             setRules={setRules}
           />
