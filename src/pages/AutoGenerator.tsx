@@ -30,6 +30,7 @@ import {
 import { showSuccess, showError } from "../utils/toast";
 import PageHeader from "../components/shared/PageHeader";
 import { DAYS, PERIODS } from "../constants/schedule";
+import { cn } from "@/lib/utils";
 
 interface Requirement {
   id: string;
