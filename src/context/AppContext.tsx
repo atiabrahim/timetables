@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Language, translations } from "../translations";
 import { 
   User, Institution, Employee, Assignment, Department,
-  AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment 
+  AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment, TeacherConstraint 
 } from "../types";
 import { supabase } from "../lib/supabase";
 import { showSuccess, showError } from "../utils/toast";
@@ -42,6 +42,8 @@ interface AppContextType {
   setSubjects: React.Dispatch<React.SetStateAction<Subject[]>>;
   periodConfigs: PeriodConfig[];
   setPeriodConfigs: React.Dispatch<React.SetStateAction<PeriodConfig[]>>;
+  teacherConstraints: TeacherConstraint[];
+  setTeacherConstraints: React.Dispatch<React.SetStateAction<TeacherConstraint[]>>;
   importAllData: (data: Partial<AppState>) => void;
   saveDataToCloud: () => Promise<void>;
   loadDataFromCloud: () => Promise<void>;
@@ -109,6 +111,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [classes, setClasses] = useState<AcademicClass[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>(generateDefaultPeriodConfigs);
+  const [teacherConstraints, setTeacherConstraints] = useState<TeacherConstraint[]>([]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const isRTL = language === "ar";
@@ -118,7 +121,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     document.documentElement.lang = language;
   }, [language, isRTL]);
 
-  // Apply theme class to document element
   useEffect(() => {
     const root = document.documentElement;
     root.classList.remove("theme-emerald", "theme-blue", "theme-purple", "theme-amber", "theme-rose");
@@ -138,17 +140,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error("Failed to parse saved data", e);
       }
     }
-    // نقوم بالتحميل الصامت عند البداية فقط
     loadDataFromCloud(true);
   }, []);
 
   useEffect(() => {
     const dataToSave = { 
       systemUsers, institution, employees, assignments, 
-      templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs 
+      templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs,
+      teacherConstraints
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs]);
+  }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs, teacherConstraints]);
 
   const loadDataFromCloud = async (silent = false) => {
     try {
@@ -181,7 +183,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const saveDataToCloud = async () => {
     const dataToSave = { 
       systemUsers, institution, employees, assignments, 
-      templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs 
+      templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs,
+      teacherConstraints
     };
 
     try {
@@ -265,6 +268,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data.dailyAssignments) setDailyAssignments(data.dailyAssignments);
     if (data.periodConfigs && data.periodConfigs.length > 0) setPeriodConfigs(data.periodConfigs);
     if (data.systemUsers) setSystemUsers(data.systemUsers);
+    if (data.teacherConstraints) setTeacherConstraints(data.teacherConstraints);
     
     if (data.departments) {
       const migratedDepts = data.departments.map((d: any, idx: number) => {
@@ -311,7 +315,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       institution, setInstitution, employees, setEmployees, assignments, setAssignments,
       templateAssignments, updateTemplateAssignment, dailyAssignments, saveAssignment, getEffectiveAssignment,
       departments, setDepartments, rooms, setRooms, classes, setClasses, subjects, setSubjects,
-      periodConfigs, setPeriodConfigs, importAllData, saveDataToCloud, loadDataFromCloud: () => loadDataFromCloud(false), t, isRTL,
+      periodConfigs, setPeriodConfigs, teacherConstraints, setTeacherConstraints,
+      importAllData, saveDataToCloud, loadDataFromCloud: () => loadDataFromCloud(false), t, isRTL,
       isSidebarCollapsed, setIsSidebarCollapsed
     }}>
       <div className={isRTL ? "font-arabic" : ""}>
