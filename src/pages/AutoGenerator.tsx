@@ -13,6 +13,7 @@ import RequirementForm from "../components/auto-generator/RequirementForm";
 import RequirementTable from "../components/auto-generator/RequirementTable";
 import GenerationStatsCard from "../components/auto-generator/GenerationStatsCard";
 import UnplacedLessonsCard from "../components/auto-generator/UnplacedLessonsCard";
+import GeneratorRulesCard from "../components/auto-generator/GeneratorRulesCard";
 
 interface Requirement {
   id: string;
@@ -33,6 +34,16 @@ const AutoGenerator = () => {
   const [generatedAssignments, setGeneratedAssignments] = useState<any[]>([]);
   const [unplacedLessons, setUnplacedLessons] = useState<any[]>([]);
   const [generationStats, setGenerationStats] = useState<{ successRate: number; total: number; placed: number } | null>(null);
+
+  // Rules and Constraints State
+  const [rules, setRules] = useState({
+    allowedDays: [0, 1, 2, 3, 4], // Sunday to Thursday by default
+    allowedPeriods: ["1", "2", "3", "4", "5", "6", "7", "8"], // Default active periods
+    maxTeacherHoursPerDay: 6,
+    maxTeacherConsecutiveHours: 3,
+    maxClassHoursPerDay: 6,
+    avoidTeacherGaps: false
+  });
 
   // Form state for adding a new requirement manually
   const [newReq, setNewReq] = useState({
@@ -102,10 +113,72 @@ const AutoGenerator = () => {
     setGenerationStats(null);
   };
 
-  // Smart Scheduling Algorithm
+  // Helper to check maximum consecutive hours for a teacher on a day
+  const checkConsecutiveHours = (
+    teacherId: string, 
+    day: number, 
+    newPeriod: string, 
+    currentAssignments: any[], 
+    maxConsecutive: number
+  ): boolean => {
+    // Get all periods the teacher has on this day, including the new one
+    const periods = currentAssignments
+      .filter(a => a.employeeId === teacherId && a.day === day)
+      .map(a => parseInt(a.period));
+    
+    periods.push(parseInt(newPeriod));
+    periods.sort((a, b) => a - b);
+
+    // Find the maximum consecutive sequence
+    let maxSeq = 0;
+    let currentSeq = 0;
+    let lastVal = -99;
+
+    for (const p of periods) {
+      if (p === lastVal + 1) {
+        currentSeq++;
+      } else {
+        currentSeq = 1;
+      }
+      maxSeq = Math.max(maxSeq, currentSeq);
+      lastVal = p;
+    }
+
+    return maxSeq <= maxConsecutive;
+  };
+
+  // Helper to check if placing a lesson creates a gap for a teacher on a day
+  const checkTeacherGaps = (
+    teacherId: string,
+    day: number,
+    newPeriod: string,
+    currentAssignments: any[]
+  ): boolean => {
+    const existingPeriods = currentAssignments
+      .filter(a => a.employeeId === teacherId && a.day === day)
+      .map(a => parseInt(a.period));
+
+    if (existingPeriods.length === 0) return true; // First lesson of the day is always fine
+
+    const pNum = parseInt(newPeriod);
+    // The new period must be adjacent to at least one existing period to avoid gaps
+    return existingPeriods.includes(pNum - 1) || existingPeriods.includes(pNum + 1);
+  };
+
+  // Smart Scheduling Algorithm with Rules Enforcement
   const handleGenerate = () => {
     if (requirements.length === 0) {
       showError(isRTL ? "يرجى إضافة متطلبات التدريس أولاً" : "Please add teaching requirements first");
+      return;
+    }
+
+    if (rules.allowedDays.length === 0) {
+      showError(isRTL ? "يرجى تفعيل يوم واحد على الأقل في القواعد" : "Please select at least one active day");
+      return;
+    }
+
+    if (rules.allowedPeriods.length === 0) {
+      showError(isRTL ? "يرجى تفعيل حصة واحدة على الأقل في القواعد" : "Please select at least one active period");
       return;
     }
 
@@ -134,19 +207,23 @@ const AutoGenerator = () => {
       });
       lessonsToPlace.sort((a, b) => (teacherCounts[b.employeeId] || 0) - (teacherCounts[a.employeeId] || 0));
 
-      // Get active slots from periodConfigs
+      // Get active slots filtered by allowedDays and allowedPeriods
       const activeSlots: { day: number; period: string }[] = [];
       DAYS.forEach(day => {
-        PERIODS.forEach(period => {
-          const config = periodConfigs.find(c => c.day === day.id && c.period === period);
-          if (config?.isActive !== false) {
-            activeSlots.push({ day: day.id, period });
-          }
-        });
+        if (rules.allowedDays.includes(day.id)) {
+          PERIODS.forEach(period => {
+            if (rules.allowedPeriods.includes(period)) {
+              const config = periodConfigs.find(c => c.day === day.id && c.period === period);
+              if (config?.isActive !== false) {
+                activeSlots.push({ day: day.id, period });
+              }
+            }
+          });
+        }
       });
 
       if (activeSlots.length === 0) {
-        showError(isRTL ? "لا توجد حصص زمنية مفعلة في الإعدادات" : "No active periods in settings");
+        showError(isRTL ? "لا توجد حصص زمنية مفعلة تطابق القواعد المحددة" : "No active periods match the specified rules");
         setIsTransolving(false);
         return;
       }
@@ -156,7 +233,7 @@ const AutoGenerator = () => {
       let bestUnplaced: any[] = [];
       let maxPlaced = -1;
 
-      const RESTARTS = 50; // Try 50 times to find the best conflict-free layout
+      const RESTARTS = 100; // Increased restarts to find better solutions under strict constraints
 
       for (let run = 0; run < RESTARTS; run++) {
         const currentAssignments: any[] = [];
@@ -170,7 +247,6 @@ const AutoGenerator = () => {
 
           // Find a valid slot
           for (const slot of shuffledSlots) {
-            // Check constraints:
             // 1. Teacher is free
             const teacherBusy = currentAssignments.some(a => 
               a.day === slot.day && a.period === slot.period && a.employeeId === lesson.employeeId
@@ -191,7 +267,40 @@ const AutoGenerator = () => {
               if (roomBusy) continue;
             }
 
-            // If all clear, place it!
+            // 4. Max Teacher Hours Per Day Constraint
+            const teacherDailyHours = currentAssignments.filter(a => 
+              a.employeeId === lesson.employeeId && a.day === slot.day
+            ).length;
+            if (teacherDailyHours >= rules.maxTeacherHoursPerDay) continue;
+
+            // 5. Max Class Hours Per Day Constraint
+            const classDailyHours = currentAssignments.filter(a => 
+              a.classId === lesson.classId && a.day === slot.day
+            ).length;
+            if (classDailyHours >= rules.maxClassHoursPerDay) continue;
+
+            // 6. Max Consecutive Hours Constraint
+            const isConsecutiveValid = checkConsecutiveHours(
+              lesson.employeeId,
+              slot.day,
+              slot.period,
+              currentAssignments,
+              rules.maxTeacherConsecutiveHours
+            );
+            if (!isConsecutiveValid) continue;
+
+            // 7. Avoid Teacher Gaps Constraint
+            if (rules.avoidTeacherGaps) {
+              const isGapValid = checkTeacherGaps(
+                lesson.employeeId,
+                slot.day,
+                slot.period,
+                currentAssignments
+              );
+              if (!isGapValid) continue;
+            }
+
+            // If all constraints are satisfied, place it!
             currentAssignments.push({
               ...lesson,
               day: slot.day,
@@ -286,6 +395,12 @@ const AutoGenerator = () => {
             newReq={newReq}
             setNewReq={setNewReq}
             onAdd={handleAddRequirement}
+          />
+
+          <GeneratorRulesCard 
+            isRTL={isRTL}
+            rules={rules}
+            setRules={setRules}
           />
 
           <RequirementTable 
