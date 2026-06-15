@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { AlertTriangle, CheckCircle2, User, MapPin, Clock, GraduationCap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
     const teacherConflicts: any[] = [];
     const roomConflicts: any[] = [];
 
-    // تجميع الحصص حسب اليوم والفترة
+    // Group assignments by day and period
     const slots: Record<string, any[]> = {};
     assignments.forEach(asgn => {
       const key = `${asgn.day}-${asgn.period}`;
@@ -31,7 +31,7 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
       const [dayStr, period] = key.split("-");
       const day = parseInt(dayStr);
 
-      // 1. فحص تعارض الأساتذة
+      // 1. Check teacher conflicts
       const teacherMap: Record<string, any[]> = {};
       slotAssignments.forEach(asgn => {
         if (asgn.employeeId) {
@@ -51,7 +51,7 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
         }
       });
 
-      // 2. فحص تعارض القاعات
+      // 2. Check room conflicts
       const roomMap: Record<string, any[]> = {};
       slotAssignments.forEach(asgn => {
         if (asgn.room && asgn.room.trim() !== "") {
@@ -127,7 +127,7 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
           </div>
         ) : (
           <div className="space-y-3">
-            {/* تعارضات الأساتذة */}
+            {/* Teacher Conflicts */}
             {conflicts.teacherConflicts.map((conf, idx) => (
               <div key={`t-${idx}`} className="p-2.5 bg-amber-50/20 border border-amber-100/70 rounded-xl space-y-1.5">
                 <div className="flex items-center justify-between border-b border-amber-100/30 pb-1">
@@ -163,7 +163,7 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
               </div>
             ))}
 
-            {/* تعارضات القاعات */}
+            {/* Room Conflicts */}
             {conflicts.roomConflicts.map((conf, idx) => (
               <div key={`r-${idx}`} className="p-2.5 bg-rose-50/20 border border-rose-100/70 rounded-xl space-y-1.5">
                 <div className="flex items-center justify-between border-b border-rose-100/30 pb-1">
@@ -204,7 +204,5 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
     </Card>
   );
 };
-
-import { useMemo } from "react";
 
 export default ConflictPanel;
