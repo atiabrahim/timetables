@@ -86,6 +86,13 @@ export interface Subject {
   nameEn?: string;
 }
 
+export interface TeacherConstraint {
+  employeeId: string;
+  day: number;
+  period: string;
+  isAvailable: boolean;
+}
+
 export interface AppState {
   systemUsers: User[];
   institution: Institution;
@@ -98,4 +105,5 @@ export interface AppState {
   classes: AcademicClass[];
   subjects: Subject[];
   periodConfigs: PeriodConfig[];
+  teacherConstraints?: TeacherConstraint[];
 }
