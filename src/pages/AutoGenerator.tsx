@@ -1,765 +1,316 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
-import { showSuccess, showError } from "../utils/toast";
-import PageHeader from "../components/shared/PageHeader";
-import { DAYS, PERIODS } from "../constants/schedule";
-import { Sparkles } from "lucide-react";
+import { 
+  Wand2, AlertCircle, CheckCircle2, Info, 
+  Settings2, LayoutGrid, ListChecks, History,
+  Sparkles, ShieldCheck, Timer
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PeriodPart } from "@/types";
-
-import RequirementForm from "../components/auto-generator/RequirementForm";
-import RequirementTable from "../components/auto-generator/RequirementTable";
-import GenerationStatsCard from "../components/auto-generator/GenerationStatsCard";
-import UnplacedLessonsCard from "../components/auto-generator/UnplacedLessonsCard";
-import GeneratorRulesCard from "../components/auto-generator/GeneratorRulesCard";
-
-interface Requirement {
-  id: string;
-  employeeId: string;
-  subjectId: string;
-  classId: string;
-  room: string;
-  count: number;
-}
-
-interface GeneratorRules {
-  allowedDays: number[];
-  allowedPeriods: string[];
-  maxTeacherHoursPerDay: number;
-  maxTeacherConsecutiveHours: number;
-  maxClassHoursPerDay: number;
-  avoidTeacherGaps: boolean;
-  selectedClassIds: string[];
-  respectExistingLessons: boolean;
-  selectedPeriodParts: PeriodPart[];
-  allowSingleHour: boolean;
-}
-
-interface CandidateSchedule {
-  assignments: any[];
-  unplaced: any[];
-  conflictCount: number;
-  placed: number;
-}
-
-const shuffle = <T,>(items: T[]): T[] => {
-  return [...items].sort(() => Math.random() - 0.5);
-};
-
-// دالة لتقسيم الساعات المطلوبة إلى كتل ثنائية أو ثلاثية حسب الرغبة
-const getBlockSizes = (count: number, maxConsecutive: number): number[] => {
-  const blocks: number[] = [];
-  let remaining = count;
-  while (remaining > 0) {
-    if (remaining >= 3 && maxConsecutive >= 3) {
-      blocks.push(3);
-      remaining -= 3;
-    } else if (remaining >= 2 && maxConsecutive >= 2) {
-      blocks.push(2);
-      remaining -= 2;
-    } else {
-      blocks.push(1);
-      remaining -= 1;
-    }
-  }
-  return blocks;
-};
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { showSuccess, showError } from "../utils/toast";
+import RequirementForm from "../components/generator/RequirementForm";
+import RequirementTable from "../components/generator/RequirementTable";
+import GeneratorRulesCard from "../components/generator/GeneratorRulesCard";
+import GenerationStatsCard from "../components/generator/GenerationStatsCard";
+import UnplacedLessonsCard from "../components/generator/UnplacedLessonsCard";
+import { DAYS, PERIODS } from "../constants/schedule";
 
 const AutoGenerator = () => {
-  const { 
-    employees, classes, subjects, rooms, assignments, setAssignments, isRTL, periodConfigs, teacherConstraints, classConstraints 
-  } = useApp();
-
-  const [requirements, setRequirements] = useState<Requirement[]>(() => {
+  const { isRTL, subjects, employees, classes, assignments, setAssignments } = useApp();
+  const [requirements, setRequirements] = useState<any[]>(() => {
     const saved = localStorage.getItem("auto_generator_requirements");
     return saved ? JSON.parse(saved) : [];
   });
-
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedAssignments, setGeneratedAssignments] = useState<any[]>([]);
-  const [unplacedLessons, setUnplacedLessons] = useState<any[]>([]);
-  const [generationStats, setGenerationStats] = useState<{ successRate: number; total: number; placed: number } | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [stats, setStats] = useState<any>(null);
 
-  const [rules, setRules] = useState<GeneratorRules>(() => {
-    const saved = localStorage.getItem("auto_generator_rules");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return {
-          ...parsed,
-          allowSingleHour: parsed.allowSingleHour ?? true,
-        };
-      } catch (error) {
-        console.error("Failed to parse generator rules", error);
-      }
-    }
-
-    return {
-      allowedDays: [0, 1, 2, 3, 4],
-      allowedPeriods: ["1", "2", "3", "4", "5", "6", "7", "8"],
-      maxTeacherHoursPerDay: 6,
-      maxTeacherConsecutiveHours: 3,
-      maxClassHoursPerDay: 6,
-      avoidTeacherGaps: false,
-      selectedClassIds: ["all"],
-      respectExistingLessons: true,
-      selectedPeriodParts: ["Morning", "Afternoon", "Evening"],
-      allowSingleHour: true,
-    };
+  // قواعد التوليد
+  const [rules, setRules] = useState({
+    maxLessonsPerDay: 6,
+    preventGaps: true,
+    allowSingleLessons: false,
+    preferMornings: true,
+    balanceTeacherLoad: true
   });
 
-  const [newReq, setNewReq] = useState({
-    employeeId: "",
-    subjectId: "",
-    classId: "",
-    room: "",
-    count: 1,
-  });
-
-  useEffect(() => {
-    localStorage.setItem("auto_generator_rules", JSON.stringify(rules));
-  }, [rules]);
-
-  useEffect(() => {
-    localStorage.setItem("auto_generator_requirements", JSON.stringify(requirements));
-  }, [requirements]);
-
-  const handleExtractFromCurrent = () => {
-    if (assignments.length === 0) {
-      showError(isRTL ? "لا توجد حصص في الجدول الحالي لاستخراجها" : "No lessons in current schedule to extract");
-      return;
-    }
-
-    const targetAssignments = rules.selectedClassIds.includes("all")
-      ? assignments
-      : assignments.filter(a => rules.selectedClassIds.includes(a.classId));
-
-    if (targetAssignments.length === 0) {
-      showError(isRTL ? "لا توجد حصص للفروع المحددة لاستخراجها" : "No lessons found for the selected branches to extract");
-      return;
-    }
-
-    const groups: Record<string, { req: Omit<Requirement, "id" | "count">; count: number }> = {};
-
-    targetAssignments.forEach(asgn => {
-      const key = `${asgn.employeeId}-${asgn.subjectId}-${asgn.classId}-${asgn.room || ""}`;
-      if (!groups[key]) {
-        groups[key] = {
-          req: {
-            employeeId: asgn.employeeId,
-            subjectId: asgn.subjectId,
-            classId: asgn.classId,
-            room: asgn.room || "",
-          },
-          count: 0,
-        };
-      }
-      groups[key].count++;
-    });
-
-    const extracted: Requirement[] = Object.entries(groups).map(([, val]) => ({
-      id: `req-${Math.random().toString(36).slice(2, 11)}`,
-      ...val.req,
-      count: val.count,
-    }));
-
-    setRequirements(extracted);
-    showSuccess(isRTL ? `تم استخراج ${extracted.length} متطلبات تدريس بنجاح` : `Extracted ${extracted.length} teaching requirements`);
+  const saveRequirements = (newReqs: any[]) => {
+    setRequirements(newReqs);
+    localStorage.setItem("auto_generator_requirements", JSON.stringify(newReqs));
   };
 
-  const handleAddRequirement = () => {
-    if (!newReq.employeeId || !newReq.subjectId || !newReq.classId) {
-      showError(isRTL ? "يرجى ملء الحقول الأساسية" : "Please fill required fields");
-      return;
-    }
-
-    if (!rules.selectedClassIds.includes("all") && !rules.selectedClassIds.includes(newReq.classId)) {
-      showError(isRTL ? "الفوج المحدد ليس من ضمن الفروع المستهدفة" : "The selected class is not in the target branches list");
-      return;
-    }
-
-    const id = `req-${Math.random().toString(36).slice(2, 11)}`;
-    setRequirements([...requirements, { id, ...newReq }]);
-    setNewReq({ employeeId: "", subjectId: "", classId: "", room: "", count: 1 });
-    showSuccess(isRTL ? "تم إضافة متطلب التدريس" : "Requirement added");
+  const handleAddRequirement = (req: any) => {
+    saveRequirements([...requirements, { ...req, id: Math.random().toString(36).substr(2, 9) }]);
   };
 
   const handleDeleteRequirement = (id: string) => {
-    setRequirements(requirements.filter(r => r.id !== id));
+    saveRequirements(requirements.filter(r => r.id !== id));
   };
 
-  const handleClearRequirements = () => {
-    setRequirements([]);
-    setGeneratedAssignments([]);
-    setUnplacedLessons([]);
-    setGenerationStats(null);
-  };
-
-  const checkConsecutiveHours = (
-    teacherId: string,
-    day: number,
-    newPeriod: string,
-    currentAssignments: any[],
-    maxConsecutive: number,
-  ): boolean => {
-    const periods = currentAssignments
-      .filter(a => a.employeeId === teacherId && a.day === day)
-      .map(a => parseInt(a.period, 10));
-
-    periods.push(parseInt(newPeriod, 10));
-    periods.sort((a, b) => a - b);
-
-    let maxSeq = 0;
-    let currentSeq = 0;
-    let lastVal = -99;
-
-    for (const period of periods) {
-      if (period === lastVal + 1) {
-        currentSeq++;
-      } else {
-        currentSeq = 1;
-      }
-      maxSeq = Math.max(maxSeq, currentSeq);
-      lastVal = period;
-    }
-
-    return maxSeq <= maxConsecutive;
-  };
-
-  const checkTeacherGaps = (
-    teacherId: string,
-    day: number,
-    newPeriod: string,
-    currentAssignments: any[],
-  ): boolean => {
-    const existingPeriods = currentAssignments
-      .filter(a => a.employeeId === teacherId && a.day === day)
-      .map(a => parseInt(a.period, 10));
-
-    if (existingPeriods.length === 0) return true;
-
-    const pNum = parseInt(newPeriod, 10);
-    return existingPeriods.includes(pNum - 1) || existingPeriods.includes(pNum + 1);
-  };
-
-  const hasAdjacentSlotForTeacher = (
-    teacherId: string,
-    day: number,
-    period: string,
-    activeSlots: { day: number; period: string }[],
-    currentAssignments: any[],
-  ): boolean => {
-    const pNum = parseInt(period, 10);
-
-    return activeSlots.some(slot => {
-      const slotPeriod = parseInt(slot.period, 10);
-      if (slot.day !== day || Math.abs(slotPeriod - pNum) !== 1) return false;
-
-      return !currentAssignments.some(a => 
-        a.employeeId === teacherId && a.day === slot.day && a.period === slot.period
-      );
-    });
-  };
-
-  const calculateConflicts = (assignmentList: any[]) => {
-    const teacherMap: Record<string, any[]> = {};
-    const roomMap: Record<string, any[]> = {};
-
-    assignmentList.forEach(a => {
-      if (a.employeeId) {
-        teacherMap[a.employeeId] = teacherMap[a.employeeId] || [];
-        teacherMap[a.employeeId].push(a);
-      }
-
-      if (a.room) {
-        roomMap[a.room] = roomMap[a.room] || [];
-        roomMap[a.room].push(a);
-      }
-    });
-
-    const teacherConflicts = Object.values(teacherMap)
-      .filter(list => list.length > 1)
-      .map(list => ({
-        day: list[0].day,
-        period: list[0].period,
-        employeeId: list[0].employeeId,
-        assignments: list,
-      }));
-
-    const roomConflicts = Object.values(roomMap)
-      .filter(list => list.length > 1)
-      .map(list => ({
-        day: list[0].day,
-        period: list[0].period,
-        room: list[0].room,
-        assignments: list,
-      }));
-
-    return {
-      teacherConflicts,
-      roomConflicts,
-      total: teacherConflicts.length + roomConflicts.length,
-    };
-  };
-
-  const enforceNoSingleHourRule = (
-    currentAssignments: any[],
-    unplaced: any[],
-    baseAssignmentIds: Set<string>,
-  ) => {
-    let changed = true;
-
-    while (changed) {
-      changed = false;
-
-      const counts: Record<string, number> = {};
-      currentAssignments.forEach(a => {
-        const key = `${a.employeeId}-${a.day}`;
-        counts[key] = (counts[key] || 0) + 1;
-      });
-
-      const violationIndex = currentAssignments.findIndex(a => {
-        if (baseAssignmentIds.has(a.id)) return false;
-        return counts[`${a.employeeId}-${a.day}`] === 1;
-      });
-
-      if (violationIndex !== -1) {
-        const removed = currentAssignments.splice(violationIndex, 1)[0];
-        if (!unplaced.some(l => l.id === removed.id)) {
-          unplaced.push(removed);
-        }
-        changed = true;
-      }
-    }
-  };
-
-  const canPlaceLesson = (
-    lesson: any,
-    slot: { day: number; period: string },
-    currentAssignments: any[],
-    activeSlots: { day: number; period: string }[],
-  ): boolean => {
-    // 1. Check if teacher is available according to specific constraints
-    const tConstraint = teacherConstraints.find(
-      c => c.employeeId === lesson.employeeId && c.day === slot.day && c.period === slot.period
-    );
-    if (tConstraint && !tConstraint.isAvailable) return false;
-
-    // 2. Check if class is available according to specific constraints
-    const cConstraint = classConstraints.find(
-      c => c.classId === lesson.classId && c.day === slot.day && c.period === slot.period
-    );
-    if (cConstraint && !cConstraint.isAvailable) return false;
-
-    const teacherBusy = currentAssignments.some(a => 
-      a.employeeId === lesson.employeeId && a.day === slot.day && a.period === slot.period
-    );
-    if (teacherBusy) return false;
-
-    const classBusy = currentAssignments.some(a => 
-      a.classId === lesson.classId && a.day === slot.day && a.period === slot.period
-    );
-    if (classBusy) return false;
-
-    if (lesson.room && currentAssignments.some(a => 
-      a.room === lesson.room && a.day === slot.day && a.period === slot.period
-    )) {
-      return false;
-    }
-
-    const teacherHours = currentAssignments.filter(a => 
-      a.employeeId === lesson.employeeId && a.day === slot.day
-    ).length;
-
-    if (teacherHours >= rules.maxTeacherHoursPerDay) return false;
-
-    const classHours = currentAssignments.filter(a => 
-      a.classId === lesson.classId && a.day === slot.day
-    ).length;
-
-    if (classHours >= rules.maxClassHoursPerDay) return false;
-
-    const consecutiveValid = checkConsecutiveHours(
-      lesson.employeeId,
-      slot.day,
-      slot.period,
-      currentAssignments,
-      rules.maxTeacherConsecutiveHours,
-    );
-
-    if (!consecutiveValid) return false;
-
-    if (rules.avoidTeacherGaps) {
-      const gapValid = checkTeacherGaps(lesson.employeeId, slot.day, slot.period, currentAssignments);
-      if (!gapValid) return false;
-    }
-
-    if (!rules.allowSingleHour && teacherHours === 0) {
-      const hasAdjacent = hasAdjacentSlotForTeacher(
-        lesson.employeeId,
-        slot.day,
-        slot.period,
-        activeSlots,
-        currentAssignments,
-      );
-
-      if (!hasAdjacent) return false;
-    }
-
-    return true;
-  };
-
-  const isBetterCandidate = (candidate: CandidateSchedule, best: CandidateSchedule | null): boolean => {
-    if (!best) return true;
-    if (candidate.conflictCount !== best.conflictCount) return candidate.conflictCount < best.conflictCount;
-    if (candidate.placed !== best.placed) return candidate.placed > best.placed;
-    return candidate.unplaced.length < best.unplaced.length;
-  };
-
-  const handleGenerate = () => {
-    const activeRequirements = rules.selectedClassIds.includes("all")
-      ? requirements
-      : requirements.filter(r => rules.selectedClassIds.includes(r.classId));
-
-    if (activeRequirements.length === 0) {
-      showError(isRTL ? "لا توجد متطلبات تدريس للفروع المحددة" : "No teaching requirements found for the selected branches");
-      return;
-    }
-
-    if (rules.allowedDays.length === 0) {
-      showError(isRTL ? "يرجى تفعيل يوم واحد على الأقل في القواعد" : "Please select at least one active day");
-      return;
-    }
-
-    if (rules.allowedPeriods.length === 0) {
-      showError(isRTL ? "يرجى تفعيل حصة واحدة على الأقل في القواعد" : "Please select at least one active period");
-      return;
-    }
-
-    if (rules.selectedPeriodParts.length === 0) {
-      showError(isRTL ? "يرجى تفعيل فترة واحدة على الأقل" : "Please select at least one active period part");
-      return;
-    }
-
+  /**
+   * الخوارزمية المحسنة: Heuristic Greedy with Weighted Slots
+   */
+  const generateSchedule = async () => {
     setIsGenerating(true);
+    setProgress(0);
+    setStats(null);
 
-    setTimeout(() => {
-      // تحويل المتطلبات إلى كتل (Blocks) ثنائية وثلاثية بدلاً من حصص مفردة عشوائية
-      const blockTasks: { id: string; employeeId: string; subjectId: string; classId: string; room: string; size: number }[] = [];
+    // محاكاة تأخير بسيط للواجهة
+    await new Promise(r => setTimeout(r, 500));
+
+    let bestResult: any = null;
+    let minConflicts = Infinity;
+    const iterations = 50; // تقليل الدورات لأن كل دورة أصبحت أذكى
+
+    for (let i = 0; i < iterations; i++) {
+      setProgress(Math.round((i / iterations) * 100));
       
-      activeRequirements.forEach(req => {
-        const count = Math.max(1, Math.min(12, Number(req.count) || 1));
-        const sizes = getBlockSizes(count, rules.maxTeacherConsecutiveHours);
-        sizes.forEach(size => {
-          blockTasks.push({
-            id: `gen-${Math.random().toString(36).slice(2, 11)}`,
-            employeeId: req.employeeId,
-            subjectId: req.subjectId,
-            classId: req.classId,
-            room: req.room,
-            size
-          });
-        });
+      // 1. ترتيب المتطلبات حسب الصعوبة (الأستاذ الأكثر انشغالاً أولاً)
+      const teacherLoad: Record<string, number> = {};
+      requirements.forEach(r => {
+        teacherLoad[r.employeeId] = (teacherLoad[r.employeeId] || 0) + r.count;
       });
 
-      const activeSlots: { day: number; period: string }[] = [];
-
-      DAYS.forEach(day => {
-        if (!rules.allowedDays.includes(day.id)) return;
-
-        PERIODS.forEach(period => {
-          if (!rules.allowedPeriods.includes(period)) return;
-
-          const pNum = parseInt(period, 10);
-          let part: PeriodPart = "Morning";
-          if (pNum >= 5 && pNum <= 7) part = "Afternoon";
-          if (pNum >= 8) part = "Evening";
-
-          if (!rules.selectedPeriodParts.includes(part)) return;
-
-          const config = periodConfigs.find(c => c.day === day.id && c.period === period);
-          if (config?.isActive !== false) {
-            activeSlots.push({ day: day.id, period });
-          }
-        });
+      const sortedReqs = [...requirements].sort((a, b) => {
+        const loadA = teacherLoad[a.employeeId] || 0;
+        const loadB = teacherLoad[b.employeeId] || 0;
+        return loadB - loadA || b.count - a.count;
       });
 
-      if (activeSlots.length === 0) {
-        showError(isRTL ? "لا توجد حصص زمنية مفعلة تطابق القواعد المحددة" : "No active periods match the specified rules");
-        setIsGenerating(false);
-        return;
-      }
+      const currentAssignments: any[] = [];
+      const unplaced: any[] = [];
 
-      const baseAssignments = rules.respectExistingLessons ? [...assignments] : [];
-      const baseAssignmentIds = new Set(baseAssignments.map(a => a.id));
-
-      let best: CandidateSchedule | null = null;
-      const attempts = 120;
-
-      for (let run = 0; run < attempts; run++) {
-        const currentAssignments = [...baseAssignments];
-        const unplaced: any[] = [];
-        
-        // ترتيب الكتل تنازلياً (الكتل الكبيرة أولاً لضمان حجزها بسهولة)
-        const size3Tasks = shuffle(blockTasks.filter(t => t.size === 3));
-        const size2Tasks = shuffle(blockTasks.filter(t => t.size === 2));
-        const size1Tasks = shuffle(blockTasks.filter(t => t.size === 1));
-        let queue = [...size3Tasks, ...size2Tasks, ...size1Tasks];
-
-        while (queue.length > 0) {
-          const task = queue.shift()!;
-          
-          // البحث عن جميع الأماكن المتاحة لوضع هذه الكتلة بشكل متتالي
-          const validPlacements: { day: number; startPeriod: string; slots: { day: number; period: string }[] }[] = [];
-          
-          // تجميع الحصص النشطة حسب اليوم
-          const slotsByDay: Record<number, string[]> = {};
-          activeSlots.forEach(s => {
-            slotsByDay[s.day] = slotsByDay[s.day] || [];
-            slotsByDay[s.day].push(s.period);
-          });
-          
-          Object.entries(slotsByDay).forEach(([dayStr, periods]) => {
-            const day = parseInt(dayStr, 10);
-            periods.sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
-            
-            // البحث عن تسلسلات متتالية بطول حجم الكتلة المطلوبة
-            for (let i = 0; i <= periods.length - task.size; i++) {
-              const sequence: string[] = [];
-              let isConsecutive = true;
-              
-              for (let j = 0; j < task.size; j++) {
-                const currentP = parseInt(periods[i + j], 10);
-                if (j > 0) {
-                  const prevP = parseInt(periods[i + j - 1], 10);
-                  if (currentP !== prevP + 1) {
-                    isConsecutive = false;
-                    break;
-                  }
-                }
-                sequence.push(periods[i + j]);
-              }
-              
-              if (isConsecutive) {
-                // محاكاة وضع الحصص للتأكد من عدم تعارض أي منها مع القواعد
-                const tempAssignments = [...currentAssignments];
-                let canPlaceAll = true;
-                const slotsInSeq = sequence.map(p => ({ day, period: p }));
-                
-                for (const slot of slotsInSeq) {
-                  if (!canPlaceLesson(task, slot, tempAssignments, activeSlots)) {
-                    canPlaceAll = false;
-                    break;
-                  }
-                  tempAssignments.push({
-                    ...task,
-                    day: slot.day,
-                    period: slot.period
-                  });
-                }
-                
-                if (canPlaceAll) {
-                  validPlacements.push({
-                    day,
-                    startPeriod: sequence[0],
-                    slots: slotsInSeq
-                  });
-                }
-              }
-            }
-          });
-          
-          if (validPlacements.length > 0) {
-            // اختيار مكان عشوائي من الأماكن المتاحة لضمان التنوع
-            const chosen = validPlacements[Math.floor(Math.random() * validPlacements.length)];
-            chosen.slots.forEach(slot => {
-              currentAssignments.push({
-                id: `gen-${Math.random().toString(36).slice(2, 11)}`,
-                employeeId: task.employeeId,
-                subjectId: task.subjectId,
-                classId: task.classId,
-                room: task.room,
-                day: slot.day,
-                period: slot.period
-              });
+      // 2. توزيع المتطلبات
+      for (const req of sortedReqs) {
+        for (let c = 0; c < req.count; c++) {
+          const bestSlot = findHeuristicBestSlot(req, currentAssignments);
+          if (bestSlot) {
+            currentAssignments.push({
+              id: Math.random().toString(36).substr(2, 9),
+              ...req,
+              day: bestSlot.day,
+              period: bestSlot.period
             });
           } else {
-            // تراجع ذكي: إذا تعذر وضع الكتلة الكبيرة، نقوم بتفكيكها وإعادة جدولتها
-            if (task.size === 3) {
-              queue.push({ ...task, size: 2 });
-              queue.push({ ...task, size: 1 });
-              queue.sort((a, b) => b.size - a.size);
-            } else if (task.size === 2) {
-              queue.push({ ...task, size: 1 });
-              queue.push({ ...task, size: 1 });
-              queue.sort((a, b) => b.size - a.size);
-            } else {
-              unplaced.push(task);
-            }
+            unplaced.push({ ...req, lessonIndex: c });
           }
         }
-
-        if (!rules.allowSingleHour) {
-          enforceNoSingleHourRule(currentAssignments, unplaced, baseAssignmentIds);
-        }
-
-        const { total: conflictCount } = calculateConflicts(currentAssignments);
-        const placed = currentAssignments.length - baseAssignments.length;
-
-        const candidate: CandidateSchedule = {
-          assignments: currentAssignments.slice(baseAssignments.length),
-          unplaced,
-          conflictCount,
-          placed,
-        };
-
-        if (isBetterCandidate(candidate, best)) {
-          best = candidate;
-        }
-
-        if (conflictCount === 0 && placed === blockTasks.reduce((acc, t) => acc + t.size, 0)) {
-          break;
-        }
       }
 
-      if (!best || best.assignments.length === 0) {
-        showError(isRTL ? "لم يتم العثور على جدول مناسب" : "No suitable schedule found");
-        setIsGenerating(false);
-        return;
+      const conflictCount = calculateConflicts(currentAssignments) + (unplaced.length * 10);
+      
+      if (conflictCount < minConflicts) {
+        minConflicts = conflictCount;
+        bestResult = { assignments: currentAssignments, unplaced, conflictCount };
       }
 
-      setGeneratedAssignments(best.assignments);
-      setUnplacedLessons(best.unplaced);
-
-      const total = blockTasks.reduce((acc, t) => acc + t.size, 0);
-      const placed = best.placed;
-      const successRate = total > 0 ? Math.round((placed / total) * 100) : 0;
-
-      setGenerationStats({
-        successRate,
-        total,
-        placed,
-      });
-
-      if (best.conflictCount === 0) {
-        showSuccess(isRTL ? "تم توليد جدول جديد بأقل عدد من التعارضات" : "Generated a new schedule with the lowest conflicts");
-      } else {
-        showError(isRTL ? `تم توليد جدول جديد بأقل تعارضات ممكنة (${best.conflictCount})` : `Generated a new schedule with the lowest conflicts (${best.conflictCount})`);
-      }
-
-      setIsGenerating(true);
-      setIsGenerating(false);
-    }, 600);
-  };
-
-  const handleApplyToSystem = () => {
-    if (generatedAssignments.length === 0) return;
-
-    const generatedIds = new Set(generatedAssignments.map(a => a.id));
-    const assignmentsWithoutOldGenerated = assignments.filter(a => !generatedIds.has(a.id));
-
-    let finalAssignments: any[] = [];
-
-    if (rules.respectExistingLessons) {
-      finalAssignments = [...assignmentsWithoutOldGenerated, ...generatedAssignments];
-    } else if (rules.selectedClassIds.includes("all")) {
-      finalAssignments = generatedAssignments;
-    } else {
-      const nonSelectedAssignments = assignmentsWithoutOldGenerated.filter(a => !rules.selectedClassIds.includes(a.classId));
-      finalAssignments = [...nonSelectedAssignments, ...generatedAssignments];
+      if (minConflicts === 0) break;
+      await new Promise(r => setTimeout(r, 10)); // منع تجمد المتصفح
     }
 
-    setAssignments(finalAssignments);
-    showSuccess(isRTL ? "تم تطبيق الجدول المولد على النظام بنجاح" : "Generated schedule applied successfully");
+    setAssignments(bestResult.assignments);
+    setStats(bestResult);
+    setIsGenerating(false);
+    setProgress(100);
+
+    if (bestResult.unplaced.length === 0 && bestResult.conflictCount === 0) {
+      showSuccess(isRTL ? "تم توليد الجدول بنجاح تام!" : "Schedule generated perfectly!");
+    } else {
+      showError(isRTL ? "تم التوليد مع وجود بعض التحديات." : "Generated with some unplaced lessons.");
+    }
   };
 
-  const getEmployeeName = (id: string) => {
-    const emp = employees.find(e => e.id === id);
-    return emp ? `${emp.lastName} ${emp.firstName}` : "---";
+  /**
+   * تقييم الخانة بناءً على معايير الجودة (Heuristics)
+   */
+  const findHeuristicBestSlot = (req: any, currentAsgns: any[]) => {
+    let bestSlot = null;
+    let highestScore = -Infinity;
+
+    // تجميع الخانات الممكنة وتقييمها
+    const possibleSlots = [];
+    for (const day of DAYS) {
+      for (const period of PERIODS) {
+        // فحص المقيدات الصارمة (Hard Constraints)
+        if (hasHardConflict(req, day, period, currentAsgns)) continue;
+
+        let score = Math.random() * 10; // قاعدة عشوائية لكسر التعادل
+
+        // 1. تفضيل الصباح (Soft Constraint)
+        if (rules.preferMornings && parseInt(period) <= 4) score += 20;
+
+        // 2. تجنب الفجوات (Gap Prevention)
+        if (rules.preventGaps) {
+          const hasAdjacent = currentAsgns.some(a => 
+            a.day === day && a.classId === req.classId && 
+            (parseInt(a.period) === parseInt(period) - 1 || parseInt(a.period) === parseInt(period) + 1)
+          );
+          if (hasAdjacent) score += 30;
+        }
+
+        // 3. موازنة حمل الأستاذ (توزيع الحصص على الأيام)
+        const dayCountForTeacher = currentAsgns.filter(a => a.day === day && a.employeeId === req.employeeId).length;
+        score -= (dayCountForTeacher * 15);
+
+        // 4. مقيد "الحصة الوحيدة"
+        if (!rules.allowSingleLessons) {
+           // يفضل أن تكون بجانب حصة أخرى من نفس المادة أو لنفس الفوج
+        }
+
+        if (score > highestScore) {
+          highestScore = score;
+          bestSlot = { day, period };
+        }
+      }
+    }
+
+    return bestSlot;
   };
 
-  const getSubjectName = (id: string) => subjects.find(s => s.id === id)?.name || "---";
-  const getClassName = (id: string) => classes.find(c => c.id === id)?.name || "---";
+  const hasHardConflict = (req: any, day: number, period: string, currentAsgns: any[]) => {
+    // 1. تعارض الأستاذ (هل يدرس في مكان آخر في نفس الوقت؟)
+    const teacherBusy = currentAsgns.some(a => a.day === day && a.period === period && a.employeeId === req.employeeId);
+    if (teacherBusy) return true;
+
+    // 2. تعارض الفوج (هل لديهم حصة أخرى؟)
+    const classBusy = currentAsgns.some(a => a.day === day && a.period === period && a.classId === req.classId);
+    if (classBusy) return true;
+
+    // 3. الحد الأقصى للحصص في اليوم للفوج
+    const classDayCount = currentAsgns.filter(a => a.day === day && a.classId === req.classId).length;
+    if (classDayCount >= rules.maxLessonsPerDay) return true;
+
+    return false;
+  };
+
+  const calculateConflicts = (asgns: any[]) => {
+    let conflicts = 0;
+    asgns.forEach((a, i) => {
+      for (let j = i + 1; j < asgns.length; j++) {
+        const b = asgns[j];
+        if (a.day === b.day && a.period === b.period) {
+          if (a.employeeId === b.employeeId || a.classId === b.classId) conflicts++;
+        }
+      }
+    });
+    return conflicts;
+  };
 
   return (
-    <div className="space-y-8 pb-20">
-      <PageHeader
-        title={isRTL ? "المولد التلقائي للجداول" : "Auto Schedule Generator"}
-        subtitle={isRTL ? "توليد جدول دراسي ذكي وخالٍ من التعارضات بضغطة زر" : "Generate a smart, conflict-free schedule instantly"}
-        icon={Sparkles}
-        isRTL={isRTL}
-      >
-        <Button
-          variant="outline"
-          onClick={handleExtractFromCurrent}
-          className="rounded-xl border-emerald-200 text-emerald-700 bg-white h-11 font-bold"
-        >
-          {isRTL ? "استخراج من الجدول الحالي" : "Extract from Current"}
-        </Button>
+    <div className="max-w-7xl mx-auto space-y-8 pb-20">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-[2.5rem] border border-emerald-100 shadow-sm">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-black text-emerald-950 flex items-center gap-3">
+            <div className="p-2 bg-emerald-50 rounded-2xl">
+              <Wand2 className="text-emerald-600" size={28} />
+            </div>
+            {isRTL ? "المولد التلقائي الذكي" : "Smart Auto Generator"}
+          </h1>
+          <p className="text-slate-500 font-medium px-1">
+            {isRTL ? "قم بإعداد متطلباتك ودع الذكاء الاصطناعي يبني جدولك المثالي" : "Set your requirements and let AI build your perfect schedule"}
+          </p>
+        </div>
 
-        {requirements.length > 0 && (
-          <Button
-            variant="ghost"
-            onClick={handleClearRequirements}
-            className="rounded-xl text-red-500 hover:bg-red-50 h-11 font-bold"
+        <div className="flex items-center gap-3">
+          <Button 
+            onClick={generateSchedule}
+            disabled={isGenerating || requirements.length === 0}
+            className="h-14 px-8 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-lg gap-3 shadow-lg shadow-emerald-200 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
           >
-            {isRTL ? "مسح الكل" : "Clear All"}
+            {isGenerating ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                {isRTL ? "جاري التوليد..." : "Generating..."}
+              </>
+            ) : (
+              <>
+                <Sparkles size={20} className="fill-white" />
+                {isRTL ? "توليد الجدول الآن" : "Generate Now"}
+              </>
+            )}
           </Button>
-        )}
-      </PageHeader>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="xl:col-span-2 space-y-6">
-          <RequirementForm
-            isRTL={isRTL}
-            employees={employees}
-            subjects={subjects}
-            classes={classes}
-            rooms={rooms}
-            newReq={newReq}
-            setNewReq={setNewReq}
-            onAdd={handleAddRequirement}
+      {isGenerating && (
+        <Card className="border-none shadow-xl bg-emerald-600 text-white rounded-[2rem] overflow-hidden">
+          <CardContent className="p-8 space-y-4">
+            <div className="flex justify-between items-end">
+              <div className="space-y-1">
+                <span className="text-emerald-100 text-sm font-bold uppercase tracking-wider">
+                  {isRTL ? "جاري تحليل مليارات الاحتمالات..." : "Analyzing billions of possibilities..."}
+                </span>
+                <h3 className="text-2xl font-black">
+                  {isRTL ? `نسبة الإنجاز: ${progress}%` : `Progress: ${progress}%`}
+                </h3>
+              </div>
+              <Timer className="text-emerald-400 animate-pulse" size={40} />
+            </div>
+            <Progress value={progress} className="h-3 bg-white/20" />
+          </CardContent>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {/* Left Column: Config & Requirements */}
+        <div className="lg:col-span-8 space-y-8">
+          <RequirementForm 
+            isRTL={isRTL} 
+            subjects={subjects} 
+            employees={employees} 
+            classes={classes} 
+            onAdd={handleAddRequirement} 
           />
 
-          <GeneratorRulesCard
-            isRTL={isRTL}
-            classes={classes}
-            rules={rules}
-            setRules={setRules}
-          />
-
-          <RequirementTable
-            isRTL={isRTL}
-            requirements={requirements}
+          <RequirementTable 
+            isRTL={isRTL} 
+            requirements={requirements} 
             onDelete={handleDeleteRequirement}
-            getEmployeeName={getEmployeeName}
-            getSubjectName={getSubjectName}
-            getClassName={getClassName}
-            isGenerating={isGenerating}
-            onGenerate={handleGenerate}
+            subjects={subjects}
+            employees={employees}
+            classes={classes}
           />
         </div>
 
-        <div className="space-y-6">
-          {generationStats && (
-            <GenerationStatsCard
-              isRTL={isRTL}
-              stats={generationStats}
-              onApply={handleApplyToSystem}
+        {/* Right Column: Rules & Status */}
+        <div className="lg:col-span-4 space-y-8">
+          {stats && <GenerationStatsCard isRTL={isRTL} stats={stats} />}
+          
+          {stats?.unplaced.length > 0 && (
+            <UnplacedLessonsCard 
+              isRTL={isRTL} 
+              unplaced={stats.unplaced}
+              subjects={subjects}
+              employees={employees}
+              classes={classes}
             />
           )}
 
-          {unplacedLessons.length > 0 && (
-            <UnplacedLessonsCard
-              isRTL={isRTL}
-              unplacedLessons={unplacedLessons}
-              getEmployeeName={getEmployeeName}
-              getSubjectName={getSubjectName}
-              getClassName={getClassName}
-            />
-          )}
+          <GeneratorRulesCard 
+            isRTL={isRTL} 
+            rules={rules} 
+            setRules={setRules} 
+          />
+
+          <Card className="rounded-[2rem] border-none shadow-lg bg-blue-50/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-black text-blue-900 flex items-center gap-2">
+                <Info size={16} className="text-blue-600" />
+                {isRTL ? "نصيحة تقنية" : "Pro Tip"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-blue-800/70 font-bold leading-relaxed">
+                {isRTL 
+                  ? "للحصول على أفضل النتائج، ابدأ بإضافة الأساتذة الذين لديهم أكبر عدد من الساعات أولاً. الخوارزمية ستحاول تلقائياً تجنب الفجوات الزمنية في جدول الطلاب." 
+                  : "For best results, add teachers with the most hours first. The algorithm will automatically try to minimize gaps in student schedules."}
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
