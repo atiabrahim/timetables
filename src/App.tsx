@@ -22,6 +22,7 @@ import Institution from "./pages/Institution";
 import WeeklyWorkSchedule from "./pages/WeeklyWorkSchedule";
 import MasterClassesSchedule from "./pages/MasterClassesSchedule";
 import Assignments from "./pages/Assignments";
+import AutoGenerator from "./pages/AutoGenerator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -47,6 +48,7 @@ const AppRoutes = () => (
     <Route path="/work-schedule" element={<ProtectedRoute><Layout><WeeklyWorkSchedule /></Layout></ProtectedRoute>} />
     <Route path="/master-classes-schedule" element={<ProtectedRoute><Layout><MasterClassesSchedule /></Layout></ProtectedRoute>} />
     <Route path="/assignments" element={<ProtectedRoute><Layout><Assignments /></Layout></ProtectedRoute>} />
+    <Route path="/auto-generator" element={<ProtectedRoute><Layout><AutoGenerator /></Layout></ProtectedRoute>} />
     <Route path="/reports" element={<ProtectedRoute><Layout><Reports /></Layout></ProtectedRoute>} />
     <Route path="/reports-new" element={<ProtectedRoute><Layout><ReportsNew /></Layout></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Layout><Settings /></Layout></ProtectedRoute>} />
