@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Settings2, Calendar, Clock, User, GraduationCap, SlidersHorizontal, HelpCircle } from "lucide-react";
+import { Settings2, Calendar, Clock, User, GraduationCap, SlidersHorizontal } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,7 @@ interface GeneratorRulesCardProps {
     selectedClassIds: string[];
     respectExistingLessons: boolean;
     selectedPeriodParts: PeriodPart[];
+    allowSingleHour: boolean;
   };
   setRules: (rules: any) => void;
 }
@@ -256,6 +257,24 @@ const GeneratorRulesCard = ({ isRTL, classes, rules, setRules }: GeneratorRulesC
                 className="rounded-xl border-slate-200 h-10 font-bold"
               />
             </div>
+          </div>
+
+          {/* Allow Single Hour Switch */}
+          <div className="flex items-center justify-between p-3 bg-slate-50/50 rounded-2xl border border-slate-100">
+            <div className="space-y-0.5">
+              <Label className="text-xs font-bold text-slate-800">
+                {isRTL ? "السماح بتدريس ساعة واحدة منفردة للأستاذ" : "Allow single-hour lessons for teachers"}
+              </Label>
+              <p className="text-[10px] text-slate-400">
+                {isRTL 
+                  ? "إذا تم إلغاؤه، يجب أن يدرس الأستاذ ساعتين على الأقل في اليوم الذي يحضر فيه."
+                  : "If disabled, teachers must teach at least 2 hours on any day they are scheduled."}
+              </p>
+            </div>
+            <Switch
+              checked={rules.allowSingleHour}
+              onCheckedChange={v => setRules({ ...rules, allowSingleHour: v })}
+            />
           </div>
 
           {/* Avoid Gaps Switch */}

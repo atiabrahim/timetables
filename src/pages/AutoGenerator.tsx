@@ -46,7 +46,12 @@ const AutoGenerator = () => {
     const saved = localStorage.getItem("auto_generator_rules");
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Ensure allowSingleHour has a default value if not present in saved rules
+        if (parsed.allowSingleHour === undefined) {
+          parsed.allowSingleHour = true;
+        }
+        return parsed;
       } catch (e) {
         console.error("Failed to parse saved rules", e);
       }
@@ -60,7 +65,8 @@ const AutoGenerator = () => {
       avoidTeacherGaps: false,
       selectedClassIds: ["all"], // Target branches
       respectExistingLessons: true, // Respect already scheduled lessons
-      selectedPeriodParts: ["Morning", "Afternoon", "Evening"] as PeriodPart[] // Target periods
+      selectedPeriodParts: ["Morning", "Afternoon", "Evening"] as PeriodPart[], // Target periods
+      allowSingleHour: true // Allow single-hour lessons for teachers by default
     };
   });
 
@@ -375,6 +381,35 @@ const AutoGenerator = () => {
             unplaced.push(lesson);
           }
         });
+
+        // Post-process: Enforce "allowSingleHour" constraint if disabled
+        if (!rules.allowSingleHour) {
+          let hasSingleHourViolation = true;
+          while (hasSingleHourViolation) {
+            hasSingleHourViolation = false;
+            const teacherDayCounts: Record<string, number> = {}; // key: teacherId-day
+            currentAssignments.forEach(a => {
+              const key = `${a.employeeId}-${a.day}`;
+              teacherDayCounts[key] = (teacherDayCounts[key] || 0) + 1;
+            });
+
+            // Find first violation (a newly placed lesson that results in exactly 1 hour for that teacher on that day)
+            const violationIndex = currentAssignments.findIndex(a => {
+              // Only remove newly generated assignments, not base ones
+              const isNew = !baseAssignments.some(ba => ba.id === a.id);
+              if (!isNew) return false;
+
+              const key = `${a.employeeId}-${a.day}`;
+              return teacherDayCounts[key] === 1;
+            });
+
+            if (violationIndex !== -1) {
+              const removed = currentAssignments.splice(violationIndex, 1)[0];
+              unplaced.push(removed);
+              hasSingleHourViolation = true; // re-evaluate
+            }
+          }
+        }
 
         // We only count newly placed lessons for stats
         const newlyPlacedCount = currentAssignments.length - baseAssignments.length;
