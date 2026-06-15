@@ -98,6 +98,13 @@ const Schedule = () => {
     showSuccess(isRTL ? "تم حذف الحصة" : "Lesson deleted");
   };
 
+  const handleMoveAssignment = (assignmentId: string, targetDay: number, targetPeriod: string) => {
+    setAssignments(prev => prev.map(a => 
+      a.id === assignmentId ? { ...a, day: targetDay, period: targetPeriod } : a
+    ));
+    showSuccess(isRTL ? "تم نقل الحصة بنجاح" : "Lesson moved successfully");
+  };
+
   const summaryData = useMemo(() => {
     const data: any[] = [];
     filteredAssignments.forEach(asgn => {
@@ -168,6 +175,7 @@ const Schedule = () => {
                 subjects={subjects} employees={employees} classes={classes}
                 viewMode={viewMode} summaryData={summaryData} totalHours={filteredAssignments.length}
                 isTransposed={isTransposed} allAssignments={assignments} isAdmin={true}
+                onMoveAssignment={handleMoveAssignment}
               />
             </div>
 

@@ -27,6 +27,7 @@ interface ScheduleTableProps {
   isTransposed?: boolean;
   allAssignments?: any[];
   isAdmin?: boolean;
+  onMoveAssignment?: (assignmentId: string, targetDay: number, targetPeriod: string) => void;
 }
 
 const SUBJECT_COLORS = [
@@ -39,9 +40,11 @@ const getSubjectColor = (index: number) => SUBJECT_COLORS[index % SUBJECT_COLORS
 
 const ScheduleTable = ({ 
   isRTL, days, timeSlots, getAssignment, onAddClick, onDeleteClick, 
-  subjects, employees, classes, viewMode, isPrint = false, summaryData = [], totalHours = 0, isTransposed = false, allAssignments = [], isAdmin = true
+  subjects, employees, classes, viewMode, isPrint = false, summaryData = [], totalHours = 0, isTransposed = false, allAssignments = [], isAdmin = true,
+  onMoveAssignment
 }: ScheduleTableProps) => {
   const [hoveredCell, setHoveredCell] = useState<{ day: number; period: string } | null>(null);
+  const [dragOverCell, setDragOverCell] = useState<{ day: number; period: string } | null>(null);
 
   const hoveredAssignment = hoveredCell ? getAssignment(hoveredCell.day, hoveredCell.period) : null;
 
@@ -94,10 +97,18 @@ const ScheduleTable = ({
 
     return (
       <TooltipProvider>
-        <div className={cn(
-          "h-full w-full flex flex-col justify-center items-center text-center relative transition-all group/card", 
-          isPrint ? "p-0.5 text-black bg-white" : cn("text-white shadow-sm rounded-lg p-1", colorClass, "hover:scale-[1.01]", conflict && "ring-1 ring-red-500", isHovered && "ring-2 ring-emerald-400 scale-[1.02] shadow-md")
-        )}>
+        <div 
+          draggable={!isPrint && isAdmin}
+          onDragStart={(e) => {
+            if (isPrint || !isAdmin) return;
+            e.dataTransfer.setData("text/plain", assignment.id);
+            e.dataTransfer.effectAllowed = "move";
+          }}
+          className={cn(
+            "h-full w-full flex flex-col justify-center items-center text-center relative transition-all group/card", 
+            isPrint ? "p-0.5 text-black bg-white" : cn("text-white shadow-sm rounded-lg p-1 cursor-grab active:cursor-grabbing", colorClass, "hover:scale-[1.01]", conflict && "ring-1 ring-red-500", isHovered && "ring-2 ring-emerald-400 scale-[1.02] shadow-md")
+          )}
+        >
           <p className={cn("font-bold leading-none truncate w-full mb-0.5", isPrint ? "text-[6.5px] opacity-70" : "text-[8px] opacity-80")}>
             {viewMode === "class" ? employees.find(emp => emp.id === assignment.employeeId)?.lastName : classes.find(c => c.id === assignment.classId)?.name}
           </p>
@@ -190,16 +201,38 @@ const ScheduleTable = ({
                       );
                       const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id || isSpannedHovered;
                       const isExactHovered = (hoveredCell?.day === day.id && hoveredCell?.period === slot.id) || isSpannedHovered;
+                      const isDragOver = dragOverCell?.day === day.id && dragOverCell?.period === slot.id;
 
                       return (
                         <React.Fragment key={slot.id}>
                           <td 
                             className={cn(
                               "relative h-full transition-colors duration-150", 
-                              isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30", isSpannedHovered && "bg-emerald-100/40")
+                              isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30", isSpannedHovered && "bg-emerald-100/40", isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset")
                             )}
                             onMouseEnter={() => !isPrint && setHoveredCell({ day: day.id, period: slot.id })}
                             onMouseLeave={() => !isPrint && setHoveredCell(null)}
+                            onDragOver={(e) => {
+                              if (!isPrint && isAdmin) {
+                                e.preventDefault();
+                                if (dragOverCell?.day !== day.id || dragOverCell?.period !== slot.id) {
+                                  setDragOverCell({ day: day.id, period: slot.id });
+                                }
+                              }
+                            }}
+                            onDragLeave={() => {
+                              if (!isPrint && isAdmin) {
+                                setDragOverCell(null);
+                              }
+                            }}
+                            onDrop={(e) => {
+                              if (isPrint || !isAdmin) return;
+                              setDragOverCell(null);
+                              const assignmentId = e.dataTransfer.getData("text/plain");
+                              if (assignmentId && onMoveAssignment) {
+                                onMoveAssignment(assignmentId, day.id, slot.id);
+                              }
+                            }}
                           >
                             {currentAssignment ? (
                               <LessonCard 
@@ -285,16 +318,38 @@ const ScheduleTable = ({
                       );
                       const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id || isSpannedHovered;
                       const isExactHovered = (hoveredCell?.day === day.id && hoveredCell?.period === slot.id) || isSpannedHovered;
+                      const isDragOver = dragOverCell?.day === day.id && dragOverCell?.period === slot.id;
 
                       return (
                         <td 
                           key={day.id} 
                           className={cn(
                             "relative h-full transition-colors duration-150", 
-                            isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30", isSpannedHovered && "bg-emerald-100/40")
+                            isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30", isSpannedHovered && "bg-emerald-100/40", isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset")
                           )}
                           onMouseEnter={() => !isPrint && setHoveredCell({ day: day.id, period: slot.id })}
                           onMouseLeave={() => !isPrint && setHoveredCell(null)}
+                          onDragOver={(e) => {
+                            if (!isPrint && isAdmin) {
+                              e.preventDefault();
+                              if (dragOverCell?.day !== day.id || dragOverCell?.period !== slot.id) {
+                                setDragOverCell({ day: day.id, period: slot.id });
+                              }
+                            }
+                          }}
+                          onDragLeave={() => {
+                            if (!isPrint && isAdmin) {
+                              setDragOverCell(null);
+                            }
+                          }}
+                          onDrop={(e) => {
+                            if (isPrint || !isAdmin) return;
+                            setDragOverCell(null);
+                            const assignmentId = e.dataTransfer.getData("text/plain");
+                            if (assignmentId && onMoveAssignment) {
+                              onMoveAssignment(assignmentId, day.id, slot.id);
+                            }
+                          }}
                         >
                           {currentAssignment ? (
                             <LessonCard 

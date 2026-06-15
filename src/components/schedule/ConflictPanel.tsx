@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import { AlertTriangle, CheckCircle2, User, MapPin, Clock, GraduationCap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -142,7 +142,16 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
                 </div>
                 <div className="grid grid-cols-2 gap-1.5 pt-0.5">
                   {conf.assignments.map((asg: any, aIdx: number) => (
-                    <div key={aIdx} className="p-1.5 bg-white rounded-lg border border-slate-100 text-[9px] font-bold text-slate-600 space-y-0.5">
+                    <div 
+                      key={aIdx} 
+                      draggable={true}
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("text/plain", asg.id);
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      className="p-1.5 bg-white rounded-lg border border-slate-100 text-[9px] font-bold text-slate-600 space-y-0.5 cursor-grab active:cursor-grabbing hover:border-emerald-300 hover:shadow-sm transition-all"
+                      title={isRTL ? "اسحب لحل التعارض" : "Drag to resolve conflict"}
+                    >
                       <div className="flex items-center gap-0.5 text-emerald-800">
                         <GraduationCap size={10} />
                         <span className="truncate">{getClassName(asg.classId)}</span>
@@ -169,7 +178,16 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
                 </div>
                 <div className="grid grid-cols-2 gap-1.5 pt-0.5">
                   {conf.assignments.map((asg: any, aIdx: number) => (
-                    <div key={aIdx} className="p-1.5 bg-white rounded-lg border border-slate-100 text-[9px] font-bold text-slate-600 space-y-0.5">
+                    <div 
+                      key={aIdx} 
+                      draggable={true}
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("text/plain", asg.id);
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      className="p-1.5 bg-white rounded-lg border border-slate-100 text-[9px] font-bold text-slate-600 space-y-0.5 cursor-grab active:cursor-grabbing hover:border-emerald-300 hover:shadow-sm transition-all"
+                      title={isRTL ? "اسحب لحل التعارض" : "Drag to resolve conflict"}
+                    >
                       <div className="flex items-center gap-0.5 text-emerald-800">
                         <GraduationCap size={10} />
                         <span className="truncate">{getClassName(asg.classId)}</span>
@@ -186,5 +204,7 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
     </Card>
   );
 };
+
+import { useMemo } from "react";
 
 export default ConflictPanel;
