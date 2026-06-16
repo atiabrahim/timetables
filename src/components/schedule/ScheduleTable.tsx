@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Plus, Trash2, AlertTriangle, UserCheck, MapPin, Zap, ArrowRightLeft } from "lucide-react";
+import { Plus, Trash2, AlertTriangle, UserCheck, MapPin, Zap, ArrowLeftRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
   Tooltip,
@@ -65,30 +65,13 @@ const ScheduleTable = ({
     return teacherConflict || roomConflict ? { teacherConflict, roomConflict } : null;
   };
 
-  // وظيفة البحث عن حلول بديلة (أساتذة أو قاعات متاحة في هذا التوقيت)
   const getSolutions = (day: number, period: string, assignment: any) => {
     if (!allAssignments) return { freeTeachers: [], freeRooms: [] };
-
-    // 1. الأساتذة المتاحون (ليس لديهم حصة في هذا الوقت)
-    const busyTeacherIds = allAssignments
-      .filter(a => a.day === day && a.period === period)
-      .map(a => a.employeeId);
-    
-    const freeTeachers = employees
-      .filter(e => !busyTeacherIds.includes(e.id))
-      .slice(0, 8); // نكتفي بأول 8 مقترحات
-
-    // 2. القاعات المتاحة (غير محجوزة في هذا الوقت)
-    const busyRooms = allAssignments
-      .filter(a => a.day === day && a.period === period && a.room)
-      .map(a => a.room);
-    
-    // استخراج كافة القاعات الفريدة المسجلة في النظام
+    const busyTeacherIds = allAssignments.filter(a => a.day === day && a.period === period).map(a => a.employeeId);
+    const freeTeachers = employees.filter(e => !busyTeacherIds.includes(e.id)).slice(0, 8);
+    const busyRooms = allAssignments.filter(a => a.day === day && a.period === period && a.room).map(a => a.room);
     const allRegisteredRooms = Array.from(new Set(allAssignments.map(a => a.room).filter(Boolean)));
-    const freeRooms = allRegisteredRooms
-      .filter(r => r && !busyRooms.includes(r))
-      .slice(0, 8);
-
+    const freeRooms = allRegisteredRooms.filter(r => r && !busyRooms.includes(r)).slice(0, 8);
     return { freeTeachers, freeRooms };
   };
 
@@ -137,10 +120,7 @@ const ScheduleTable = ({
             <Zap size={14} className="text-emerald-500" />
             {isRTL ? "حلول مقترحة للتعارض" : "Conflict Solutions"}
           </ContextMenuLabel>
-          
           <ContextMenuSeparator className="bg-slate-100" />
-
-          {/* بدلاء الأساتذة */}
           <ContextMenuSub>
             <ContextMenuSubTrigger className="rounded-xl px-3 py-2 text-xs font-bold gap-2 focus:bg-emerald-50 focus:text-emerald-900">
               <UserCheck size={14} />
@@ -149,23 +129,13 @@ const ScheduleTable = ({
             <ContextMenuSubContent className="w-56 rounded-xl p-1 bg-white shadow-xl border border-slate-100">
               {freeTeachers.length > 0 ? (
                 freeTeachers.map(emp => (
-                  <ContextMenuItem 
-                    key={emp.id}
-                    onClick={() => onUpdateAssignment?.(assignment.id, { employeeId: emp.id })}
-                    className="rounded-lg px-3 py-2 text-xs font-medium cursor-pointer hover:bg-emerald-50 hover:text-emerald-900"
-                  >
-                    {emp.lastName} {emp.firstName}
-                  </ContextMenuItem>
+                  <ContextMenuItem key={emp.id} onClick={() => onUpdateAssignment?.(assignment.id, { employeeId: emp.id })} className="rounded-lg px-3 py-2 text-xs font-medium cursor-pointer hover:bg-emerald-50 hover:text-emerald-900">{emp.lastName} {emp.firstName}</ContextMenuItem>
                 ))
               ) : (
-                <div className="p-3 text-[10px] text-slate-400 font-bold text-center italic">
-                  {isRTL ? "لا يوجد أساتذة متاحون حالياً" : "No teachers available"}
-                </div>
+                <div className="p-3 text-[10px] text-slate-400 font-bold text-center italic">{isRTL ? "لا يوجد أساتذة متاحون حالياً" : "No teachers available"}</div>
               )}
             </ContextMenuSubContent>
           </ContextMenuSub>
-
-          {/* بدلاء القاعات */}
           <ContextMenuSub>
             <ContextMenuSubTrigger className="rounded-xl px-3 py-2 text-xs font-bold gap-2 focus:bg-emerald-50 focus:text-emerald-900">
               <MapPin size={14} />
@@ -174,28 +144,15 @@ const ScheduleTable = ({
             <ContextMenuSubContent className="w-48 rounded-xl p-1 bg-white shadow-xl border border-slate-100">
               {freeRooms.length > 0 ? (
                 freeRooms.map((room, idx) => (
-                  <ContextMenuItem 
-                    key={idx}
-                    onClick={() => onUpdateAssignment?.(assignment.id, { room })}
-                    className="rounded-lg px-3 py-2 text-xs font-medium cursor-pointer hover:bg-emerald-50 hover:text-emerald-900"
-                  >
-                    {room}
-                  </ContextMenuItem>
+                  <ContextMenuItem key={idx} onClick={() => onUpdateAssignment?.(assignment.id, { room })} className="rounded-lg px-3 py-2 text-xs font-medium cursor-pointer hover:bg-emerald-50 hover:text-emerald-900">{room}</ContextMenuItem>
                 ))
               ) : (
-                <div className="p-3 text-[10px] text-slate-400 font-bold text-center italic">
-                  {isRTL ? "لا توجد قاعات شاغرة" : "No rooms empty"}
-                </div>
+                <div className="p-3 text-[10px] text-slate-400 font-bold text-center italic">{isRTL ? "لا توجد قاعات شاغرة" : "No rooms empty"}</div>
               )}
             </ContextMenuSubContent>
           </ContextMenuSub>
-
           <ContextMenuSeparator className="bg-slate-100" />
-
-          <ContextMenuItem 
-            className="rounded-xl px-3 py-2 text-xs font-bold gap-2 text-red-500 focus:bg-red-50 focus:text-red-600 cursor-pointer"
-            onClick={() => onDeleteClick(assignment.id)}
-          >
+          <ContextMenuItem className="rounded-xl px-3 py-2 text-xs font-bold gap-2 text-red-500 focus:bg-red-50 focus:text-red-600 cursor-pointer" onClick={() => onDeleteClick(assignment.id)}>
             <Trash2 size={14} />
             {isRTL ? "حذف الحصة لحل التعارض" : "Delete to resolve"}
           </ContextMenuItem>
@@ -204,7 +161,6 @@ const ScheduleTable = ({
     );
   };
 
-  // ... (بقيمة الكود تبقى كما هي)
   const verticalSpans = useMemo(() => {
     const spans: Record<string, { rowSpan: number; skip: boolean }> = {};
     days.forEach(day => {
@@ -212,24 +168,14 @@ const ScheduleTable = ({
       for (let i = 0; i < timeSlots.length; i++) {
         const slot = timeSlots[i];
         const key = `${day.id}-${slot.id}`;
-        if (skipCount > 0) {
-          spans[key] = { rowSpan: 1, skip: true };
-          skipCount--;
-          continue;
-        }
+        if (skipCount > 0) { spans[key] = { rowSpan: 1, skip: true }; skipCount--; continue; }
         const current = getAssignment(day.id, slot.id);
-        if (!current) {
-          spans[key] = { rowSpan: 1, skip: false };
-          continue;
-        }
+        if (!current) { spans[key] = { rowSpan: 1, skip: false }; continue; }
         let rowSpan = 1;
         for (let j = i + 1; j < timeSlots.length; j++) {
           const nextSlot = timeSlots[j];
           const next = getAssignment(day.id, nextSlot.id);
-          if (next && next.subjectId === current.subjectId && next.employeeId === current.employeeId && next.classId === current.classId && timeSlots[j - 1].id !== "2" && timeSlots[j - 1].id !== "4") {
-            rowSpan++;
-            skipCount++;
-          } else break;
+          if (next && next.subjectId === current.subjectId && next.employeeId === current.employeeId && next.classId === current.classId && timeSlots[j - 1].id !== "2" && timeSlots[j - 1].id !== "4") { rowSpan++; skipCount++; } else break;
         }
         spans[key] = { rowSpan, skip: false };
       }
@@ -244,24 +190,14 @@ const ScheduleTable = ({
       for (let i = 0; i < timeSlots.length; i++) {
         const slot = timeSlots[i];
         const key = `${day.id}-${slot.id}`;
-        if (skipCount > 0) {
-          spans[key] = { colSpan: 1, skip: true };
-          skipCount--;
-          continue;
-        }
+        if (skipCount > 0) { spans[key] = { colSpan: 1, skip: true }; skipCount--; continue; }
         const current = getAssignment(day.id, slot.id);
-        if (!current) {
-          spans[key] = { colSpan: 1, skip: false };
-          continue;
-        }
+        if (!current) { spans[key] = { colSpan: 1, skip: false }; continue; }
         let colSpan = 1;
         for (let j = i + 1; j < timeSlots.length; j++) {
           const nextSlot = timeSlots[j];
           const next = getAssignment(day.id, nextSlot.id);
-          if (next && next.subjectId === current.subjectId && next.employeeId === current.employeeId && next.classId === current.classId && timeSlots[j-1].id !== "2" && timeSlots[j-1].id !== "4") {
-            colSpan++;
-            skipCount++;
-          } else break;
+          if (next && next.subjectId === current.subjectId && next.employeeId === current.employeeId && next.classId === current.classId && timeSlots[j-1].id !== "2" && timeSlots[j-1].id !== "4") { colSpan++; skipCount++; } else break;
         }
         spans[key] = { colSpan, skip: false };
       }
@@ -358,18 +294,15 @@ const ScheduleTable = ({
                       const span = horizontalSpans[`${day.id}-${slot.id}`];
                       if (span?.skip) return null;
                       const currentAssignment = getAssignment(day.id, slot.id);
-                      const isSpannedHovered = !!(hoveredAssignment && currentAssignment && currentAssignment.day === hoveredAssignment.day && currentAssignment.subjectId === hoveredAssignment.subjectId && currentAssignment.employeeId === hoveredAssignment.employeeId && currentAssignment.classId === hoveredAssignment.classId);
-                      const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id || isSpannedHovered;
-                      const isExactHovered = (hoveredCell?.day === day.id && hoveredCell?.period === slot.id) || isSpannedHovered;
+                      const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id;
                       const isDragOver = dragOverCell?.day === day.id && dragOverCell?.period === slot.id;
-
                       return (
                         <React.Fragment key={slot.id}>
                           <td 
                             colSpan={span?.colSpan || 1}
                             className={cn(
                               "relative h-full transition-colors duration-150", 
-                              isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30", isSpannedHovered && "bg-emerald-100/40", isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset")
+                              isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30", isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset")
                             )}
                             onMouseEnter={() => !isPrint && setHoveredCell({ day: day.id, period: slot.id })}
                             onMouseLeave={() => !isPrint && setHoveredCell(null)}
@@ -378,7 +311,7 @@ const ScheduleTable = ({
                             onDrop={(e) => { if (isPrint || !isAdmin) return; setDragOverCell(null); const assignmentId = e.dataTransfer.getData("text/plain"); if (assignmentId && onMoveAssignment) onMoveAssignment(assignmentId, day.id, slot.id); }}
                           >
                             {currentAssignment ? (
-                              <LessonCard assignment={currentAssignment} day={day.id} period={slot.id} isHovered={isExactHovered} />
+                              <LessonCard assignment={currentAssignment} day={day.id} period={slot.id} isHovered={isCellHovered} />
                             ) : (
                               !isPrint && isAdmin && (
                                 <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}><Plus size={10} className="text-slate-200" /></div>
@@ -435,16 +368,13 @@ const ScheduleTable = ({
                       const span = verticalSpans[`${day.id}-${slot.id}`];
                       if (span?.skip) return null;
                       const currentAssignment = getAssignment(day.id, slot.id);
-                      const isSpannedHovered = !!(hoveredAssignment && currentAssignment && currentAssignment.day === hoveredAssignment.day && currentAssignment.subjectId === hoveredAssignment.subjectId && currentAssignment.employeeId === hoveredAssignment.employeeId && currentAssignment.classId === hoveredAssignment.classId);
-                      const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id || isSpannedHovered;
-                      const isExactHovered = (hoveredCell?.day === day.id && hoveredCell?.period === slot.id) || isSpannedHovered;
+                      const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id;
                       const isDragOver = dragOverCell?.day === day.id && dragOverCell?.period === slot.id;
-
                       return (
                         <td 
                           key={day.id} 
                           rowSpan={span?.rowSpan || 1}
-                          className={cn("relative h-full transition-colors duration-150", isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30", isSpannedHovered && "bg-emerald-100/40", isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset"))}
+                          className={cn("relative h-full transition-colors duration-150", isPrint ? "border border-emerald-950" : cn("p-0.5", isCellHovered && "bg-emerald-50/30", isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset"))}
                           onMouseEnter={() => !isPrint && setHoveredCell({ day: day.id, period: slot.id })}
                           onMouseLeave={() => !isPrint && setHoveredCell(null)}
                           onDragOver={(e) => { if (!isPrint && isAdmin) { e.preventDefault(); if (dragOverCell?.day !== day.id || dragOverCell?.period !== slot.id) setDragOverCell({ day: day.id, period: slot.id }); } }}
@@ -452,7 +382,7 @@ const ScheduleTable = ({
                           onDrop={(e) => { if (isPrint || !isAdmin) return; setDragOverCell(null); const assignmentId = e.dataTransfer.getData("text/plain"); if (assignmentId && onMoveAssignment) onMoveAssignment(assignmentId, day.id, slot.id); }}
                         >
                           {currentAssignment ? (
-                            <LessonCard assignment={currentAssignment} day={day.id} period={slot.id} isHovered={isExactHovered} />
+                            <LessonCard assignment={currentAssignment} day={day.id} period={slot.id} isHovered={isCellHovered} />
                           ) : (
                             !isPrint && isAdmin && (
                               <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}><Plus size={10} className="text-slate-200" /></div>
