@@ -1,21 +1,3 @@
-. Then final concise. Need ensure file code is syntactically valid. Need maybe not include `;` after object? valid. Need maybe include all keys. Need maybe include type. Need maybe include nested object. Need ensure no stray characters. Need maybe no `</arg_value>` or dyad-write tags.
-
-Let's craft translations.ts. Need maybe include "centerName" Arabic should "وزارة التكوين والتعليم المهنيين" maybe previous mismatch. Good.
-
-Need maybe maybe use "reports_page" and "institution_page". Good.
-
-Need maybe include "orientation" under reports_page? Already. Could add "teacher_load", "room_usage", "class_summary". Good.
-
-Need maybe include "language"? Not used? no.
-
-Need maybe include "totalHours" not used.
-
-Need maybe include "search" etc.
-
-Need write file. Ensure no markdown code block. Final one sentence.
-
-Need perhaps include chat summary exactly one.
-</think><dyad-write path="src/translations.ts" description="Fix malformed translations file and restore valid TypeScript syntax">
 export type Language = "ar" | "en";
 
 export const translations = {
@@ -25,27 +7,27 @@ export const translations = {
     weeklyWorkSchedule: "الجدول الكلي لعمل الأساتذة",
     masterClassesSchedule: "الجداول الزمنية لكافة الفروع",
     employees: "المعلمون",
-    classes: "الفروع",
-    subjects: "المواد",
-    rooms: "القاعات",
-    lessons: "الحصص",
+    classes: "الفروع والأفواج",
+    subjects: "المواد الدراسية",
+    rooms: "القاعات والورشات",
+    lessons: "قائمة الحصص",
     reports: "التقارير الإحصائية",
     attendanceReports: "تقارير الحضور",
     importXml: "استيراد XML",
     users: "المستخدمون",
-    institution: "المؤسسة",
+    institution: "بيانات المؤسسة",
     logout: "تسجيل الخروج",
     welcome: "مرحباً،",
     role: "الدور:",
     admin: "مدير",
-    appTitle: "مدير الجدول الدراسي",
-    appSubtitle: "مستكشف قاعدة بيانات aSc XML",
+    appTitle: "EduSchedule",
+    appSubtitle: "نظام الإدارة والجدول الزمني",
     settings: "الإعدادات",
     cancel: "إلغاء",
     save: "حفظ",
-    morning: "الصباح",
-    afternoon: "بعد الزوال",
-    evening: "المساء",
+    morning: "الفترة الصباحية",
+    afternoon: "فترة بعد الزوال",
+    evening: "الفترة المسائية",
     search: "بحث...",
     preview: "معاينة",
     print: "طباعة",
@@ -73,34 +55,34 @@ export const translations = {
     assignments: "التكليفات اليومية",
     assignStaff: "تكليف الموظفين",
     selectEmployees: "اختر الموظفين",
-    noEmployeesFound: "لم يتم العثور على موظفين",
+    noEmployeesFound: "لم يتم العور على موظفين",
     assign: "تكليف",
     more: "المزيد",
     fullTime: "دوام كامل",
     partTime: "دوام جزئي",
     stats: {
-      teachers: "المعلمون",
-      classes: "الفروع",
+      teachers: "الأساتذة",
+      classes: "الأفواج",
       subjects: "المواد",
       rooms: "القاعات",
-      lessons: "الحصص",
+      lessons: "الحصص المجدولة",
       periods: "الحصص الزمنية"
     },
     reports_page: {
-      title: "التقارير والإحصائيات",
+      title: "التقارير والتحليلات",
       print_report: "طباعة التقرير",
-      teacher_load: "نصاب الأساتذة",
-      room_usage: "إشغال القاعات",
-      class_summary: "ملخص الفروع",
+      teacher_load: "نصاب الأساتذة (ساعة/أسبوع)",
+      room_usage: "استغلال القاعات",
+      class_summary: "ملخص الأفواج الدراسية",
       orientation: "اتجاه الصفحة",
       portrait: "طولي",
       landscape: "عرضي"
     },
     institution_page: {
-      title: "بيانات المؤسسة",
-      subtitle: "المعلومات التي تظهر في ترويسة التقارير",
-      name: "اسم المؤسسة",
-      subName: "الاسم الفرعي / العنوان",
+      title: "إعدادات المؤسسة",
+      subtitle: "المعلومات الرسمية التي تظهر في التقارير",
+      name: "اسم المؤسسة الرسمي",
+      subName: "العنوان أو التسمية الفرعية",
       address: "العنوان الكامل",
       phone: "رقم الهاتف",
       email: "البريد الإلكتروني"
@@ -112,10 +94,10 @@ export const translations = {
     weeklyWorkSchedule: "Master Work Schedule",
     masterClassesSchedule: "Master Classes Schedule",
     employees: "Teachers",
-    classes: "Branches",
+    classes: "Branches & Classes",
     subjects: "Subjects",
-    rooms: "Rooms",
-    lessons: "Lessons",
+    rooms: "Rooms & Workshops",
+    lessons: "Lessons List",
     reports: "Statistical Reports",
     attendanceReports: "Attendance Reports",
     importXml: "Import XML",
@@ -125,14 +107,14 @@ export const translations = {
     welcome: "Welcome,",
     role: "Role:",
     admin: "Admin",
-    appTitle: "Schedule Manager",
-    appSubtitle: "aSc XML Database Explorer",
+    appTitle: "EduSchedule",
+    appSubtitle: "Management & Scheduling System",
     settings: "Settings",
     cancel: "Cancel",
     save: "Save",
-    morning: "Morning",
-    afternoon: "Afternoon",
-    evening: "Evening",
+    morning: "Morning Period",
+    afternoon: "Afternoon Period",
+    evening: "Evening Period",
     search: "Search...",
     preview: "Preview",
     print: "Print",
@@ -145,7 +127,7 @@ export const translations = {
     supervisor: "Supervisor",
     republic: "People's Democratic Republic of Algeria",
     centerName: "Ministry of Vocational Education and Training",
-    centerLocation: "Vocational Training Directorate of El-Oued",
+    centerLocation: "Vocational Training Directorate",
     attendanceSheet: "Daily Attendance Sheet for Teachers",
     employeeName: "Teacher Name",
     managerSignature: "Director's Signature",
@@ -167,27 +149,27 @@ export const translations = {
     partTime: "Part-time",
     stats: {
       teachers: "Teachers",
-      classes: "Branches",
+      classes: "Classes",
       subjects: "Subjects",
       rooms: "Rooms",
-      lessons: "Lessons",
+      lessons: "Scheduled Lessons",
       periods: "Time Periods"
     },
     reports_page: {
-      title: "Reports & Statistics",
+      title: "Reports & Analytics",
       print_report: "Print Report",
-      teacher_load: "Teacher Load",
+      teacher_load: "Teacher Load (Hrs/Week)",
       room_usage: "Room Usage",
-      class_summary: "Branches Summary",
+      class_summary: "Academic Classes Summary",
       orientation: "Page Orientation",
       portrait: "Portrait",
       landscape: "Landscape"
     },
     institution_page: {
-      title: "Institution Details",
-      subtitle: "Information displayed in report headers",
-      name: "Institution Name",
-      subName: "Sub-name / Title",
+      title: "Institution Settings",
+      subtitle: "Official information displayed in report headers",
+      name: "Official Institution Name",
+      subName: "Subtitle / Address",
       address: "Full Address",
       phone: "Phone Number",
       email: "Email Address"
