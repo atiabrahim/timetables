@@ -24,15 +24,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const PERIOD_TIMES: Record<string, string> = {
-  "1": "08:00 - 09:00", "2": "09:00 - 10:00", "3": "10:00 - 11:00", "4": "11:00 - 12:00",
-  "5": "13:00 - 14:00", "6": "14:00 - 15:00", "7": "15:00 - 16:00", "8": "16:00 - 17:00",
-  "9": "17:00 - 18:00", "10": "18:00 - 19:00", "11": "19:00 - 20:00", "12": "20:00 - 21:00",
-};
-
 const Schedule = () => {
   const { 
-    isRTL, t, employees, classes, subjects, rooms, assignments, setAssignments
+    isRTL, t, employees, classes, subjects, rooms, assignments, setAssignments, periodTimings
   } = useApp();
 
   const [viewMode, setViewMode] = useState<"class" | "teacher">("class");
@@ -70,7 +64,13 @@ const Schedule = () => {
     }).filter(r => r.remaining > 0);
   }, [requirements, selectedId, viewMode, assignments]);
 
-  const periodSlots = useMemo(() => PERIODS.map(id => ({ id, label: isRTL ? `ح${id}` : id, periodPart: PERIOD_MAP[id] as "Morning" | "Afternoon" | "Evening", isBreak: false, time: PERIOD_TIMES[id] || "" })), [isRTL]);
+  const periodSlots = useMemo(() => PERIODS.map(id => ({ 
+    id, 
+    label: isRTL ? `ح${id}` : id, 
+    periodPart: PERIOD_MAP[id] as "Morning" | "Afternoon" | "Evening", 
+    isBreak: false, 
+    time: periodTimings[id] || "" 
+  })), [isRTL, periodTimings]);
 
   const activeTimeSlots = useMemo(() => {
     const usedIds = filteredAssignments.map(a => a.period);

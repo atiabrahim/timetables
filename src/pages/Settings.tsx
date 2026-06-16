@@ -5,13 +5,15 @@ import { useApp } from "../context/AppContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { 
   AlertTriangle, 
   Clock,
   FileCode,
   Settings as SettingsIcon,
   CloudUpload,
-  CloudDownload
+  CloudDownload,
+  Timer
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { parseXml } from "../lib/export-utils";
@@ -28,13 +30,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { cn } from "@/lib/utils";
 
 const Settings = () => {
   const { 
     t, 
     periodConfigs, setPeriodConfigs,
     importAllData, saveDataToCloud, loadDataFromCloud,
-    isRTL 
+    isRTL,
+    periodTimings, setPeriodTimings
   } = useApp();
   
   const xmlInputRef = useRef<HTMLInputElement>(null);
@@ -88,6 +92,10 @@ const Settings = () => {
     window.location.reload();
   };
 
+  const updatePeriodTime = (p: string, val: string) => {
+    setPeriodTimings({ ...periodTimings, [p]: val });
+  };
+
   return (
     <div className="space-y-8 pb-20">
       <PageHeader
@@ -125,74 +133,110 @@ const Settings = () => {
         </Button>
       </PageHeader>
 
-      {/* Schedule Config */}
-      <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
-        <CardHeader className="bg-[#f9f9f1] border-b border-gray-100">
-          <CardTitle className="text-lg font-bold flex items-center gap-2">
-            <Clock size={20} className="text-[#064e3b]" />
-            {isRTL ? "تفعيل الحصص الأسبوعية" : "Weekly Periods Config"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            {DAYS.map(day => (
-              <div key={day.id} className="p-3 bg-gray-50 rounded-2xl border border-gray-100">
-                <p className="font-bold text-gray-900 text-xs mb-3 text-center">{isRTL ? day.name : day.en}</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {PERIODS.map(p => (
-                    <div key={p} className="flex flex-col items-center gap-1 p-1.5 bg-white rounded-lg border border-gray-100">
-                      <span className="text-[9px] font-bold text-gray-500">{p}</span>
-                      <Switch 
-                        scale={0.7}
-                        checked={isPeriodActive(day.id, p)} 
-                        onCheckedChange={() => togglePeriod(day.id, p)}
-                      />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          {/* Schedule Config */}
+          <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+            <CardHeader className="bg-[#f9f9f1] border-b border-gray-100">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Clock size={20} className="text-[#064e3b]" />
+                {isRTL ? "تفعيل الحصص الأسبوعية" : "Weekly Periods Config"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {DAYS.map(day => (
+                  <div key={day.id} className="p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                    <p className="font-bold text-gray-900 text-xs mb-3 text-center">{isRTL ? day.name : day.en}</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {PERIODS.map(p => (
+                        <div key={p} className="flex flex-col items-center gap-1 p-1.5 bg-white rounded-lg border border-gray-100">
+                          <span className="text-[9px] font-bold text-gray-500">{p}</span>
+                          <Switch 
+                            scale={0.7}
+                            checked={isPeriodActive(day.id, p)} 
+                            onCheckedChange={() => togglePeriod(day.id, p)}
+                          />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Danger Zone */}
-      <Card className="border-red-100 bg-red-50/30 rounded-3xl overflow-hidden">
-        <CardHeader>
-          <CardTitle className="text-red-800 flex items-center gap-2">
-            <AlertTriangle size={20} />
-            {isRTL ? "منطقة الخطر" : "Danger Zone"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-red-600">
-              {isRTL ? "سيؤدي هذا الإجراء إلى حذف كافة المعلومات بشكل نهائي." : "This action will permanently delete all information."}
-            </p>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="rounded-xl px-8">
-                  {isRTL ? "مسح كافة البيانات" : "Clear All Data"}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="border-red-100 rounded-3xl">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{isRTL ? "هل أنت متأكد تماماً؟" : "Are you absolutely sure?"}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {isRTL ? "لا يمكن التراجع عن هذا الإجراء. سيتم حذف كل شيء." : "This action cannot be undone. Everything will be deleted."}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleClearAll} className="bg-red-600 hover:bg-red-700 rounded-xl">
-                    {isRTL ? "نعم، امسح الكل" : "Yes, Clear All"}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </CardContent>
-      </Card>
+        <div className="space-y-8">
+          {/* Period Timings Editor */}
+          <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
+            <CardHeader className="bg-blue-50/50 border-b border-blue-100">
+              <CardTitle className="text-lg font-bold flex items-center gap-2 text-blue-900">
+                <Timer size={20} className="text-blue-600" />
+                {isRTL ? "توقيت الحصص" : "Period Timings"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <p className="text-[10px] font-bold text-blue-700/60 mb-4 px-1 leading-relaxed uppercase tracking-wider">
+                {isRTL ? "تعديل النطاق الزمني لكل حصة دراسية" : "Edit the time range for each academic period"}
+              </p>
+              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+                {PERIODS.map(p => (
+                  <div key={p} className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100 group">
+                    <div className="w-8 h-8 bg-white rounded-lg border border-slate-200 flex items-center justify-center font-black text-slate-500 text-xs shadow-sm">
+                      {p}
+                    </div>
+                    <Input 
+                      value={periodTimings[p] || ""} 
+                      onChange={(e) => updatePeriodTime(p, e.target.value)}
+                      placeholder="08:00 - 09:00"
+                      className="h-9 rounded-lg bg-white border-slate-200 font-bold text-xs focus:ring-blue-500"
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Danger Zone */}
+          <Card className="border-red-100 bg-red-50/30 rounded-3xl overflow-hidden">
+            <CardHeader>
+              <CardTitle className="text-red-800 flex items-center gap-2">
+                <AlertTriangle size={20} />
+                {isRTL ? "منطقة الخطر" : "Danger Zone"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-red-600 font-medium">
+                  {isRTL ? "سيؤدي هذا الإجراء إلى حذف كافة المعلومات بشكل نهائي." : "This action will permanently delete all information."}
+                </p>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="w-full rounded-xl h-11 font-bold shadow-lg shadow-red-100">
+                      {isRTL ? "مسح كافة البيانات" : "Clear All Data"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="border-red-100 rounded-3xl">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{isRTL ? "هل أنت متأكد تماماً؟" : "Are you absolutely sure?"}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {isRTL ? "لا يمكن التراجع عن هذا الإجراء. سيتم حذف كل شيء." : "This action cannot be undone. Everything will be deleted."}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleClearAll} className="bg-red-600 hover:bg-red-700 rounded-xl">
+                        {isRTL ? "نعم، امسح الكل" : "Yes, Clear All"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

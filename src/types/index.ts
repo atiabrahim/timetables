@@ -122,4 +122,5 @@ export interface AppState {
   teacherConstraints?: TeacherConstraint[];
   classConstraints?: ClassConstraint[];
   roomConstraints?: RoomConstraint[];
+  periodTimings?: Record<string, string>;
 }

@@ -48,6 +48,8 @@ interface AppContextType {
   setClassConstraints: React.Dispatch<React.SetStateAction<ClassConstraint[]>>;
   roomConstraints: RoomConstraint[];
   setRoomConstraints: React.Dispatch<React.SetStateAction<RoomConstraint[]>>;
+  periodTimings: Record<string, string>;
+  setPeriodTimings: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   importAllData: (data: Partial<AppState>) => void;
   saveDataToCloud: () => Promise<void>;
   loadDataFromCloud: () => Promise<void>;
@@ -80,6 +82,12 @@ const DEFAULT_INSTITUTION: Institution = {
   academicYear: "2023/2024",
   pedagogicalManagerTitle: "المسؤول البيداغوجي",
   generalManagerTitle: "مدير المركز"
+};
+
+const DEFAULT_PERIOD_TIMINGS: Record<string, string> = {
+  "1": "08:00-09:00", "2": "09:00-10:00", "3": "10:00-11:00", "4": "11:00-12:00",
+  "5": "13:00-14:00", "6": "14:00-15:00", "7": "15:00-16:00", "8": "16:00-17:00",
+  "9": "17:00-18:00", "10": "18:00-19:00", "11": "19:00-20:00", "12": "20:00-21:00",
 };
 
 const generateDefaultPeriodConfigs = (): PeriodConfig[] => {
@@ -118,6 +126,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [teacherConstraints, setTeacherConstraints] = useState<TeacherConstraint[]>([]);
   const [classConstraints, setClassConstraints] = useState<ClassConstraint[]>([]);
   const [roomConstraints, setRoomConstraints] = useState<RoomConstraint[]>([]);
+  const [periodTimings, setPeriodTimings] = useState<Record<string, string>>(DEFAULT_PERIOD_TIMINGS);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const isRTL = language === "ar";
@@ -153,10 +162,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const dataToSave = { 
       systemUsers, institution, employees, assignments, 
       templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs,
-      teacherConstraints, classConstraints, roomConstraints
+      teacherConstraints, classConstraints, roomConstraints, periodTimings
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs, teacherConstraints, classConstraints, roomConstraints]);
+  }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs, teacherConstraints, classConstraints, roomConstraints, periodTimings]);
 
   const loadDataFromCloud = async (silent = false) => {
     try {
@@ -190,7 +199,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const dataToSave = { 
       systemUsers, institution, employees, assignments, 
       templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs,
-      teacherConstraints, classConstraints, roomConstraints
+      teacherConstraints, classConstraints, roomConstraints, periodTimings
     };
 
     try {
@@ -277,6 +286,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data.teacherConstraints) setTeacherConstraints(data.teacherConstraints);
     if (data.classConstraints) setClassConstraints(data.classConstraints);
     if (data.roomConstraints) setRoomConstraints(data.roomConstraints);
+    if (data.periodTimings) setPeriodTimings(data.periodTimings);
     
     if (data.departments) {
       const migratedDepts = data.departments.map((d: any, idx: number) => {
@@ -325,6 +335,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       departments, setDepartments, rooms, setRooms, classes, setClasses, subjects, setSubjects,
       periodConfigs, setPeriodConfigs, teacherConstraints, setTeacherConstraints,
       classConstraints, setClassConstraints, roomConstraints, setRoomConstraints,
+      periodTimings, setPeriodTimings,
       importAllData, saveDataToCloud, loadDataFromCloud: () => loadDataFromCloud(false), t, isRTL,
       isSidebarCollapsed, setIsSidebarCollapsed
     }}>

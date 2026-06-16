@@ -34,12 +34,6 @@ import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PeriodPart } from "@/types";
 
-const PERIOD_TIMES: Record<string, string> = {
-  "1": "08:00-09:00", "2": "09:00-10:00", "3": "10:00-11:00", "4": "11:00-12:00",
-  "5": "13:00-14:00", "6": "14:00-15:00", "7": "15:00-16:00", "8": "16:00-17:00",
-  "9": "17:00-18:00", "10": "18:00-19:00", "11": "19:00-20:00", "12": "20:00-21:00",
-};
-
 const WeeklyWorkSchedule = () => {
   const { 
     employees, 
@@ -48,7 +42,8 @@ const WeeklyWorkSchedule = () => {
     classes,
     isRTL,
     t,
-    user
+    user,
+    periodTimings
   } = useApp();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -257,7 +252,7 @@ const WeeklyWorkSchedule = () => {
                           isPrint ? "text-[7.5px] p-0.5 border-black text-black" : "text-[9px] p-1 border-emerald-100 text-slate-500"
                         )}>
                           <span className="font-black block">{isRTL ? `ح${p}` : `P${p}`}</span>
-                          <span className="text-[7px] font-normal opacity-75 mt-0.5 block">{PERIOD_TIMES[p]}</span>
+                          <span className="text-[7px] font-normal opacity-75 mt-0.5 block">{periodTimings[p]}</span>
                         </TableCell>
 
                         {filteredEmployees.map(emp => {
@@ -369,7 +364,7 @@ const WeeklyWorkSchedule = () => {
                         <div className="flex flex-col items-center justify-center leading-none">
                           <span className="font-black">{isRTL ? `ح${p}` : `P${p}`}</span>
                           <span className={cn("font-normal opacity-75 mt-0.5 block tracking-tighter", isPrint ? "text-[4.5px]" : "text-[7px]")}>
-                            {PERIOD_TIMES[p]}
+                            {periodTimings[p]}
                           </span>
                         </div>
                       </TableHead>
