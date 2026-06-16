@@ -22,7 +22,8 @@ import {
   BarChart3,
   MousePointer2,
   Settings2,
-  Sparkles
+  Sparkles,
+  AlertTriangle
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,37 @@ const Index = () => {
     return format(new Date(), "EEEE, d MMMM yyyy", { locale });
   }, [language]);
 
+  const conflictsCount = useMemo(() => {
+    const teacherSlots: Record<string, string[]> = {};
+    const roomSlots: Record<string, string[]> = {};
+    let conflicts = 0;
+
+    assignments.forEach(a => {
+      const tKey = `${a.day}-${a.period}-${a.employeeId}`;
+      if (teacherSlots[tKey]) {
+        if (!teacherSlots[tKey].includes(a.id)) {
+          conflicts++;
+          teacherSlots[tKey].push(a.id);
+        }
+      } else {
+        teacherSlots[tKey] = [a.id];
+      }
+
+      if (a.room) {
+        const rKey = `${a.day}-${a.period}-${a.room}`;
+        if (roomSlots[rKey]) {
+          if (!roomSlots[rKey].includes(a.id)) {
+            conflicts++;
+            roomSlots[rKey].push(a.id);
+          }
+        } else {
+          roomSlots[rKey] = [a.id];
+        }
+      }
+    });
+    return conflicts;
+  }, [assignments]);
+
   const todayDuties = useMemo(() => {
     const periods: ("Morning" | "Afternoon" | "Evening")[] = ["Morning", "Afternoon", "Evening"];
     return periods.map(period => {
@@ -60,10 +92,10 @@ const Index = () => {
   }, [todayDateStr, employees, getEffectiveAssignment, t, language]);
 
   const stats = useMemo(() => [
-    { label: t.stats.teachers, value: employees.length, icon: Users, color: "text-emerald-600", bg: "bg-emerald-50", path: "/employees", trend: "+2" },
-    { label: t.stats.classes, value: classes.length, icon: GraduationCap, color: "text-blue-600", bg: "bg-blue-50", path: "/classes", trend: "Stable" },
-    { label: t.stats.subjects, value: subjects.length, icon: BookOpen, color: "text-amber-600", bg: "bg-amber-50", path: "/subjects", trend: "Full" },
-    { label: t.stats.rooms, value: rooms.length, icon: MapPin, color: "text-rose-600", bg: "bg-rose-50", path: "/rooms", trend: "Active" },
+    { label: t.stats.teachers, value: employees.length, icon: Users, color: "text-emerald-600", bg: "bg-emerald-50", path: "/employees" },
+    { label: t.stats.classes, value: classes.length, icon: GraduationCap, color: "text-blue-600", bg: "bg-blue-50", path: "/classes" },
+    { label: t.stats.subjects, value: subjects.length, icon: BookOpen, color: "text-amber-600", bg: "bg-amber-50", path: "/subjects" },
+    { label: t.stats.rooms, value: rooms.length, icon: MapPin, color: "text-rose-600", bg: "bg-rose-50", path: "/rooms" },
   ], [employees, classes, subjects, rooms, t]);
 
   const quickActions = [
@@ -82,6 +114,24 @@ const Index = () => {
 
   return (
     <div className="space-y-10 pb-20">
+      {/* Conflicts Alert if any */}
+      {conflictsCount > 0 && (
+        <Card className="border-none shadow-lg bg-amber-50 border border-amber-200 rounded-[2rem] overflow-hidden cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => navigate("/schedule")}>
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-200">
+                <AlertTriangle size={24} />
+              </div>
+              <div>
+                <h4 className="font-black text-amber-900">{isRTL ? "تم اكتشاف تعارضات في الجدول!" : "Schedule Conflicts Detected!"}</h4>
+                <p className="text-xs font-bold text-amber-700">{isRTL ? `هناك ${conflictsCount} حصة متداخلة تتطلب تدخلكم الفوري.` : `There are ${conflictsCount} overlapping lessons requiring attention.`}</p>
+              </div>
+            </div>
+            <Button variant="ghost" className="text-amber-900 font-bold">{isRTL ? "حل التعارضات" : "Resolve Now"}</Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Hero Management Console */}
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-[3.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
@@ -274,7 +324,7 @@ const Index = () => {
               <div className="space-y-4">
                 {[
                   { label: isRTL ? "نسبة إشغال القاعات" : "Room Occupancy", value: `${Math.round((rooms.filter(r => assignments.some(a => a.room === r)).length / rooms.length) * 100 || 0)}%`, icon: TrendingUp, color: "text-blue-400" },
-                  { label: isRTL ? "مزامنة التكليفات" : "Assignment Sync", value: "Optimal", icon: CheckCircle2, color: "text-emerald-400" },
+                  { label: isRTL ? "حالة التعارضات" : "Conflict Health", value: conflictsCount === 0 ? "Perfect" : `${conflictsCount} Issues`, icon: AlertTriangle, color: conflictsCount === 0 ? "text-emerald-400" : "text-amber-400" },
                   { label: isRTL ? "استقرار النظام" : "System Uptime", value: "99.9%", icon: ShieldCheck, color: "text-teal-400" },
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-center justify-between p-5 bg-white/5 rounded-[1.5rem] border border-white/5 group hover:bg-white/10 transition-all">
