@@ -53,6 +53,7 @@ interface AppContextType {
   importAllData: (data: Partial<AppState>) => void;
   saveDataToCloud: () => Promise<void>;
   loadDataFromCloud: () => Promise<void>;
+  loadDemoData: () => void;
   t: any;
   isRTL: boolean;
   isSidebarCollapsed: boolean;
@@ -306,6 +307,109 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const loadDemoData = () => {
+    // 1. الفروع والأفواج
+    const demoClasses: AcademicClass[] = [
+      { id: "cls-1", name: "تقني سامي إعلام آلي", code: "TS-INFO", qualificationLevel: "مستوى 5" },
+      { id: "cls-2", name: "مستغل معلوماتية", code: "OP-INFO", qualificationLevel: "مستوى 4" },
+      { id: "cls-3", name: "محاسبة وتسيير", code: "TS-ACC", qualificationLevel: "مستوى 5" },
+      { id: "cls-4", name: "أمانة مكتبية", code: "SEC-OFF", qualificationLevel: "مستوى 3" },
+      { id: "cls-5", name: "إلكترونيك الصناعية", code: "TS-ELEC", qualificationLevel: "مستوى 5" }
+    ];
+
+    // 2. المواد الدراسية
+    const demoSubjects: Subject[] = [
+      { id: "sub-1", name: "خوارزميات وبرمجة", nameEn: "Algorithms & Programming" },
+      { id: "sub-2", name: "قواعد البيانات", nameEn: "Database Systems" },
+      { id: "sub-3", name: "الرياضيات التطبيقية", nameEn: "Applied Mathematics" },
+      { id: "sub-4", name: "المحاسبة العامة", nameEn: "General Accounting" },
+      { id: "sub-5", name: "تقنيات التعبير والاتصال", nameEn: "Communication Skills" },
+      { id: "sub-6", name: "اللغة الإنجليزية التقنية", nameEn: "Technical English" },
+      { id: "sub-7", name: "الدوائر الإلكترونية", nameEn: "Electronic Circuits" },
+      { id: "sub-8", name: "أنظمة التشغيل والشبكات", nameEn: "Operating Systems & Networks" }
+    ];
+
+    // 3. المعلمون والأساتذة
+    const demoEmployees: Employee[] = [
+      { id: "emp-1", firstName: "أحمد", lastName: "بن علي", category: "Full-time", email: "ahmed.benali@edu.dz", phone: "0550123456", observation: "أستاذ رئيسي" },
+      { id: "emp-2", firstName: "فاطمة الزهراء", lastName: "قادري", category: "Full-time", email: "fatima.kadri@edu.dz", phone: "0661987654", observation: "أستاذة مادة" },
+      { id: "emp-3", firstName: "محمد السعيد", lastName: "رحماني", category: "Full-time", email: "m.rahmani@edu.dz", phone: "0772345678", observation: "" },
+      { id: "emp-4", firstName: "عائشة", lastName: "عثماني", category: "Part-time", email: "aicha.osmani@edu.dz", phone: "0555112233", observation: "متعاقدة" },
+      { id: "emp-5", firstName: "خالد", lastName: "بوزيد", category: "Full-time", email: "khaled.bouzid@edu.dz", phone: "0660445566", observation: "مسؤول ورشة" },
+      { id: "emp-6", firstName: "مريم", lastName: "بلقاسم", category: "Part-time", email: "meryem.b@edu.dz", phone: "0770889900", observation: "متعاقدة" }
+    ];
+
+    // 4. القاعات والورشات
+    const demoRooms = [
+      "القاعة 1",
+      "القاعة 2",
+      "المخبر البيداغوجي",
+      "ورشة الإعلام الآلي",
+      "مخبر الإلكترونيك"
+    ];
+
+    // 5. المصالح الإدارية
+    const demoDepts: Department[] = [
+      { id: "dept-1", number: "1", name: "مصلحة التكوين المهني", head: "أ. بلقاسم بوعافية", code: "ST", observation: "المكتب الرئيسي" },
+      { id: "dept-2", number: "2", name: "مصلحة التوجيه والتمهين", head: "السيدة ليلى منصوري", code: "SO", observation: "مكتب الاستقبال" }
+    ];
+
+    // 6. جدول الحصص (التوزيعات)
+    const demoAssignments: Assignment[] = [
+      // الأحد
+      { id: "asg-1", employeeId: "emp-1", day: 0, period: "1", subjectId: "sub-1", classId: "cls-1", department: "", room: "ورشة الإعلام الآلي" },
+      { id: "asg-2", employeeId: "emp-1", day: 0, period: "2", subjectId: "sub-1", classId: "cls-1", department: "", room: "ورشة الإعلام الآلي" },
+      { id: "asg-3", employeeId: "emp-2", day: 0, period: "3", subjectId: "sub-2", classId: "cls-2", department: "", room: "المخبر البيداغوجي" },
+      { id: "asg-4", employeeId: "emp-2", day: 0, period: "4", subjectId: "sub-2", classId: "cls-2", department: "", room: "المخبر البيداغوجي" },
+      
+      // الاثنين
+      { id: "asg-5", employeeId: "emp-3", day: 1, period: "1", subjectId: "sub-4", classId: "cls-3", department: "", room: "القاعة 1" },
+      { id: "asg-6", employeeId: "emp-3", day: 1, period: "2", subjectId: "sub-4", classId: "cls-3", department: "", room: "القاعة 1" },
+      { id: "asg-7", employeeId: "emp-4", day: 1, period: "3", subjectId: "sub-6", classId: "cls-1", department: "", room: "القاعة 2" },
+      { id: "asg-8", employeeId: "emp-5", day: 1, period: "5", subjectId: "sub-7", classId: "cls-5", department: "", room: "مخبر الإلكترونيك" },
+      { id: "asg-9", employeeId: "emp-5", day: 1, period: "6", subjectId: "sub-7", classId: "cls-5", department: "", room: "مخبر الإلكترونيك" },
+
+      // الثلاثاء
+      { id: "asg-10", employeeId: "emp-1", day: 2, period: "1", subjectId: "sub-8", classId: "cls-1", department: "", room: "ورشة الإعلام الآلي" },
+      { id: "asg-11", employeeId: "emp-1", day: 2, period: "2", subjectId: "sub-8", classId: "cls-1", department: "", room: "ورشة الإعلام الآلي" },
+      { id: "asg-12", employeeId: "emp-6", day: 2, period: "3", subjectId: "sub-5", classId: "cls-4", department: "", room: "القاعة 2" },
+      { id: "asg-13", employeeId: "emp-6", day: 2, period: "4", subjectId: "sub-5", classId: "cls-4", department: "", room: "القاعة 2" },
+
+      // الأربعاء
+      { id: "asg-14", employeeId: "emp-2", day: 3, period: "1", subjectId: "sub-2", classId: "cls-1", department: "", room: "المخبر البيداغوجي" },
+      { id: "asg-15", employeeId: "emp-2", day: 3, period: "2", subjectId: "sub-2", classId: "cls-1", department: "", room: "المخبر البيداغوجي" },
+      { id: "asg-16", employeeId: "emp-3", day: 3, period: "5", subjectId: "sub-3", classId: "cls-3", department: "", room: "القاعة 1" },
+      { id: "asg-17", employeeId: "emp-3", day: 3, period: "6", subjectId: "sub-3", classId: "cls-3", department: "", room: "القاعة 1" },
+
+      // الخميس
+      { id: "asg-18", employeeId: "emp-5", day: 4, period: "1", subjectId: "sub-7", classId: "cls-5", department: "", room: "مخبر الإلكترونيك" },
+      { id: "asg-19", employeeId: "emp-5", day: 4, period: "2", subjectId: "sub-7", classId: "cls-5", department: "", room: "مخبر الإلكترونيك" },
+      { id: "asg-20", employeeId: "emp-4", day: 4, period: "3", subjectId: "sub-6", classId: "cls-2", department: "", room: "القاعة 2" }
+    ];
+
+    // 7. متطلبات التدريس (للمولد التلقائي)
+    const demoRequirements = [
+      { id: "req-1", employeeId: "emp-1", subjectId: "sub-1", classId: "cls-1", room: "ورشة الإعلام الآلي", count: 4 },
+      { id: "req-2", employeeId: "emp-2", subjectId: "sub-2", classId: "cls-2", room: "المخبر البيداغوجي", count: 3 },
+      { id: "req-3", employeeId: "emp-3", subjectId: "sub-4", classId: "cls-3", room: "القاعة 1", count: 4 },
+      { id: "req-4", employeeId: "emp-4", subjectId: "sub-6", classId: "cls-1", room: "القاعة 2", count: 2 },
+      { id: "req-5", employeeId: "emp-5", subjectId: "sub-7", classId: "cls-5", room: "مخبر الإلكترونيك", count: 4 }
+    ];
+
+    // حفظ المتطلبات في LocalStorage
+    localStorage.setItem("auto_generator_requirements", JSON.stringify(demoRequirements));
+
+    // استيراد كافة البيانات في سياق التطبيق
+    setClasses(demoClasses);
+    setSubjects(demoSubjects);
+    setEmployees(demoEmployees);
+    setRooms(demoRooms);
+    setDepartments(demoDepts);
+    setAssignments(demoAssignments);
+
+    showSuccess(isRTL ? "تم تحميل البيانات التجريبية بنجاح!" : "Demo data loaded successfully!");
+  };
+
   const login = (username: string, role: User["role"]) => {
     const found = systemUsers.find(u => u.username === username);
     const userToLogin = found || { 
@@ -336,7 +440,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       periodConfigs, setPeriodConfigs, teacherConstraints, setTeacherConstraints,
       classConstraints, setClassConstraints, roomConstraints, setRoomConstraints,
       periodTimings, setPeriodTimings,
-      importAllData, saveDataToCloud, loadDataFromCloud: () => loadDataFromCloud(false), t, isRTL,
+      importAllData, saveDataToCloud, loadDataFromCloud: () => loadDataFromCloud(false), loadDemoData, t, isRTL,
       isSidebarCollapsed, setIsSidebarCollapsed
     }}>
       <div className={isRTL ? "font-arabic" : ""}>
