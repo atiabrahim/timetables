@@ -48,7 +48,7 @@ const ScheduleTable = ({
 
   const hoveredAssignment = hoveredCell ? getAssignment(hoveredCell.day, hoveredCell.period) : null;
 
-  // Pre-calculate vertical spans for non-transposed layout (consecutive periods on the same day)
+  // Pre-calculate vertical spans for non-transposed layout
   const verticalSpans = useMemo(() => {
     const spans: Record<string, { rowSpan: number; skip: boolean }> = {};
     days.forEach(day => {
@@ -93,7 +93,6 @@ const ScheduleTable = ({
     return spans;
   }, [days, timeSlots, getAssignment]);
 
-  // Pre-calculate horizontal spans for transposed layout (consecutive periods on the same day)
   const horizontalSpans = useMemo(() => {
     const spans: Record<string, { colSpan: number; skip: boolean }> = {};
     days.forEach(day => {
@@ -101,36 +100,24 @@ const ScheduleTable = ({
       for (let i = 0; i < timeSlots.length; i++) {
         const slot = timeSlots[i];
         const key = `${day.id}-${slot.id}`;
-        
         if (skipCount > 0) {
           spans[key] = { colSpan: 1, skip: true };
           skipCount--;
           continue;
         }
-        
         const current = getAssignment(day.id, slot.id);
         if (!current) {
           spans[key] = { colSpan: 1, skip: false };
           continue;
         }
-        
         let colSpan = 1;
         for (let j = i + 1; j < timeSlots.length; j++) {
           const nextSlot = timeSlots[j];
           const next = getAssignment(day.id, nextSlot.id);
-          if (
-            next && 
-            next.subjectId === current.subjectId && 
-            next.employeeId === current.employeeId &&
-            next.classId === current.classId &&
-            timeSlots[j - 1].id !== "2" && 
-            timeSlots[j - 1].id !== "4"
-          ) {
+          if (next && next.subjectId === current.subjectId && next.employeeId === current.employeeId && next.classId === current.classId && timeSlots[j-1].id !== "2" && timeSlots[j-1].id !== "4") {
             colSpan++;
             skipCount++;
-          } else {
-            break;
-          }
+          } else break;
         }
         spans[key] = { colSpan, skip: false };
       }
@@ -140,12 +127,8 @@ const ScheduleTable = ({
 
   const checkConflict = (day: number, period: string, assignment: any) => {
     if (isPrint || !allAssignments) return null;
-    const teacherConflict = allAssignments.find(a => 
-      a.id !== assignment.id && a.day === day && a.period === period && a.employeeId === assignment.employeeId
-    );
-    const roomConflict = assignment.room ? allAssignments.find(a => 
-      a.id !== assignment.id && a.day === day && a.period === period && a.room === assignment.room
-    ) : null;
+    const teacherConflict = allAssignments.find(a => a.id !== assignment.id && a.day === day && a.period === period && a.employeeId === assignment.employeeId);
+    const roomConflict = assignment.room ? allAssignments.find(a => a.id !== assignment.id && a.day === day && a.period === period && a.room === assignment.room) : null;
     return teacherConflict || roomConflict ? { teacherConflict, roomConflict } : null;
   };
   
@@ -156,7 +139,7 @@ const ScheduleTable = ({
           <thead>
             <tr className={cn(isPrint ? "bg-emerald-50 border-b" : "bg-emerald-950 text-white")}>
               <th className={cn("py-0.5 px-2 font-black uppercase border-b w-[70%] whitespace-nowrap", isPrint ? "text-[7px] text-emerald-950 border-emerald-950" : "text-[10px] border-emerald-900", isRTL ? "text-right" : "text-left")}>{isRTL ? "المادة" : "Subject"}</th>
-              <th className={cn("py-0.5 px-2 font-black uppercase text-center border-s border-b w-[30%] whitespace-nowrap", isPrint ? "text-[7px] text-emerald-950 border-emerald-950" : "text-[10px] border-emerald-900")}>{isRTL ? "Total" : "Total"}</th>
+              <th className={cn("py-0.5 px-2 font-black uppercase text-center border-s border-b w-[30%] whitespace-nowrap", isPrint ? "text-[7px] text-emerald-950 border-emerald-950" : "text-[10px] border-emerald-900")}>Total</th>
             </tr>
           </thead>
           <tbody className={cn(isPrint ? "divide-y divide-emerald-950" : "divide-y divide-slate-100")}>
@@ -281,13 +264,7 @@ const ScheduleTable = ({
                     </td>
                     {timeSlots.map(slot => {
                       const span = horizontalSpans[`${day.id}-${slot.id}`];
-                      if (span?.skip) {
-                        return (
-                          <React.Fragment key={slot.id}>
-                            {(slot.id === "2" || slot.id === "4") && <td className="border border-emerald-950 bg-emerald-50/20"></td>}
-                          </React.Fragment>
-                        );
-                      }
+                      if (span?.skip) return null;
 
                       const currentAssignment = getAssignment(day.id, slot.id);
                       const isSpannedHovered = !!(
