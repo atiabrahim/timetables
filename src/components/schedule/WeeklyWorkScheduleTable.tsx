@@ -1,15 +1,8 @@
 "use client";
 
 import React from "react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DAYS } from "../../constants/schedule";
 import { PeriodPart } from "@/types";
 
@@ -52,6 +45,7 @@ const WeeklyWorkScheduleTable = ({
   hoveredCell,
   setHoveredCell
 }: WeeklyWorkScheduleTableProps) => {
+  // Helper to safely render null without JSX errors  const renderNull = () => null;
 
   if (isTransposed) {
     return (
@@ -61,7 +55,7 @@ const WeeklyWorkScheduleTable = ({
       )}>
         <div className={cn(!isPrint && "overflow-x-auto")}>
           <Table className={cn(
-            "border-collapse border-spacing-0 table-fixed", 
+            "border-collapse border-spacing-0 table-fixed",
             isPrint ? "w-full border-2 border-black" : "w-full min-w-[1000px]"
           )}>
             <colgroup>
@@ -81,18 +75,17 @@ const WeeklyWorkScheduleTable = ({
                   {isRTL ? "الحصة" : "Period"}
                 </TableHead>
                 {filteredEmployees.map(emp => (
-                  <TableHead 
-                    key={emp.id} 
+                  <TableHead                     key={emp.id} 
                     className={cn(
                       "text-center font-black border truncate transition-colors duration-150",
-                      isPrint ? "text-[8px] p-0.5 border-black bg-slate-50 text-black" : cn("text-[10px] p-1 border-emerald-100 text-emerald-700", hoveredCell?.empId === emp.id ? "bg-emerald-100 text-emerald-900" : "bg-emerald-50/30")
+                      isPrint ? "text-[8px] p-0.5 border-black text-black" : cn("text-[10px] p-1 border-emerald-100 text-emerald-700", hoveredCell?.empId === emp.id ? "bg-emerald-100 text-emerald-900" : "bg-emerald-50/30")
                     )}
                   >
                     {emp.lastName} {emp.firstName}
                   </TableHead>
                 ))}
                 <TableHead className={cn("font-black text-emerald-900 border text-center", isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-[10px] p-1 border-emerald-100")}>
-                  {isRTL ? "كلي" : "Sum"}
+                  {isRTL ? "کلی" : "Sum"}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -124,8 +117,7 @@ const WeeklyWorkScheduleTable = ({
                       const cls = cell.assignment ? classes.find(c => c.id === cell.assignment.classId) : null;
 
                       return (
-                        <TableCell
-                          key={`${emp.id}-${day.id}-${p}`}
+                        <TableCell                          key={`${emp.id}-${day.id}-${p}`}
                           rowSpan={cell.rowSpan}
                           className={cn(
                             "text-center border p-0.5 transition-colors duration-150 relative overflow-hidden",
@@ -150,7 +142,7 @@ const WeeklyWorkScheduleTable = ({
                       {assignments.filter(a => a.day === day.id && a.period === p && (selectedClassIds.includes("all") || selectedClassIds.includes(a.classId))).length}
                     </TableCell>
                   </TableRow>
-                );
+                ));
               })}
             </TableBody>
           </Table>
@@ -166,7 +158,7 @@ const WeeklyWorkScheduleTable = ({
     )}>
       <div className={cn(!isPrint && "overflow-x-auto")}>
         <Table className={cn(
-          "border-collapse border-spacing-0 table-fixed", 
+          "border-collapse border-spacing-0 table-fixed",
           isPrint ? "w-full border-2 border-black" : "w-full min-w-[1000px]"
         )}>
           <colgroup>
@@ -185,7 +177,7 @@ const WeeklyWorkScheduleTable = ({
                 const colSpan = activePeriodsPerDay[day.id]?.length || 0;
                 if (colSpan === 0) return null;
                 return (
-                  <TableHead key={day.id} className={cn("text-center font-black border", isPrint ? "text-[8px] p-0.5 border-black bg-slate-50 text-black" : "text-[10px] p-1 bg-emerald-50/30 border-emerald-100 text-emerald-700")} colSpan={colSpan}>
+                  <TableHead key={day.id} className={cn("text-center font-black border", isPrint ? "text-[8px] p-0.5 border-black bg-slate-50 text-black" : "text-[10px] p-1 border-emerald-100 text-emerald-700")} colSpan={colSpan}>
                     {isRTL ? day.name : day.en.substr(0, 3)}
                   </TableHead>
                 );
