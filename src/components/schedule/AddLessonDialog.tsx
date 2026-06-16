@@ -67,7 +67,7 @@ const AddLessonDialog = ({
           </DialogTitle>
         </DialogHeader>
 
-        {/* قسم الإسناد السريع من المتطلبات المتبقية */}
+        {/* Quick Assign from Remaining Requirements Section */}
         <div className="space-y-3 pt-2">
           <h4 className="text-xs font-black text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
             <Zap size={14} className="text-amber-500 fill-amber-500" />
@@ -146,7 +146,7 @@ const AddLessonDialog = ({
 
         <div className="w-full h-px bg-slate-100 my-2" />
 
-        {/* نموذج الإدخال اليدوي */}
+        {/* Manual Form */}
         <div className="space-y-4">
           <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider">
             {isRTL ? "أو اختر يدوياً بالتفصيل" : "Or Select Manually"}
