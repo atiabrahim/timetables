@@ -25,6 +25,7 @@ import Assignments from "./pages/Assignments";
 import AutoGenerator from "./pages/AutoGenerator";
 import Constraints from "./pages/Constraints";
 import ClassConstraints from "./pages/ClassConstraints";
+import RoomConstraints from "./pages/RoomConstraints";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const AppRoutes = () => (
     <Route path="/auto-generator" element={<ProtectedRoute><Layout><AutoGenerator /></Layout></ProtectedRoute>} />
     <Route path="/constraints" element={<ProtectedRoute><Layout><Constraints /></Layout></ProtectedRoute>} />
     <Route path="/class-constraints" element={<ProtectedRoute><Layout><ClassConstraints /></Layout></ProtectedRoute>} />
+    <Route path="/room-constraints" element={<ProtectedRoute><Layout><RoomConstraints /></Layout></ProtectedRoute>} />
     <Route path="/reports" element={<ProtectedRoute><Layout><Reports /></Layout></ProtectedRoute>} />
     <Route path="/reports-new" element={<ProtectedRoute><Layout><ReportsNew /></Layout></ProtectedRoute>} />
     <Route path="/settings" element={<ProtectedRoute><Layout><Settings /></Layout></ProtectedRoute>} />

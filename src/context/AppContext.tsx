@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Language, translations } from "../translations";
 import { 
   User, Institution, Employee, Assignment, Department,
-  AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment, TeacherConstraint, ClassConstraint 
+  AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment, TeacherConstraint, ClassConstraint, RoomConstraint 
 } from "../types";
 import { supabase } from "../lib/supabase";
 import { showSuccess, showError } from "../utils/toast";
@@ -46,6 +46,8 @@ interface AppContextType {
   setTeacherConstraints: React.Dispatch<React.SetStateAction<TeacherConstraint[]>>;
   classConstraints: ClassConstraint[];
   setClassConstraints: React.Dispatch<React.SetStateAction<ClassConstraint[]>>;
+  roomConstraints: RoomConstraint[];
+  setRoomConstraints: React.Dispatch<React.SetStateAction<RoomConstraint[]>>;
   importAllData: (data: Partial<AppState>) => void;
   saveDataToCloud: () => Promise<void>;
   loadDataFromCloud: () => Promise<void>;
@@ -115,6 +117,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [periodConfigs, setPeriodConfigs] = useState<PeriodConfig[]>(generateDefaultPeriodConfigs);
   const [teacherConstraints, setTeacherConstraints] = useState<TeacherConstraint[]>([]);
   const [classConstraints, setClassConstraints] = useState<ClassConstraint[]>([]);
+  const [roomConstraints, setRoomConstraints] = useState<RoomConstraint[]>([]);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const isRTL = language === "ar";
@@ -150,10 +153,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const dataToSave = { 
       systemUsers, institution, employees, assignments, 
       templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs,
-      teacherConstraints, classConstraints
+      teacherConstraints, classConstraints, roomConstraints
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs, teacherConstraints, classConstraints]);
+  }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs, teacherConstraints, classConstraints, roomConstraints]);
 
   const loadDataFromCloud = async (silent = false) => {
     try {
@@ -187,7 +190,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const dataToSave = { 
       systemUsers, institution, employees, assignments, 
       templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs,
-      teacherConstraints, classConstraints
+      teacherConstraints, classConstraints, roomConstraints
     };
 
     try {
@@ -273,6 +276,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data.systemUsers) setSystemUsers(data.systemUsers);
     if (data.teacherConstraints) setTeacherConstraints(data.teacherConstraints);
     if (data.classConstraints) setClassConstraints(data.classConstraints);
+    if (data.roomConstraints) setRoomConstraints(data.roomConstraints);
     
     if (data.departments) {
       const migratedDepts = data.departments.map((d: any, idx: number) => {
@@ -320,7 +324,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       templateAssignments, updateTemplateAssignment, dailyAssignments, saveAssignment, getEffectiveAssignment,
       departments, setDepartments, rooms, setRooms, classes, setClasses, subjects, setSubjects,
       periodConfigs, setPeriodConfigs, teacherConstraints, setTeacherConstraints,
-      classConstraints, setClassConstraints,
+      classConstraints, setClassConstraints, roomConstraints, setRoomConstraints,
       importAllData, saveDataToCloud, loadDataFromCloud: () => loadDataFromCloud(false), t, isRTL,
       isSidebarCollapsed, setIsSidebarCollapsed
     }}>

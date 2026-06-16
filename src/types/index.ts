@@ -100,6 +100,13 @@ export interface ClassConstraint {
   isAvailable: boolean;
 }
 
+export interface RoomConstraint {
+  roomName: string;
+  day: number;
+  period: string;
+  isAvailable: boolean;
+}
+
 export interface AppState {
   systemUsers: User[];
   institution: Institution;
@@ -114,4 +121,5 @@ export interface AppState {
   periodConfigs: PeriodConfig[];
   teacherConstraints?: TeacherConstraint[];
   classConstraints?: ClassConstraint[];
+  roomConstraints?: RoomConstraint[];
 }

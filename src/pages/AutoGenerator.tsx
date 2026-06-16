@@ -29,7 +29,8 @@ const AutoGenerator = () => {
     assignments, 
     setAssignments,
     teacherConstraints = [],
-    classConstraints = []
+    classConstraints = [],
+    roomConstraints = []
   } = useApp();
 
   const [requirements, setRequirements] = useState<any[]>(() => {
@@ -130,15 +131,28 @@ const AutoGenerator = () => {
     if (!rules.allowedPeriods.includes(period)) return false;
     const part = PERIOD_MAP[period];
     if (!rules.selectedPeriodParts.includes(part)) return false;
+    
+    // Teacher Constraint
     const tConstraint = teacherConstraints.find(c => c.employeeId === req.employeeId && c.day === day && c.period === period);
     if (tConstraint && !tConstraint.isAvailable) return false;
+    
+    // Class Constraint
     const cConstraint = classConstraints.find(c => c.classId === req.classId && c.day === day && c.period === period);
     if (cConstraint && !cConstraint.isAvailable) return false;
+
+    // Room Constraint (NEW)
+    if (req.room) {
+      const rConstraint = roomConstraints.find(c => c.roomName === req.room && c.day === day && c.period === period);
+      if (rConstraint && !rConstraint.isAvailable) return false;
+    }
+
     if (currentAsgns.some(a => a.day === day && a.period === period && a.employeeId === req.employeeId)) return false;
     if (currentAsgns.some(a => a.day === day && a.period === period && a.classId === req.classId)) return false;
     if (req.room && currentAsgns.some(a => a.day === day && a.period === period && a.room === req.room)) return false;
+    
     if (currentAsgns.filter(a => a.day === day && a.classId === req.classId).length >= rules.maxClassHoursPerDay) return false;
     if (currentAsgns.filter(a => a.day === day && a.employeeId === req.employeeId).length >= rules.maxTeacherHoursPerDay) return false;
+    
     const pNum = parseInt(period);
     let consecutive = 1;
     [pNum-1, pNum+1].forEach(p => {
