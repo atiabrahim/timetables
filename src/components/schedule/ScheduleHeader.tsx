@@ -13,17 +13,18 @@ import {
 
 interface ScheduleHeaderProps {
   isRTL: boolean;
-  viewMode: "class" | "teacher";
-  setViewMode: (mode: "class" | "teacher") => void;
+  viewMode: "class" | "teacher" | "room";
+  setViewMode: (mode: "class" | "teacher" | "room") => void;
   selectedId: string;
   setSelectedId: (id: string) => void;
   classes: any[];
   employees: any[];
+  rooms: string[];
   onPreview: () => void;
 }
 
 const ScheduleHeader = ({ 
-  isRTL, viewMode, setViewMode, selectedId, setSelectedId, classes, employees, onPreview 
+  isRTL, viewMode, setViewMode, selectedId, setSelectedId, classes, employees, rooms, onPreview 
 }: ScheduleHeaderProps) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
@@ -45,6 +46,7 @@ const ScheduleHeader = ({
           <SelectContent>
             <SelectItem value="class">{isRTL ? "الفوج" : "Class"}</SelectItem>
             <SelectItem value="teacher">{isRTL ? "الأستاذ" : "Teacher"}</SelectItem>
+            <SelectItem value="room">{isRTL ? "القاعة" : "Room"}</SelectItem>
           </SelectContent>
         </Select>
 
@@ -53,10 +55,9 @@ const ScheduleHeader = ({
             <SelectValue placeholder={isRTL ? "اختر..." : "Select..."} />
           </SelectTrigger>
           <SelectContent>
-            {viewMode === "class" 
-              ? classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)
-              : employees.map(e => <SelectItem key={e.id} value={e.id}>{e.lastName} {e.firstName}</SelectItem>)
-            }
+            {viewMode === "class" && classes.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+            {viewMode === "teacher" && employees.map(e => <SelectItem key={e.id} value={e.id}>{e.lastName} {e.firstName}</SelectItem>)}
+            {viewMode === "room" && rooms.map((r, idx) => <SelectItem key={idx} value={r}>{r}</SelectItem>)}
           </SelectContent>
         </Select>
 

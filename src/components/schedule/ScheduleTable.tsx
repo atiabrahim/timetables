@@ -1,14 +1,8 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Plus, Trash2, AlertTriangle, UserCheck, MapPin, Zap, ArrowLeftRight } from "lucide-react";
+import { Plus, Trash2, AlertTriangle, UserCheck, MapPin, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -31,7 +25,7 @@ interface ScheduleTableProps {
   subjects: any[];
   employees: any[];
   classes: any[];
-  viewMode: "class" | "teacher";
+  viewMode: "class" | "teacher" | "room";
   isPrint?: boolean;
   summaryData?: any[];
   totalHours?: number;
@@ -83,7 +77,6 @@ const ScheduleTable = ({
   const getSolutions = (day: number, period: string, assignment: any) => {
     if (!allAssignments) return { freeTeachers: [], freeRooms: [] };
 
-    // Get busy resources in this slot
     const busyTeacherIds = allAssignments.filter(a => a.day === day && a.period === period).map(a => a.employeeId);
     const freeTeachers = employees.filter(e => !busyTeacherIds.includes(e.id)).slice(0, 8);
 
@@ -99,6 +92,9 @@ const ScheduleTable = ({
     const colorClass = getSubjectColor(subjectIndex);
     const conflict = checkConflict(day, period, assignment);
     const { freeTeachers, freeRooms } = getSolutions(day, period, assignment);
+
+    const teacher = employees.find(emp => emp.id === assignment.employeeId);
+    const cls = classes.find(c => c.id === assignment.classId);
 
     const cardContent = (
       <div 
@@ -119,17 +115,14 @@ const ScheduleTable = ({
           )
         )}
       >
-        <p className={cn("font-bold leading-none truncate w-full mb-0.5", isPrint ? "text-[6.5px] opacity-70" : "text-[8px] opacity-80")}>
-          {viewMode === "class" 
-            ? employees.find(emp => emp.id === assignment.employeeId)?.lastName 
-            : classes.find(c => c.id === assignment.classId)?.name
-          }
-        </p>
+        <div className={cn("font-bold leading-none truncate w-full mb-0.5", isPrint ? "text-[6.5px] opacity-70" : "text-[8px] opacity-80")}>
+          {viewMode === "class" ? teacher?.lastName : viewMode === "teacher" ? cls?.name : `${cls?.name} • ${teacher?.lastName}`}
+        </div>
         <p className={cn("font-black leading-none uppercase w-full truncate", isPrint ? "text-[8px] mb-0.5" : "text-[10px] mb-0.5")}>
           {subjects.find(s => s.id === assignment.subjectId)?.name || "---"}
         </p>
         <p className={cn("font-bold leading-none truncate w-full", isPrint ? "text-[6.5px] text-emerald-900" : "text-[8px] opacity-90")}>
-          {assignment.room || "---"}
+          {viewMode === "room" ? "---" : (assignment.room || "---")}
         </p>
 
         {!isPrint && isAdmin && (
@@ -166,61 +159,34 @@ const ScheduleTable = ({
             {isRTL ? "حلول مقترحة للتعارض" : "Conflict Solutions"}
           </ContextMenuLabel>
           <ContextMenuSeparator className="bg-slate-100" />
-          
           <ContextMenuSub>
             <ContextMenuSubTrigger className="rounded-xl px-3 py-2 text-xs font-bold gap-2 focus:bg-emerald-50 focus:text-emerald-900">
               <UserCheck size={14} />
               {isRTL ? "تغيير الأستاذ (المتاحون حالياً)" : "Switch Teacher (Free now)"}
             </ContextMenuSubTrigger>
             <ContextMenuSubContent className="w-56 rounded-xl p-1 bg-white shadow-xl border border-slate-100">
-              {freeTeachers.length > 0 ? (
-                freeTeachers.map(emp => (
-                  <ContextMenuItem 
-                    key={emp.id} 
-                    onClick={() => onUpdateAssignment?.(assignment.id, { employeeId: emp.id })}
-                    className="rounded-lg px-3 py-2 text-xs font-medium cursor-pointer hover:bg-emerald-50 hover:text-emerald-900"
-                  >
-                    {emp.lastName} {emp.firstName}
-                  </ContextMenuItem>
-                ))
-              ) : (
-                <div className="p-3 text-[10px] text-slate-400 font-bold text-center italic">
-                  {isRTL ? "لا يوجد أساتذة متاحون حالياً" : "No teachers available"}
-                </div>
-              )}
+              {freeTeachers.map(emp => (
+                <ContextMenuItem key={emp.id} onClick={() => onUpdateAssignment?.(assignment.id, { employeeId: emp.id })} className="rounded-lg px-3 py-2 text-xs font-medium cursor-pointer hover:bg-emerald-50 hover:text-emerald-900">
+                  {emp.lastName} {emp.firstName}
+                </ContextMenuItem>
+              ))}
             </ContextMenuSubContent>
           </ContextMenuSub>
-
           <ContextMenuSub>
             <ContextMenuSubTrigger className="rounded-xl px-3 py-2 text-xs font-bold gap-2 focus:bg-emerald-50 focus:text-emerald-900">
               <MapPin size={14} />
               {isRTL ? "تغيير القاعة (الشاغرة حالياً)" : "Switch Room (Empty now)"}
             </ContextMenuSubTrigger>
             <ContextMenuSubContent className="w-48 rounded-xl p-1 bg-white shadow-xl border border-slate-100">
-              {freeRooms.length > 0 ? (
-                freeRooms.map((room, idx) => (
-                  <ContextMenuItem 
-                    key={idx} 
-                    onClick={() => onUpdateAssignment?.(assignment.id, { room })}
-                    className="rounded-lg px-3 py-2 text-xs font-medium cursor-pointer hover:bg-emerald-50 hover:text-emerald-900"
-                  >
-                    {room}
-                  </ContextMenuItem>
-                ))
-              ) : (
-                <div className="p-3 text-[10px] text-slate-400 font-bold text-center italic">
-                  {isRTL ? "لا توجد قاعات شاغرة" : "No rooms empty"}
-                </div>
-              )}
+              {freeRooms.map((room, idx) => (
+                <ContextMenuItem key={idx} onClick={() => onUpdateAssignment?.(assignment.id, { room })} className="rounded-lg px-3 py-2 text-xs font-medium cursor-pointer hover:bg-emerald-50 hover:text-emerald-900">
+                  {room}
+                </ContextMenuItem>
+              ))}
             </ContextMenuSubContent>
           </ContextMenuSub>
-
           <ContextMenuSeparator className="bg-slate-100" />
-          
-          <ContextMenuItem 
-            className="rounded-xl px-3 py-2 text-xs font-bold gap-2 text-red-500 focus:bg-red-50 focus:text-red-600 cursor-pointer"
-            onClick={() => onDeleteClick(assignment.id)}
-          >
+          <ContextMenuItem className="rounded-xl px-3 py-2 text-xs font-bold gap-2 text-red-500 focus:bg-red-50 focus:text-red-600 cursor-pointer" onClick={() => onDeleteClick(assignment.id)}>
             <Trash2 size={14} />
             {isRTL ? "حذف الحصة لحل التعارض" : "Delete to resolve"}
           </ContextMenuItem>
@@ -311,6 +277,50 @@ const ScheduleTable = ({
     </div>
   );
 
+  const renderCell = (day: any, slot: any, span: any, isTransposed: boolean) => {
+    const currentAssignment = getAssignment(day.id, slot.id);
+    const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id;
+    const isDragOver = dragOverCell?.day === day.id && dragOverCell?.period === slot.id;
+
+    return (
+      <td 
+        key={isTransposed ? `${day.id}-${slot.id}` : day.id}
+        colSpan={isTransposed ? (span?.colSpan || 1) : 1}
+        rowSpan={!isTransposed ? (span?.rowSpan || 1) : 1}
+        className={cn(
+          "relative h-full transition-colors duration-150", 
+          isPrint ? "border border-emerald-950" : cn(
+            "p-0.5", 
+            isCellHovered && "bg-emerald-50/30",
+            isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset"
+          )
+        )}
+        onMouseEnter={() => !isPrint && setHoveredCell({ day: day.id, period: slot.id })}
+        onMouseLeave={() => !isPrint && setHoveredCell(null)}
+        onDragOver={(e) => {
+          if (!isPrint && isAdmin) { e.preventDefault(); if (dragOverCell?.day !== day.id || dragOverCell?.period !== slot.id) setDragOverCell({ day: day.id, period: slot.id }); }
+        }}
+        onDragLeave={() => { if (!isPrint && isAdmin) setDragOverCell(null); }}
+        onDrop={(e) => {
+          if (isPrint || !isAdmin) return;
+          setDragOverCell(null);
+          const assignmentId = e.dataTransfer.getData("text/plain");
+          if (assignmentId && onMoveAssignment) onMoveAssignment(assignmentId, day.id, slot.id);
+        }}
+      >
+        {currentAssignment ? (
+          <LessonCard assignment={currentAssignment} day={day.id} period={slot.id} isHovered={isCellHovered} />
+        ) : (
+          !isPrint && isAdmin && (
+            <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}>
+              <Plus size={10} className="text-slate-200" />
+            </div>
+          )
+        )}
+      </td>
+    );
+  };
+
   if (isTransposed) {
     return (
       <div className={cn("flex items-stretch w-full gap-0", isPrint ? "overflow-hidden" : "overflow-x-auto pb-1", isRTL ? "flex-row" : "flex-row-reverse")}>
@@ -319,10 +329,7 @@ const ScheduleTable = ({
             <colgroup>
               <col className={isPrint ? "w-[30px]" : "w-[50px]"} />
               {timeSlots.map(slot => (
-                <React.Fragment key={slot.id}>
-                  <col />
-                  {(slot.id === "2" || slot.id === "4") && <col className={isPrint ? "w-[8px]" : "w-[12px]"} />}
-                </React.Fragment>
+                <React.Fragment key={slot.id}><col />{(slot.id === "2" || slot.id === "4") && <col className={isPrint ? "w-[8px]" : "w-[12px]"} />}</React.Fragment>
               ))}
             </colgroup>
             <thead>
@@ -332,14 +339,8 @@ const ScheduleTable = ({
                   const isColHovered = hoveredCell?.period === slot.id;
                   return (
                     <React.Fragment key={slot.id}>
-                      <th className={cn(
-                        "font-black text-center px-0.5 transition-colors duration-150", 
-                        isPrint ? "border border-emerald-950 text-[7.5px] bg-emerald-50" : cn("rounded-lg p-1 text-[9px]", isColHovered ? "bg-emerald-800 text-white" : "bg-emerald-950 text-emerald-400")
-                      )}>
-                        <div className="flex flex-col items-center justify-center">
-                          <span className="whitespace-nowrap">{slot.label}</span>
-                          <span className={cn("font-bold opacity-70 mt-0.5 whitespace-nowrap", isPrint ? "text-[4.5px]" : "text-[7px]")}>{slot.time}</span>
-                        </div>
+                      <th className={cn("font-black text-center px-0.5 transition-colors duration-150", isPrint ? "border border-emerald-950 text-[7.5px] bg-emerald-50" : cn("rounded-lg p-1 text-[9px]", isColHovered ? "bg-emerald-800 text-white" : "bg-emerald-950 text-emerald-400"))}>
+                        <div className="flex flex-col items-center justify-center"><span className="whitespace-nowrap">{slot.label}</span><span className={cn("font-bold opacity-70 mt-0.5 whitespace-nowrap", isPrint ? "text-[4.5px]" : "text-[7px]")}>{slot.time}</span></div>
                       </th>
                       {(slot.id === "2" || slot.id === "4") && <th className="border border-emerald-950 bg-emerald-50/50 text-[6px] font-black [writing-mode:vertical-rl] rotate-180 p-0.5 text-center">{isRTL ? "راحة" : "BREAK"}</th>}
                     </React.Fragment>
@@ -352,63 +353,15 @@ const ScheduleTable = ({
                 const isRowHovered = hoveredCell?.day === day.id;
                 return (
                   <tr key={day.id} className={cn(isPrint ? "h-6" : "h-10", !isPrint && isRowHovered && "bg-emerald-50/20")}>
-                    <td className={cn(
-                      "transition-colors duration-150",
-                      isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10" : cn("p-1 border-e border-slate-100 text-center", isRowHovered && "bg-emerald-50/40")
-                    )}>
+                    <td className={cn("transition-colors duration-150", isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10" : cn("p-1 border-e border-slate-100 text-center", isRowHovered && "bg-emerald-50/40"))}>
                       <span className={cn("font-black", isPrint ? "text-[8px]" : "text-[11px] text-slate-600")}>{isRTL ? day.name : day.en.substr(0, 3)}</span>
                     </td>
                     {timeSlots.map(slot => {
                       const span = horizontalSpans[`${day.id}-${slot.id}`];
                       if (span?.skip) return null;
-                      const currentAssignment = getAssignment(day.id, slot.id);
-                      const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id;
-                      const isDragOver = dragOverCell?.day === day.id && dragOverCell?.period === slot.id;
-                      
                       return (
                         <React.Fragment key={slot.id}>
-                          <td 
-                            colSpan={span?.colSpan || 1}
-                            className={cn(
-                              "relative h-full transition-colors duration-150", 
-                              isPrint ? "border border-emerald-950" : cn(
-                                "p-0.5", 
-                                isCellHovered && "bg-emerald-50/30",
-                                isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset"
-                              )
-                            )}
-                            onMouseEnter={() => !isPrint && setHoveredCell({ day: day.id, period: slot.id })}
-                            onMouseLeave={() => !isPrint && setHoveredCell(null)}
-                            onDragOver={(e) => {
-                              if (!isPrint && isAdmin) {
-                                e.preventDefault();
-                                if (dragOverCell?.day !== day.id || dragOverCell?.period !== slot.id) {
-                                  setDragOverCell({ day: day.id, period: slot.id });
-                                }
-                              }
-                            }}
-                            onDragLeave={() => {
-                              if (!isPrint && isAdmin) setDragOverCell(null);
-                            }}
-                            onDrop={(e) => {
-                              if (isPrint || !isAdmin) return;
-                              setDragOverCell(null);
-                              const assignmentId = e.dataTransfer.getData("text/plain");
-                              if (assignmentId && onMoveAssignment) {
-                                onMoveAssignment(assignmentId, day.id, slot.id);
-                              }
-                            }}
-                          >
-                            {currentAssignment ? (
-                              <LessonCard assignment={currentAssignment} day={day.id} period={slot.id} isHovered={isCellHovered} />
-                            ) : (
-                              !isPrint && isAdmin && (
-                                <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}>
-                                  <Plus size={10} className="text-slate-200" />
-                                </div>
-                              )
-                            )}
-                          </td>
+                          {renderCell(day, slot, span, true)}
                           {(slot.id === "2" || slot.id === "4") && <td className="border border-emerald-950 bg-emerald-50/20"></td>}
                         </React.Fragment>
                       );
@@ -437,9 +390,7 @@ const ScheduleTable = ({
               <th className={cn("font-black text-center", isPrint ? "border border-emerald-950 text-[7.5px] bg-emerald-50" : "rounded-lg bg-emerald-950 text-emerald-400 p-1 text-[9px]")}>{isRTL ? "الحصة" : "Slot"}</th>
               {days.map(day => {
                 const isColHovered = hoveredCell?.day === day.id;
-                return (
-                  <th key={day.id} className={cn("font-black text-center px-0.5 transition-colors duration-150", isPrint ? "border border-emerald-950 text-[8.5px] bg-emerald-50" : cn("rounded-lg p-1 uppercase text-[9px]", isColHovered ? "bg-emerald-100 text-emerald-900" : "bg-slate-50 text-slate-500"))}>{isRTL ? day.name : day.en.substr(0, 3)}</th>
-                );
+                return (<th key={day.id} className={cn("font-black text-center px-0.5 transition-colors duration-150", isPrint ? "border border-emerald-950 text-[8.5px] bg-emerald-50" : cn("rounded-lg p-1 uppercase text-[9px]", isColHovered ? "bg-emerald-100 text-emerald-900" : "bg-slate-50 text-slate-500"))}>{isRTL ? day.name : day.en.substr(0, 3)}</th>);
               })}
             </tr>
           </thead>
@@ -458,55 +409,7 @@ const ScheduleTable = ({
                     {days.map(day => {
                       const span = verticalSpans[`${day.id}-${slot.id}`];
                       if (span?.skip) return null;
-                      const currentAssignment = getAssignment(day.id, slot.id);
-                      const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id;
-                      const isDragOver = dragOverCell?.day === day.id && dragOverCell?.period === slot.id;
-
-                      return (
-                        <td 
-                          key={day.id} 
-                          rowSpan={span?.rowSpan || 1}
-                          className={cn(
-                            "relative h-full transition-colors duration-150", 
-                            isPrint ? "border border-emerald-950" : cn(
-                              "p-0.5", 
-                              isCellHovered && "bg-emerald-50/30",
-                              isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset"
-                            )
-                          )}
-                          onMouseEnter={() => !isPrint && setHoveredCell({ day: day.id, period: slot.id })}
-                          onMouseLeave={() => !isPrint && setHoveredCell(null)}
-                          onDragOver={(e) => {
-                            if (!isPrint && isAdmin) {
-                              e.preventDefault();
-                              if (dragOverCell?.day !== day.id || dragOverCell?.period !== slot.id) {
-                                setDragOverCell({ day: day.id, period: slot.id });
-                              }
-                            }
-                          }}
-                          onDragLeave={() => {
-                            if (!isPrint && isAdmin) setDragOverCell(null);
-                          }}
-                          onDrop={(e) => {
-                            if (isPrint || !isAdmin) return;
-                            setDragOverCell(null);
-                            const assignmentId = e.dataTransfer.getData("text/plain");
-                            if (assignmentId && onMoveAssignment) {
-                              onMoveAssignment(assignmentId, day.id, slot.id);
-                            }
-                          }}
-                        >
-                          {currentAssignment ? (
-                            <LessonCard assignment={currentAssignment} day={day.id} period={slot.id} isHovered={isCellHovered} />
-                          ) : (
-                            !isPrint && isAdmin && (
-                              <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}>
-                                <Plus size={10} className="text-slate-200" />
-                              </div>
-                            )
-                          )}
-                        </td>
-                      );
+                      return renderCell(day, slot, span, false);
                     })}
                   </tr>
                   {slot.id === "2" && <BreakRow title={isRTL ? "راحة" : "BREAK"} />}

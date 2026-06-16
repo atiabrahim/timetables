@@ -29,7 +29,7 @@ const Schedule = () => {
     isRTL, t, employees, classes, subjects, rooms, assignments, setAssignments, periodTimings
   } = useApp();
 
-  const [viewMode, setViewMode] = useState<"class" | "teacher">("class");
+  const [viewMode, setViewMode] = useState<"class" | "teacher" | "room">("class");
   const [selectedId, setSelectedId] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -52,12 +52,17 @@ const Schedule = () => {
 
   const filteredAssignments = useMemo(() => {
     if (!selectedId) return [];
+    if (viewMode === "room") return assignments.filter(a => a.room === selectedId);
     return assignments.filter(a => viewMode === "class" ? a.classId === selectedId : a.employeeId === selectedId);
   }, [assignments, selectedId, viewMode]);
 
   const remainingLessonsForDialog = useMemo(() => {
     if (!selectedId) return [];
-    const relevantReqs = requirements.filter(req => viewMode === "class" ? req.classId === selectedId : req.employeeId === selectedId);
+    const relevantReqs = requirements.filter(req => {
+      if (viewMode === "class") return req.classId === selectedId;
+      if (viewMode === "teacher") return req.employeeId === selectedId;
+      return req.room === selectedId;
+    });
     return relevantReqs.map(req => {
       const assignedCount = assignments.filter(asgn => asgn.subjectId === req.subjectId && asgn.employeeId === req.employeeId && asgn.classId === req.classId).length;
       return { ...req, remaining: Math.max(0, req.count - assignedCount) };
@@ -65,31 +70,30 @@ const Schedule = () => {
   }, [requirements, selectedId, viewMode, assignments]);
 
   const periodSlots = useMemo(() => PERIODS.map(id => ({ 
-    id, 
-    label: isRTL ? `ح${id}` : id, 
-    periodPart: PERIOD_MAP[id] as "Morning" | "Afternoon" | "Evening", 
-    isBreak: false, 
-    time: periodTimings[id] || "" 
+    id, label: isRTL ? `ح${id}` : id, periodPart: PERIOD_MAP[id] as any, isBreak: false, time: periodTimings[id] || "" 
   })), [isRTL, periodTimings]);
 
   const activeTimeSlots = useMemo(() => {
     const usedIds = filteredAssignments.map(a => a.period);
-    if (usedIds.length === 0) return periodSlots.filter(p => parseInt(p.id) <= 4);
+    if (usedIds.length === 0) return periodSlots.slice(0, 4);
     return periodSlots.filter(p => usedIds.includes(p.id));
   }, [filteredAssignments, periodSlots]);
 
   const getAssignment = (day: number, period: string) => filteredAssignments.find(a => a.day === day && a.period === period);
 
   const handleAddClick = (day: number, period: string) => {
-    if (viewMode === "class") setNewAssignment({ ...newAssignment, classId: selectedId, employeeId: "", subjectId: "", room: "", department: "" });
-    else setNewAssignment({ ...newAssignment, employeeId: selectedId, classId: "", subjectId: "", room: "", department: "" });
+    const defaultData = { employeeId: "", subjectId: "", classId: "", room: "", department: "" };
+    if (viewMode === "class") setNewAssignment({ ...defaultData, classId: selectedId });
+    else if (viewMode === "teacher") setNewAssignment({ ...defaultData, employeeId: selectedId });
+    else setNewAssignment({ ...defaultData, room: selectedId });
+    
     setEditingCell({ day, period });
     setIsDialogOpen(true);
   };
 
   const handleSaveLesson = () => {
     if (!editingCell) return;
-    if (!newAssignment.subjectId || (viewMode === "class" ? !newAssignment.employeeId : !newAssignment.classId)) {
+    if (!newAssignment.subjectId || !newAssignment.employeeId || !newAssignment.classId) {
       showError(isRTL ? "يرجى إكمال البيانات" : "Please complete data");
       return;
     }
@@ -102,7 +106,7 @@ const Schedule = () => {
   const handleQuickAssign = (req: any) => {
     if (!editingCell) return;
     const id = Math.random().toString(36).substr(2, 9);
-    setAssignments([...assignments, { id, employeeId: req.employeeId, subjectId: req.subjectId, classId: req.classId, room: req.room || "", department: "", day: editingCell.day, period: editingCell.period }]);
+    setAssignments([...assignments, { id, employeeId: req.employeeId, subjectId: req.subjectId, classId: req.classId, room: req.room || selectedId, department: "", day: editingCell.day, period: editingCell.period }]);
     setIsDialogOpen(false);
     showSuccess(isRTL ? "تم إسناد الحصة بنجاح" : "Lesson assigned successfully");
   };
@@ -134,14 +138,17 @@ const Schedule = () => {
 
   const selectedEntityName = useMemo(() => {
     if (viewMode === "class") return classes.find(c => c.id === selectedId)?.name || "";
-    const emp = employees.find(e => e.id === selectedId);
-    return emp ? `${emp.lastName} ${emp.firstName}` : "";
+    if (viewMode === "teacher") {
+      const emp = employees.find(e => e.id === selectedId);
+      return emp ? `${emp.lastName} ${emp.firstName}` : "";
+    }
+    return selectedId;
   }, [selectedId, viewMode, classes, employees]);
 
   return (
     <div className="space-y-6">
       <style>{`@media print { @page { size: A4 ${orientation}; margin: 0 !important; } }`}</style>
-      <ScheduleHeader isRTL={isRTL} viewMode={viewMode} setViewMode={setViewMode} selectedId={selectedId} setSelectedId={setSelectedId} classes={classes} employees={employees} onPreview={() => setIsPreviewOpen(true)} />
+      <ScheduleHeader isRTL={isRTL} viewMode={viewMode} setViewMode={setViewMode} selectedId={selectedId} setSelectedId={setSelectedId} classes={classes} employees={employees} rooms={rooms} onPreview={() => setIsPreviewOpen(true)} />
       {selectedId ? (
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
           <div className="xl:col-span-3 space-y-4">
@@ -149,7 +156,7 @@ const Schedule = () => {
               <Button variant="outline" size="sm" onClick={() => setIsTransposed(!isTransposed)} className="rounded-xl border-emerald-100 text-emerald-700 font-bold gap-2"><ArrowLeftRight size={14} />{isRTL ? "تبديل المحاور" : "Transpose"}</Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild><Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 rounded-xl gap-2 font-bold"><Trash2 size={14} />{isRTL ? "مسح الجدول" : "Clear Schedule"}</Button></AlertDialogTrigger>
-                <AlertDialogContent className="rounded-3xl"><AlertDialogHeader><AlertDialogTitle>{isRTL ? "هل أنت متأكد؟" : "Are you sure?"}</AlertDialogTitle></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel><AlertDialogAction onClick={() => setAssignments(assignments.filter(a => viewMode === "class" ? a.classId !== selectedId : a.employeeId !== selectedId))} className="bg-red-600 rounded-xl">{isRTL ? "نعم، امسح" : "Yes, Clear"}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+                <AlertDialogContent className="rounded-3xl"><AlertDialogHeader><AlertDialogTitle>{isRTL ? "هل أنت متأكد؟" : "Are you sure?"}</AlertDialogTitle></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel><AlertDialogAction onClick={() => setAssignments(assignments.filter(a => { if (viewMode === "class") return a.classId !== selectedId; if (viewMode === "teacher") return a.employeeId !== selectedId; return a.room !== selectedId; }))} className="bg-red-600 rounded-xl text-white">{isRTL ? "نعم، امسح" : "Yes, Clear"}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
               </AlertDialog>
             </div>
             <div className="print:hidden">
@@ -162,7 +169,7 @@ const Schedule = () => {
             </div>
             {!isPreviewOpen && (
               <div className="print-content-master hidden print:block">
-                <OfficialPrintWrapper title={isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Schedule"} subtitle={isRTL ? (viewMode === "class" ? `لفوج : ${selectedEntityName}` : `للأستاذ : ${selectedEntityName}`) : (viewMode === "class" ? `for Class: ${selectedEntityName}` : `for Teacher: ${selectedEntityName}`)} orientation={orientation}>
+                <OfficialPrintWrapper title={isRTL ? "الجدول الزمني الأسبوعي" : "Weekly Schedule"} subtitle={isRTL ? (viewMode === "class" ? `لفوج : ${selectedEntityName}` : viewMode === "teacher" ? `للأستاذ : ${selectedEntityName}` : `لقاعة : ${selectedEntityName}`) : (viewMode === "class" ? `for Class: ${selectedEntityName}` : viewMode === "teacher" ? `for Teacher: ${selectedEntityName}` : `for Room: ${selectedEntityName}`)} orientation={orientation}>
                   <ScheduleTable isRTL={isRTL} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment} onAddClick={() => {}} onDeleteClick={() => {}} subjects={subjects} employees={employees} classes={classes} viewMode={viewMode} isPrint={true} summaryData={summaryData} totalHours={filteredAssignments.length} isTransposed={isTransposed} />
                 </OfficialPrintWrapper>
               </div>
@@ -174,7 +181,7 @@ const Schedule = () => {
           </div>
         </div>
       ) : (
-        <div className="text-center py-32 bg-white rounded-[3rem] border border-dashed border-emerald-200 print:hidden"><Settings2 size={48} className="mx-auto text-emerald-100 mb-4" /><p className="text-emerald-900/40 font-bold">{isRTL ? "يرجى اختيار فرع أو معلم لعرض الجدول" : "Please select a branch or teacher to view schedule"}</p></div>
+        <div className="text-center py-32 bg-white rounded-[3rem] border border-dashed border-emerald-200 print:hidden"><Settings2 size={48} className="mx-auto text-emerald-100 mb-4" /><p className="text-emerald-900/40 font-bold">{isRTL ? "يرجى اختيار فرع أو معلم أو قاعة لعرض الجدول" : "Please select a branch, teacher or room to view schedule"}</p></div>
       )}
       <AddLessonDialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen} isRTL={isRTL} cancelText={t.cancel} subjects={subjects} employees={employees} classes={classes} rooms={rooms} viewMode={viewMode} newAssignment={newAssignment} setNewAssignment={setNewAssignment} onSave={handleSaveLesson} remainingLessons={remainingLessonsForDialog} onQuickAssign={handleQuickAssign} />
       <PrintPreview isOpen={isPreviewOpen} onOpenChange={setIsPreviewOpen} isRTL={isRTL} orientation={orientation} setOrientation={setOrientation} printScale={printScale} setPrintScale={setPrintScale} viewMode={viewMode} selectedId={selectedId} employees={employees} classes={classes} subjects={subjects} days={DAYS} timeSlots={activeTimeSlots} getAssignment={getAssignment} summaryData={summaryData} totalHours={filteredAssignments.length} isTransposed={isTransposed} />
