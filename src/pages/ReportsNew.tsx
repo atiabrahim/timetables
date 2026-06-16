@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { 
   format, 
@@ -42,14 +42,16 @@ const ReportsNew = () => {
     language
   } = useApp();
 
-  const defaultDept = useMemo(() => isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate", [isRTL]);
-
   const [dailyDate, setDailyDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [monthlyDate, setMonthlyDate] = useState(format(new Date(), "yyyy-MM"));
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("daily");
   const [selectedPeriods, setSelectedPeriods] = useState<PeriodPart[]>(["Morning", "Afternoon", "Evening"]);
-  const [selectedDepartment, setSelectedDepartment] = useState<string>("");
+  const [selectedDepartment, setSelectedDepartment] = useState<string>(
+    departments[0]?.name || (isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate")
+  );
+  
+  // New style states
   const [reportStyles, setReportStyles] = useState({
     fontFamily: "'Cairo', sans-serif",
     headerSize: 14,
@@ -60,16 +62,6 @@ const ReportsNew = () => {
     orientation: "portrait" as "portrait" | "landscape",
     doubleMode: false
   });
-
-  // Initialize selectedDepartment when departments are loaded
-  useEffect(() => {
-    if (departments && departments.length > 0) {
-      const firstDept = departments[0];
-      setSelectedDepartment(typeof firstDept === 'string' ? firstDept : firstDept.name);
-    } else {
-      setSelectedDepartment(defaultDept);
-    }
-  }, [departments, defaultDept]);
 
   const currentLocale = language === "ar" ? ar : enUS;
   const supervisors = useMemo(() => [isRTL ? "رئيس مصلحة التكوين" : "Head of Training"], [isRTL]);
@@ -92,8 +84,6 @@ const ReportsNew = () => {
         return nameA.localeCompare(nameB, language === "ar" ? "ar" : "en");
       });
   };
-
-  const activeDept = selectedDepartment || (departments[0] ? (typeof departments[0] === 'string' ? departments[0] : departments[0].name) : defaultDept);
 
   // دالة لتجميع أوراق الحضور في أزواج (كل ورقتين معاً) عند تفعيل وضع النسختين
   const renderDoubleModePairs = (sheets: React.ReactNode[]) => {
@@ -133,7 +123,7 @@ const ReportsNew = () => {
           t={t}
           isRTL={isRTL}
           currentLocale={currentLocale}
-          selectedDepartment={activeDept}
+          selectedDepartment={selectedDepartment}
           reportStyles={reportStyles}
           doubleMode={reportStyles.doubleMode}
           supervisors={supervisors}
@@ -167,7 +157,7 @@ const ReportsNew = () => {
                 t={t}
                 isRTL={isRTL}
                 currentLocale={currentLocale}
-                selectedDepartment={activeDept}
+                selectedDepartment={selectedDepartment}
                 reportStyles={reportStyles}
                 doubleMode={reportStyles.doubleMode}
                 supervisors={supervisors}
@@ -215,7 +205,6 @@ const ReportsNew = () => {
         title={t.monthlyStats}
         subtitle={subtitle}
         orientation={reportStyles.orientation}
-        doubleMode={reportStyles.doubleMode}
         leftSignatureTitle={isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}
         rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
       >
@@ -252,7 +241,7 @@ const ReportsNew = () => {
   };
 
   return (
-    <div className="space-y-2 pb-2">
+    <div className="space-y-4 pb-20">
       <PageHeader
         title={t.reports}
         subtitle="إصدار أوراق حضور وجداول إحصائية رسمية"
@@ -277,7 +266,7 @@ const ReportsNew = () => {
         doubleMode={reportStyles.doubleMode}
         onDoubleModeChange={(v) => setReportStyles({...reportStyles, doubleMode: v})}
         departments={departments}
-        selectedDepartment={activeDept}
+        selectedDepartment={selectedDepartment}
         onDepartmentChange={setSelectedDepartment}
         selectedPeriods={selectedPeriods}
         onTogglePeriod={togglePeriod}
@@ -286,38 +275,39 @@ const ReportsNew = () => {
       />
 
       <Tabs defaultValue="daily" onValueChange={setActiveTab} className="w-full print:hidden">
-        <TabsList className="grid w-full grid-cols-3 mb-2 h-11 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
-          <TabsTrigger value="daily" className="flex items-center gap-1.5 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-[11px]">
-            <Calendar className="h-3.5 w-3.5" /> {t.dailyReport}
+        <TabsList className="grid w-full grid-cols-3 mb-4 h-12 bg-white border border-slate-200 p-1.5 rounded-xl shadow-sm">
+          <TabsTrigger value="daily" className="flex items-center gap-2 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+            <Calendar className="h-4 w-4" /> {t.dailyReport}
           </TabsTrigger>
-          <TabsTrigger value="monthly" className="flex items-center gap-1.5 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-[11px]">
-            <FileText className="h-3.5 w-3.5" /> {t.monthlyReport}
+          <TabsTrigger value="monthly" className="flex items-center gap-2 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+            <FileText className="h-4 w-4" /> {t.monthlyReport}
           </TabsTrigger>
-          <TabsTrigger value="stats" className="flex items-center gap-1.5 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-[11px]">
-            <BarChart2 className="h-3.5 w-3.5" /> {t.monthlyStats}
+          <TabsTrigger value="stats" className="flex items-center gap-2 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+            <BarChart2 className="h-4 w-4" /> {t.monthlyStats}
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="daily" className="space-y-2">
-          <Input type="date" value={dailyDate} onChange={(e) => setDailyDate(e.target.value)} className="max-w-xs h-9 rounded-lg text-xs" />
-          <div className="bg-slate-50/50 p-2 rounded-xl border border-slate-100 flex flex-col items-center gap-2">
+        <TabsContent value="daily" className="space-y-4">
+          <Input type="date" value={dailyDate} onChange={(e) => setDailyDate(e.target.value)} className="max-w-xs h-11 rounded-xl" />
+          <div className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100 flex flex-col items-center gap-8">
             {renderDailyReport()}
           </div>
         </TabsContent>
-        <TabsContent value="monthly" className="space-y-2">
-          <Input type="month" value={monthlyDate} onChange={(e) => setMonthlyDate(e.target.value)} className="max-w-xs h-9 rounded-lg text-xs" />
-          <div className="bg-slate-50/50 p-2 rounded-xl border border-slate-100 flex flex-col items-center gap-2">
+        <TabsContent value="monthly" className="space-y-4">
+          <Input type="month" value={monthlyDate} onChange={(e) => setMonthlyDate(e.target.value)} className="max-w-xs h-11 rounded-xl" />
+          <div className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100 flex flex-col items-center gap-8">
             {renderMonthlyReport()}
           </div>
         </TabsContent>
-        <TabsContent value="stats" className="space-y-2">
-          <Input type="month" value={monthlyDate} onChange={(e) => setMonthlyDate(e.target.value)} className="max-w-xs h-9 rounded-lg text-xs" />
-          <div className="bg-slate-50/50 p-2 rounded-xl border border-slate-100 flex flex-col items-center gap-2">
+        <TabsContent value="stats" className="space-y-4">
+          <Input type="month" value={monthlyDate} onChange={(e) => setMonthlyDate(e.target.value)} className="max-w-xs h-11 rounded-xl" />
+          <div className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100 flex flex-col items-center gap-8">
             {renderStatsReport()}
           </div>
         </TabsContent>
       </Tabs>
 
+      {/* المحتوى المخفي للطباعة فقط */}
       <div className="print-content-master hidden print:block">
         {currentContent()}
       </div>

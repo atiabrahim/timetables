@@ -41,13 +41,12 @@ const AttendanceSheet = ({
 }: AttendanceSheetProps) => {
   const maxRows = doubleMode ? 14 : 20;
   const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
-  const isLandscape = reportStyles.orientation === "landscape";
 
   // Dynamic styles based on sliders
   const cellStyle = {
-    fontSize: `${reportStyles.tableSize || 11}px`,
-    paddingTop: `${reportStyles.rowPadding !== undefined ? reportStyles.rowPadding : 4}px`,
-    paddingBottom: `${reportStyles.rowPadding !== undefined ? reportStyles.rowPadding : 4}px`,
+    fontSize: `${reportStyles.tableSize}px`,
+    paddingTop: `${reportStyles.rowPadding}px`,
+    paddingBottom: `${reportStyles.rowPadding}px`,
   };
 
   return (
@@ -57,12 +56,13 @@ const AttendanceSheet = ({
         doubleMode ? "py-2 px-[8mm]" : "py-6 px-[12mm]",
         "print:shadow-none print:border-none print:my-0 print:mx-auto print:rounded-none print:w-full",
         doubleMode
-          ? (isLandscape ? "print:h-[105mm]" : "print:h-[148.5mm]") + " print:pt-[2mm] print:pb-0 print:px-[4mm]"
+          ? "print:h-[148.5mm] print:pt-[2mm] print:pb-0 print:px-[4mm]"
           : "print:pt-[4mm] print:pb-0 print:px-[4mm] print:min-h-[296mm] page-break-always"
       )}
       dir={isRTL ? "rtl" : "ltr"}
       style={{ fontFamily: reportStyles.fontFamily }}
     >
+      {/* الترويسة الرسمية */}
       <div className={cn("flex flex-col items-center text-center space-y-0.5", doubleMode ? "mb-2" : "mb-4")}>
         <p className={cn("font-black text-black tracking-widest uppercase", doubleMode ? "text-[10px]" : "text-xs")}>
           {t.republic}
@@ -82,6 +82,7 @@ const AttendanceSheet = ({
         </div>
       </div>
 
+      {/* العنوان والتاريخ */}
       <div className={cn(doubleMode ? "mb-2" : "mb-4", "text-center")}>
         <div className="inline-block relative">
           <h1 className={cn("font-black text-black border-2 border-black relative z-10 bg-white", doubleMode ? "text-sm px-6 py-1" : "text-base px-10 py-2")}>
@@ -106,6 +107,7 @@ const AttendanceSheet = ({
         </div>
       </div>
 
+      {/* الجدول الرئيسي */}
       <div className="flex-1 w-full overflow-hidden">
         <Table className="w-full border-collapse border-2 border-black">
           <TableHeader>
@@ -156,6 +158,7 @@ const AttendanceSheet = ({
               </TableRow>
             ))}
 
+            {/* صفوف فارغة لتعبئة المساحة */}
             {Array.from({ length: emptyRowsCount }).map((_, i) => (
               <TableRow key={`empty-${i}`} className={cn("hover:bg-transparent border-b border-black", doubleMode ? "h-5" : "h-7")}>
                 <TableCell style={cellStyle} className="text-center border-e border-black text-[9px] font-bold text-black bg-slate-50/20">
@@ -170,10 +173,11 @@ const AttendanceSheet = ({
         </Table>
       </div>
 
+      {/* التواقيع في الأسفل */}
       <div className={cn("grid grid-cols-2 gap-12 pt-4 border-t-2 border-black", doubleMode ? "mt-4" : "mt-8")}>
         <div className="text-center space-y-1">
           <p className="font-black text-black text-[10px] uppercase tracking-wider">
-            {supervisors[0] || (isRTL ? "رئيس المصلحة" : "Head of Dept")}
+            {isRTL ? "رئيس مصلحة التكوين" : "Head of Dept"}
           </p>
           <div className={cn("border border-dashed border-black/20 mt-1 rounded-xl bg-slate-50/10", doubleMode ? "h-12" : "h-16")}></div>
         </div>

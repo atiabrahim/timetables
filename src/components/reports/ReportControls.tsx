@@ -48,15 +48,6 @@ const ReportControls = ({
   reportStyles,
   setReportStyles
 }: ReportControlsProps) => {
-  const deptList = departments.length > 0 
-    ? departments.map(d => d.name) 
-    : [
-        isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate",
-        isRTL ? "مصلحة التكوين" : "Training Department",
-        isRTL ? "مصلحة التمهين" : "Apprenticeship Department",
-        isRTL ? "مصلحة المالية" : "Finance Department"
-      ];
-
   return (
     <div className="space-y-4 print:hidden">
       <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
@@ -110,9 +101,9 @@ const ReportControls = ({
               <SelectValue placeholder={isRTL ? "اختر المصلحة..." : "Select department..."} />
             </SelectTrigger>
             <SelectContent>
-              {deptList.map((deptName, idx) => (
-                <SelectItem key={idx} value={deptName}>
-                  {deptName}
+              {departments.map((dept) => (
+                <SelectItem key={dept.id} value={dept.name}>
+                  {dept.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -154,7 +145,7 @@ const ReportControls = ({
         <div className="bg-emerald-50/30 p-4 rounded-2xl border border-emerald-100/50 flex items-center gap-8">
           <div className="flex items-center gap-2 shrink-0">
             <Settings2 size={16} className="text-emerald-600" />
-            <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">{isRTL ? "تنسيق الطباعة:" : "Print Scaling:"}</span>
+            <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">{isRTL ? "تنسيق الطباعة:" : "Print Styling:"}</span>
           </div>
 
           <div className="flex-1 flex items-center gap-6">
