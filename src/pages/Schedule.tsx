@@ -146,7 +146,7 @@ const Schedule = () => {
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">
           <div className="xl:col-span-3 space-y-4">
             <div className="flex justify-end gap-2 print:hidden">
-              <Button variant="outline" size="sm" onClick={() => setIsTransposed(!isTransposed)} className="rounded-xl border-emerald-100 text-emerald-700 font-bold gap-2"><ArrowRightLeft size={14} />{isRTL ? "تبديل المحاور" : "Transpose"}</Button>
+              <Button variant="outline" size="sm" onClick={() => setIsTransposed(!isTransposed)} className="rounded-xl border-emerald-100 text-emerald-700 font-bold gap-2"><ArrowLeftRight size={14} />{isRTL ? "تبديل المحاور" : "Transpose"}</Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild><Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 rounded-xl gap-2 font-bold"><Trash2 size={14} />{isRTL ? "مسح الجدول" : "Clear Schedule"}</Button></AlertDialogTrigger>
                 <AlertDialogContent className="rounded-3xl"><AlertDialogHeader><AlertDialogTitle>{isRTL ? "هل أنت متأكد؟" : "Are you sure?"}</AlertDialogTitle></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel><AlertDialogAction onClick={() => setAssignments(assignments.filter(a => viewMode === "class" ? a.classId !== selectedId : a.employeeId !== selectedId))} className="bg-red-600 rounded-xl">{isRTL ? "نعم، امسح" : "Yes, Clear"}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
