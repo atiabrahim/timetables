@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Plus, Trash2, AlertTriangle, UserCheck, MapPin, Zap } from "lucide-react";
+import { Plus, Trash2, AlertTriangle, UserCheck, MapPin, Zap, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useApp } from "../../context/AppContext";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -49,13 +50,54 @@ const ScheduleTable = ({
   subjects, employees, classes, viewMode, isPrint = false, summaryData = [], totalHours = 0, isTransposed = false, allAssignments = [], isAdmin = true,
   onMoveAssignment, onUpdateAssignment
 }: ScheduleTableProps) => {
+  const { teacherConstraints = [], classConstraints = [], roomConstraints = [] } = useApp();
   const [hoveredCell, setHoveredCell] = useState<{ day: number; period: string } | null>(null);
   const [dragOverCell, setDragOverCell] = useState<{ day: number; period: string } | null>(null);
+  const [draggedAssignmentId, setDraggedAssignmentId] = useState<string | null>(null);
+
+  const draggedAssignment = useMemo(() => {
+    if (!draggedAssignmentId || !allAssignments) return null;
+    return allAssignments.find(a => a.id === draggedAssignmentId);
+  }, [draggedAssignmentId, allAssignments]);
+
+  // حساب حالة الخانة بالنسبة للحصة المسحوبة حالياً
+  const getSlotStatus = (day: number, period: string) => {
+    if (!draggedAssignment || isPrint) return null;
+
+    // 1. التحقق من القيود الصلبة (مغلق تماماً - أحمر)
+    const tConstraint = teacherConstraints.find(c => c.employeeId === draggedAssignment.employeeId && c.day === day && c.period === period);
+    if (tConstraint && !tConstraint.isAvailable) return "blocked";
+
+    const cConstraint = classConstraints.find(c => c.classId === draggedAssignment.classId && c.day === day && c.period === period);
+    if (cConstraint && !cConstraint.isAvailable) return "blocked";
+
+    if (draggedAssignment.room) {
+      const rConstraint = roomConstraints.find(c => c.roomName === draggedAssignment.room && c.day === day && c.period === period);
+      if (rConstraint && !rConstraint.isAvailable) return "blocked";
+    }
+
+    // 2. التحقق من التعارضات مع حصص أخرى (تعارض - برتقالي)
+    const hasTeacherConflict = allAssignments.some(a => 
+      a.id !== draggedAssignment.id && a.day === day && a.period === period && a.employeeId === draggedAssignment.employeeId
+    );
+    const hasClassConflict = allAssignments.some(a => 
+      a.id !== draggedAssignment.id && a.day === day && a.period === period && a.classId === draggedAssignment.classId
+    );
+    const hasRoomConflict = draggedAssignment.room && allAssignments.some(a => 
+      a.id !== draggedAssignment.id && a.day === day && a.period === period && a.room === draggedAssignment.room
+    );
+
+    if (hasTeacherConflict || hasClassConflict || hasRoomConflict) {
+      return "conflict";
+    }
+
+    // 3. متاح تماماً (أخضر)
+    return "available";
+  };
 
   const checkConflict = (day: number, period: string, assignment: any) => {
     if (isPrint || !allAssignments) return null;
     
-    // Check teacher conflict
     const teacherConflict = allAssignments.find(a => 
       a.id !== assignment.id && 
       a.day === day && 
@@ -63,7 +105,6 @@ const ScheduleTable = ({
       a.employeeId === assignment.employeeId
     );
 
-    // Check room conflict
     const roomConflict = assignment.room ? allAssignments.find(a => 
       a.id !== assignment.id && 
       a.day === day && 
@@ -103,6 +144,10 @@ const ScheduleTable = ({
           if (isPrint || !isAdmin) return;
           e.dataTransfer.setData("text/plain", assignment.id);
           e.dataTransfer.effectAllowed = "move";
+          setDraggedAssignmentId(assignment.id);
+        }}
+        onDragEnd={() => {
+          setDraggedAssignmentId(null);
         }}
         className={cn(
           "h-full w-full flex flex-col justify-center items-center text-center relative transition-all group/card", 
@@ -281,6 +326,9 @@ const ScheduleTable = ({
     const currentAssignment = getAssignment(day.id, slot.id);
     const isCellHovered = hoveredCell?.day === day.id || hoveredCell?.period === slot.id;
     const isDragOver = dragOverCell?.day === day.id && dragOverCell?.period === slot.id;
+    
+    // حساب حالة الخانة بالنسبة للحصة المسحوبة حالياً
+    const slotStatus = getSlotStatus(day.id, slot.id);
 
     return (
       <td 
@@ -288,24 +336,47 @@ const ScheduleTable = ({
         colSpan={isTransposed ? (span?.colSpan || 1) : 1}
         rowSpan={!isTransposed ? (span?.rowSpan || 1) : 1}
         className={cn(
-          "relative h-full transition-colors duration-150", 
+          "relative h-full transition-all duration-150", 
           isPrint ? "border border-emerald-950" : cn(
             "p-0.5", 
             isCellHovered && "bg-emerald-50/30",
-            isDragOver && "bg-emerald-200/50 ring-2 ring-emerald-500 ring-inset"
+            // تأثيرات بصرية تفاعلية أثناء السحب
+            draggedAssignment && cn(
+              slotStatus === "available" && "bg-emerald-50/40 border-2 border-dashed border-emerald-400",
+              slotStatus === "conflict" && "bg-amber-50/40 border-2 border-dashed border-amber-400",
+              slotStatus === "blocked" && "bg-rose-50/40 border-2 border-dashed border-rose-400 opacity-60 cursor-not-allowed"
+            ),
+            isDragOver && cn(
+              slotStatus === "available" && "bg-emerald-100/80 ring-2 ring-emerald-500 ring-inset",
+              slotStatus === "conflict" && "bg-amber-100/80 ring-2 ring-amber-500 ring-inset",
+              slotStatus === "blocked" && "bg-rose-100/80 ring-2 ring-rose-500 ring-inset"
+            )
           )
         )}
         onMouseEnter={() => !isPrint && setHoveredCell({ day: day.id, period: slot.id })}
         onMouseLeave={() => !isPrint && setHoveredCell(null)}
         onDragOver={(e) => {
-          if (!isPrint && isAdmin) { e.preventDefault(); if (dragOverCell?.day !== day.id || dragOverCell?.period !== slot.id) setDragOverCell({ day: day.id, period: slot.id }); }
+          if (!isPrint && isAdmin) { 
+            e.preventDefault(); 
+            if (dragOverCell?.day !== day.id || dragOverCell?.period !== slot.id) {
+              setDragOverCell({ day: day.id, period: slot.id }); 
+            }
+          }
         }}
         onDragLeave={() => { if (!isPrint && isAdmin) setDragOverCell(null); }}
         onDrop={(e) => {
           if (isPrint || !isAdmin) return;
           setDragOverCell(null);
           const assignmentId = e.dataTransfer.getData("text/plain");
-          if (assignmentId && onMoveAssignment) onMoveAssignment(assignmentId, day.id, slot.id);
+          
+          // منع الإفلات إذا كانت الخانة مغلقة تماماً
+          if (slotStatus === "blocked") {
+            return;
+          }
+
+          if (assignmentId && onMoveAssignment) {
+            onMoveAssignment(assignmentId, day.id, slot.id);
+          }
         }}
       >
         {currentAssignment ? (
@@ -313,7 +384,15 @@ const ScheduleTable = ({
         ) : (
           !isPrint && isAdmin && (
             <div className="h-full w-full rounded-lg border border-dashed border-slate-100 flex items-center justify-center cursor-pointer hover:bg-emerald-50/50" onClick={() => onAddClick(day.id, slot.id)}>
-              <Plus size={10} className="text-slate-200" />
+              {draggedAssignment ? (
+                <div className="flex flex-col items-center gap-1 text-[8px] font-bold">
+                  {slotStatus === "available" && <CheckCircle2 size={12} className="text-emerald-500" />}
+                  {slotStatus === "conflict" && <AlertTriangle size={12} className="text-amber-500" />}
+                  {slotStatus === "blocked" && <XCircle size={12} className="text-rose-500" />}
+                </div>
+              ) : (
+                <Plus size={10} className="text-slate-200" />
+              )}
             </div>
           )
         )}
@@ -402,7 +481,7 @@ const ScheduleTable = ({
                   <tr className={cn(isPrint ? "h-6" : "h-10", !isPrint && isRowHovered && "bg-emerald-50/20")}>
                     <td className={cn("transition-colors duration-150", isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10 text-center" : cn("p-1 border-e border-slate-100 text-center", isRowHovered && "bg-emerald-50/40"))}>
                       <div className="flex flex-col items-center justify-center h-full text-center">
-                        <span className={cn("font-black leading-none whitespace-nowrap", isPrint ? "text-[8px]" : "text-[11px] text-slate-600")}>{slot.label}</span>
+                        <span className={cn("font-black leading-none whitespace-nowrap", isPrint ? "text-[11px] text-slate-600" : "text-[11px] text-slate-600")}>{slot.label}</span>
                         <span className={cn("font-bold opacity-60 mt-0.5 whitespace-nowrap", isPrint ? "text-[4.5px]" : "text-[7px]")}>{slot.time}</span>
                       </div>
                     </td>
