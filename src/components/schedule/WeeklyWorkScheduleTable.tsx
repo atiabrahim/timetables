@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { ArrowUpDown, ArrowUp, ArrowDown, SortAsc, SortDesc } from "lucide-react";
 import { DAYS } from "../../constants/schedule";
 import { PeriodPart } from "@/types";
 
@@ -26,6 +28,11 @@ interface WeeklyWorkScheduleTableProps {
   setHoveredCell: (cell: { empId: string; dayId: number; period: string } | null) => void;
 }
 
+type SortConfig = {
+  key: "name" | "totalHours";
+  direction: "asc" | "desc";
+};
+
 const WeeklyWorkScheduleTable = ({
   isPrint = false,
   isTransposed,
@@ -45,7 +52,51 @@ const WeeklyWorkScheduleTable = ({
   hoveredCell,
   setHoveredCell
 }: WeeklyWorkScheduleTableProps) => {
-  // Helper to safely render null without JSX errors  const renderNull = () => null;
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: "name", direction: "asc" });
+
+  const sortedEmployees = useMemo(() => {
+    const sorted = [...filteredEmployees];
+    if (sortConfig.key) {
+      sorted.sort((a, b) => {
+        if (sortConfig.key === "name") {
+          const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
+          const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
+          if (nameA < nameB) return sortConfig.direction === "asc" ? -1 : 1;
+          if (nameA > nameB) return sortConfig.direction === "asc" ? 1 : -1;
+          return 0;
+        } else if (sortConfig.key === "totalHours") {
+          const totalA = assignments.filter(a => 
+            a.employeeId === a.id && 
+            (selectedClassIds.includes("all") || selectedClassIds.includes(a.classId)) &&
+            selectedPeriodParts.includes(parseInt(a.period) <= 4 ? "Morning" : parseInt(a.period) <= 7 ? "Afternoon" : "Evening")
+          ).length;
+          const totalB = assignments.filter(a => 
+            a.employeeId === b.id && 
+            (selectedClassIds.includes("all") || selectedClassIds.includes(a.classId)) &&
+            selectedPeriodParts.includes(parseInt(a.period) <= 4 ? "Morning" : parseInt(a.period) <= 7 ? "Afternoon" : "Evening")
+          ).length;
+          if (totalA < totalB) return sortConfig.direction === "asc" ? -1 : 1;
+          if (totalA > totalB) return sortConfig.direction === "asc" ? 1 : -1;
+          return 0;
+        }
+        return 0;
+      });
+    }
+    return sorted;
+  }, [filteredEmployees, sortConfig, assignments, selectedClassIds, selectedPeriodParts]);
+
+  const handleSort = (key: SortConfig["key"]) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const SortIcon = ({ column }: { column: SortConfig["key"] }) => {
+    if (sortConfig.key !== column) return <ArrowUpDown size={14} className="text-slate-400" />;
+    return sortConfig.direction === "asc" ? <ArrowUp size={14} className="text-emerald-600" /> : <ArrowDown size={14} className="text-emerald-600" />;
+  };
 
   if (isTransposed) {
     return (
@@ -61,20 +112,20 @@ const WeeklyWorkScheduleTable = ({
             <colgroup>
               <col className={isPrint ? "w-[10%]" : "w-[80px]"} />
               <col className={isPrint ? "w-[10%]" : "w-[80px]"} />
-              {filteredEmployees.map(emp => (
-                <col key={emp.id} className={isPrint ? `${75 / filteredEmployees.length}%` : "w-[100px]"} />
+              {sortedEmployees.map(emp => (
+                <col key={emp.id} className={isPrint ? `${75 / sortedEmployees.length}%` : "w-[100px]"} />
               ))}
               <col className={isPrint ? "w-[5%]" : "w-[60px]"} />
             </colgroup>
             <TableHeader>
-              <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-5" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
+              <TableRow className={cn(isPrint ? "bg-slate-100/50 border-b-2 border-black h-5" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
                 <TableHead className={cn("font-black text-emerald-900 border text-center", isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100")}>
                   {isRTL ? "اليوم" : "Day"}
                 </TableHead>
                 <TableHead className={cn("font-black text-emerald-900 border text-center", isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100")}>
                   {isRTL ? "الحصة" : "Period"}
                 </TableHead>
-                {filteredEmployees.map(emp => (
+                {sortedEmployees.map(emp => (
                   <TableHead                     key={emp.id} 
                     className={cn(
                       "text-center font-black border truncate transition-colors duration-150",
@@ -107,7 +158,7 @@ const WeeklyWorkScheduleTable = ({
                       <span className="text-[7px] font-normal opacity-75 mt-0.5 block">{periodTimings[p]}</span>
                     </TableCell>
 
-                    {filteredEmployees.map(emp => {
+                    {sortedEmployees.map(emp => {
                       const dayCells = getTransposedDayCells(emp.id, day.id);
                       const cell = dayCells.find(c => c.period === p);
                       if (!cell || cell.skip) return null;
@@ -156,6 +207,31 @@ const WeeklyWorkScheduleTable = ({
       "bg-white",
       isPrint ? "p-0 w-full" : "rounded-2xl border border-emerald-100 shadow-md overflow-hidden"
     )}>
+      {/* Sorting Controls - Only visible on screen */}
+      {!isPrint && (
+        <div className="p-4 bg-slate-50/50 border-b border-emerald-100 flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2">الترتيب حسب:</span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleSort("name")}
+            className={cn("h-7 px-3 text-xs font-bold", sortConfig.key === "name" && "bg-emerald-100 text-emerald-700")}
+          >
+            <SortIcon column="name" />
+            {isRTL ? "اسم المعلم" : "Teacher Name"}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleSort("totalHours")}
+            className={cn("h-7 px-3 text-xs font-bold", sortConfig.key === "totalHours" && "bg-emerald-100 text-emerald-700")}
+          >
+            <SortIcon column="totalHours" />
+            {isRTL ? "إجمالي الساعات" : "Total Hours"}
+          </Button>
+        </div>
+      )}
+
       <div className={cn(!isPrint && "overflow-x-auto")}>
         <Table className={cn(
           "border-collapse border-spacing-0 table-fixed",
@@ -202,7 +278,7 @@ const WeeklyWorkScheduleTable = ({
           </TableHeader>
 
           <TableBody>
-            {filteredEmployees.map(emp => {
+            {sortedEmployees.map(emp => {
               const totalHours = assignments.filter(a => 
                 a.employeeId === emp.id && 
                 (selectedClassIds.includes("all") || selectedClassIds.includes(a.classId)) &&
