@@ -67,7 +67,7 @@ const LessonCard = ({
 
     const busyRooms = allAssignments.filter(a => a.day === day && a.period === period && a.room).map(a => a.room);
     const allRegisteredRooms = Array.from(new Set(allAssignments.map(a => a.room).filter(Boolean)));
-    const freeRooms = allRegisteredRooms.filter(r => r && !busyRooms.includes(r)).slice(0, 8);
+    const freeRooms = (allRegisteredRooms as string[]).filter(r => r && !busyRooms.includes(r)).slice(0, 8);
 
     return { freeTeachers, freeRooms };
   }, [allAssignments, day, period, employees, isPrint]);
@@ -171,7 +171,7 @@ const LessonCard = ({
           <Trash2 size={14} />
           {isRTL ? "حذف الحصة لحل التعارض" : "Delete to resolve"}
         </ContextMenuItem>
-      </ContextMenu>
+      </ContextMenuContent>
     </ContextMenu>
   );
 };
