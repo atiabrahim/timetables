@@ -86,6 +86,13 @@ export interface AcademicClass {
   name: string;
   code?: string;
   qualificationLevel?: string;
+  studentCount?: number;
+}
+
+export interface Room {
+  name: string;
+  capacity?: number;
+  type?: "Theory" | "Workshop" | "Lab";
 }
 
 export interface Subject {
@@ -124,7 +131,8 @@ export interface AppState {
   templateAssignments: TemplateAssignment[];
   dailyAssignments: DailyAssignment[];
   departments: Department[];
-  rooms: string[];
+  rooms: string[]; // Legacy support
+  roomsDetailed?: Room[];
   classes: AcademicClass[];
   subjects: Subject[];
   periodConfigs: PeriodConfig[];
