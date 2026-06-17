@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { DAYS } from "../../constants/schedule";
@@ -207,6 +207,21 @@ const WeeklyWorkScheduleTable = ({
                   </TableRow>
                 ));
               })}
+              
+              {/* سطر المجموع الكلي عند التبديل */}
+              <TableRow className={cn("bg-emerald-50 border-t-2 border-black h-8")}>
+                <TableCell colSpan={2} className={cn("font-black text-emerald-900 border text-center uppercase tracking-tighter", isPrint ? "text-[8px] p-0.5 border-black" : "text-xs p-1 border-emerald-100")}>
+                  {isRTL ? "المجموع الكلي" : "Total Hours"}
+                </TableCell>
+                {sortedEmployees.map(emp => (
+                  <TableCell key={emp.id} className={cn("text-center font-black border bg-emerald-100/50", isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-sm border-emerald-200 text-emerald-700")}>
+                    {calculateEmployeeHours(emp.id)}
+                  </TableCell>
+                ))}
+                <TableCell className={cn("text-center font-black border bg-emerald-900 text-white", isPrint ? "text-[8px] p-0.5 border-black" : "text-sm")}>
+                  {sortedEmployees.reduce((sum, emp) => sum + calculateEmployeeHours(emp.id), 0)}
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </div>
