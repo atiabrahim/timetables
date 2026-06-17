@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ArrowUpDown, ArrowUp, ArrowDown, SortAsc, SortDesc } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { DAYS } from "../../constants/schedule";
 import { PeriodPart } from "@/types";
 
@@ -54,6 +54,23 @@ const WeeklyWorkScheduleTable = ({
 }: WeeklyWorkScheduleTableProps) => {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: "name", direction: "asc" });
 
+  // دالة مساعدة لحساب الساعات الفعلية لموظف معين بناءً على التصفية الحالية
+  const calculateEmployeeHours = (empId: string) => {
+    return assignments.filter(a => {
+      const isTargetEmployee = a.employeeId === empId;
+      const isTargetClass = selectedClassIds.includes("all") || selectedClassIds.includes(a.classId);
+      
+      const pNum = parseInt(a.period);
+      let part: PeriodPart = "Morning";
+      if (pNum >= 5 && pNum <= 7) part = "Afternoon";
+      else if (pNum >= 8) part = "Evening";
+      
+      const isTargetPeriod = selectedPeriodParts.includes(part);
+      
+      return isTargetEmployee && isTargetClass && isTargetPeriod;
+    }).length;
+  };
+
   const sortedEmployees = useMemo(() => {
     const sorted = [...filteredEmployees];
     if (sortConfig.key) {
@@ -65,16 +82,9 @@ const WeeklyWorkScheduleTable = ({
           if (nameA > nameB) return sortConfig.direction === "asc" ? 1 : -1;
           return 0;
         } else if (sortConfig.key === "totalHours") {
-          const totalA = assignments.filter(a => 
-            a.employeeId === a.id && 
-            (selectedClassIds.includes("all") || selectedClassIds.includes(a.classId)) &&
-            selectedPeriodParts.includes(parseInt(a.period) <= 4 ? "Morning" : parseInt(a.period) <= 7 ? "Afternoon" : "Evening")
-          ).length;
-          const totalB = assignments.filter(a => 
-            a.employeeId === b.id && 
-            (selectedClassIds.includes("all") || selectedClassIds.includes(a.classId)) &&
-            selectedPeriodParts.includes(parseInt(a.period) <= 4 ? "Morning" : parseInt(a.period) <= 7 ? "Afternoon" : "Evening")
-          ).length;
+          const totalA = calculateEmployeeHours(a.id);
+          const totalB = calculateEmployeeHours(b.id);
+          
           if (totalA < totalB) return sortConfig.direction === "asc" ? -1 : 1;
           if (totalA > totalB) return sortConfig.direction === "asc" ? 1 : -1;
           return 0;
@@ -126,7 +136,8 @@ const WeeklyWorkScheduleTable = ({
                   {isRTL ? "الحصة" : "Period"}
                 </TableHead>
                 {sortedEmployees.map(emp => (
-                  <TableHead                     key={emp.id} 
+                  <TableHead 
+                    key={emp.id} 
                     className={cn(
                       "text-center font-black border truncate transition-colors duration-150",
                       isPrint ? "text-[8px] p-0.5 border-black text-black" : cn("text-[10px] p-1 border-emerald-100 text-emerald-700", hoveredCell?.empId === emp.id ? "bg-emerald-100 text-emerald-900" : "bg-emerald-50/30")
@@ -136,7 +147,7 @@ const WeeklyWorkScheduleTable = ({
                   </TableHead>
                 ))}
                 <TableHead className={cn("font-black text-emerald-900 border text-center", isPrint ? "text-[8px] p-0.5 border-black text-black" : "text-[10px] p-1 border-emerald-100")}>
-                  {isRTL ? "کلی" : "Sum"}
+                  {isRTL ? "کلي" : "Sum"}
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -168,7 +179,8 @@ const WeeklyWorkScheduleTable = ({
                       const cls = cell.assignment ? classes.find(c => c.id === cell.assignment.classId) : null;
 
                       return (
-                        <TableCell                          key={`${emp.id}-${day.id}-${p}`}
+                        <TableCell 
+                          key={`${emp.id}-${day.id}-${p}`}
                           rowSpan={cell.rowSpan}
                           className={cn(
                             "text-center border p-0.5 transition-colors duration-150 relative overflow-hidden",
@@ -215,7 +227,7 @@ const WeeklyWorkScheduleTable = ({
             variant="ghost"
             size="sm"
             onClick={() => handleSort("name")}
-            className={cn("h-7 px-3 text-xs font-bold", sortConfig.key === "name" && "bg-emerald-100 text-emerald-700")}
+            className={cn("h-7 px-3 text-xs font-bold transition-all", sortConfig.key === "name" ? "bg-emerald-600 text-white" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100")}
           >
             <SortIcon column="name" />
             {isRTL ? "اسم المعلم" : "Teacher Name"}
@@ -224,7 +236,7 @@ const WeeklyWorkScheduleTable = ({
             variant="ghost"
             size="sm"
             onClick={() => handleSort("totalHours")}
-            className={cn("h-7 px-3 text-xs font-bold", sortConfig.key === "totalHours" && "bg-emerald-100 text-emerald-700")}
+            className={cn("h-7 px-3 text-xs font-bold transition-all", sortConfig.key === "totalHours" ? "bg-emerald-600 text-white" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100")}
           >
             <SortIcon column="totalHours" />
             {isRTL ? "إجمالي الساعات" : "Total Hours"}
@@ -279,11 +291,7 @@ const WeeklyWorkScheduleTable = ({
 
           <TableBody>
             {sortedEmployees.map(emp => {
-              const totalHours = assignments.filter(a => 
-                a.employeeId === emp.id && 
-                (selectedClassIds.includes("all") || selectedClassIds.includes(a.classId)) &&
-                selectedPeriodParts.includes(parseInt(a.period) <= 4 ? "Morning" : parseInt(a.period) <= 7 ? "Afternoon" : "Evening")
-              ).length;
+              const totalHours = calculateEmployeeHours(emp.id);
 
               return (
                 <TableRow key={emp.id} className={cn("group transition-colors duration-150", isPrint ? "h-6 border-b border-black" : "h-8 hover:bg-emerald-50/30", !isPrint && hoveredCell?.empId === emp.id && "bg-emerald-50/20")}>
