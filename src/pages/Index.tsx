@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -21,20 +21,60 @@ import {
   AlertTriangle,
   TrendingUp,
   Database,
-  LayoutGrid
+  LayoutGrid,
+  CircleDot
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, parse, isWithinInterval } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 
 const Index = () => {
   const { 
     employees, classes, subjects, assignments, requirements, rooms, isRTL, t, user, 
-    getEffectiveAssignment, language, loadDemoData 
+    getEffectiveAssignment, language, loadDemoData, periodTimings 
   } = useApp();
   const navigate = useNavigate();
+
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // update every minute
+    return () => clearInterval(timer);
+  }, []);
+
+  const todayIdx = currentTime.getDay();
+  const timeStr = format(currentTime, "HH:mm");
+
+  // Determine current and next periods based on time
+  const liveContext = useMemo(() => {
+    let currentP = null;
+    let nextP = null;
+
+    Object.entries(periodTimings).forEach(([p, range]) => {
+      const [start, end] = range.split("-");
+      if (!start || !end) return;
+
+      const startTime = parse(start.trim(), "HH:mm", new Date());
+      const endTime = parse(end.trim(), "HH:mm", new Date());
+
+      if (isWithinInterval(currentTime, { start: startTime, end: endTime })) {
+        currentP = p;
+      } else if (startTime > currentTime && (!nextP || startTime < parse(periodTimings[nextP].split("-")[0].trim(), "HH:mm", new Date()))) {
+        nextP = p;
+      }
+    });
+
+    const activeLessons = currentP ? assignments.filter(a => a.day === todayIdx && a.period === currentP) : [];
+    const busyTeacherIds = activeLessons.map(a => a.employeeId);
+    const busyRooms = activeLessons.map(a => a.room).filter(Boolean);
+
+    const freeStaff = employees.filter(e => !busyTeacherIds.includes(e.id));
+    const vacantRooms = rooms.filter(r => !busyRooms.includes(r));
+
+    return { currentP, nextP, activeLessons, freeStaff, vacantRooms };
+  }, [currentTime, periodTimings, assignments, todayIdx, employees, rooms]);
 
   const todayDateStr = useMemo(() => format(new Date(), "yyyy-MM-dd"), []);
   const todayFriendlyName = useMemo(() => {
@@ -43,20 +83,23 @@ const Index = () => {
   }, [language]);
 
   const conflictsCount = useMemo(() => {
-    const tSlots: Record<string, string[]> = {};
-    const rSlots: Record<string, string[]> = {};
-    const cSlots: Record<string, string[]> = {};
+    const teacherSlots: Record<string, string[]> = {};
+    const roomSlots: Record<string, string[]> = {};
     let conflicts = 0;
     assignments.forEach(a => {
-      const key = `${a.day}-${a.period}`;
-      const tk = `${key}-${a.employeeId}`;
-      if (tSlots[tk]) conflicts++; else tSlots[tk] = [a.id];
+      const tKey = `${a.day}-${a.period}-${a.employeeId}`;
+      if (teacherSlots[tKey]) { 
+        if (!teacherSlots[tKey].includes(a.id)) { conflicts++; teacherSlots[tKey].push(a.id); } 
+      } 
+      else { teacherSlots[tKey] = [a.id]; }
+      
       if (a.room) {
-        const rk = `${key}-${a.room}`;
-        if (rSlots[rk]) conflicts++; else rSlots[rk] = [a.id];
+        const rKey = `${a.day}-${a.period}-${a.room}`;
+        if (roomSlots[rKey]) { 
+          if (!roomSlots[rKey].includes(a.id)) { conflicts++; roomSlots[rKey].push(a.id); } 
+        } 
+        else { roomSlots[rKey] = [a.id]; }
       }
-      const ck = `${key}-${a.classId}`;
-      if (cSlots[ck]) conflicts++; else cSlots[ck] = [a.id];
     });
     return conflicts;
   }, [assignments]);
@@ -93,7 +136,8 @@ const Index = () => {
   const completionPercentage = useMemo(() => {
     if (requirements.length === 0) {
       if (classes.length === 0) return 0;
-      return Math.min(Math.round((assignments.length / (classes.length * 30)) * 100), 100) || 0;
+      const totalPotentialLessons = classes.length * 30;
+      return Math.min(Math.round((assignments.length / totalPotentialLessons) * 100), 100) || 0;
     }
     const totalRequired = requirements.reduce((sum, r) => sum + r.count, 0);
     const totalPlaced = requirements.reduce((sum, r) => {
@@ -117,7 +161,7 @@ const Index = () => {
                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100">{isRTL ? "نظام جديد" : "New System"}</span>
               </div>
               <h3 className="text-2xl md:text-3xl font-black tracking-tight">{isRTL ? "هل ترغب في تجربة النظام ببيانات جاهزة؟" : "Want to try the system with demo data?"}</h3>
-              <p className="text-sm font-bold text-emerald-100/80 max-w-xl leading-relaxed">{isRTL ? "يبدو أنك تفتح النظام لأول مرة! يمكنك تحميل بيانات تجريبية لتجربة كافة ميزات النظام والتقارير فوراً." : "It looks like you are opening the system for the first time! Load demo data to try all features."}</p>
+              <p className="text-sm font-bold text-emerald-100/80 max-w-xl leading-relaxed">{isRTL ? "يبدو أنك تفتح النظام لأول مرة! يمكنك بنقرة واحدة تحميل بيانات تجريبية لتجربة كافة ميزات النظام والتقارير فوراً." : "It looks like you are opening the system for the first time! Load demo data in one click to try all features."}</p>
             </div>
             <Button onClick={loadDemoData} className="h-14 px-8 bg-white text-emerald-950 hover:bg-emerald-50 rounded-2xl font-black text-base shadow-xl transition-all hover:scale-105 shrink-0 gap-2">
               <Database size={18} />
@@ -126,6 +170,89 @@ const Index = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Live Status Banner */}
+      <Card className="border-none shadow-xl bg-white overflow-hidden rounded-[2.5rem]">
+        <div className="flex flex-col md:flex-row">
+          <div className="bg-emerald-950 text-white p-8 md:w-1/3 flex flex-col justify-between border-b md:border-b-0 md:border-e border-emerald-900/50">
+            <div className="space-y-1">
+              <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full mb-4">
+                <CircleDot size={12} className="animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest">{t.liveStatus}</span>
+              </div>
+              <h3 className="text-4xl font-black tracking-tighter">
+                {format(currentTime, "HH:mm")}
+              </h3>
+              <p className="text-emerald-100/50 font-bold text-xs uppercase tracking-widest">{format(currentTime, "EEEE, d MMM")}</p>
+            </div>
+
+            <div className="mt-8 space-y-4">
+              <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
+                <span className="text-[10px] font-black text-emerald-400/60 uppercase">{t.currentPeriod}</span>
+                <span className="text-sm font-black">{liveContext.currentP ? (isRTL ? `حصة ${liveContext.currentP}` : `Period ${liveContext.currentP}`) : (isRTL ? "---" : "---")}</span>
+              </div>
+              {liveContext.nextP && (
+                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
+                  <span className="text-[10px] font-black text-white/30 uppercase">{t.nextPeriod}</span>
+                  <span className="text-sm font-black text-white/50">{isRTL ? `حصة ${liveContext.nextP}` : `Period ${liveContext.nextP}`}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="p-8 md:w-2/3 bg-slate-50/30">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                  <LayoutGrid size={12} /> {t.inClass}
+                </h4>
+                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                  {liveContext.activeLessons.length > 0 ? liveContext.activeLessons.map((l, i) => {
+                    const emp = employees.find(e => e.id === l.employeeId);
+                    return (
+                      <div key={i} className="p-3 bg-white border border-slate-100 rounded-xl flex items-center gap-2 shadow-sm">
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-black text-[10px]">{emp?.lastName[0]}</div>
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-black text-slate-800 truncate">{emp?.lastName}</p>
+                          <p className="text-[9px] font-bold text-slate-400 truncate">{l.room || "---"}</p>
+                        </div>
+                      </div>
+                    );
+                  }) : <p className="text-[10px] font-bold text-slate-300 italic">{t.noLessonsNow}</p>}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
+                  <UserCheck size={12} /> {t.freeStaff}
+                </h4>
+                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                  {liveContext.freeStaff.length > 0 ? liveContext.freeStaff.map((e, i) => (
+                    <div key={i} className="p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center font-black text-[10px]">{e.lastName[0]}</div>
+                      <p className="text-[11px] font-black text-emerald-900 truncate">{e.lastName}</p>
+                    </div>
+                  )) : <p className="text-[10px] font-bold text-slate-300 italic">None</p>}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-[10px] font-black text-rose-600 uppercase tracking-widest flex items-center gap-1.5">
+                  <MapPin size={12} /> {t.vacantRooms}
+                </h4>
+                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
+                  {liveContext.vacantRooms.length > 0 ? liveContext.vacantRooms.map((r, i) => (
+                    <div key={i} className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-rose-500 text-white flex items-center justify-center font-black text-[10px] truncate px-0.5">{r}</div>
+                      <p className="text-[11px] font-black text-rose-900 truncate">{r}</p>
+                    </div>
+                  )) : <p className="text-[10px] font-bold text-slate-300 italic">None</p>}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {conflictsCount > 0 && (
         <Card className="border-none shadow-lg bg-amber-50 border border-amber-200 rounded-[2rem] overflow-hidden cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => navigate("/schedule")}>
@@ -143,61 +270,6 @@ const Index = () => {
           </CardContent>
         </Card>
       )}
-
-      <div className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-[3.5rem] blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
-        <div className="relative overflow-hidden rounded-[3.5rem] bg-emerald-950 p-12 md:p-20 text-white shadow-2xl">
-          <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-emerald-500/10 rounded-full -mr-40 -mt-40 blur-3xl animate-pulse"></div>
-          <div className="relative z-10 grid grid-cols-1 xl:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="flex items-center gap-3">
-                <div className="px-4 py-1.5 bg-emerald-500/20 rounded-full border border-emerald-400/30 flex items-center gap-2">
-                  <ShieldCheck size={14} className="text-emerald-400" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-100">System Secure</span>
-                </div>
-                <div className="px-4 py-1.5 bg-blue-500/20 rounded-full border border-blue-400/30 flex items-center gap-2">
-                  <Zap size={14} className="text-blue-400" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-100">Live Sync</span>
-                </div>
-              </div>
-              <div className="space-y-4">
-                <h2 className="text-5xl md:text-7xl font-black tracking-tight leading-[1.1]">
-                  {t.welcome} <br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
-                    {user?.fullName || "Administrator"}
-                  </span>
-                </h2>
-                <p className="text-emerald-100/60 font-bold text-xl max-w-lg leading-relaxed">
-                  {isRTL ? "نظام الإدارة المتكامل للجدول الدراسي والمهام البيداغوجية." : "Integrated management system for schedule."}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-4 pt-4">
-                <Button onClick={() => navigate("/schedule")} className="h-16 px-10 bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-black rounded-3xl text-lg shadow-xl shadow-emerald-500/20 transition-all hover:scale-105">
-                  {isRTL ? "بدء الجدولة" : "Start Scheduling"}
-                </Button>
-                <Button onClick={() => navigate("/reports-new")} variant="outline" className="h-16 px-10 border-white/20 bg-white/5 hover:bg-white/10 text-white font-black rounded-3xl text-lg backdrop-blur-md">
-                  <FileText className="mr-2 h-6 w-6" />
-                  {isRTL ? "التقارير" : "Reports"}
-                </Button>
-              </div>
-            </div>
-            <div className="hidden xl:grid grid-cols-2 gap-6">
-              {[
-                { label: t.stats.lessons, value: assignments.length, icon: ListChecks, color: "text-emerald-400" },
-                { label: t.stats.subjects, value: subjects.length, icon: BookOpen, color: "text-blue-400" },
-                { label: "Active Today", value: todayDuties.reduce((acc, d) => acc + d.count, 0), icon: UserCheck, color: "text-amber-400" },
-                { label: "Completion", value: `${completionPercentage}%`, icon: BarChart3, color: "text-rose-400" }
-              ].map((box, i) => (
-                <div key={i} className="bg-white/5 backdrop-blur-2xl p-8 rounded-[3rem] border border-white/10 group/box hover:bg-white/10 transition-all">
-                  <box.icon className={cn("mb-4 transition-transform group-hover/box:scale-110", box.color)} size={32} />
-                  <p className="text-4xl font-black tracking-tighter mb-1">{box.value}</p>
-                  <p className="text-[10px] font-black text-emerald-400/60 uppercase tracking-widest">{box.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div className="xl:col-span-2 space-y-8">
