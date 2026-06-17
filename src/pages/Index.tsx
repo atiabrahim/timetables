@@ -17,7 +17,6 @@ import {
   Zap,
   ShieldCheck,
   BarChart3,
-  Settings2,
   Sparkles,
   AlertTriangle,
   TrendingUp,
@@ -31,7 +30,7 @@ import { ar, enUS } from "date-fns/locale";
 
 const Index = () => {
   const { 
-    employees, classes, subjects, assignments, rooms, isRTL, t, user, 
+    employees, classes, subjects, assignments, requirements, rooms, isRTL, t, user, 
     getEffectiveAssignment, language, loadDemoData 
   } = useApp();
   const navigate = useNavigate();
@@ -77,25 +76,30 @@ const Index = () => {
 
   const quickActions = [
     { label: isRTL ? "إضافة حصة" : "Add Lesson", icon: Calendar, path: "/schedule", color: "bg-emerald-100 text-emerald-700" },
-    { label: isRTL ? "جدول القاعات" : "Room Schedule", icon: MapPin, path: "/schedule", color: "bg-rose-100 text-rose-700" },
+    { label: isRTL ? "جدول القاعات" : "Room Schedule", icon: MasterSchedule, path: "/master-schedule", color: "bg-rose-100 text-rose-700" },
     { label: isRTL ? "المولد التلقائي" : "Auto Generator", icon: Sparkles, path: "/auto-generator", color: "bg-teal-100 text-teal-700" },
     { label: isRTL ? "تكليف يومي" : "Assign Duty", icon: UserCheck, path: "/assignments", color: "bg-blue-100 text-blue-700" },
     { label: isRTL ? "تقرير الحضور" : "Attendance", icon: FileText, path: "/reports-new", color: "bg-amber-100 text-amber-700" },
   ];
 
   const completionPercentage = useMemo(() => {
-    if (classes.length === 0) return 0;
-    const totalPotentialLessons = classes.length * 30;
-    return Math.min(Math.round((assignments.length / totalPotentialLessons) * 100), 100) || 0;
-  }, [assignments, classes]);
+    if (requirements.length === 0) {
+      if (classes.length === 0) return 0;
+      const totalPotentialLessons = classes.length * 30;
+      return Math.min(Math.round((assignments.length / totalPotentialLessons) * 100), 100) || 0;
+    }
+    const totalRequired = requirements.reduce((sum, r) => sum + r.count, 0);
+    const totalPlaced = requirements.reduce((sum, r) => {
+      const placed = assignments.filter(a => a.subjectId === r.subjectId && a.employeeId === r.employeeId && a.classId === r.classId).length;
+      return sum + Math.min(placed, r.count);
+    }, 0);
+    return Math.round((totalPlaced / totalRequired) * 100);
+  }, [assignments, requirements, classes]);
 
-  const isSystemEmpty = useMemo(() => {
-    return employees.length === 0 && classes.length === 0;
-  }, [employees, classes]);
+  const isSystemEmpty = useMemo(() => employees.length === 0 && classes.length === 0, [employees, classes]);
 
   return (
     <div className="space-y-10 pb-20">
-      {/* بنر توليد البيانات التجريبية إذا كان النظام فارغاً */}
       {isSystemEmpty && (
         <Card className="border-none shadow-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-[2.5rem] overflow-hidden relative group">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
@@ -103,26 +107,12 @@ const Index = () => {
             <div className="space-y-2 text-center md:text-start">
               <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-1.5 rounded-full border border-white/10 mb-2">
                 <Sparkles size={14} className="text-emerald-200 fill-white" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100">
-                  {isRTL ? "نظام جديد" : "New System"}
-                </span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100">{isRTL ? "نظام جديد" : "New System"}</span>
               </div>
-              <h3 className="text-2xl md:text-3xl font-black tracking-tight">
-                {isRTL ? "هل ترغب في تجربة النظام ببيانات جاهزة؟" : "Want to try the system with demo data?"}
-              </h3>
-              <p className="text-sm font-bold text-emerald-100/80 max-w-xl leading-relaxed">
-                {isRTL 
-                  ? "يبدو أنك تفتح النظام لأول مرة! يمكنك بنقرة واحدة توليد أساتذة، فروع، مواد، وجدول حصص كامل لتجربة كافة ميزات النظام والتقارير فوراً."
-                  : "It looks like you are opening the system for the first time! Generate teachers, classes, subjects, and a complete schedule in one click to test all features."}
-              </p>
+              <h3 className="text-2xl md:text-3xl font-black tracking-tight">{isRTL ? "هل ترغب في تجربة النظام ببيانات جاهزة؟" : "Want to try the system with demo data?"}</h3>
+              <p className="text-sm font-bold text-emerald-100/80 max-w-xl leading-relaxed">{isRTL ? "يبدو أنك تفتح النظام لأول مرة! يمكنك بنقرة واحدة توليد أساتذة، فروع، مواد، وجدول حصص كامل لتجربة كافة ميزات النظام والتقارير فوراً." : "It looks like you are opening the system for the first time! Generate teachers, classes, subjects, and a complete schedule in one click."}</p>
             </div>
-            <Button 
-              onClick={loadDemoData}
-              className="h-14 px-8 bg-white text-emerald-950 hover:bg-emerald-50 rounded-2xl font-black text-base shadow-xl transition-all hover:scale-105 shrink-0 gap-2"
-            >
-              <Database size={18} />
-              {isRTL ? "تحميل البيانات التجريبية" : "Load Demo Data"}
-            </Button>
+            <Button onClick={loadDemoData} className="h-14 px-8 bg-white text-emerald-950 hover:bg-emerald-50 rounded-2xl font-black text-base shadow-xl transition-all hover:scale-105 shrink-0 gap-2"><Database size={18} />{isRTL ? "تحميل البيانات التجريبية" : "Load Demo Data"}</Button>
           </CardContent>
         </Card>
       )}
@@ -130,7 +120,7 @@ const Index = () => {
       {conflictsCount > 0 && (
         <Card className="border-none shadow-lg bg-amber-50 border border-amber-200 rounded-[2rem] overflow-hidden cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => navigate("/schedule")}>
           <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-4"><div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-200"><AlertTriangle size={24} /></div><div><h4 className="font-black text-amber-900">{isRTL ? "تم اكتشاف تعارضات في الجدول!" : "Schedule Conflicts Detected!"}</h4><p className="text-xs font-bold text-amber-700">{isRTL ? `هناك ${conflictsCount} حصة متداخلة تتطلب تدخلكم الفوري.` : `There are ${conflictsCount} overlapping lessons requiring attention.`}</p></div></div>
+            <div className="flex items-center gap-4"><div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-200"><AlertTriangle size={24} /></div><div><h4 className="font-black text-amber-900">{isRTL ? "تم اكتشاف تعارضات في الجدول!" : "Schedule Conflicts Detected!"}</h4><p className="text-xs font-bold text-amber-700">{isRTL ? `هناك ${conflictsCount} حصة متداخلة تتطلب تدخلكم الفوري.` : `There are ${conflictsCount} overlapping lessons.`}</p></div></div>
             <Button variant="ghost" className="text-amber-900 font-bold">{isRTL ? "حل التعارضات" : "Resolve Now"}</Button>
           </CardContent>
         </Card>
@@ -188,7 +178,7 @@ const Index = () => {
                       <div className="space-y-3">
                         {duty.employees.length > 0 ? duty.employees.map((emp: any) => (
                             <div key={emp.id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all"><div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center font-black text-emerald-700 text-xs">{emp.lastName[0]}{emp.firstName[0]}</div><div className="flex-1 min-w-0"><p className="text-xs font-black text-slate-800 truncate">{emp.lastName} {emp.firstName}</p><p className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">{emp.category}</p></div></div>
-                        )) : <div className="py-12 flex flex-col items-center justify-center text-slate-300 gap-2 border-2 border-dashed border-slate-100 rounded-[2rem]"><Clock size={24} className="opacity-20" /><span className="text-[10px] font-bold uppercase tracking-widest">Idle State</span></div>}
+                        )) : <div className="py-12 flex flex-col items-center justify-center text-slate-300 gap-2 border-2 border-dashed border-slate-100 rounded-[3rem]"><Clock size={24} className="opacity-20" /><span className="text-[10px] font-bold uppercase tracking-widest">Idle State</span></div>}
                       </div>
                     </div>
                   </div>

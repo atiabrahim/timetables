@@ -20,18 +20,17 @@ export interface Institution {
   email: string;
   academicYear?: string;
   logo?: string;
-  // مسميات التواقيع
   pedagogicalManagerTitle?: string;
   generalManagerTitle?: string;
 }
 
 export interface Department {
   id: string;
-  number: string; // الرقم
-  name: string; // التسمية
-  head: string; // الرئيس
-  code: string; // الرمز
-  observation: string; // ملاحظة
+  number: string;
+  name: string;
+  head: string;
+  code: string;
+  observation: string;
 }
 
 export interface Employee {
@@ -53,6 +52,15 @@ export interface Assignment {
   classId: string;
   department: string;
   room?: string;
+}
+
+export interface Requirement {
+  id: string;
+  employeeId: string;
+  subjectId: string;
+  classId: string;
+  room: string;
+  count: number;
 }
 
 export interface TemplateAssignment {
@@ -112,6 +120,7 @@ export interface AppState {
   institution: Institution;
   employees: Employee[];
   assignments: Assignment[];
+  requirements: Requirement[];
   templateAssignments: TemplateAssignment[];
   dailyAssignments: DailyAssignment[];
   departments: Department[];

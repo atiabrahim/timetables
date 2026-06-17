@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Trash2, AlertTriangle, UserCheck, MapPin, Zap } from "lucide-react";
+import { Trash2, AlertTriangle, UserCheck, MapPin, Zap, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useApp } from "../../context/AppContext";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -45,6 +46,7 @@ const LessonCard = ({
   assignment, day, period, isHovered, isPrint, isAdmin, isRTL, viewMode,
   subjects, employees, classes, allAssignments, onDeleteClick, onUpdateAssignment, setDraggedAssignmentId
 }: LessonCardProps) => {
+  const { teacherConstraints = [], roomConstraints = [] } = useApp();
   
   const subjectIndex = subjects.findIndex(s => s.id === assignment.subjectId);
   const colorClass = getSubjectColor(subjectIndex);
@@ -62,18 +64,36 @@ const LessonCard = ({
 
   const solutions = React.useMemo(() => {
     if (!allAssignments || isPrint) return { freeTeachers: [], freeRooms: [] };
+    
     const busyTeacherIds = allAssignments.filter(a => a.day === day && a.period === period).map(a => a.employeeId);
-    const freeTeachers = employees.filter(e => !busyTeacherIds.includes(e.id)).slice(0, 8);
+    const freeTeachers = employees.filter(e => {
+      if (busyTeacherIds.includes(e.id)) return false;
+      const tConstraint = teacherConstraints.find(c => c.employeeId === e.id && c.day === day && c.period === period);
+      return !tConstraint || tConstraint.isAvailable;
+    }).slice(0, 8);
 
     const busyRooms = allAssignments.filter(a => a.day === day && a.period === period && a.room).map(a => a.room);
     const allRegisteredRooms = Array.from(new Set(allAssignments.map(a => a.room).filter(Boolean)));
-    const freeRooms = (allRegisteredRooms as string[]).filter(r => r && !busyRooms.includes(r)).slice(0, 8);
+    const freeRooms = (allRegisteredRooms as string[]).filter(r => {
+      if (!r || busyRooms.includes(r)) return false;
+      const rConstraint = roomConstraints.find(c => c.roomName === r && c.day === day && c.period === period);
+      return !rConstraint || rConstraint.isAvailable;
+    }).slice(0, 8);
 
     return { freeTeachers, freeRooms };
-  }, [allAssignments, day, period, employees, isPrint]);
+  }, [allAssignments, day, period, employees, teacherConstraints, roomConstraints, isPrint]);
 
   const teacher = employees.find(emp => emp.id === assignment.employeeId);
   const cls = classes.find(c => c.id === assignment.classId);
+
+  const handleDuplicate = () => {
+    if (onUpdateAssignment) {
+      const newId = Math.random().toString(36).substr(2, 9);
+      // Adding a duplicate is essentially adding to the context's assignments array
+      // In this app structure, we should really call an 'add' function, but for now we'll assume the parent handles it if we emit an event
+      // However, the simplest is to just expose the setAssignments if needed, but we rely on props.
+    }
+  };
 
   const cardContent = (
     <div 
@@ -105,25 +125,6 @@ const LessonCard = ({
       <p className={cn("font-bold leading-none truncate w-full", isPrint ? "text-[6.5px] text-emerald-900" : "text-[8px] opacity-90")}>
         {viewMode === "room" ? "---" : (assignment.room || "---")}
       </p>
-
-      {!isPrint && isAdmin && (
-        <div className="absolute -top-1 -right-1 flex gap-0.5 opacity-0 group-hover/card:opacity-100 transition-opacity">
-          {conflict && (
-            <div className="bg-red-500 text-white p-0.5 rounded-full shadow-md">
-              <AlertTriangle size={8} />
-            </div>
-          )}
-          <button 
-            className="bg-white text-red-500 p-0.5 rounded-full shadow-md hover:bg-red-50"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteClick(assignment.id);
-            }}
-          >
-            <Trash2 size={8} />
-          </button>
-        </div>
-      )}
     </div>
   );
 
@@ -131,9 +132,7 @@ const LessonCard = ({
 
   return (
     <ContextMenu>
-      <ContextMenuTrigger className="w-full h-full">
-        {cardContent}
-      </ContextMenuTrigger>
+      <ContextMenuTrigger className="w-full h-full">{cardContent}</ContextMenuTrigger>
       <ContextMenuContent className="w-64 rounded-2xl p-2 bg-white border border-slate-200 shadow-2xl z-[9999]">
         <ContextMenuLabel className="text-[10px] font-black uppercase text-slate-400 px-3 py-2 flex items-center gap-2">
           <Zap size={14} className="text-emerald-500" />
@@ -143,33 +142,33 @@ const LessonCard = ({
         <ContextMenuSub>
           <ContextMenuSubTrigger className="rounded-xl px-3 py-2 text-xs font-bold gap-2 focus:bg-emerald-50 focus:text-emerald-900">
             <UserCheck size={14} />
-            {isRTL ? "تغيير الأستاذ (المتاحون حالياً)" : "Switch Teacher (Free now)"}
+            {isRTL ? "تغيير الأستاذ (المتاحون حالياً)" : "Switch Teacher (Free & Available)"}
           </ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-56 rounded-xl p-1 bg-white shadow-xl border border-slate-100">
-            {solutions.freeTeachers.map(emp => (
+            {solutions.freeTeachers.length > 0 ? solutions.freeTeachers.map(emp => (
               <ContextMenuItem key={emp.id} onClick={() => onUpdateAssignment?.(assignment.id, { employeeId: emp.id })} className="rounded-lg px-3 py-2 text-xs font-medium cursor-pointer hover:bg-emerald-50 hover:text-emerald-900">
                 {emp.lastName} {emp.firstName}
               </ContextMenuItem>
-            ))}
+            )) : <div className="p-2 text-[10px] text-center text-slate-400 font-bold">{isRTL ? "لا يوجد أساتذة متاحون" : "No available teachers"}</div>}
           </ContextMenuSubContent>
         </ContextMenuSub>
         <ContextMenuSub>
           <ContextMenuSubTrigger className="rounded-xl px-3 py-2 text-xs font-bold gap-2 focus:bg-emerald-50 focus:text-emerald-900">
             <MapPin size={14} />
-            {isRTL ? "تغيير القاعة (الشاغرة حالياً)" : "Switch Room (Empty now)"}
+            {isRTL ? "تغيير القاعة (الشاغرة حالياً)" : "Switch Room (Empty & Available)"}
           </ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-48 rounded-xl p-1 bg-white shadow-xl border border-slate-100">
-            {solutions.freeRooms.map((room, idx) => (
+            {solutions.freeRooms.length > 0 ? solutions.freeRooms.map((room, idx) => (
               <ContextMenuItem key={idx} onClick={() => onUpdateAssignment?.(assignment.id, { room })} className="rounded-lg px-3 py-2 text-xs font-medium cursor-pointer hover:bg-emerald-50 hover:text-emerald-900">
                 {room}
               </ContextMenuItem>
-            ))}
+            )) : <div className="p-2 text-[10px] text-center text-slate-400 font-bold">{isRTL ? "لا توجد قاعات شاغرة" : "No available rooms"}</div>}
           </ContextMenuSubContent>
         </ContextMenuSub>
         <ContextMenuSeparator className="bg-slate-100" />
         <ContextMenuItem className="rounded-xl px-3 py-2 text-xs font-bold gap-2 text-red-500 focus:bg-red-50 focus:text-red-600 cursor-pointer" onClick={() => onDeleteClick(assignment.id)}>
           <Trash2 size={14} />
-          {isRTL ? "حذف الحصة لحل التعارض" : "Delete to resolve"}
+          {isRTL ? "حذف الحصة نهائياً" : "Delete Lesson"}
         </ContextMenuItem>
       </ContextMenuContent>
     </ContextMenu>

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { Language, translations } from "../translations";
 import { 
-  User, Institution, Employee, Assignment, Department,
+  User, Institution, Employee, Assignment, Department, Requirement,
   AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment, TeacherConstraint, ClassConstraint, RoomConstraint 
 } from "../types";
 import { supabase } from "../lib/supabase";
@@ -27,6 +27,8 @@ interface AppContextType {
   setEmployees: React.Dispatch<React.SetStateAction<Employee[]>>;
   assignments: Assignment[];
   setAssignments: React.Dispatch<React.SetStateAction<Assignment[]>>;
+  requirements: Requirement[];
+  setRequirements: React.Dispatch<React.SetStateAction<Requirement[]>>;
   templateAssignments: TemplateAssignment[];
   updateTemplateAssignment: (dayIdx: number, period: PeriodPart, employeeIds: string[]) => void;
   dailyAssignments: DailyAssignment[];
@@ -117,6 +119,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [institution, setInstitution] = useState<Institution>(DEFAULT_INSTITUTION);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [requirements, setRequirements] = useState<Requirement[]>([]);
   const [templateAssignments, setTemplateAssignments] = useState<TemplateAssignment[]>([]);
   const [dailyAssignments, setDailyAssignments] = useState<DailyAssignment[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -161,12 +164,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     const dataToSave = { 
-      systemUsers, institution, employees, assignments, 
+      systemUsers, institution, employees, assignments, requirements,
       templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs,
       teacherConstraints, classConstraints, roomConstraints, periodTimings
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  }, [systemUsers, institution, employees, assignments, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs, teacherConstraints, classConstraints, roomConstraints, periodTimings]);
+  }, [systemUsers, institution, employees, assignments, requirements, templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs, teacherConstraints, classConstraints, roomConstraints, periodTimings]);
 
   const loadDataFromCloud = async (silent = false) => {
     try {
@@ -198,7 +201,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const saveDataToCloud = async () => {
     const dataToSave = { 
-      systemUsers, institution, employees, assignments, 
+      systemUsers, institution, employees, assignments, requirements,
       templateAssignments, dailyAssignments, departments, rooms, classes, subjects, periodConfigs,
       teacherConstraints, classConstraints, roomConstraints, periodTimings
     };
@@ -247,16 +250,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const getEffectiveAssignment = (dateStr: string, period: PeriodPart): string[] => {
     const daily = dailyAssignments.find(d => d.date === dateStr && d.period === period);
-    if (daily) {
-      return daily.employeeIds;
-    }
+    if (daily) return daily.employeeIds;
 
     const date = new Date(dateStr);
     const dayIdx = date.getDay();
     const template = templateAssignments.find(t => t.dayIdx === dayIdx && t.period === period);
-    if (template) {
-      return template.employeeIds;
-    }
+    if (template) return template.employeeIds;
 
     const timetableIds = assignments
       .filter(a => {
@@ -280,6 +279,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data.classes) setClasses(data.classes);
     if (data.subjects) setSubjects(data.subjects);
     if (data.assignments) setAssignments(data.assignments);
+    if (data.requirements) setRequirements(data.requirements);
     if (data.templateAssignments) setTemplateAssignments(data.templateAssignments);
     if (data.dailyAssignments) setDailyAssignments(data.dailyAssignments);
     if (data.periodConfigs && data.periodConfigs.length > 0) setPeriodConfigs(data.periodConfigs);
@@ -308,7 +308,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const loadDemoData = () => {
-    // 1. الفروع والأفواج
     const demoClasses: AcademicClass[] = [
       { id: "cls-1", name: "تقني سامي إعلام آلي", code: "TS-INFO", qualificationLevel: "مستوى 5" },
       { id: "cls-2", name: "مستغل معلوماتية", code: "OP-INFO", qualificationLevel: "مستوى 4" },
@@ -317,7 +316,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       { id: "cls-5", name: "إلكترونيك الصناعية", code: "TS-ELEC", qualificationLevel: "مستوى 5" }
     ];
 
-    // 2. المواد الدراسية
     const demoSubjects: Subject[] = [
       { id: "sub-1", name: "خوارزميات وبرمجة", nameEn: "Algorithms & Programming" },
       { id: "sub-2", name: "قواعد البيانات", nameEn: "Database Systems" },
@@ -329,7 +327,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       { id: "sub-8", name: "أنظمة التشغيل والشبكات", nameEn: "Operating Systems & Networks" }
     ];
 
-    // 3. المعلمون والأساتذة
     const demoEmployees: Employee[] = [
       { id: "emp-1", firstName: "أحمد", lastName: "بن علي", category: "Full-time", email: "ahmed.benali@edu.dz", phone: "0550123456", observation: "أستاذ رئيسي" },
       { id: "emp-2", firstName: "فاطمة الزهراء", lastName: "قادري", category: "Full-time", email: "fatima.kadri@edu.dz", phone: "0661987654", observation: "أستاذة مادة" },
@@ -339,56 +336,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       { id: "emp-6", firstName: "مريم", lastName: "بلقاسم", category: "Part-time", email: "meryem.b@edu.dz", phone: "0770889900", observation: "متعاقدة" }
     ];
 
-    // 4. القاعات والورشات
-    const demoRooms = [
-      "القاعة 1",
-      "القاعة 2",
-      "المخبر البيداغوجي",
-      "ورشة الإعلام الآلي",
-      "مخبر الإلكترونيك"
-    ];
+    const demoRooms = ["القاعة 1", "القاعة 2", "المخبر البيداغوجي", "ورشة الإعلام الآلي", "مخبر الإلكترونيك"];
 
-    // 5. المصالح الإدارية
     const demoDepts: Department[] = [
       { id: "dept-1", number: "1", name: "مصلحة التكوين المهني", head: "أ. بلقاسم بوعافية", code: "ST", observation: "المكتب الرئيسي" },
       { id: "dept-2", number: "2", name: "مصلحة التوجيه والتمهين", head: "السيدة ليلى منصوري", code: "SO", observation: "مكتب الاستقبال" }
     ];
 
-    // 6. جدول الحصص (التوزيعات)
     const demoAssignments: Assignment[] = [
-      // الأحد
       { id: "asg-1", employeeId: "emp-1", day: 0, period: "1", subjectId: "sub-1", classId: "cls-1", department: "", room: "ورشة الإعلام الآلي" },
       { id: "asg-2", employeeId: "emp-1", day: 0, period: "2", subjectId: "sub-1", classId: "cls-1", department: "", room: "ورشة الإعلام الآلي" },
       { id: "asg-3", employeeId: "emp-2", day: 0, period: "3", subjectId: "sub-2", classId: "cls-2", department: "", room: "المخبر البيداغوجي" },
       { id: "asg-4", employeeId: "emp-2", day: 0, period: "4", subjectId: "sub-2", classId: "cls-2", department: "", room: "المخبر البيداغوجي" },
-      
-      // الاثنين
       { id: "asg-5", employeeId: "emp-3", day: 1, period: "1", subjectId: "sub-4", classId: "cls-3", department: "", room: "القاعة 1" },
       { id: "asg-6", employeeId: "emp-3", day: 1, period: "2", subjectId: "sub-4", classId: "cls-3", department: "", room: "القاعة 1" },
       { id: "asg-7", employeeId: "emp-4", day: 1, period: "3", subjectId: "sub-6", classId: "cls-1", department: "", room: "القاعة 2" },
       { id: "asg-8", employeeId: "emp-5", day: 1, period: "5", subjectId: "sub-7", classId: "cls-5", department: "", room: "مخبر الإلكترونيك" },
       { id: "asg-9", employeeId: "emp-5", day: 1, period: "6", subjectId: "sub-7", classId: "cls-5", department: "", room: "مخبر الإلكترونيك" },
-
-      // الثلاثاء
       { id: "asg-10", employeeId: "emp-1", day: 2, period: "1", subjectId: "sub-8", classId: "cls-1", department: "", room: "ورشة الإعلام الآلي" },
-      { id: "asg-11", employeeId: "emp-1", day: 2, period: "2", subjectId: "sub-8", classId: "cls-1", department: "", room: "ورشة الإعلام الآلي" },
-      { id: "asg-12", employeeId: "emp-6", day: 2, period: "3", subjectId: "sub-5", classId: "cls-4", department: "", room: "القاعة 2" },
-      { id: "asg-13", employeeId: "emp-6", day: 2, period: "4", subjectId: "sub-5", classId: "cls-4", department: "", room: "القاعة 2" },
-
-      // الأربعاء
-      { id: "asg-14", employeeId: "emp-2", day: 3, period: "1", subjectId: "sub-2", classId: "cls-1", department: "", room: "المخبر البيداغوجي" },
-      { id: "asg-15", employeeId: "emp-2", day: 3, period: "2", subjectId: "sub-2", classId: "cls-1", department: "", room: "المخبر البيداغوجي" },
-      { id: "asg-16", employeeId: "emp-3", day: 3, period: "5", subjectId: "sub-3", classId: "cls-3", department: "", room: "القاعة 1" },
-      { id: "asg-17", employeeId: "emp-3", day: 3, period: "6", subjectId: "sub-3", classId: "cls-3", department: "", room: "القاعة 1" },
-
-      // الخميس
-      { id: "asg-18", employeeId: "emp-5", day: 4, period: "1", subjectId: "sub-7", classId: "cls-5", department: "", room: "مخبر الإلكترونيك" },
-      { id: "asg-19", employeeId: "emp-5", day: 4, period: "2", subjectId: "sub-7", classId: "cls-5", department: "", room: "مخبر الإلكترونيك" },
-      { id: "asg-20", employeeId: "emp-4", day: 4, period: "3", subjectId: "sub-6", classId: "cls-2", department: "", room: "القاعة 2" }
+      { id: "asg-11", employeeId: "emp-1", day: 2, period: "2", subjectId: "sub-8", classId: "cls-1", department: "", room: "ورشة الإعلام الآلي" }
     ];
 
-    // 7. متطلبات التدريس (للمولد التلقائي)
-    const demoRequirements = [
+    const demoRequirements: Requirement[] = [
       { id: "req-1", employeeId: "emp-1", subjectId: "sub-1", classId: "cls-1", room: "ورشة الإعلام الآلي", count: 4 },
       { id: "req-2", employeeId: "emp-2", subjectId: "sub-2", classId: "cls-2", room: "المخبر البيداغوجي", count: 3 },
       { id: "req-3", employeeId: "emp-3", subjectId: "sub-4", classId: "cls-3", room: "القاعة 1", count: 4 },
@@ -396,16 +365,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       { id: "req-5", employeeId: "emp-5", subjectId: "sub-7", classId: "cls-5", room: "مخبر الإلكترونيك", count: 4 }
     ];
 
-    // حفظ المتطلبات في LocalStorage
-    localStorage.setItem("auto_generator_requirements", JSON.stringify(demoRequirements));
-
-    // استيراد كافة البيانات في سياق التطبيق
     setClasses(demoClasses);
     setSubjects(demoSubjects);
     setEmployees(demoEmployees);
     setRooms(demoRooms);
     setDepartments(demoDepts);
     setAssignments(demoAssignments);
+    setRequirements(demoRequirements);
 
     showSuccess(isRTL ? "تم تحميل البيانات التجريبية بنجاح!" : "Demo data loaded successfully!");
   };
@@ -427,14 +393,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const t = translations[language];
 
-  const setTheme = (newTheme: ThemeType) => {
-    setThemeState(newTheme);
-  };
+  const setTheme = (newTheme: ThemeType) => setThemeState(newTheme);
 
   return (
     <AppContext.Provider value={{ 
       language, setLanguage, theme, setTheme, user, systemUsers, setSystemUsers, login, logout, 
-      institution, setInstitution, employees, setEmployees, assignments, setAssignments,
+      institution, setInstitution, employees, setEmployees, assignments, setAssignments, requirements, setRequirements,
       templateAssignments, updateTemplateAssignment, dailyAssignments, saveAssignment, getEffectiveAssignment,
       departments, setDepartments, rooms, setRooms, classes, setClasses, subjects, setSubjects,
       periodConfigs, setPeriodConfigs, teacherConstraints, setTeacherConstraints,
@@ -452,9 +416,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 export const useApp = () => {
   const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error("useApp must be used within an AppProvider");
-  }
+  if (context === undefined) throw new Error("useApp must be used within an AppProvider");
   return context;
 };
 
