@@ -43,23 +43,20 @@ const Index = () => {
   }, [language]);
 
   const conflictsCount = useMemo(() => {
-    const teacherSlots: Record<string, string[]> = {};
-    const roomSlots: Record<string, string[]> = {};
+    const tSlots: Record<string, string[]> = {};
+    const rSlots: Record<string, string[]> = {};
+    const cSlots: Record<string, string[]> = {};
     let conflicts = 0;
     assignments.forEach(a => {
-      const tKey = `${a.day}-${a.period}-${a.employeeId}`;
-      if (teacherSlots[tKey]) { 
-        if (!teacherSlots[tKey].includes(a.id)) { conflicts++; teacherSlots[tKey].push(a.id); } 
-      } 
-      else { teacherSlots[tKey] = [a.id]; }
-      
+      const key = `${a.day}-${a.period}`;
+      const tk = `${key}-${a.employeeId}`;
+      if (tSlots[tk]) conflicts++; else tSlots[tk] = [a.id];
       if (a.room) {
-        const rKey = `${a.day}-${a.period}-${a.room}`;
-        if (roomSlots[rKey]) { 
-          if (!roomSlots[rKey].includes(a.id)) { conflicts++; roomSlots[rKey].push(a.id); } 
-        } 
-        else { roomSlots[rKey] = [a.id]; }
+        const rk = `${key}-${a.room}`;
+        if (rSlots[rk]) conflicts++; else rSlots[rk] = [a.id];
       }
+      const ck = `${key}-${a.classId}`;
+      if (cSlots[ck]) conflicts++; else cSlots[ck] = [a.id];
     });
     return conflicts;
   }, [assignments]);
@@ -96,8 +93,7 @@ const Index = () => {
   const completionPercentage = useMemo(() => {
     if (requirements.length === 0) {
       if (classes.length === 0) return 0;
-      const totalPotentialLessons = classes.length * 30;
-      return Math.min(Math.round((assignments.length / totalPotentialLessons) * 100), 100) || 0;
+      return Math.min(Math.round((assignments.length / (classes.length * 30)) * 100), 100) || 0;
     }
     const totalRequired = requirements.reduce((sum, r) => sum + r.count, 0);
     const totalPlaced = requirements.reduce((sum, r) => {
@@ -121,7 +117,7 @@ const Index = () => {
                 <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100">{isRTL ? "نظام جديد" : "New System"}</span>
               </div>
               <h3 className="text-2xl md:text-3xl font-black tracking-tight">{isRTL ? "هل ترغب في تجربة النظام ببيانات جاهزة؟" : "Want to try the system with demo data?"}</h3>
-              <p className="text-sm font-bold text-emerald-100/80 max-w-xl leading-relaxed">{isRTL ? "يبدو أنك تفتح النظام لأول مرة! يمكنك بنقرة واحدة تحميل بيانات تجريبية لتجربة كافة ميزات النظام والتقارير فوراً." : "It looks like you are opening the system for the first time! Load demo data in one click to try all features."}</p>
+              <p className="text-sm font-bold text-emerald-100/80 max-w-xl leading-relaxed">{isRTL ? "يبدو أنك تفتح النظام لأول مرة! يمكنك تحميل بيانات تجريبية لتجربة كافة ميزات النظام والتقارير فوراً." : "It looks like you are opening the system for the first time! Load demo data to try all features."}</p>
             </div>
             <Button onClick={loadDemoData} className="h-14 px-8 bg-white text-emerald-950 hover:bg-emerald-50 rounded-2xl font-black text-base shadow-xl transition-all hover:scale-105 shrink-0 gap-2">
               <Database size={18} />
@@ -139,8 +135,8 @@ const Index = () => {
                 <AlertTriangle size={24} />
               </div>
               <div>
-                <h4 className="font-black text-amber-900">{isRTL ? "تم اكتشاف تعارضات في الجدول!" : "Schedule Conflicts Detected!"}</h4>
-                <p className="text-xs font-bold text-amber-700">{isRTL ? `هناك ${conflictsCount} حصة متداخلة تتطلب تدخلكم الفوري.` : `There are ${conflictsCount} overlapping lessons.`}</p>
+                <h4 className="font-black text-amber-900">{isRTL ? "تم اكتشاف تعارضات!" : "Conflicts Detected!"}</h4>
+                <p className="text-xs font-bold text-amber-700">{isRTL ? `هناك ${conflictsCount} تداخلات في المهام أو القاعات.` : `There are ${conflictsCount} resource overlaps.`}</p>
               </div>
             </div>
             <Button variant="ghost" className="text-amber-900 font-bold">{isRTL ? "حل التعارضات" : "Resolve Now"}</Button>

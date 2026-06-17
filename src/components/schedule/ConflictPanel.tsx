@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { AlertTriangle, CheckCircle2, User, MapPin, Clock, GraduationCap } from "lucide-react";
+import { AlertTriangle, CheckCircle2, User, MapPin, Clock, GraduationCap, ShieldAlert } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { DAYS } from "../../constants/schedule";
@@ -18,8 +18,8 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
   const conflicts = useMemo(() => {
     const teacherConflicts: any[] = [];
     const roomConflicts: any[] = [];
+    const classConflicts: any[] = [];
 
-    // Group assignments by day and period
     const slots: Record<string, any[]> = {};
     assignments.forEach(asgn => {
       const key = `${asgn.day}-${asgn.period}`;
@@ -31,7 +31,7 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
       const [dayStr, period] = key.split("-");
       const day = parseInt(dayStr);
 
-      // 1. Check teacher conflicts
+      // 1. Teacher conflicts
       const teacherMap: Record<string, any[]> = {};
       slotAssignments.forEach(asgn => {
         if (asgn.employeeId) {
@@ -39,19 +39,11 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
           teacherMap[asgn.employeeId].push(asgn);
         }
       });
-
       Object.entries(teacherMap).forEach(([empId, asgns]) => {
-        if (asgns.length > 1) {
-          teacherConflicts.push({
-            day,
-            period,
-            employeeId: empId,
-            assignments: asgns
-          });
-        }
+        if (asgns.length > 1) teacherConflicts.push({ day, period, employeeId: empId, assignments: asgns });
       });
 
-      // 2. Check room conflicts
+      // 2. Room conflicts
       const roomMap: Record<string, any[]> = {};
       slotAssignments.forEach(asgn => {
         if (asgn.room && asgn.room.trim() !== "") {
@@ -59,38 +51,35 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
           roomMap[asgn.room].push(asgn);
         }
       });
-
       Object.entries(roomMap).forEach(([room, asgns]) => {
-        if (asgns.length > 1) {
-          roomConflicts.push({
-            day,
-            period,
-            room,
-            assignments: asgns
-          });
+        if (asgns.length > 1) roomConflicts.push({ day, period, room, assignments: asgns });
+      });
+
+      // 3. Class conflicts (A class cannot be in two places)
+      const classMap: Record<string, any[]> = {};
+      slotAssignments.forEach(asgn => {
+        if (asgn.classId) {
+          if (!classMap[asgn.classId]) classMap[asgn.classId] = [];
+          classMap[asgn.classId].push(asgn);
         }
+      });
+      Object.entries(classMap).forEach(([classId, asgns]) => {
+        if (asgns.length > 1) classConflicts.push({ day, period, classId, assignments: asgns });
       });
     });
 
-    return { teacherConflicts, roomConflicts, total: teacherConflicts.length + roomConflicts.length };
+    return { 
+      teacherConflicts, 
+      roomConflicts, 
+      classConflicts,
+      total: teacherConflicts.length + roomConflicts.length + classConflicts.length 
+    };
   }, [assignments]);
 
-  const getDayName = (dayId: number) => {
-    return DAYS.find(d => d.id === dayId)?.[isRTL ? "name" : "en"] || "";
-  };
-
-  const getEmployeeName = (id: string) => {
-    const emp = employees.find(e => e.id === id);
-    return emp ? `${emp.lastName} ${emp.firstName}` : "---";
-  };
-
-  const getClassName = (id: string) => {
-    return classes.find(c => c.id === id)?.name || "---";
-  };
-
-  const getSubjectName = (id: string) => {
-    return subjects.find(s => s.id === id)?.name || "---";
-  };
+  const getDayName = (dayId: number) => DAYS.find(d => d.id === dayId)?.[isRTL ? "name" : "en"] || "";
+  const getEmployeeName = (id: string) => employees.find(e => e.id === id) ? `${employees.find(e => e.id === id).lastName} ${employees.find(e => e.id === id).firstName}` : "---";
+  const getClassName = (id: string) => classes.find(c => c.id === id)?.name || "---";
+  const getSubjectName = (id: string) => subjects.find(s => s.id === id)?.name || "---";
 
   return (
     <Card className="border-none shadow-lg shadow-emerald-100/10 rounded-2xl overflow-hidden bg-white">
@@ -100,100 +89,57 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
       )}>
         <CardTitle className="text-xs font-black flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            {conflicts.total > 0 ? (
-              <AlertTriangle className="text-amber-500 animate-pulse" size={16} />
-            ) : (
-              <CheckCircle2 className="text-emerald-500" size={16} />
-            )}
-            <span className={conflicts.total > 0 ? "text-amber-950" : "text-emerald-950"}>
-              {isRTL ? "مستكشف التعارضات" : "Conflict Detector"}
-            </span>
+            {conflicts.total > 0 ? <AlertTriangle className="text-amber-500 animate-pulse" size={16} /> : <CheckCircle2 className="text-emerald-500" size={16} />}
+            <span className={conflicts.total > 0 ? "text-amber-950" : "text-emerald-950"}>{isRTL ? "مستكشف التعارضات" : "Conflict Detector"}</span>
           </div>
-          <span className={cn(
-            "text-[9px] font-black px-2 py-0.5 rounded-full",
-            conflicts.total > 0 ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
-          )}>
-            {conflicts.total}
-          </span>
+          <span className={cn("text-[9px] font-black px-2 py-0.5 rounded-full", conflicts.total > 0 ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800")}>{conflicts.total}</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-4 max-h-[220px] overflow-y-auto space-y-3">
+      <CardContent className="p-4 max-h-[300px] overflow-y-auto space-y-3">
         {conflicts.total === 0 ? (
-          <div className="text-center py-4 text-slate-400 space-y-1">
+          <div className="text-center py-6 text-slate-400 space-y-1">
             <CheckCircle2 className="mx-auto text-emerald-200" size={28} />
-            <p className="text-[10px] font-bold text-emerald-800">
-              {isRTL ? "الجدول سليم 100%!" : "Schedule is 100% clean!"}
-            </p>
+            <p className="text-[10px] font-bold text-emerald-800">{isRTL ? "الجدول سليم 100%!" : "Schedule is clean!"}</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {/* Teacher Conflicts */}
             {conflicts.teacherConflicts.map((conf, idx) => (
               <div key={`t-${idx}`} className="p-2.5 bg-amber-50/20 border border-amber-100/70 rounded-xl space-y-1.5">
                 <div className="flex items-center justify-between border-b border-amber-100/30 pb-1">
-                  <span className="text-[10px] font-black text-amber-900 flex items-center gap-1">
-                    <User size={12} className="text-amber-600" />
-                    {getEmployeeName(conf.employeeId)}
-                  </span>
-                  <span className="text-[8px] font-black text-amber-700 bg-amber-100/30 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                    <Clock size={8} />
-                    {getDayName(conf.day)} • {isRTL ? "ح" : "P"}{conf.period}
-                  </span>
+                  <span className="text-[10px] font-black text-amber-900 flex items-center gap-1"><User size={12} className="text-amber-600" />{getEmployeeName(conf.employeeId)}</span>
+                  <span className="text-[8px] font-black text-amber-700 bg-amber-100/30 px-1.5 py-0.5 rounded">{getDayName(conf.day)} • P{conf.period}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5 pt-0.5">
                   {conf.assignments.map((asg: any, aIdx: number) => (
-                    <div 
-                      key={aIdx} 
-                      draggable={true}
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData("text/plain", asg.id);
-                        e.dataTransfer.effectAllowed = "move";
-                      }}
-                      className="p-1.5 bg-white rounded-lg border border-slate-100 text-[9px] font-bold text-slate-600 space-y-0.5 cursor-grab active:cursor-grabbing hover:border-emerald-300 hover:shadow-sm transition-all"
-                      title={isRTL ? "اسحب لحل التعارض" : "Drag to resolve conflict"}
-                    >
-                      <div className="flex items-center gap-0.5 text-emerald-800">
-                        <GraduationCap size={10} />
-                        <span className="truncate">{getClassName(asg.classId)}</span>
-                      </div>
-                      <div className="truncate">{getSubjectName(asg.subjectId)}</div>
-                    </div>
+                    <div key={aIdx} className="p-1.5 bg-white rounded-lg border border-slate-100 text-[9px] font-bold text-slate-600 truncate"><span className="text-emerald-800 block">{getClassName(asg.classId)}</span>{getSubjectName(asg.subjectId)}</div>
                   ))}
                 </div>
               </div>
             ))}
 
-            {/* Room Conflicts */}
-            {conflicts.roomConflicts.map((conf, idx) => (
-              <div key={`r-${idx}`} className="p-2.5 bg-rose-50/20 border border-rose-100/70 rounded-xl space-y-1.5">
-                <div className="flex items-center justify-between border-b border-rose-100/30 pb-1">
-                  <span className="text-[10px] font-black text-rose-900 flex items-center gap-1">
-                    <MapPin size={12} className="text-rose-600" />
-                    {isRTL ? `قاعة: ${conf.room}` : `Room: ${conf.room}`}
-                  </span>
-                  <span className="text-[8px] font-black text-rose-700 bg-rose-100/30 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-                    <Clock size={8} />
-                    {getDayName(conf.day)} • {isRTL ? "ح" : "P"}{conf.period}
-                  </span>
+            {conflicts.classConflicts.map((conf, idx) => (
+              <div key={`c-${idx}`} className="p-2.5 bg-blue-50/20 border border-blue-100/70 rounded-xl space-y-1.5">
+                <div className="flex items-center justify-between border-b border-blue-100/30 pb-1">
+                  <span className="text-[10px] font-black text-blue-900 flex items-center gap-1"><GraduationCap size={12} className="text-blue-600" />{getClassName(conf.classId)}</span>
+                  <span className="text-[8px] font-black text-blue-700 bg-blue-100/30 px-1.5 py-0.5 rounded">{getDayName(conf.day)} • P{conf.period}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-1.5 pt-0.5">
                   {conf.assignments.map((asg: any, aIdx: number) => (
-                    <div 
-                      key={aIdx} 
-                      draggable={true}
-                      onDragStart={(e) => {
-                        e.dataTransfer.setData("text/plain", asg.id);
-                        e.dataTransfer.effectAllowed = "move";
-                      }}
-                      className="p-1.5 bg-white rounded-lg border border-slate-100 text-[9px] font-bold text-slate-600 space-y-0.5 cursor-grab active:cursor-grabbing hover:border-emerald-300 hover:shadow-sm transition-all"
-                      title={isRTL ? "اسحب لحل التعارض" : "Drag to resolve conflict"}
-                    >
-                      <div className="flex items-center gap-0.5 text-emerald-800">
-                        <GraduationCap size={10} />
-                        <span className="truncate">{getClassName(asg.classId)}</span>
-                      </div>
-                      <div className="truncate">{getEmployeeName(asg.employeeId)}</div>
-                    </div>
+                    <div key={aIdx} className="p-1.5 bg-white rounded-lg border border-slate-100 text-[9px] font-bold text-slate-600 truncate"><span className="text-emerald-800 block">{getEmployeeName(asg.employeeId)}</span>{getSubjectName(asg.subjectId)}</div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+            {conflicts.roomConflicts.map((conf, idx) => (
+              <div key={`r-${idx}`} className="p-2.5 bg-rose-50/20 border border-rose-100/70 rounded-xl space-y-1.5">
+                <div className="flex items-center justify-between border-b border-rose-100/30 pb-1">
+                  <span className="text-[10px] font-black text-rose-900 flex items-center gap-1"><MapPin size={12} className="text-rose-600" />{conf.room}</span>
+                  <span className="text-[8px] font-black text-rose-700 bg-rose-100/30 px-1.5 py-0.5 rounded">{getDayName(conf.day)} • P{conf.period}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 pt-0.5">
+                  {conf.assignments.map((asg: any, aIdx: number) => (
+                    <div key={aIdx} className="p-1.5 bg-white rounded-lg border border-slate-100 text-[9px] font-bold text-slate-600 truncate"><span className="text-emerald-800 block">{getClassName(asg.classId)}</span>{getSubjectName(asg.subjectId)}</div>
                   ))}
                 </div>
               </div>
