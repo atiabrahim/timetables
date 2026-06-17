@@ -107,12 +107,12 @@ const WeeklyWorkScheduleTable = ({
         <div className={cn(!isPrint && "overflow-x-auto")}>
           <Table className={cn("border-collapse border-spacing-0 table-fixed", isPrint ? "w-full border-2 border-black" : "w-full min-w-[1000px]")}>
             <colgroup>
-              <col className={isPrint ? "w-[8%]" : "w-[80px]"} />
-              <col className={isPrint ? "w-[8%]" : "w-[80px]"} />
+              <col className={isPrint ? "w-[5%]" : "w-[80px]"} />
+              <col className={isPrint ? "w-[4.5%]" : "w-[80px]"} />
               {sortedEmployees.map(emp => (
-                <col key={emp.id} className={isPrint ? `${79 / sortedEmployees.length}%` : "w-[100px]"} />
+                <col key={emp.id} className={isPrint ? `${86 / sortedEmployees.length}%` : "w-[100px]"} />
               ))}
-              <col className={isPrint ? "w-[5%]" : "w-[60px]"} />
+              <col className={isPrint ? "w-[4.5%]" : "w-[60px]"} />
             </colgroup>
             <TableHeader>
               <TableRow className={cn(isPrint ? "bg-slate-100/50 border-b-2 border-black h-5" : "bg-emerald-50/50 h-7")}>
@@ -167,7 +167,7 @@ const WeeklyWorkScheduleTable = ({
                 ));
               })}
               <TableRow className={cn("bg-emerald-50 border-t-2 border-black", isPrint ? "h-6" : "h-8")}>
-                <TableCell colSpan={2} className={cn("font-black text-emerald-900 border text-center uppercase tracking-tighter leading-none", isPrint ? "text-[7.5px] p-0.5 border-black" : "text-xs p-1 border-emerald-100")}>{isRTL ? "المجموع الكلي" : "Total Hours"}</TableCell>
+                <TableCell colSpan={2} className={cn("font-black text-emerald-900 border text-center uppercase tracking-tighter leading-none", isPrint ? "text-[7.5px] p-0.5 border-black" : "text-xs p-1 border-emerald-100")}>{isRTL ? "المجموع" : "Sum"}</TableCell>
                 {sortedEmployees.map(emp => (
                   <TableCell key={emp.id} className={cn("text-center font-black border bg-emerald-100/50 leading-none", isPrint ? "text-[7.5px] p-0.5 border-black text-black" : "text-sm border-emerald-200 text-emerald-700")}>{calculateEmployeeHours(emp.id)}</TableCell>
                 ))}

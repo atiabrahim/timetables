@@ -59,10 +59,10 @@ const MasterClassesScheduleTable = ({
         <div className={cn(!isPrint && "overflow-x-auto")}>
           <table className={cn("border-collapse border-spacing-0 table-fixed w-full", isPrint ? "border-2 border-black" : "min-w-[1000px]")}>
             <colgroup>
-              <col className={isPrint ? "w-[10%]" : "w-[80px]"} />
-              <col className={isPrint ? "w-[8%]" : "w-[80px]"} />
+              <col className={isPrint ? "w-[6%]" : "w-[80px]"} />
+              <col className={isPrint ? "w-[5%]" : "w-[80px]"} />
               {filteredClasses.map(cls => (
-                <col key={cls.id} className={isPrint ? `${82 / filteredClasses.length}%` : "w-[100px]"} />
+                <col key={cls.id} className={isPrint ? `${89 / filteredClasses.length}%` : "w-[100px]"} />
               ))}
             </colgroup>
             <thead>
