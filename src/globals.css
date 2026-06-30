@@ -83,13 +83,13 @@
 @media print {
   /* 1. إخفاء كل ما هو غير مطبوع */
   header, aside, nav, footer, button, input, select,
-  .print\:hidden, .no-print, [role="status"] {
+  .print\:hidden, .no-print, [role="status"], [role="alert"] {
     display: none !important;
   }
 
-  /* 2. تصفير هوامش المتصفح والسماح بالتمرير والصفحات المتعددة */
+  /* 2. تصفير هوامش المتصفح والتحكم الكامل */
   html, body {
-    width: 210mm !important;
+    width: 100% !important;
     height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -98,16 +98,17 @@
   }
 
   @page {
-    size: A4 portrait;
     margin: 0 !important;
   }
 
-  /* 3. منع تقسيم الجداول عبر الصفحات بشكل خاطئ */
+  /* 3. التحكم في كسر الصفحات */
   .page-break-container {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     display: block !important;
     width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .page-break-always {
@@ -115,29 +116,27 @@
     break-after: page !important;
   }
 
-  /* 4. تمدد الجداول لتملأ 100% */
+  /* 4. تمدد الجداول لتملأ العرض المتاح */
   table {
     width: 100% !important;
     border-collapse: collapse !important;
+    table-layout: fixed !important;
   }
 
-  /* 5. إزالة الحواف المنحنية في الطباعة */
+  /* 5. إزالة المؤثرات البصرية التي تشوه الطباعة */
   * {
     border-radius: 0 !important;
     box-shadow: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  /* 6. تنسيق وضع النسختين (2-on-1) */
+  /* 6. وضع النسختين (2-on-1) */
   .double-mode-container {
     display: flex !important;
     flex-direction: column !important;
-    gap: 0 !important;
     width: 100% !important;
-    height: 297mm !important;
-  }
-
-  .double-mode-container > :first-child {
-    border-bottom: 2px dashed #ccc !important;
-    padding-bottom: 5mm !important;
+    height: 100vh !important;
+    justify-content: space-around !important;
   }
 }
