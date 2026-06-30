@@ -12,12 +12,11 @@ interface OfficialPrintWrapperProps {
   children: React.ReactNode;
   showSignatures?: boolean;
   leftSignatureTitle?: string;
-  centerSignatureTitle?: string;
   rightSignatureTitle?: string;
   showSystemFooter?: boolean;
   disablePageBreak?: boolean;
   doubleMode?: boolean;
-  // إعدادات الخطوط الجديدة
+  // إعدادات الخطوط
   fontFamily?: string;
   headerSize?: number;
   titleSize?: number;
@@ -32,7 +31,6 @@ const OfficialPrintWrapper = ({
   children,
   showSignatures = true,
   leftSignatureTitle,
-  centerSignatureTitle,
   rightSignatureTitle,
   showSystemFooter = true,
   disablePageBreak = false,
@@ -45,7 +43,6 @@ const OfficialPrintWrapper = ({
   const { isRTL, institution } = useApp();
 
   const finalLeftTitle = leftSignatureTitle || (isRTL ? "المدير" : "Director");
-  const finalCenterTitle = centerSignatureTitle || institution.pedagogicalManagerTitle || (isRTL ? "المسؤول البيداغوجي" : "Pedagogical Manager");
   const finalRightTitle = rightSignatureTitle || (isRTL ? "أستاذ الفرع" : "Branch Teacher");
 
   const dimensions = {
@@ -127,13 +124,9 @@ const OfficialPrintWrapper = ({
 
       {/* Signatures Section */}
       {showSignatures && (
-        <div className="grid grid-cols-3 gap-4 pt-1 border-t-2 border-black shrink-0">
+        <div className="grid grid-cols-2 gap-8 pt-1 border-t-2 border-black shrink-0">
           <div className="text-center">
             <p className="font-black text-black mb-0.5" style={{ fontSize: `${footerSize}px` }}>{finalRightTitle}</p>
-            <div className="h-12 border border-dashed border-black/20 rounded-lg bg-slate-50/10"></div>
-          </div>
-          <div className="text-center">
-            <p className="font-black text-black mb-0.5" style={{ fontSize: `${footerSize}px` }}>{finalCenterTitle}</p>
             <div className="h-12 border border-dashed border-black/20 rounded-lg bg-slate-50/10"></div>
           </div>
           <div className="text-center">
