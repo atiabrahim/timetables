@@ -222,7 +222,7 @@ const ScheduleTable = ({
               {days.map(day => {
                 const isRowHovered = hoveredCell?.day === day.id;
                 return (
-                  <tr key={day.id} className={cn(isPrint ? "h-6" : "h-10", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                  <tr key={day.id} className={cn(isPrint ? "h-7" : "h-10", !isPrint && isRowHovered && "bg-emerald-50/20")}>
                     <td className={cn("transition-colors duration-150", isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10" : cn("p-1 border-e border-slate-100 text-center", isRowHovered && "bg-emerald-50/40"))}>
                       <span className={cn("font-black", isPrint ? "text-[8px]" : "text-[11px] text-slate-600")}>{isRTL ? day.name : day.en.substr(0, 3)}</span>
                     </td>
@@ -269,7 +269,7 @@ const ScheduleTable = ({
               const isRowHovered = hoveredCell?.period === slot.id;
               return (
                 <React.Fragment key={slot.id}>
-                  <tr className={cn(isPrint ? "h-6" : "h-10", !isPrint && isRowHovered && "bg-emerald-50/20")}>
+                  <tr className={cn(isPrint ? "h-7" : "h-10", !isPrint && isRowHovered && "bg-emerald-50/20")}>
                     <td className={cn("transition-colors duration-150", isPrint ? "border border-emerald-950 p-0.5 bg-emerald-50/10 text-center" : cn("p-1 border-e border-slate-100 text-center", isRowHovered && "bg-emerald-50/40"))}>
                       <div className="flex flex-col items-center justify-center h-full text-center">
                         <span className={cn("font-black leading-none whitespace-nowrap", isPrint ? "text-[11px] text-slate-600" : "text-[11px] text-slate-600")}>{slot.label}</span>
