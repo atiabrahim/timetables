@@ -12,7 +12,8 @@ import {
   Copy, 
   Type, 
   Rows, 
-  Settings2 
+  Settings2,
+  CalendarX
 } from "lucide-react";
 import { PeriodPart, Department } from "@/types";
 
@@ -28,9 +29,10 @@ interface ReportControlsProps {
   onDepartmentChange: (dept: string) => void;
   selectedPeriods: PeriodPart[];
   onTogglePeriod: (period: PeriodPart) => void;
-  // New props for styling
   reportStyles: any;
   setReportStyles: (styles: any) => void;
+  isOutOfSchedule: boolean;
+  onOutOfScheduleChange: (val: boolean) => void;
 }
 
 const ReportControls = ({ 
@@ -46,7 +48,9 @@ const ReportControls = ({
   selectedPeriods, 
   onTogglePeriod,
   reportStyles,
-  setReportStyles
+  setReportStyles,
+  isOutOfSchedule,
+  onOutOfScheduleChange
 }: ReportControlsProps) => {
   return (
     <div className="space-y-4 print:hidden">
@@ -109,9 +113,31 @@ const ReportControls = ({
             </SelectContent>
           </Select>
         </div>
+
+        {/* Out of Schedule Toggle */}
+        <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1.5">
+          <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+            <CalendarX size={12} />
+            {isRTL ? "خارج الجدول" : "Out of Schedule"}
+          </Label>
+          <div
+            className="flex items-center gap-2 h-9 px-3 rounded-xl border border-slate-100 bg-slate-50/50 cursor-pointer hover:bg-slate-100/50 transition-colors"
+            onClick={() => onOutOfScheduleChange(!isOutOfSchedule)}
+          >
+            <Checkbox
+              id="out-of-schedule"
+              checked={isOutOfSchedule}
+              onCheckedChange={(v) => onOutOfScheduleChange(v === true)}
+              className="h-4 w-4 rounded border-slate-300"
+            />
+            <Label htmlFor="out-of-schedule" className="text-[10px] font-black text-slate-700 cursor-pointer">
+              {isRTL ? "إدراج الجميع" : "Include All"}
+            </Label>
+          </div>
+        </div>
         
         {/* Periods */}
-        <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1.5 md:col-span-3">
+        <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm space-y-1.5 md:col-span-2">
           <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
             <Clock size={12} />
             {t.applyToPeriods}

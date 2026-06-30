@@ -47,6 +47,7 @@ const ReportsNew = () => {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("daily");
   const [selectedPeriods, setSelectedPeriods] = useState<PeriodPart[]>(["Morning", "Afternoon", "Evening"]);
+  const [isOutOfSchedule, setIsOutOfSchedule] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState<string>(
     departments[0]?.name || (isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate")
   );
@@ -73,6 +74,14 @@ const ReportsNew = () => {
   };
 
   const getSheetData = (date: Date, period: PeriodPart) => {
+    if (isOutOfSchedule) {
+      return [...employees].sort((a, b) => {
+        const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
+        const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
+        return nameA.localeCompare(nameB, language === "ar" ? "ar" : "en");
+      });
+    }
+
     const dateStr = format(date, "yyyy-MM-dd");
     const assignedIds = getEffectiveAssignment(dateStr, period);
     return assignedIds
@@ -272,6 +281,8 @@ const ReportsNew = () => {
         onTogglePeriod={togglePeriod}
         reportStyles={reportStyles}
         setReportStyles={setReportStyles}
+        isOutOfSchedule={isOutOfSchedule}
+        onOutOfScheduleChange={setIsOutOfSchedule}
       />
 
       <Tabs defaultValue="daily" onValueChange={setActiveTab} className="w-full print:hidden">

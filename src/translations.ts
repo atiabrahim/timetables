@@ -68,6 +68,7 @@ export const translations = {
     vacantRooms: "قاعات شاغرة",
     noLessonsNow: "لا توجد حصص مجدولة في هذا الوقت",
     outOfWorkingHours: "خارج أوقات العمل الرسمية",
+    outOfSchedule: "خارج الجدول",
     stats: {
       teachers: "الأساتذة",
       classes: "الأفواج",
@@ -163,6 +164,7 @@ export const translations = {
     vacantRooms: "Vacant Rooms",
     noLessonsNow: "No lessons scheduled at this time",
     outOfWorkingHours: "Outside Official Hours",
+    outOfSchedule: "Out of Schedule",
     stats: {
       teachers: "Teachers",
       classes: "Classes",
