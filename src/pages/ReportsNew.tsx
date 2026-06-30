@@ -36,6 +36,7 @@ const ReportsNew = () => {
     employees, 
     periodConfigs, 
     getEffectiveAssignment,
+    teacherConstraints = [],
     departments,
     isRTL,
     t,
@@ -74,12 +75,37 @@ const ReportsNew = () => {
   };
 
   const getSheetData = (date: Date, period: PeriodPart) => {
+    const dayIdx = getDay(date);
+    
+    // دالة للتحقق من توافر الأستاذ في هذه الفترة بناءً على قيوده الشخصية
+    const isTeacherAvailableInPart = (empId: string) => {
+      // تحديد الساعات التابعة لهذه الفترة
+      const hours = period === "Morning" ? ["1", "2", "3", "4"] : 
+                   period === "Afternoon" ? ["5", "6", "7"] : 
+                   ["8", "9", "10", "11", "12"];
+      
+      // جلب القيود المسجلة لهذا الأستاذ في هذا اليوم وهذه الساعات
+      const relevantConstraints = teacherConstraints.filter(c => 
+        c.employeeId === empId && c.day === dayIdx && hours.includes(c.period)
+      );
+      
+      // إذا كانت جميع القيود المسجلة لهذه الفترة تشير إلى "غير متاح"، يتم استبعاده
+      // ملاحظة: إذا لم توجد قيود، يعتبر متاحاً افتراضياً
+      const isBlockedEverywhere = relevantConstraints.length > 0 && 
+                                  relevantConstraints.every(c => !c.isAvailable);
+                                  
+      return !isBlockedEverywhere;
+    };
+
     if (isOutOfSchedule) {
-      return [...employees].sort((a, b) => {
-        const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
-        const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
-        return nameA.localeCompare(nameB, language === "ar" ? "ar" : "en");
-      });
+      // في حالة "خارج الجدول": نأخذ جميع الأساتذة مع استبعاد غير المتاحين حسب الإعدادات
+      return [...employees]
+        .filter(e => isTeacherAvailableInPart(e.id))
+        .sort((a, b) => {
+          const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
+          const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
+          return nameA.localeCompare(nameB, language === "ar" ? "ar" : "en");
+        });
     }
 
     const dateStr = format(date, "yyyy-MM-dd");
