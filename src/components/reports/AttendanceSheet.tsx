@@ -41,7 +41,7 @@ const AttendanceSheet = ({
   supervisors
 }: AttendanceSheetProps) => {
   // Adjusted max rows to compensate for increased height (h-9)
-  const maxRows = doubleMode ? 7 : 14; 
+  const maxRows = doubleMode ? 8 : 15; 
   const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
 
   const cellStyle = {
@@ -81,7 +81,7 @@ const AttendanceSheet = ({
           <TableHeader>
             <TableRow className="bg-slate-100/50 hover:bg-slate-100/50 border-b-2 border-black h-9">
               <TableHead className="w-[30px] text-center font-black text-black border-e-2 border-black p-0.5 text-[9px]">#</TableHead>
-              <TableHead className={cn("font-black text-black border-e-2 border-black px-2 p-0.5 text-[9px]", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
+              <TableHead className={cn("font-black text-black border-e-2 border-black px-2 p-0.5 text-[9px] w-[180px]", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
               <TableHead className="w-[100px] text-center font-black text-black border-e-2 border-black p-0.5 text-[9px]">{t.signature}</TableHead>
               <TableHead className="text-center font-black text-black p-0.5 text-[9px] w-[120px]">{t.notes}</TableHead>
             </TableRow>
