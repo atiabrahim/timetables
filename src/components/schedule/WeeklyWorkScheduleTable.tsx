@@ -115,7 +115,7 @@ const WeeklyWorkScheduleTable = ({
               <col className={isPrint ? "w-[4%]" : "w-[60px]"} />
             </colgroup>
             <TableHeader>
-              <TableRow className={cn(isPrint ? "bg-slate-100/50 border-b-2 border-black h-5" : "bg-emerald-50/50 h-7")}>
+              <TableRow className={cn(isPrint ? "bg-slate-100/50 border-b-2 border-black h-6" : "bg-emerald-50/50 h-7")}>
                 <TableHead className={cn("font-black border text-center leading-none", isPrint ? "text-[6.5px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100 text-emerald-900")}>{isRTL ? "اليوم" : "Day"}</TableHead>
                 <TableHead className={cn("font-black border text-center leading-none", isPrint ? "text-[6.5px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100 text-emerald-900")}>{isRTL ? "الحصة" : "Period"}</TableHead>
                 {sortedEmployees.map(emp => (
@@ -131,7 +131,7 @@ const WeeklyWorkScheduleTable = ({
                 const activePeriods = activePeriodsPerDay[day.id] || [];
                 if (activePeriods.length === 0) return null;
                 return activePeriods.map((p, pIdx) => (
-                  <TableRow key={`${day.id}-${p}`} className={cn("group transition-colors duration-150", isPrint ? "h-5 border-b border-black" : "h-8 hover:bg-emerald-50/30")}>
+                  <TableRow key={`${day.id}-${p}`} className={cn("group transition-colors duration-150", isPrint ? "h-6 border-b border-black" : "h-8 hover:bg-emerald-50/30")}>
                     {pIdx === 0 && (
                       <TableCell rowSpan={activePeriods.length} className={cn("font-black border bg-slate-50/50 text-center leading-none", isPrint ? "text-[7px] p-0.5 border-black text-black" : "text-[11px] p-1 border-emerald-100 text-emerald-950")}>
                         {isRTL ? day.name : day.en.substr(0, 3)}
@@ -148,7 +148,7 @@ const WeeklyWorkScheduleTable = ({
                       const subject = cell.assignment ? subjects.find(s => s.id === cell.assignment.subjectId) : null;
                       const cls = cell.assignment ? classes.find(c => c.id === cell.assignment.classId) : null;
                       return (
-                        <TableCell key={`${emp.id}-${day.id}-${p}`} rowSpan={cell.rowSpan} className={cn("text-center border p-0.5 transition-colors duration-150 relative overflow-hidden", isActive ? (isPrint ? "bg-slate-100 text-black border-black" : "text-white bg-emerald-600 shadow-inner") : (isPrint ? "bg-white border-black" : "hover:bg-emerald-50/50"), isPrint ? "h-5" : "h-8 border-emerald-100")} onMouseEnter={() => !isPrint && setHoveredCell({ empId: emp.id, dayId: day.id, period: p })} onMouseLeave={() => !isPrint && setHoveredCell(null)}>
+                        <TableCell key={`${emp.id}-${day.id}-${p}`} rowSpan={cell.rowSpan} className={cn("text-center border p-0.5 transition-colors duration-150 relative overflow-hidden", isActive ? (isPrint ? "bg-slate-100 text-black border-black" : "text-white bg-emerald-600 shadow-inner") : (isPrint ? "bg-white border-black" : "hover:bg-emerald-50/50"), isPrint ? "h-6" : "h-8 border-emerald-100")} onMouseEnter={() => !isPrint && setHoveredCell({ empId: emp.id, dayId: day.id, period: p })} onMouseLeave={() => !isPrint && setHoveredCell(null)}>
                           {isActive ? (
                             <div className="flex flex-col items-center justify-center leading-tight">
                               <span className={cn("font-black truncate max-w-full", isPrint ? "text-[6px]" : "text-[9.5px]")}>{subject?.name || "---"}</span>
@@ -166,7 +166,7 @@ const WeeklyWorkScheduleTable = ({
                   </TableRow>
                 ));
               })}
-              <TableRow className={cn("bg-emerald-50 border-t-2 border-black", isPrint ? "h-6" : "h-8")}>
+              <TableRow className={cn("bg-emerald-50 border-t-2 border-black", isPrint ? "h-7" : "h-8")}>
                 <TableCell colSpan={2} className={cn("font-black text-emerald-900 border text-center uppercase tracking-tighter leading-none", isPrint ? "text-[7px] p-0.5 border-black" : "text-xs p-1 border-emerald-100")}>{isRTL ? "المجموع الكلي" : "Total Hours"}</TableCell>
                 {sortedEmployees.map(emp => (
                   <TableCell key={emp.id} className={cn("text-center font-black border bg-emerald-100/50 leading-none", isPrint ? "text-[7px] p-0.5 border-black text-black" : "text-sm border-emerald-200 text-emerald-700")}>{calculateEmployeeHours(emp.id)}</TableCell>
@@ -199,7 +199,7 @@ const WeeklyWorkScheduleTable = ({
             <col className={isPrint ? "w-[5%]" : "w-[80px]"} />
           </colgroup>
           <TableHeader>
-            <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-5" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
+            <TableRow className={cn(isPrint ? "bg-slate-50/50 border-b-2 border-black h-6" : "bg-emerald-50/50 hover:bg-emerald-50/50 h-7")}>
               <TableHead className={cn("font-black text-emerald-900 border text-center sticky left-0 z-20 bg-emerald-50/50 leading-none", isPrint ? "text-[7px] p-0.5 border-black text-black" : "text-xs p-1 border-emerald-100")} rowSpan={2}>{isRTL ? "المعلم" : "Teacher"}</TableHead>
               {DAYS.map(day => {
                 const colSpan = activePeriodsPerDay[day.id]?.length || 0;
@@ -210,7 +210,7 @@ const WeeklyWorkScheduleTable = ({
               })}
               <TableHead className={cn("text-center font-black border bg-emerald-900 text-white leading-none", isPrint ? "text-[7px] p-0.5 border-black" : "text-xs p-1")} rowSpan={2}>{isRTL ? "المجموع" : "Total"}</TableHead>
             </TableRow>
-            <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-5" : "bg-emerald-50/20 h-7")}>
+            <TableRow className={cn(isPrint ? "bg-slate-50/20 border-b-2 border-black h-6" : "bg-emerald-50/20 h-7")}>
               {DAYS.map(day => {
                 const activePeriods = activePeriodsPerDay[day.id] || [];
                 return activePeriods.map(p => (
@@ -223,7 +223,7 @@ const WeeklyWorkScheduleTable = ({
           </TableHeader>
           <TableBody>
             {sortedEmployees.map(emp => (
-              <TableRow key={emp.id} className={cn("group transition-colors duration-150", isPrint ? "h-5 border-b border-black" : "h-8 hover:bg-emerald-50/30")}>
+              <TableRow key={emp.id} className={cn("group transition-colors duration-150", isPrint ? "h-6 border-b border-black" : "h-8 hover:bg-emerald-50/30")}>
                 <TableCell className={cn("font-bold border bg-white truncate sticky left-0 z-10 shadow-sm leading-tight", isPrint ? "text-[7px] p-0.5 border-black text-black" : cn("text-[11px] p-1 border-emerald-100 text-emerald-950"))}>{emp.lastName} {emp.firstName}</TableCell>
                 {DAYS.map(day => {
                   const dayCells = getDayCells(emp.id, day.id);
@@ -233,7 +233,7 @@ const WeeklyWorkScheduleTable = ({
                     const subject = cell.assignment ? subjects.find(s => s.id === cell.assignment.subjectId) : null;
                     const cls = cell.assignment ? classes.find(c => c.id === cell.assignment.classId) : null;
                     return (
-                      <TableCell key={`${emp.id}-${day.id}-${cell.period}`} colSpan={cell.colSpan} className={cn("text-center border p-0.5 transition-colors duration-150 relative overflow-hidden leading-tight", isActive ? (isPrint ? "bg-slate-100 text-black border-black" : "text-white bg-emerald-600 shadow-inner") : (isPrint ? "bg-white border-black" : "hover:bg-emerald-50/50"), isPrint ? "h-5" : "h-8 border-emerald-100")}>
+                      <TableCell key={`${emp.id}-${day.id}-${cell.period}`} colSpan={cell.colSpan} className={cn("text-center border p-0.5 transition-colors duration-150 relative overflow-hidden leading-tight", isActive ? (isPrint ? "bg-slate-100 text-black border-black" : "text-white bg-emerald-600 shadow-inner") : (isPrint ? "bg-white border-black" : "hover:bg-emerald-50/50"), isPrint ? "h-6" : "h-8 border-emerald-100")}>
                         {isActive ? (
                           <div className="flex flex-col items-center justify-center">
                             <span className={cn("font-black truncate max-w-full", isPrint ? "text-[6px]" : "text-[9.5px]")}>{subject?.name || "---"}</span>
