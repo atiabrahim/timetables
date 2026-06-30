@@ -192,9 +192,9 @@ const WeeklyWorkScheduleTable = ({
       <div className={cn(!isPrint && "overflow-x-auto")}>
         <Table className={cn("border-collapse border-spacing-0 table-fixed", isPrint ? "w-full border-2 border-black" : "w-full min-w-[1000px]")}>
           <colgroup>
-            <col className={isPrint ? "w-[12%]" : "w-[140px]"} />
+            <col className={isPrint ? "w-[8%]" : "w-[100px]"} />
             {Array.from({ length: totalActiveColumns }).map((_, i) => (
-              <col key={i} className={isPrint ? `${83 / totalActiveColumns}%` : "w-[70px]"} />
+              <col key={i} className={isPrint ? `${87 / totalActiveColumns}%` : "w-[70px]"} />
             ))}
             <col className={isPrint ? "w-[5%]" : "w-[80px]"} />
           </colgroup>
