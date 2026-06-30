@@ -37,6 +37,7 @@ const ReportsNew = () => {
     periodConfigs, 
     getEffectiveAssignment,
     departments,
+    teacherConstraints,
     isRTL,
     t,
     language
@@ -74,12 +75,27 @@ const ReportsNew = () => {
   };
 
   const getSheetData = (date: Date, period: PeriodPart) => {
+    const dayIdx = getDay(date);
+
+    // التحقق من أن الحصة نشطة في إعدادات المؤسسة أولاً
+    const isGlobalActive = periodConfigs.find(c => c.day === dayIdx && c.period === period)?.isActive;
+    if (!isGlobalActive) return [];
+
     if (isOutOfSchedule) {
-      return [...employees].sort((a, b) => {
-        const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
-        const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
-        return nameA.localeCompare(nameB, language === "ar" ? "ar" : "en");
-      });
+      // عرض كل الأساتذة مع احترام قيود التوفر الفردية (Constraints)
+      return employees
+        .filter(emp => {
+          const constraint = teacherConstraints?.find(c => 
+            c.employeeId === emp.id && c.day === dayIdx && c.period === period
+          );
+          // إذا لم يوجد قيد فهو متاح افتراضياً، وإذا وجد نأخذ حالته
+          return constraint ? constraint.isAvailable : true;
+        })
+        .sort((a, b) => {
+          const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
+          const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
+          return nameA.localeCompare(nameB, language === "ar" ? "ar" : "en");
+        });
     }
 
     const dateStr = format(date, "yyyy-MM-dd");
@@ -115,6 +131,8 @@ const ReportsNew = () => {
     if (!isValid(date)) return null;
     const dayIdx = getDay(date);
     const periods: PeriodPart[] = ["Morning", "Afternoon", "Evening"];
+    
+    // تصفية الفترات المختارة والنشطة في الإعدادات
     const activePeriods = periods.filter(p => 
       selectedPeriods.includes(p) && 
       periodConfigs.find(c => c.day === dayIdx && c.period === p)?.isActive
@@ -154,6 +172,7 @@ const ReportsNew = () => {
     days.forEach((day) => {
       const dayIdx = getDay(day);
       periods.forEach((p) => {
+        // التأكد من اختيار الفترة وأنها نشطة في الإعدادات
         if (selectedPeriods.includes(p) && periodConfigs.find(c => c.day === dayIdx && c.period === p)?.isActive) {
           const assigned = getSheetData(day, p);
           if (assigned.length > 0) {
