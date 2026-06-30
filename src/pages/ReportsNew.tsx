@@ -246,7 +246,7 @@ const ReportsNew = () => {
         <Table className="border-4 border-slate-950 w-full">
           <TableHeader>
             <TableRow className="bg-slate-100 border-b-4 border-slate-950">
-              <TableHead className={cn("font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs w-[160px] whitespace-nowrap", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
+              <TableHead className={cn("font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs w-[156px] whitespace-nowrap", isRTL ? "text-right" : "text-left")}>{t.employeeName}</TableHead>
               <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs">ص</TableHead>
               <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs">م</TableHead>
               <TableHead className="text-center font-black text-slate-950 border-e-4 border-slate-950 p-2 text-xs">ل</TableHead>
