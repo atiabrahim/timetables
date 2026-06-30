@@ -75,6 +75,11 @@ const AttendanceSheet = ({
       doubleMode={doubleMode}
       showSignatures={true}
       rightSignatureTitle={isRTL ? "رئيس المصلحة" : "Head of Dept"}
+      // تمرير إعدادات الخطوط المخصصة لتطبيقها على الترويسة وسطر المصلحة والتوقيعات
+      fontFamily={reportStyles.fontFamily}
+      headerSize={reportStyles.headerSize}
+      titleSize={reportStyles.titleSize}
+      footerSize={reportStyles.footerSize}
     >
       <div className="w-full">
         <Table className="w-full border-collapse border-2 border-black">
