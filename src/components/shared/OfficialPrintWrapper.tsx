@@ -62,6 +62,7 @@ const OfficialPrintWrapper = ({
         width: currentDim.w,
         height: currentDim.h,
         maxHeight: currentDim.h,
+        // ضبط الهوامش الجانبية لتكون 10 ملم (1 سم) بشكل صريح
         padding: doubleMode ? "4mm 10mm" : "10mm 10mm",
         fontFamily: "'Cairo', sans-serif"
       }}
@@ -94,11 +95,9 @@ const OfficialPrintWrapper = ({
         </div>
       )}
 
-      {/* Main Content Area - Updated to flex-1 and center children */}
-      <div className="w-full flex-1 bg-white mb-1 overflow-hidden flex flex-col justify-center items-center">
-        <div className="w-full">
-          {children}
-        </div>
+      {/* Main Content Area */}
+      <div className="w-full bg-white mb-1 overflow-hidden">
+        {children}
       </div>
 
       {/* Signatures Section */}
