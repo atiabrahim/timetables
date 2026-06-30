@@ -13,7 +13,8 @@ import {
   Type, 
   Rows, 
   Settings2,
-  CalendarX
+  CalendarX,
+  TextQuote
 } from "lucide-react";
 import { PeriodPart, Department } from "@/types";
 
@@ -167,43 +168,95 @@ const ReportControls = ({
       </div>
 
       {/* Advanced Style Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div className="bg-emerald-50/30 p-4 rounded-2xl border border-emerald-100/50 flex items-center gap-8">
-          <div className="flex items-center gap-2 shrink-0">
-            <Settings2 size={16} className="text-emerald-600" />
-            <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">{isRTL ? "تنسيق الطباعة:" : "Print Styling:"}</span>
+      <div className="bg-emerald-50/30 p-4 rounded-2xl border border-emerald-100/50 space-y-4">
+        <div className="flex items-center gap-2 border-b border-emerald-100 pb-2 mb-2">
+          <Settings2 size={16} className="text-emerald-600" />
+          <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">{isRTL ? "تنسيق متقدم للطباعة" : "Advanced Print Styling"}</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          {/* Font Family Selector */}
+          <div className="space-y-2">
+            <Label className="text-[9px] font-bold text-slate-500 flex items-center gap-1">
+              <TextQuote size={12} /> {isRTL ? "نوع الخط" : "Font Family"}
+            </Label>
+            <Select value={reportStyles.fontFamily} onValueChange={(v) => setReportStyles({...reportStyles, fontFamily: v})}>
+              <SelectTrigger className="h-8 rounded-lg bg-white border-emerald-100 text-[10px] font-bold">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="'Cairo', sans-serif">Cairo (رسمي)</SelectItem>
+                <SelectItem value="'Arial', sans-serif">Arial (كلاسيكي)</SelectItem>
+                <SelectItem value="'Times New Roman', serif">Times (سيريف)</SelectItem>
+                <SelectItem value="system-ui">System Default</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          <div className="flex-1 flex items-center gap-6">
-            <div className="flex-1 space-y-2">
-              <div className="flex justify-between items-center">
-                <Label className="text-[9px] font-bold text-slate-500 flex items-center gap-1">
-                  <Type size={12} /> {isRTL ? "حجم الخط" : "Font Size"}
-                </Label>
-                <span className="text-[9px] font-black text-emerald-700">{reportStyles.tableSize}px</span>
-              </div>
-              <Slider 
-                value={[reportStyles.tableSize]} 
-                onValueChange={(v) => setReportStyles({...reportStyles, tableSize: v[0]})} 
-                min={8} max={20} step={0.5}
-                className="py-1"
-              />
+          {/* Table Font Size */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label className="text-[9px] font-bold text-slate-500">{isRTL ? "خط الجدول" : "Table Font"}</Label>
+              <span className="text-[9px] font-black text-emerald-700">{reportStyles.tableSize}px</span>
             </div>
+            <Slider 
+              value={[reportStyles.tableSize]} 
+              onValueChange={(v) => setReportStyles({...reportStyles, tableSize: v[0]})} 
+              min={6} max={18} step={0.5}
+            />
+          </div>
 
-            <div className="flex-1 space-y-2">
-              <div className="flex justify-between items-center">
-                <Label className="text-[9px] font-bold text-slate-500 flex items-center gap-1">
-                  <Rows size={12} /> {isRTL ? "كثافة الأسطر" : "Row Density"}
-                </Label>
-                <span className="text-[9px] font-black text-emerald-700">{reportStyles.rowPadding}px</span>
-              </div>
-              <Slider 
-                value={[reportStyles.rowPadding]} 
-                onValueChange={(v) => setReportStyles({...reportStyles, rowPadding: v[0]})} 
-                min={0} max={12} step={1}
-                className="py-1"
-              />
+          {/* Header Font Size */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label className="text-[9px] font-bold text-slate-500">{isRTL ? "خط الترويسة" : "Header Font"}</Label>
+              <span className="text-[9px] font-black text-emerald-700">{reportStyles.headerSize}px</span>
             </div>
+            <Slider 
+              value={[reportStyles.headerSize]} 
+              onValueChange={(v) => setReportStyles({...reportStyles, headerSize: v[0]})} 
+              min={8} max={20} step={1}
+            />
+          </div>
+
+          {/* Title Font Size */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label className="text-[9px] font-bold text-slate-500">{isRTL ? "خط العنوان" : "Title Font"}</Label>
+              <span className="text-[9px] font-black text-emerald-700">{reportStyles.titleSize}px</span>
+            </div>
+            <Slider 
+              value={[reportStyles.titleSize]} 
+              onValueChange={(v) => setReportStyles({...reportStyles, titleSize: v[0]})} 
+              min={12} max={32} step={1}
+            />
+          </div>
+
+          {/* Footer/Signature Font Size */}
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <Label className="text-[9px] font-bold text-slate-500">{isRTL ? "خط التوقيعات" : "Footer Font"}</Label>
+              <span className="text-[9px] font-black text-emerald-700">{reportStyles.footerSize}px</span>
+            </div>
+            <Slider 
+              value={[reportStyles.footerSize]} 
+              onValueChange={(v) => setReportStyles({...reportStyles, footerSize: v[0]})} 
+              min={6} max={16} step={1}
+            />
+          </div>
+        </div>
+
+        {/* Row Padding (Legacy but kept) */}
+        <div className="pt-2 border-t border-emerald-100/50">
+          <div className="flex items-center gap-4 max-w-xs">
+            <Label className="text-[9px] font-bold text-slate-500 shrink-0">{isRTL ? "كثافة الأسطر" : "Row Density"}</Label>
+            <Slider 
+              value={[reportStyles.rowPadding]} 
+              onValueChange={(v) => setReportStyles({...reportStyles, rowPadding: v[0]})} 
+              min={0} max={12} step={1}
+              className="flex-1"
+            />
+            <span className="text-[9px] font-black text-emerald-700 w-8 text-center">{reportStyles.rowPadding}px</span>
           </div>
         </div>
       </div>

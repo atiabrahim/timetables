@@ -17,6 +17,11 @@ interface OfficialPrintWrapperProps {
   showSystemFooter?: boolean;
   disablePageBreak?: boolean;
   doubleMode?: boolean;
+  // إعدادات الخطوط الجديدة
+  fontFamily?: string;
+  headerSize?: number;
+  titleSize?: number;
+  footerSize?: number;
 }
 
 const OfficialPrintWrapper = ({
@@ -31,7 +36,11 @@ const OfficialPrintWrapper = ({
   rightSignatureTitle,
   showSystemFooter = true,
   disablePageBreak = false,
-  doubleMode = false
+  doubleMode = false,
+  fontFamily = "'Cairo', sans-serif",
+  headerSize = 10,
+  titleSize = 14,
+  footerSize = 8
 }: OfficialPrintWrapperProps) => {
   const { isRTL, institution } = useApp();
 
@@ -62,9 +71,8 @@ const OfficialPrintWrapper = ({
         width: currentDim.w,
         height: currentDim.h,
         maxHeight: currentDim.h,
-        // ضبط الهوامش الجانبية لتكون 10 ملم (1 سم) بشكل صريح
         padding: doubleMode ? "4mm 10mm" : "10mm 10mm",
-        fontFamily: "'Cairo', sans-serif"
+        fontFamily: fontFamily
       }}
       dir={isRTL ? "rtl" : "ltr"}
     >
@@ -79,9 +87,26 @@ const OfficialPrintWrapper = ({
         </div>
 
         <div className="flex-1 text-center space-y-0 px-4">
-          <h2 className="font-black text-black text-[10px] md:text-xs leading-tight uppercase">{institution.name}</h2>
-          <h3 className="font-black text-black text-xs md:text-sm underline underline-offset-4 decoration-2">{title}</h3>
-          {subtitle && <div className="text-black font-bold text-[8px] md:text-[9px] mt-0.5">{subtitle}</div>}
+          <h2 
+            className="font-black text-black leading-tight uppercase"
+            style={{ fontSize: `${headerSize}px` }}
+          >
+            {institution.name}
+          </h2>
+          <h3 
+            className="font-black text-black underline underline-offset-4 decoration-2"
+            style={{ fontSize: `${titleSize}px` }}
+          >
+            {title}
+          </h3>
+          {subtitle && (
+            <div 
+              className="text-black font-bold mt-0.5"
+              style={{ fontSize: `${headerSize * 0.8}px` }}
+            >
+              {subtitle}
+            </div>
+          )}
         </div>
 
         <div className="w-12 h-12 flex items-center justify-center shrink-0 opacity-0 print:opacity-100">
@@ -90,7 +115,7 @@ const OfficialPrintWrapper = ({
       </div>
 
       {metadata && (
-        <div className="border-y-2 border-black py-0.5 mb-2 flex justify-between items-center text-[8.5px] font-black text-black shrink-0">
+        <div className="border-y-2 border-black py-0.5 mb-2 flex justify-between items-center font-black text-black shrink-0" style={{ fontSize: `${headerSize * 0.85}px` }}>
           {metadata}
         </div>
       )}
@@ -104,15 +129,15 @@ const OfficialPrintWrapper = ({
       {showSignatures && (
         <div className="grid grid-cols-3 gap-4 pt-1 border-t-2 border-black shrink-0">
           <div className="text-center">
-            <p className="font-black text-black text-[8px] mb-0.5">{finalRightTitle}</p>
+            <p className="font-black text-black mb-0.5" style={{ fontSize: `${footerSize}px` }}>{finalRightTitle}</p>
             <div className="h-12 border border-dashed border-black/20 rounded-lg bg-slate-50/10"></div>
           </div>
           <div className="text-center">
-            <p className="font-black text-black text-[8px] mb-0.5">{finalCenterTitle}</p>
+            <p className="font-black text-black mb-0.5" style={{ fontSize: `${footerSize}px` }}>{finalCenterTitle}</p>
             <div className="h-12 border border-dashed border-black/20 rounded-lg bg-slate-50/10"></div>
           </div>
           <div className="text-center">
-            <p className="font-black text-black text-[8px] mb-0.5">{finalLeftTitle}</p>
+            <p className="font-black text-black mb-0.5" style={{ fontSize: `${footerSize}px` }}>{finalLeftTitle}</p>
             <div className="h-12 border border-dashed border-black/20 rounded-lg bg-slate-50/10"></div>
           </div>
         </div>

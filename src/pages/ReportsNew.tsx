@@ -56,11 +56,11 @@ const ReportsNew = () => {
   // New style states
   const [reportStyles, setReportStyles] = useState({
     fontFamily: "'Cairo', sans-serif",
-    headerSize: 14,
-    titleSize: 22,
+    headerSize: 12,
+    titleSize: 18,
     tableSize: 11,
     rowPadding: 4,
-    footerSize: 14,
+    footerSize: 10,
     orientation: "portrait" as "portrait" | "landscape",
     doubleMode: false
   });
@@ -77,20 +77,15 @@ const ReportsNew = () => {
   const getSheetData = (date: Date, period: PeriodPart) => {
     const dayIdx = getDay(date);
     
-    // دالة للتحقق من توافر الأستاذ في هذه الفترة بناءً على قيوده الشخصية
     const isTeacherAvailableInPart = (empId: string) => {
-      // تحديد الساعات التابعة لهذه الفترة
       const hours = period === "Morning" ? ["1", "2", "3", "4"] : 
                    period === "Afternoon" ? ["5", "6", "7"] : 
                    ["8", "9", "10", "11", "12"];
       
-      // جلب القيود المسجلة لهذا الأستاذ في هذا اليوم وهذه الساعات
       const relevantConstraints = teacherConstraints.filter(c => 
         c.employeeId === empId && c.day === dayIdx && hours.includes(c.period)
       );
       
-      // إذا كانت جميع القيود المسجلة لهذه الفترة تشير إلى "غير متاح"، يتم استبعاده
-      // ملاحظة: إذا لم توجد قيود، يعتبر متاحاً افتراضياً
       const isBlockedEverywhere = relevantConstraints.length > 0 && 
                                   relevantConstraints.every(c => !c.isAvailable);
                                   
@@ -98,7 +93,6 @@ const ReportsNew = () => {
     };
 
     if (isOutOfSchedule) {
-      // في حالة "خارج الجدول": نأخذ جميع الأساتذة مع استبعاد غير المتاحين حسب الإعدادات
       return [...employees]
         .filter(e => isTeacherAvailableInPart(e.id))
         .sort((a, b) => {
@@ -120,7 +114,6 @@ const ReportsNew = () => {
       });
   };
 
-  // دالة لتجميع أوراق الحضور في أزواج (كل ورقتين معاً) عند تفعيل وضع النسختين
   const renderDoubleModePairs = (sheets: React.ReactNode[]) => {
     if (!reportStyles.doubleMode) return sheets;
     
@@ -242,6 +235,10 @@ const ReportsNew = () => {
         orientation={reportStyles.orientation}
         leftSignatureTitle={isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}
         rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+        fontFamily={reportStyles.fontFamily}
+        headerSize={reportStyles.headerSize}
+        titleSize={reportStyles.titleSize}
+        footerSize={reportStyles.footerSize}
       >
         <Table className="border-4 border-slate-950 w-full">
           <TableHeader>
@@ -344,7 +341,6 @@ const ReportsNew = () => {
         </TabsContent>
       </Tabs>
 
-      {/* المحتوى المخفي للطباعة فقط */}
       <div className="print-content-master hidden print:block">
         {currentContent()}
       </div>
