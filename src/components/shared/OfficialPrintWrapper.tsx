@@ -62,7 +62,8 @@ const OfficialPrintWrapper = ({
         width: currentDim.w,
         height: currentDim.h,
         maxHeight: currentDim.h,
-        padding: doubleMode ? "4mm" : "10mm",
+        // ضبط الهوامش الجانبية لتكون 10 ملم (1 سم) بشكل صريح
+        padding: doubleMode ? "4mm 10mm" : "10mm 10mm",
         fontFamily: "'Cairo', sans-serif"
       }}
       dir={isRTL ? "rtl" : "ltr"}
@@ -94,7 +95,7 @@ const OfficialPrintWrapper = ({
         </div>
       )}
 
-      {/* Main Content Area - Removed mb-4 and flex-1 to keep it tight */}
+      {/* Main Content Area */}
       <div className="w-full bg-white mb-1 overflow-hidden">
         {children}
       </div>
