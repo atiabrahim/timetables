@@ -40,7 +40,7 @@ const OfficialPrintWrapper = ({
   const finalRightTitle = rightSignatureTitle || (isRTL ? "أستاذ الفرع" : "Branch Teacher");
 
   const dimensions = {
-    portrait: { w: "210mm", h: "296mm" }, // Reduced slightly from 297 to avoid overflow
+    portrait: { w: "210mm", h: "296mm" },
     landscape: { w: "297mm", h: "209mm" },
     halfPortrait: { w: "210mm", h: "148mm" },
     halfLandscape: { w: "148mm", h: "210mm" }
@@ -61,15 +61,15 @@ const OfficialPrintWrapper = ({
       style={{
         width: currentDim.w,
         height: currentDim.h,
-        maxHeight: currentDim.h, // Force strict containment
-        padding: doubleMode ? "6mm" : "12mm", // Optimized padding
+        maxHeight: currentDim.h,
+        padding: doubleMode ? "4mm" : "10mm",
         fontFamily: "'Cairo', sans-serif"
       }}
       dir={isRTL ? "rtl" : "ltr"}
     >
       {/* Header Section */}
-      <div className="flex justify-between items-center mb-4 shrink-0">
-        <div className="w-14 h-14 flex items-center justify-center border-2 border-black rounded-lg p-1 bg-white overflow-hidden shrink-0">
+      <div className="flex justify-between items-center mb-3 shrink-0">
+        <div className="w-12 h-12 flex items-center justify-center border-2 border-black rounded-lg p-1 bg-white overflow-hidden shrink-0">
           {institution.logo ? (
             <img src={institution.logo} alt="Logo" className="max-h-full max-w-full object-contain" />
           ) : (
@@ -77,48 +77,48 @@ const OfficialPrintWrapper = ({
           )}
         </div>
 
-        <div className="flex-1 text-center space-y-0.5 px-4">
+        <div className="flex-1 text-center space-y-0 px-4">
           <h2 className="font-black text-black text-[10px] md:text-xs leading-tight uppercase">{institution.name}</h2>
-          <h3 className="font-black text-black text-sm md:text-base underline underline-offset-4 decoration-2">{title}</h3>
-          {subtitle && <div className="text-black font-bold text-[9px] md:text-[10px] mt-0.5">{subtitle}</div>}
+          <h3 className="font-black text-black text-xs md:text-sm underline underline-offset-4 decoration-2">{title}</h3>
+          {subtitle && <div className="text-black font-bold text-[8px] md:text-[9px] mt-0.5">{subtitle}</div>}
         </div>
 
-        <div className="w-14 h-14 flex items-center justify-center border-2 border-black rounded-lg p-1 bg-white overflow-hidden shrink-0 opacity-0 print:opacity-100">
+        <div className="w-12 h-12 flex items-center justify-center shrink-0 opacity-0 print:opacity-100">
            {institution.logo && <img src={institution.logo} alt="Logo" className="max-h-full max-w-full object-contain" />}
         </div>
       </div>
 
       {metadata && (
-        <div className="border-y-2 border-black py-1 mb-4 flex justify-between items-center text-[9px] font-black text-black shrink-0">
+        <div className="border-y-2 border-black py-0.5 mb-2 flex justify-between items-center text-[8.5px] font-black text-black shrink-0">
           {metadata}
         </div>
       )}
 
-      {/* Main Content Area */}
-      <div className="flex-1 w-full bg-white mb-4 overflow-hidden">
+      {/* Main Content Area - Removed mb-4 and flex-1 to keep it tight */}
+      <div className="w-full bg-white mb-1 overflow-hidden">
         {children}
       </div>
 
       {/* Signatures Section */}
       {showSignatures && (
-        <div className="grid grid-cols-3 gap-6 pt-2 border-t-2 border-black shrink-0">
+        <div className="grid grid-cols-3 gap-4 pt-1 border-t-2 border-black shrink-0">
           <div className="text-center">
-            <p className="font-black text-black text-[9px] mb-1">{finalRightTitle}</p>
-            <div className="h-14 border border-dashed border-black/20 rounded-xl bg-slate-50/20"></div>
+            <p className="font-black text-black text-[8px] mb-0.5">{finalRightTitle}</p>
+            <div className="h-12 border border-dashed border-black/20 rounded-lg bg-slate-50/10"></div>
           </div>
           <div className="text-center">
-            <p className="font-black text-black text-[9px] mb-1">{finalCenterTitle}</p>
-            <div className="h-14 border border-dashed border-black/20 rounded-xl bg-slate-50/20"></div>
+            <p className="font-black text-black text-[8px] mb-0.5">{finalCenterTitle}</p>
+            <div className="h-12 border border-dashed border-black/20 rounded-lg bg-slate-50/10"></div>
           </div>
           <div className="text-center">
-            <p className="font-black text-black text-[9px] mb-1">{finalLeftTitle}</p>
-            <div className="h-14 border border-dashed border-black/20 rounded-xl bg-slate-50/20"></div>
+            <p className="font-black text-black text-[8px] mb-0.5">{finalLeftTitle}</p>
+            <div className="h-12 border border-dashed border-black/20 rounded-lg bg-slate-50/10"></div>
           </div>
         </div>
       )}
 
       {showSystemFooter && (
-        <div className="mt-2 text-center text-[6px] font-black text-black/10 uppercase tracking-[0.5em] print:hidden">
+        <div className="mt-1 text-center text-[5px] font-black text-black/5 uppercase tracking-[0.3em] print:hidden">
           Official Academic Record - EduSchedule System
         </div>
       )}
