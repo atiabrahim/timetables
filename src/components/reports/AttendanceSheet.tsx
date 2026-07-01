@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { format } from "date-fns";
 import { Clock, Calendar } from "lucide-react";
 import {
@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils";
 import { PeriodPart } from "@/types";
 import OfficialPrintWrapper from "../shared/OfficialPrintWrapper";
+import ResizableHeader from "../shared/ResizableHeader";
 
 interface AttendanceSheetProps {
   date: Date;
@@ -40,9 +41,17 @@ const AttendanceSheet = ({
   doubleMode = false,
   supervisors
 }: AttendanceSheetProps) => {
-  const dayIdx = getDay(date);
+  // State for column widths
+  const [widths, setWidths] = useState({
+    number: 50,
+    name: 180,
+    signature: 120,
+    notes: 140
+  });
 
-  const getSubjectName = (id: string) => ""; // Placeholder if needed
+  const updateWidth = (column: keyof typeof widths, newWidth: number) => {
+    setWidths(prev => ({ ...prev, [column]: newWidth }));
+  };
 
   // عدد الأسطر الأقصى لملء الصفحة بشكل متناسق
   const maxRows = doubleMode ? 10 : 18; 
@@ -62,27 +71,25 @@ const AttendanceSheet = ({
     fontFamily: reportStyles.fontFamily,
   };
 
-  const metadata = (
-    <>
-      <div className="flex items-center gap-2">
-        <span className="opacity-70">{isRTL ? "المصلحة:" : "Department:"}</span>
-        <span className="font-black">{selectedDepartment}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Calendar size={11} className="opacity-50" />
-        <span className="font-black">{format(date, "EEEE, d MMMM yyyy", { locale: currentLocale })}</span>
-      </div>
-      <div className="flex items-center gap-2">
-        <Clock size={11} className="opacity-50" />
-        <span className="font-black">{period === "Morning" ? t.morning : period === "Afternoon" ? t.afternoon : t.evening}</span>
-      </div>
-    </>
-  );
-
   return (
     <OfficialPrintWrapper
       title={t.attendanceSheet}
-      metadata={metadata}
+      metadata={
+        <>
+          <div className="flex items-center gap-2">
+            <span className="opacity-70">{isRTL ? "المصلحة:" : "Department:"}</span>
+            <span className="font-black">{selectedDepartment}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar size={11} className="opacity-50" />
+            <span className="font-black">{format(date, "EEEE, d MMMM yyyy", { locale: currentLocale })}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Clock size={11} className="opacity-50" />
+            <span className="font-black">{period === "Morning" ? t.morning : period === "Afternoon" ? t.afternoon : t.evening}</span>
+          </div>
+        </>
+      }
       orientation={reportStyles.orientation}
       doubleMode={doubleMode}
       showSignatures={true}
@@ -97,18 +104,45 @@ const AttendanceSheet = ({
         <Table className="w-full border-collapse border border-black">
           <TableHeader>
             <TableRow className="bg-slate-100/80 hover:bg-slate-100/80 border-b border-black h-10">
-              <TableHead style={headerCellStyle} className="w-[50px] text-center font-black text-black border-e border-black p-1">
+              <ResizableHeader 
+                width={widths.number} 
+                onResize={(w) => updateWidth("number", w)} 
+                isRTL={isRTL}
+                className="font-black text-black border-e border-black p-1 text-center"
+                style={headerCellStyle}
+              >
                 {t.number}
-              </TableHead>
-              <TableHead style={headerCellStyle} className="font-black text-black border-e border-black p-1 text-center">
+              </ResizableHeader>
+              
+              <ResizableHeader 
+                width={widths.name} 
+                onResize={(w) => updateWidth("name", w)} 
+                isRTL={isRTL}
+                className="font-black text-black border-e border-black p-1"
+                style={headerCellStyle}
+              >
                 {t.employeeName}
-              </TableHead>
-              <TableHead style={headerCellStyle} className="w-[120px] text-center font-black text-black border-e border-black p-1">
+              </ResizableHeader>
+              
+              <ResizableHeader 
+                width={widths.signature} 
+                onResize={(w) => updateWidth("signature", w)} 
+                isRTL={isRTL}
+                className="font-black text-black border-e border-black p-1 text-center"
+                style={headerCellStyle}
+              >
                 {t.signature}
-              </TableHead>
-              <TableHead style={headerCellStyle} className="text-center font-black text-black p-1 w-[140px]">
+              </ResizableHeader>
+              
+              <ResizableHeader 
+                width={widths.notes} 
+                onResize={(w) => updateWidth("notes", w)} 
+                isRTL={isRTL}
+                className="font-black text-black p-1 text-center"
+                style={headerCellStyle}
+              >
                 {t.notes}
-              </TableHead>
+              </ResizableHeader>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -140,10 +174,5 @@ const AttendanceSheet = ({
     </OfficialPrintWrapper>
   );
 };
-
-// Helper function to get day index
-function getDay(date: Date) {
-  return date.getDay();
-}
 
 export default AttendanceSheet;
