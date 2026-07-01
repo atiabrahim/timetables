@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { 
   BookOpen, 
   User, 
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import ResizableHeader from "../shared/ResizableHeader";
 
 interface LessonTableProps {
   lessons: any[];
@@ -30,67 +31,111 @@ const LessonTable = ({
   lessons, isRTL, isAdmin, getSubjectName, getTeacherName,
   getClassName, getDayName, onEdit, onDelete, onReset
 }: LessonTableProps) => {
+  // تتبع عرض الأعمدة
+  const [widths, setWidths] = useState({
+    subject: 180,
+    teacher: 180,
+    class: 100,
+    room: 100,
+    time: 140,
+    actions: 100
+  });
+
+  const updateWidth = (column: keyof typeof widths, newWidth: number) => {
+    setWidths(prev => ({ ...prev, [column]: newWidth }));
+  };
+
   return (
     <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
-        <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
+        <table className={cn("w-full border-collapse table-fixed", isRTL ? "text-right" : "text-left")}>
           <thead>
             <tr className="bg-slate-50">
-              <th className={cn("p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200", isRTL ? "text-right" : "text-left")}>
+              <ResizableHeader 
+                width={widths.subject} 
+                onResize={(w) => updateWidth("subject", w)} 
+                isRTL={isRTL}
+                className="p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200"
+              >
                 {isRTL ? "المادة" : "Subject"}
-              </th>
-              <th className={cn("p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200", isRTL ? "text-right" : "text-left")}>
+              </ResizableHeader>
+              
+              <ResizableHeader 
+                width={widths.teacher} 
+                onResize={(w) => updateWidth("teacher", w)} 
+                isRTL={isRTL}
+                className="p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200"
+              >
                 {isRTL ? "الأستاذ" : "Teacher"}
-              </th>
-              <th className="p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200 text-center">
+              </ResizableHeader>
+              
+              <ResizableHeader 
+                width={widths.class} 
+                onResize={(w) => updateWidth("class", w)} 
+                isRTL={isRTL}
+                className="p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200 text-center"
+              >
                 {isRTL ? "الفوج" : "Class"}
-              </th>
-              <th className={cn("p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200", isRTL ? "text-right" : "text-left")}>
+              </ResizableHeader>
+              
+              <ResizableHeader 
+                width={widths.room} 
+                onResize={(w) => updateWidth("room", w)} 
+                isRTL={isRTL}
+                className="p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200"
+              >
                 {isRTL ? "القاعة" : "Room"}
-              </th>
-              <th className={cn("p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200", isRTL ? "text-right" : "text-left")}>
+              </ResizableHeader>
+              
+              <ResizableHeader 
+                width={widths.time} 
+                onResize={(w) => updateWidth("time", w)} 
+                isRTL={isRTL}
+                className="p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200"
+              >
                 {isRTL ? "التوقيت" : "Timing"}
-              </th>
+              </ResizableHeader>
+              
               {isAdmin && (
-                <th className="p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200 text-center">
+                <ResizableHeader 
+                  width={widths.actions} 
+                  onResize={(w) => updateWidth("actions", w)} 
+                  isRTL={isRTL}
+                  className="p-1.5 text-slate-700 font-bold text-[10px] uppercase border border-slate-200 text-center"
+                >
                   {isRTL ? "إجراءات" : "Actions"}
-                </th>
+                </ResizableHeader>
               )}
             </tr>
           </thead>
           <tbody>
             {lessons.map((asgn) => (
               <tr key={asgn.id} className="hover:bg-emerald-50/30 transition-colors group">
-                {/* عمود المادة */}
-                <td className="p-0.5 border border-slate-100">
+                <td className="p-0.5 border border-slate-100 overflow-hidden">
                   <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
-                    <span className="font-bold text-emerald-900 text-xs">{getSubjectName(asgn.subjectId)}</span>
+                    <span className="font-bold text-emerald-900 text-xs truncate">{getSubjectName(asgn.subjectId)}</span>
                     <BookOpen size={12} className="text-emerald-500 shrink-0" />
                   </div>
                 </td>
-                {/* عمود الأستاذ */}
-                <td className="p-0.5 border border-slate-100">
+                <td className="p-0.5 border border-slate-100 overflow-hidden">
                   <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
-                    <span className="text-slate-700 font-medium text-xs">{getTeacherName(asgn.employeeId)}</span>
+                    <span className="text-slate-700 font-medium text-xs truncate">{getTeacherName(asgn.employeeId)}</span>
                     <User size={12} className="text-slate-400 shrink-0" />
                   </div>
                 </td>
-                {/* عمود الفوج - يبقى في المنتصف */}
-                <td className="p-0.5 border border-slate-100 text-center">
-                  <div className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-black">
-                    <GraduationCap size={10} />
-                    {getClassName(asgn.classId)}
+                <td className="p-0.5 border border-slate-100 text-center overflow-hidden">
+                  <div className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-[10px] font-black truncate max-w-full">
+                    <GraduationCap size={10} className="shrink-0" />
+                    <span className="truncate">{getClassName(asgn.classId)}</span>
                   </div>
                 </td>
-                {/* عمود القاعة */}
-                <td className="p-0.5 border border-slate-100">
+                <td className="p-0.5 border border-slate-100 overflow-hidden">
                   <div className={cn("flex items-center gap-1 px-2 text-slate-600 text-[10px] font-bold", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
-                    {asgn.room || "---"}
+                    <span className="truncate">{asgn.room || "---"}</span>
                     <Building2 size={10} className="text-slate-400 shrink-0" />
                   </div>
                 </td>
-                {/* عمود التوقيت */}
-                <td className="p-0.5 border border-slate-100">
+                <td className="p-0.5 border border-slate-100 overflow-hidden">
                   <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
                     <div className="flex items-center gap-1 text-[9px] text-slate-500 font-bold shrink-0">
                       <Clock size={10} />
@@ -100,7 +145,7 @@ const LessonTable = ({
                   </div>
                 </td>
                 {isAdmin && (
-                  <td className="p-0.5 border border-slate-100 text-center">
+                  <td className="p-0.5 border border-slate-100 text-center overflow-hidden">
                     <div className="flex justify-center gap-1">
                       <Button 
                         variant="ghost" 
@@ -124,7 +169,6 @@ const LessonTable = ({
               </tr>
             ))}
             
-            {/* سطر المجموع الكلي */}
             {lessons.length > 0 && (
               <tr className="bg-emerald-50/50 border-t-2 border-emerald-200">
                 <td colSpan={isAdmin ? 6 : 5} className="p-3 text-center">
