@@ -137,8 +137,10 @@ const PrintPreview = ({
         <div className="flex-1 overflow-auto bg-zinc-950/50 print:bg-white flex justify-center p-8 print:p-0">
           <div 
             className={cn(
-              "origin-top print:transform-none print:w-full print:p-0",
-              doubleMode ? "flex flex-col gap-8 print:gap-0" : "block"
+              "origin-top print:transform-none print:w-full print:p-0 flex",
+              doubleMode 
+                ? (orientation === "landscape" ? "flex-row gap-8 print:gap-0" : "flex-col gap-8 print:gap-0") 
+                : "block"
             )}
             style={{ transform: `scale(${printScale / 100})` }}
           >
@@ -158,7 +160,6 @@ const PrintPreview = ({
                 transform: none !important;
                 width: 100% !important;
               }
-              /* تم تصحيح الهروب هنا بإضافة \\! قبل حرف التعجب */
               .print\\:\\!transform-none {
                 transform: none !important;
               }
