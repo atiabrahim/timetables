@@ -40,6 +40,10 @@ const AttendanceSheet = ({
   doubleMode = false,
   supervisors
 }: AttendanceSheetProps) => {
+  const dayIdx = getDay(date);
+
+  const getSubjectName = (id: string) => ""; // Placeholder if needed
+
   // عدد الأسطر الأقصى لملء الصفحة بشكل متناسق
   const maxRows = doubleMode ? 10 : 18; 
   const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
@@ -96,7 +100,7 @@ const AttendanceSheet = ({
               <TableHead style={headerCellStyle} className="w-[50px] text-center font-black text-black border-e border-black p-1">
                 {t.number}
               </TableHead>
-              <TableHead style={headerCellStyle} className="font-black text-black border-e border-black p-1 text-center">
+              <TableHead style={headerCellStyle} className={cn("font-black text-black border-e border-black p-1", isRTL ? "text-right pr-4" : "text-left pl-4")}>
                 {t.employeeName}
               </TableHead>
               <TableHead style={headerCellStyle} className="w-[120px] text-center font-black text-black border-e border-black p-1">
@@ -113,7 +117,7 @@ const AttendanceSheet = ({
                 <TableCell style={cellStyle} className="text-center font-black border-e border-black bg-slate-50/30 p-1">
                   {idx + 1}
                 </TableCell>
-                <TableCell style={cellStyle} className="font-black border-e border-black text-center text-black whitespace-nowrap overflow-hidden p-1">
+                <TableCell style={cellStyle} className={cn("font-black border-e border-black text-black whitespace-nowrap overflow-hidden p-1", isRTL ? "text-right pr-4" : "text-left pl-4")}>
                   {emp?.lastName} {emp?.firstName}
                 </TableCell>
                 <TableCell style={cellStyle} className="border-e border-black p-1"></TableCell>
@@ -136,5 +140,10 @@ const AttendanceSheet = ({
     </OfficialPrintWrapper>
   );
 };
+
+// Helper function to get day index
+function getDay(date: Date) {
+  return date.getDay();
+}
 
 export default AttendanceSheet;
