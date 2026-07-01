@@ -40,18 +40,19 @@ const AttendanceSheet = ({
   doubleMode = false,
   supervisors
 }: AttendanceSheetProps) => {
-  // Adjusted max rows to compensate for increased height (h-9)
-  const maxRows = doubleMode ? 8 : 15; 
+  // عدد الأسطر الأقصى لملء الصفحة بشكل متناسق
+  const maxRows = doubleMode ? 10 : 18; 
   const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
 
   // تنسيق الخلايا العادية (محتوى الجدول)
   const cellStyle = {
     fontSize: `${reportStyles.tableSize}px`,
-    paddingTop: `${reportStyles.rowPadding}px`,
-    paddingBottom: `${reportStyles.rowPadding}px`,
+    fontFamily: reportStyles.fontFamily,
+    paddingTop: `${reportStyles.rowPadding + 2}px`,
+    paddingBottom: `${reportStyles.rowPadding + 2}px`,
   };
 
-  // تنسيق عناوين الأعمدة (مطابق للترويسة حسب طلبك)
+  // تنسيق عناوين الأعمدة
   const headerCellStyle = {
     fontSize: `${reportStyles.headerSize}px`,
     fontFamily: reportStyles.fontFamily,
@@ -60,16 +61,16 @@ const AttendanceSheet = ({
   const metadata = (
     <>
       <div className="flex items-center gap-2">
-        <span className="opacity-60">{isRTL ? "المصلحة:" : "Department:"}</span>
-        <span className="truncate max-w-[150px]">{selectedDepartment}</span>
+        <span className="opacity-70">{isRTL ? "المصلحة:" : "Department:"}</span>
+        <span className="font-black">{selectedDepartment}</span>
       </div>
       <div className="flex items-center gap-2">
-        <Calendar size={11} className="opacity-40" />
-        <span>{format(date, "EEEE, d MMMM yyyy", { locale: currentLocale })}</span>
+        <Calendar size={11} className="opacity-50" />
+        <span className="font-black">{format(date, "EEEE, d MMMM yyyy", { locale: currentLocale })}</span>
       </div>
       <div className="flex items-center gap-2">
-        <Clock size={11} className="opacity-40" />
-        <span>{period === "Morning" ? t.morning : period === "Afternoon" ? t.afternoon : t.evening}</span>
+        <Clock size={11} className="opacity-50" />
+        <span className="font-black">{period === "Morning" ? t.morning : period === "Afternoon" ? t.afternoon : t.evening}</span>
       </div>
     </>
   );
@@ -82,50 +83,51 @@ const AttendanceSheet = ({
       doubleMode={doubleMode}
       showSignatures={true}
       rightSignatureTitle={isRTL ? "رئيس المصلحة" : "Head of Dept"}
+      leftSignatureTitle={isRTL ? "المدير" : "Director"}
       fontFamily={reportStyles.fontFamily}
       headerSize={reportStyles.headerSize}
       titleSize={reportStyles.titleSize}
       footerSize={reportStyles.footerSize}
     >
       <div className="w-full">
-        <Table className="w-full border-collapse border-2 border-black">
+        <Table className="w-full border-collapse border border-black">
           <TableHeader>
-            <TableRow className="bg-slate-100/50 hover:bg-slate-100/50 border-b-2 border-black h-9">
-              <TableHead style={headerCellStyle} className="w-[60px] text-center font-black text-black border-e-2 border-black p-0.5">
+            <TableRow className="bg-slate-100/80 hover:bg-slate-100/80 border-b border-black h-10">
+              <TableHead style={headerCellStyle} className="w-[50px] text-center font-black text-black border-e border-black p-1">
                 {t.number}
               </TableHead>
-              <TableHead style={headerCellStyle} className="font-black text-black border-e-2 border-black px-2 p-0.5 w-[176px] text-center">
+              <TableHead style={headerCellStyle} className="font-black text-black border-e border-black p-1 text-center">
                 {t.employeeName}
               </TableHead>
-              <TableHead style={headerCellStyle} className="w-[100px] text-center font-black text-black border-e-2 border-black p-0.5">
+              <TableHead style={headerCellStyle} className="w-[120px] text-center font-black text-black border-e border-black p-1">
                 {t.signature}
               </TableHead>
-              <TableHead style={headerCellStyle} className="text-center font-black text-black p-0.5 w-[120px]">
+              <TableHead style={headerCellStyle} className="text-center font-black text-black p-1 w-[140px]">
                 {t.notes}
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {assignedEmployees.map((emp, idx) => (
-              <TableRow key={emp?.id} className="hover:bg-transparent border-b border-black h-9">
-                <TableCell style={cellStyle} className="text-center font-black border-e border-black bg-slate-50/50 p-0.5">
+              <TableRow key={emp?.id} className="hover:bg-transparent border-b border-black h-10">
+                <TableCell style={cellStyle} className="text-center font-black border-e border-black bg-slate-50/30 p-1">
                   {idx + 1}
                 </TableCell>
-                <TableCell style={cellStyle} className={cn("font-black border-e border-black px-2 text-black whitespace-nowrap overflow-hidden p-0.5", isRTL ? "text-right" : "text-left")}>
+                <TableCell style={cellStyle} className="font-black border-e border-black text-center text-black whitespace-nowrap overflow-hidden p-1">
                   {emp?.lastName} {emp?.firstName}
                 </TableCell>
-                <TableCell style={cellStyle} className="border-e border-black p-0.5"></TableCell>
-                <TableCell style={cellStyle} className="p-0.5"></TableCell>
+                <TableCell style={cellStyle} className="border-e border-black p-1"></TableCell>
+                <TableCell style={cellStyle} className="p-1"></TableCell>
               </TableRow>
             ))}
             {Array.from({ length: emptyRowsCount }).map((_, i) => (
-              <TableRow key={`empty-${i}`} className="hover:bg-transparent border-b border-black h-9">
-                <TableCell style={cellStyle} className="text-center border-e border-black font-bold text-black bg-slate-50/10 p-0.5">
+              <TableRow key={`empty-${i}`} className="hover:bg-transparent border-b border-black h-10">
+                <TableCell style={cellStyle} className="text-center border-e border-black font-bold text-slate-400 bg-slate-50/10 p-1">
                   {assignedEmployees.length + i + 1}
                 </TableCell>
-                <TableCell style={cellStyle} className="border-e border-black p-0.5"></TableCell>
-                <TableCell style={cellStyle} className="border-e border-black p-0.5"></TableCell>
-                <TableCell style={cellStyle} className="p-0.5"></TableCell>
+                <TableCell style={cellStyle} className="border-e border-black p-1"></TableCell>
+                <TableCell style={cellStyle} className="border-e border-black p-1"></TableCell>
+                <TableCell style={cellStyle} className="p-1"></TableCell>
               </TableRow>
             ))}
           </TableBody>
