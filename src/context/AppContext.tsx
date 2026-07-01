@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Language, translations } from "../translations";
 import { 
   User, Institution, Employee, Assignment, Department, Requirement, Room,
-  AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment, TeacherConstraint, ClassConstraint, RoomConstraint 
+  AcademicClass, Subject, PeriodConfig, AppState, TemplateAssignment, PeriodPart, DailyAssignment, TeacherConstraint, ClassConstraint, RoomConstraint, ReportStyles 
 } from "../types";
 import { supabase } from "../lib/supabase";
 import { showSuccess, showError } from "../utils/toast";
@@ -54,6 +54,8 @@ interface AppContextType {
   setRoomConstraints: React.Dispatch<React.SetStateAction<RoomConstraint[]>>;
   periodTimings: Record<string, string>;
   setPeriodTimings: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  reportStyles: ReportStyles;
+  setReportStyles: React.Dispatch<React.SetStateAction<ReportStyles>>;
   importAllData: (data: Partial<AppState>) => void;
   saveDataToCloud: () => Promise<void>;
   loadDataFromCloud: () => Promise<void>;
@@ -71,6 +73,17 @@ const STORAGE_KEY = "academic_scheduler_v2_data";
 const DEFAULT_ADMIN: User = { id: "admin-id", username: "Admin", fullName: "مدير النظام", email: "admin@edu.com", role: "Admin", observation: "الحساب الرئيسي", isActive: true };
 const DEFAULT_INSTITUTION: Institution = { name: "مركز التكوين المهني والتمهين", subName: "المجاهد لمقدم مبروك بالدبيلة", address: "الدبيلة، الوادي", phone: "", email: "", academicYear: "2023/2024", pedagogicalManagerTitle: "المسؤول البيداغوجي", generalManagerTitle: "مدير المركز" };
 const DEFAULT_PERIOD_TIMINGS: Record<string, string> = { "1": "08:00-09:00", "2": "09:00-10:00", "3": "10:00-11:00", "4": "11:00-12:00", "5": "13:00-14:00", "6": "14:00-15:00", "7": "15:00-16:00", "8": "16:00-17:00", "9": "17:00-18:00", "10": "18:00-19:00", "11": "19:00-20:00", "12": "20:00-21:00" };
+
+const DEFAULT_REPORT_STYLES: ReportStyles = {
+  fontFamily: "'Cairo', sans-serif",
+  headerSize: 12,
+  titleSize: 18,
+  tableSize: 11,
+  rowPadding: 4,
+  footerSize: 10,
+  orientation: "portrait",
+  doubleMode: false
+};
 
 const generateDefaultPeriodConfigs = (): PeriodConfig[] => {
   const configs: PeriodConfig[] = [];
@@ -106,9 +119,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [classConstraints, setClassConstraints] = useState<ClassConstraint[]>([]);
   const [roomConstraints, setRoomConstraints] = useState<RoomConstraint[]>([]);
   const [periodTimings, setPeriodTimings] = useState<Record<string, string>>(DEFAULT_PERIOD_TIMINGS);
+  const [reportStyles, setReportStyles] = useState<ReportStyles>(DEFAULT_REPORT_STYLES);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  // Sync rooms legacy array with detailed rooms
   const rooms = roomsDetailed.map(r => r.name);
   const setRooms = (names: string[]) => {
     const updated = names.map(name => {
@@ -139,9 +152,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   useEffect(() => {
-    const dataToSave = { systemUsers, institution, employees, assignments, requirements, templateAssignments, dailyAssignments, departments, roomsDetailed, classes, subjects, periodConfigs, teacherConstraints, classConstraints, roomConstraints, periodTimings };
+    const dataToSave = { systemUsers, institution, employees, assignments, requirements, templateAssignments, dailyAssignments, departments, roomsDetailed, classes, subjects, periodConfigs, teacherConstraints, classConstraints, roomConstraints, periodTimings, reportStyles };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-  }, [systemUsers, institution, employees, assignments, requirements, templateAssignments, dailyAssignments, departments, roomsDetailed, classes, subjects, periodConfigs, teacherConstraints, classConstraints, roomConstraints, periodTimings]);
+  }, [systemUsers, institution, employees, assignments, requirements, templateAssignments, dailyAssignments, departments, roomsDetailed, classes, subjects, periodConfigs, teacherConstraints, classConstraints, roomConstraints, periodTimings, reportStyles]);
 
   const loadDataFromCloud = async (silent = false) => {
     try {
@@ -157,7 +170,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const saveDataToCloud = async () => {
-    const dataToSave = { systemUsers, institution, employees, assignments, requirements, templateAssignments, dailyAssignments, departments, roomsDetailed, classes, subjects, periodConfigs, teacherConstraints, classConstraints, roomConstraints, periodTimings };
+    const dataToSave = { systemUsers, institution, employees, assignments, requirements, templateAssignments, dailyAssignments, departments, roomsDetailed, classes, subjects, periodConfigs, teacherConstraints, classConstraints, roomConstraints, periodTimings, reportStyles };
     try {
       const { error } = await supabase.from('app_sessions').upsert({ id: 'default_session', data: dataToSave, updated_at: new Date().toISOString() });
       if (error) throw error;
@@ -206,7 +219,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data.institution) setInstitution({ ...DEFAULT_INSTITUTION, ...data.institution });
     if (data.employees) setEmployees(data.employees);
     if (data.roomsDetailed) setRoomsDetailed(data.roomsDetailed);
-    else if (data.rooms) setRooms(data.rooms); // Legacy support
+    else if (data.rooms) setRooms(data.rooms); 
     if (data.classes) setClasses(data.classes);
     if (data.subjects) setSubjects(data.subjects);
     if (data.assignments) setAssignments(data.assignments);
@@ -220,6 +233,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data.roomConstraints) setRoomConstraints(data.roomConstraints);
     if (data.periodTimings) setPeriodTimings(data.periodTimings);
     if (data.departments) setDepartments(data.departments);
+    if (data.reportStyles) setReportStyles(data.reportStyles);
   };
 
   const loadDemoData = () => {
@@ -228,24 +242,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       { id: "cls-2", name: "مستغل معلوماتية", code: "OP-INFO", qualificationLevel: "مستوى 4", studentCount: 18 },
       { id: "cls-3", name: "محاسبة وتسيير", code: "TS-ACC", qualificationLevel: "مستوى 5", studentCount: 32 }
     ];
-
     const demoSubjects: Subject[] = [
       { id: "sub-1", name: "خوارزميات وبرمجة", nameEn: "Algorithms" },
       { id: "sub-2", name: "قواعد البيانات", nameEn: "Databases" },
       { id: "sub-3", name: "الإنجليزية التقنية", nameEn: "Technical English" }
     ];
-
     const demoEmployees: Employee[] = [
       { id: "emp-1", firstName: "أحمد", lastName: "بن علي", category: "Full-time", observation: "" },
       { id: "emp-2", firstName: "فاطمة", lastName: "قادري", category: "Full-time", observation: "" }
     ];
-
     const demoRoomsDetailed: Room[] = [
       { name: "القاعة 1", capacity: 35, type: "Theory" },
       { name: "المخبر 1", capacity: 20, type: "Lab" },
       { name: "ورشة 1", capacity: 25, type: "Workshop" }
     ];
-
     setClasses(demoClasses);
     setSubjects(demoSubjects);
     setEmployees(demoEmployees);
@@ -273,7 +283,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       departments, setDepartments, rooms, setRooms, roomsDetailed, setRoomsDetailed, classes, setClasses, subjects, setSubjects,
       periodConfigs, setPeriodConfigs, teacherConstraints, setTeacherConstraints,
       classConstraints, setClassConstraints, roomConstraints, setRoomConstraints,
-      periodTimings, setPeriodTimings,
+      periodTimings, setPeriodTimings, reportStyles, setReportStyles,
       importAllData, saveDataToCloud, loadDataFromCloud: () => loadDataFromCloud(false), loadDemoData, t, isRTL,
       isSidebarCollapsed, setIsSidebarCollapsed
     }}>

@@ -122,6 +122,17 @@ export interface RoomConstraint {
   isAvailable: boolean;
 }
 
+export interface ReportStyles {
+  fontFamily: string;
+  headerSize: number;
+  titleSize: number;
+  tableSize: number;
+  rowPadding: number;
+  footerSize: number;
+  orientation: "portrait" | "landscape";
+  doubleMode: boolean;
+}
+
 export interface AppState {
   systemUsers: User[];
   institution: Institution;
@@ -140,4 +151,5 @@ export interface AppState {
   classConstraints?: ClassConstraint[];
   roomConstraints?: RoomConstraint[];
   periodTimings?: Record<string, string>;
+  reportStyles?: ReportStyles;
 }

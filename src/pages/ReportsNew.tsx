@@ -40,7 +40,9 @@ const ReportsNew = () => {
     departments,
     isRTL,
     t,
-    language
+    language,
+    reportStyles,
+    setReportStyles
   } = useApp();
 
   const [dailyDate, setDailyDate] = useState(format(new Date(), "yyyy-MM-dd"));
@@ -52,18 +54,6 @@ const ReportsNew = () => {
   const [selectedDepartment, setSelectedDepartment] = useState<string>(
     departments[0]?.name || (isRTL ? "مديرية الدراسات والتربصات" : "Studies Directorate")
   );
-  
-  // New style states
-  const [reportStyles, setReportStyles] = useState({
-    fontFamily: "'Cairo', sans-serif",
-    headerSize: 12,
-    titleSize: 18,
-    tableSize: 11,
-    rowPadding: 4,
-    footerSize: 10,
-    orientation: "portrait" as "portrait" | "landscape",
-    doubleMode: false
-  });
 
   const currentLocale = language === "ar" ? ar : enUS;
   const supervisors = useMemo(() => [isRTL ? "رئيس مصلحة التكوين" : "Head of Training"], [isRTL]);
