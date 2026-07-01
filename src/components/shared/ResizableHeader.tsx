@@ -33,68 +33,12 @@ const ResizableHeader = ({
     const onMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
       
-      // في حالة RTL، الحركة لليسار تزيد العرض، لليمين تنقصه
+      // Calculate the difference in mouse movement
       const diff = e.pageX - startX.current;
+      // In RTL, dragging left (negative diff) increases width, so we subtract diff
       const newWidth = isRTL ? startWidth.current - diff : startWidth.current + diff;
       
-      if (newWidth > 50) { // حد أدنى للعرض
-        onResize(newWidth);
-      }
-    };
-
-    const onMouseUp = () => {
-      setIsResizing(false);
-    };
-
-    if (isResizing) {
-      document.addEventListener("mousemove", onMouseMove);
-      document.addEventListener("mouseup", onMouseUp);
-      document.body.style.cursor = "col-resize";
-    }
-
-    return () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup<dyad-write path="src/components/shared/ResizableHeader.tsx" description="Completing the resizable table header component.">
-"use client";
-
-import React, { useState, useRef, useEffect } from "react";
-import { cn } from "@/lib/utils";
-
-interface ResizableHeaderProps extends React.ThHTMLAttributes<HTMLTableCellElement> {
-  onResize: (width: number) => void;
-  width: number;
-  isRTL: boolean;
-}
-
-const ResizableHeader = ({ 
-  children, 
-  onResize, 
-  width, 
-  isRTL, 
-  className, 
-  ...props 
-}: ResizableHeaderProps) => {
-  const [isResizing, setIsResizing] = useState(false);
-  const startX = useRef(0);
-  const startWidth = useRef(0);
-
-  const onMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsResizing(true);
-    startX.current = e.pageX;
-    startWidth.current = width;
-  };
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!isResizing) return;
-      
-      // في حالة RTL، الحركة لليسار تزيد العرض (تغيير موجب)، لليمين تنقصه
-      const diff = e.pageX - startX.current;
-      const newWidth = isRTL ? startWidth.current - diff : startWidth.current + diff;
-      
-      if (newWidth > 40) { // حد أدنى للعرض
+      if (newWidth > 40) { // Set a minimum width for the column
         onResize(newWidth);
       }
     };
