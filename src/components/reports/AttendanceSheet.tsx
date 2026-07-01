@@ -100,7 +100,7 @@ const AttendanceSheet = ({
               <TableHead style={headerCellStyle} className="w-[50px] text-center font-black text-black border-e border-black p-1">
                 {t.number}
               </TableHead>
-              <TableHead style={headerCellStyle} className={cn("font-black text-black border-e border-black p-1", isRTL ? "text-right pr-4" : "text-left pl-4")}>
+              <TableHead style={headerCellStyle} className="font-black text-black border-e border-black p-1 text-center">
                 {t.employeeName}
               </TableHead>
               <TableHead style={headerCellStyle} className="w-[120px] text-center font-black text-black border-e border-black p-1">
