@@ -59,7 +59,7 @@ const OfficialPrintWrapper = ({
   return (
     <div 
       className={cn(
-        "bg-white relative flex flex-col shadow-sm border border-slate-100 mx-auto",
+        "bg-white relative flex flex-col mx-auto",
         !disablePageBreak && "page-break-always",
         "print:shadow-none print:border-none print:m-0",
         "overflow-hidden box-border break-inside-avoid"
@@ -68,14 +68,15 @@ const OfficialPrintWrapper = ({
         width: currentDim.w,
         height: currentDim.h,
         maxHeight: currentDim.h,
-        padding: doubleMode ? "4mm 10mm" : "10mm 10mm",
+        // تقليل الهوامش الجانبية لزيادة مساحة الجدول وتوسيطه
+        padding: doubleMode ? "4mm 8mm" : "8mm 8mm",
         fontFamily: fontFamily
       }}
       dir={isRTL ? "rtl" : "ltr"}
     >
       {/* Header Section */}
-      <div className="flex justify-between items-center mb-3 shrink-0">
-        <div className="w-12 h-12 flex items-center justify-center border-2 border-black rounded-lg p-1 bg-white overflow-hidden shrink-0">
+      <div className="flex justify-between items-center mb-4 shrink-0 px-2">
+        <div className="w-14 h-14 flex items-center justify-center border-2 border-black rounded-lg p-1 bg-white overflow-hidden shrink-0">
           {institution.logo ? (
             <img src={institution.logo} alt="Logo" className="max-h-full max-w-full object-contain" />
           ) : (
@@ -83,61 +84,61 @@ const OfficialPrintWrapper = ({
           )}
         </div>
 
-        <div className="flex-1 text-center space-y-0 px-4">
+        <div className="flex-1 text-center space-y-1 px-4">
           <h2 
             className="font-black text-black leading-tight uppercase"
-            style={{ fontSize: `${headerSize}px` }}
+            style={{ fontSize: `${headerSize + 2}px` }}
           >
             {institution.name}
           </h2>
           <h3 
             className="font-black text-black underline underline-offset-4 decoration-2"
-            style={{ fontSize: `${titleSize}px` }}
+            style={{ fontSize: `${titleSize + 2}px` }}
           >
             {title}
           </h3>
           {subtitle && (
             <div 
-              className="text-black font-bold mt-0.5"
-              style={{ fontSize: `${headerSize * 0.8}px` }}
+              className="text-black font-bold mt-1"
+              style={{ fontSize: `${headerSize}px` }}
             >
               {subtitle}
             </div>
           )}
         </div>
 
-        <div className="w-12 h-12 flex items-center justify-center shrink-0 opacity-0 print:opacity-100">
+        <div className="w-14 h-14 flex items-center justify-center shrink-0 opacity-0 print:opacity-100">
            {institution.logo && <img src={institution.logo} alt="Logo" className="max-h-full max-w-full object-contain" />}
         </div>
       </div>
 
       {metadata && (
-        <div className="border-y-2 border-black py-0.5 mb-2 flex justify-between items-center font-black text-black shrink-0" style={{ fontSize: `${headerSize * 0.85}px` }}>
+        <div className="border-y-2 border-black py-1 mb-4 flex justify-between items-center font-black text-black shrink-0 px-2" style={{ fontSize: `${headerSize}px` }}>
           {metadata}
         </div>
       )}
 
-      {/* Main Content Area */}
-      <div className="w-full bg-white mb-1 overflow-hidden">
+      {/* Main Content Area - Ensuring full width usage */}
+      <div className="w-full flex-1 bg-white mb-2 overflow-hidden px-1">
         {children}
       </div>
 
       {/* Signatures Section */}
       {showSignatures && (
-        <div className="grid grid-cols-2 gap-8 pt-1 border-t-2 border-black shrink-0">
+        <div className="grid grid-cols-2 gap-12 pt-2 border-t-2 border-black shrink-0 px-4 mt-auto mb-2">
           <div className="text-center">
-            <p className="font-black text-black mb-0.5" style={{ fontSize: `${footerSize}px` }}>{finalRightTitle}</p>
-            <div className="h-12 border border-dashed border-black/20 rounded-lg bg-slate-50/10"></div>
+            <p className="font-black text-black mb-1" style={{ fontSize: `${footerSize + 1}px` }}>{finalRightTitle}</p>
+            <div className="h-16 border border-dashed border-black/20 rounded-lg bg-slate-50/5"></div>
           </div>
           <div className="text-center">
-            <p className="font-black text-black mb-0.5" style={{ fontSize: `${footerSize}px` }}>{finalLeftTitle}</p>
-            <div className="h-12 border border-dashed border-black/20 rounded-lg bg-slate-50/10"></div>
+            <p className="font-black text-black mb-1" style={{ fontSize: `${footerSize + 1}px` }}>{finalLeftTitle}</p>
+            <div className="h-16 border border-dashed border-black/20 rounded-lg bg-slate-50/5"></div>
           </div>
         </div>
       )}
 
       {showSystemFooter && (
-        <div className="mt-1 text-center text-[5px] font-black text-black/5 uppercase tracking-[0.3em] print:hidden">
+        <div className="mt-1 text-center text-[6px] font-black text-black/10 uppercase tracking-[0.3em] print:hidden">
           Official Academic Record - EduSchedule System
         </div>
       )}
