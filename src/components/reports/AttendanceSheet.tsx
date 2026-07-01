@@ -93,7 +93,7 @@ const AttendanceSheet = ({
       titleSize={reportStyles.titleSize}
       footerSize={reportStyles.footerSize}
     >
-      <div className="w-full">
+      <div className="w-[96%] mx-auto">
         <Table className="w-full border-collapse border border-black">
           <TableHeader>
             <TableRow className="bg-slate-100/80 hover:bg-slate-100/80 border-b border-black h-10">
