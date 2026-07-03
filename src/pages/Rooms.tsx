@@ -15,7 +15,9 @@ import {
   ChevronDown,
   Printer,
   Eye,
-  X
+  X,
+  Users,
+  Layers
 } from "lucide-react";
 import { showSuccess } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -28,19 +30,28 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Room } from "../types";
 
 type SortConfig = {
-  key: "name" | null;
+  key: "name" | "capacity" | "type" | null;
   direction: "asc" | "desc";
 };
 
 const Rooms = () => {
-  const { rooms, setRooms, isRTL, user, t } = useApp();
+  const { roomsDetailed, setRoomsDetailed, isRTL, user, t } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: "asc" });
   
-  const [newRoomName, setNewRoomName] = useState("");
-  const [editingRoom, setEditingRoom] = useState<{oldName: string, newName: string} | null>(null);
+  const [newRoom, setNewRoom] = useState<Room>({ name: "", capacity: 30, type: "Theory" });
+  const [editingRoom, setEditingRoom] = useState<Room | null>(null);
+  
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -56,19 +67,22 @@ const Rooms = () => {
   };
 
   const sortedAndFilteredRooms = useMemo(() => {
-    let items = [...rooms].filter(r => 
-      r.toLowerCase().includes(searchTerm.toLowerCase())
+    let items = [...roomsDetailed].filter(r => 
+      r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (r.type || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     if (sortConfig.key !== null) {
       items.sort((a, b) => {
-        if (a < b) return sortConfig.direction === "asc" ? -1 : 1;
-        if (a > b) return sortConfig.direction === "asc" ? 1 : -1;
+        const aVal = a[sortConfig.key!] || "";
+        const bVal = b[sortConfig.key!] || "";
+        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
         return 0;
       });
     }
     return items;
-  }, [rooms, searchTerm, sortConfig]);
+  }, [roomsDetailed, searchTerm, sortConfig]);
 
   const SortIcon = ({ column }: { column: SortConfig["key"] }) => {
     if (sortConfig.key !== column) return <ArrowUpDown size={12} className="text-gray-300" />;
@@ -76,28 +90,28 @@ const Rooms = () => {
   };
 
   const handleAddRoom = () => {
-    if (!newRoomName.trim()) return;
-    if (rooms.includes(newRoomName)) return;
-    setRooms([...rooms, newRoomName]);
-    setNewRoomName("");
+    if (!newRoom.name.trim()) return;
+    if (roomsDetailed.some(r => r.name === newRoom.name)) return;
+    setRoomsDetailed([...roomsDetailed, newRoom]);
+    setNewRoom({ name: "", capacity: 30, type: "Theory" });
     setIsAddDialogOpen(false);
     showSuccess(isRTL ? "تم إضافة القاعة بنجاح" : "Room added successfully");
   };
 
-  const handleEditClick = (room: string) => {
-    setEditingRoom({ oldName: room, newName: room });
+  const handleEditClick = (room: Room) => {
+    setEditingRoom({ ...room });
     setIsEditDialogOpen(true);
   };
 
   const handleUpdateRoom = () => {
-    if (!editingRoom || !editingRoom.newName.trim()) return;
-    setRooms(rooms.map(r => r === editingRoom.oldName ? editingRoom.newName : r));
+    if (!editingRoom || !editingRoom.name.trim()) return;
+    setRoomsDetailed(roomsDetailed.map(r => r.name === editingRoom.name ? editingRoom : r));
     setIsEditDialogOpen(false);
     showSuccess(isRTL ? "تم تحديث القاعة" : "Room updated successfully");
   };
 
   const deleteRoom = (roomName: string) => {
-    setRooms(rooms.filter(r => r !== roomName));
+    setRoomsDetailed(roomsDetailed.filter(r => r.name !== roomName));
     showSuccess(isRTL ? "تم حذف القاعة" : "Room deleted");
   };
 
@@ -106,14 +120,18 @@ const Rooms = () => {
       <thead>
         <tr className="bg-slate-100 border-b-2 border-slate-950">
           <th className="p-2 border-e-2 border-slate-950 text-center font-black w-12">#</th>
-          <th className={cn("p-2 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "اسم القاعة / الورشة" : "Room / Workshop Name"}</th>
+          <th className={cn("p-2 border-e-2 border-slate-950 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "اسم القاعة / الورشة" : "Room / Workshop Name"}</th>
+          <th className="p-2 border-e-2 border-slate-950 text-center font-black w-24">{isRTL ? "السعة" : "Capacity"}</th>
+          <th className="p-2 font-black text-center w-32">{isRTL ? "النوع" : "Type"}</th>
         </tr>
       </thead>
       <tbody>
         {sortedAndFilteredRooms.map((room, idx) => (
           <tr key={idx} className="border-b border-slate-950">
             <td className="p-2 border-e border-slate-950 text-center font-bold">{idx + 1}</td>
-            <td className="p-2 font-bold text-slate-900">{room}</td>
+            <td className="p-2 border-e border-slate-950 font-bold text-slate-900">{room.name}</td>
+            <td className="p-2 border-e border-slate-950 text-center">{room.capacity || "---"}</td>
+            <td className="p-2 text-center">{room.type || "---"}</td>
           </tr>
         ))}
       </tbody>
@@ -124,24 +142,24 @@ const Rooms = () => {
     <div className="space-y-6">
       <PageHeader
         title={isRTL ? "القاعات والورشات" : "Rooms & Workshops"}
-        subtitle={isRTL ? "إدارة القاعات الدراسية والورشات التطبيقية" : "Manage classrooms and practical workshops"}
+        subtitle={isRTL ? "إدارة القاعات الدراسية والورشات التطبيقية مع تحديد السعة" : "Manage classrooms and practical workshops with capacity mapping"}
         icon={MapPin}
         isRTL={isRTL}
       >
         {isAdmin && (
           <Button 
             onClick={() => setIsAddDialogOpen(true)} 
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold h-11"
           >
             <Plus size={18} />
             {isRTL ? "إضافة قاعة جديدة" : "Add New Room"}
           </Button>
         )}
-        <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white">
+        <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white h-11">
           <Eye size={18} />
           {isRTL ? "معاينة الطباعة" : "Print Preview"}
         </Button>
-        <Button onClick={() => window.print()} variant="outline" className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white">
+        <Button onClick={() => window.print()} variant="outline" className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white h-11">
           <Printer size={18} />
           {isRTL ? "طباعة القائمة" : "Print List"}
         </Button>
@@ -149,7 +167,7 @@ const Rooms = () => {
           <Search className={cn("absolute top-1/2 -translate-y-1/2 text-slate-400", isRTL ? "right-3" : "left-3")} size={16} />
           <Input 
             placeholder={isRTL ? "بحث عن قاعة..." : "Search room..."} 
-            className={cn("rounded-xl border-slate-200 bg-white h-10", isRTL ? "pr-10" : "pl-10")}
+            className={cn("rounded-xl border-slate-200 bg-white h-11", isRTL ? "pr-10" : "pl-10")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -161,14 +179,26 @@ const Rooms = () => {
         <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
           <thead>
             <tr className="bg-slate-50">
-              <th className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} onClick={() => handleSort("name")}>
+              <th className={cn("p-4 text-slate-700 font-black text-[10px] uppercase border-b border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} onClick={() => handleSort("name")}>
                 <div className="flex items-center gap-2">
                   {isRTL ? "اسم القاعة" : "Room Name"}
                   <SortIcon column="name" />
                 </div>
               </th>
+              <th className="p-4 text-slate-700 font-black text-[10px] uppercase border-b border-slate-200 text-center w-32 cursor-pointer" onClick={() => handleSort("capacity")}>
+                <div className="flex items-center justify-center gap-2">
+                  {isRTL ? "السعة القصوى" : "Capacity"}
+                  <SortIcon column="capacity" />
+                </div>
+              </th>
+              <th className="p-4 text-slate-700 font-black text-[10px] uppercase border-b border-slate-200 text-center w-40 cursor-pointer" onClick={() => handleSort("type")}>
+                <div className="flex items-center justify-center gap-2">
+                  {isRTL ? "النوع" : "Type"}
+                  <SortIcon column="type" />
+                </div>
+              </th>
               {isAdmin && (
-                <th className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center w-24">
+                <th className="p-4 text-slate-700 font-black text-[10px] uppercase border-b border-slate-200 text-center w-32">
                   {isRTL ? "إجراءات" : "Actions"}
                 </th>
               )}
@@ -176,31 +206,45 @@ const Rooms = () => {
           </thead>
           <tbody>
             {sortedAndFilteredRooms.map((room, idx) => (
-              <tr key={idx} className="hover:bg-emerald-50/30 transition-colors group">
-                <td className="p-1 border border-slate-100">
-                  <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
-                    <span className="font-bold text-emerald-900 text-xs">{room}</span>
-                    <MapPin size={12} className="text-emerald-500 shrink-0" />
+              <tr key={idx} className="hover:bg-emerald-50/30 transition-colors group border-b border-slate-50">
+                <td className="p-4">
+                  <div className={cn("flex items-center gap-3", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                      <MapPin size={16} />
+                    </div>
+                    <span className="font-bold text-emerald-950 text-sm">{room.name}</span>
+                  </div>
+                </td>
+                <td className="p-4 text-center">
+                  <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-black">
+                    <Users size={12} />
+                    {room.capacity || "---"}
+                  </div>
+                </td>
+                <td className="p-4 text-center">
+                  <div className="inline-flex items-center gap-2 bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold">
+                    <Layers size={12} />
+                    {room.type || "Theory"}
                   </div>
                 </td>
                 {isAdmin && (
-                  <td className="p-1 border border-slate-100 text-center">
-                    <div className="flex justify-center gap-1">
+                  <td className="p-4 text-center">
+                    <div className="flex justify-center gap-2">
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 text-emerald-600 hover:bg-emerald-50 rounded-md"
+                        className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 rounded-xl"
                         onClick={() => handleEditClick(room)}
                       >
-                        <Edit2 size={12} />
+                        <Edit2 size={14} />
                       </Button>
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-6 w-6 text-red-400 hover:bg-red-50 rounded-md"
-                        onClick={() => deleteRoom(room)}
+                        className="h-8 w-8 text-red-400 hover:bg-red-50 rounded-xl"
+                        onClick={() => deleteRoom(room.name)}
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={14} />
                       </Button>
                     </div>
                   </td>
@@ -217,73 +261,108 @@ const Rooms = () => {
         )}
       </div>
 
-      {/* Print Content Master */}
-      <div className="print-content-master hidden print:block">
-        <OfficialPrintWrapper
-          title={isRTL ? "قائمة القاعات والورشات" : "Rooms & Workshops List"}
-          subtitle={
-            <div className="flex items-center gap-2 text-xs font-bold text-emerald-800">
-              <span>{isRTL ? `إجمالي القاعات: ${rooms.length}` : `Total Rooms: ${rooms.length}`}</span>
-            </div>
-          }
-        >
-          <PrintableTable />
-        </OfficialPrintWrapper>
-      </div>
-
-      {/* Add Dialog */}
+      {/* Add/Edit Dialogs */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="rounded-3xl">
+        <DialogContent className="rounded-[2rem] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-emerald-950 flex items-center gap-2">
-              <Plus size={20} className="text-emerald-600" />
+            <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-2">
+              <Plus size={24} className="text-emerald-600" />
               {isRTL ? "إضافة قاعة جديدة" : "Add New Room"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-emerald-800">{isRTL ? "اسم القاعة" : "Room Name"}</label>
+              <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "اسم القاعة" : "Room Name"}</label>
               <Input 
-                value={newRoomName} 
-                onChange={e => setNewRoomName(e.target.value)}
-                placeholder={isRTL ? "اسم القاعة الجديدة..." : "New room name..."}
-                className="rounded-xl"
+                value={newRoom.name} 
+                onChange={e => setNewRoom({...newRoom, name: e.target.value})}
+                placeholder={isRTL ? "مثلاً: قاعة المحاضرات 1" : "e.g. Lecture Hall 1"}
+                className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
               />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "السعة (مقعد)" : "Capacity (Seats)"}</label>
+                <Input 
+                  type="number"
+                  value={newRoom.capacity} 
+                  onChange={e => setNewRoom({...newRoom, capacity: parseInt(e.target.value) || 0})}
+                  className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "النوع" : "Type"}</label>
+                <Select value={newRoom.type} onValueChange={(v: any) => setNewRoom({...newRoom, type: v})}>
+                  <SelectTrigger className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Theory">{isRTL ? "نظري" : "Theory"}</SelectItem>
+                    <SelectItem value="Workshop">{isRTL ? "ورشة" : "Workshop"}</SelectItem>
+                    <SelectItem value="Lab">{isRTL ? "مخبر" : "Lab"}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="rounded-xl">{t.cancel}</Button>
-            <Button onClick={handleAddRoom} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white">{isRTL ? "إضافة" : "Add"}</Button>
+            <Button variant="ghost" onClick={() => setIsAddDialogOpen(false)} className="rounded-xl font-bold">{t.cancel}</Button>
+            <Button onClick={handleAddRoom} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 font-black shadow-lg shadow-emerald-100">
+              {isRTL ? "إضافة" : "Add Room"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="rounded-3xl">
+        <DialogContent className="rounded-[2rem] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-emerald-950">
-              {isRTL ? "تعديل القاعة" : "Edit Room"}
+            <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-2">
+              <Edit2 size={24} className="text-emerald-600" />
+              {isRTL ? "تعديل بيانات القاعة" : "Edit Room Details"}
             </DialogTitle>
           </DialogHeader>
           {editingRoom && (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-emerald-800">{isRTL ? "اسم القاعة" : "Room Name"}</label>
+                <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "اسم القاعة" : "Room Name"}</label>
                 <Input 
-                  value={editingRoom.newName} 
-                  onChange={e => setEditingRoom({...editingRoom, newName: e.target.value})}
-                  className="rounded-xl"
+                  value={editingRoom.name} 
+                  onChange={e => setEditingRoom({...editingRoom, name: e.target.value})}
+                  className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "السعة" : "Capacity"}</label>
+                  <Input 
+                    type="number"
+                    value={editingRoom.capacity} 
+                    onChange={e => setEditingRoom({...editingRoom, capacity: parseInt(e.target.value) || 0})}
+                    className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "النوع" : "Type"}</label>
+                  <Select value={editingRoom.type} onValueChange={(v: any) => setEditingRoom({...editingRoom, type: v})}>
+                    <SelectTrigger className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Theory">{isRTL ? "نظري" : "Theory"}</SelectItem>
+                      <SelectItem value="Workshop">{isRTL ? "ورشة" : "Workshop"}</SelectItem>
+                      <SelectItem value="Lab">{isRTL ? "مخبر" : "Lab"}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           )}
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl">
-              {t.cancel}
-            </Button>
-            <Button onClick={handleUpdateRoom} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">
-              {isRTL ? "حفظ" : "Save"}
+            <Button variant="ghost" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl font-bold">{t.cancel}</Button>
+            <Button onClick={handleUpdateRoom} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-8 font-black shadow-lg shadow-emerald-100">
+              {isRTL ? "حفظ التغييرات" : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -305,7 +384,7 @@ const Rooms = () => {
                 title={isRTL ? "قائمة القاعات والورشات" : "Rooms & Workshops List"}
                 subtitle={
                   <div className="flex items-center gap-2 text-xs font-bold text-emerald-800">
-                    <span>{isRTL ? `إجمالي القاعات: ${rooms.length}` : `Total Rooms: ${rooms.length}`}</span>
+                    <span>{isRTL ? `إجمالي القاعات: ${roomsDetailed.length}` : `Total Rooms: ${roomsDetailed.length}`}</span>
                   </div>
                 }
               >

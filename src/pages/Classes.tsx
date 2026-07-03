@@ -16,7 +16,8 @@ import {
   Printer,
   Eye,
   X,
-  Award
+  Award,
+  Users
 } from "lucide-react";
 import { showSuccess } from "../utils/toast";
 import { cn } from "@/lib/utils";
@@ -31,7 +32,7 @@ import {
 } from "@/components/ui/dialog";
 
 type SortConfig = {
-  key: "name" | "code" | "qualificationLevel" | null;
+  key: "name" | "code" | "qualificationLevel" | "studentCount" | null;
   direction: "asc" | "desc";
 };
 
@@ -40,7 +41,7 @@ const Classes = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: "asc" });
   
-  const [newBranch, setNewBranch] = useState({ name: "", code: "", qualificationLevel: "" });
+  const [newBranch, setNewBranch] = useState({ name: "", code: "", qualificationLevel: "", studentCount: 20 });
   const [editingBranch, setEditingBranch] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -89,13 +90,13 @@ const Classes = () => {
     if (!newBranch.name.trim()) return;
     const id = Math.random().toString(36).substr(2, 9);
     setClasses([...classes, { id, ...newBranch }]);
-    setNewBranch({ name: "", code: "", qualificationLevel: "" });
+    setNewBranch({ name: "", code: "", qualificationLevel: "", studentCount: 20 });
     setIsAddDialogOpen(false);
     showSuccess(isRTL ? "تم إضافة الفرع بنجاح" : "Branch added successfully");
   };
 
   const handleEditClick = (cls: any) => {
-    setEditingBranch({ ...cls });
+    setEditingBranch({ ...cls, studentCount: cls.studentCount || 20 });
     setIsEditDialogOpen(true);
   };
 
@@ -117,7 +118,8 @@ const Classes = () => {
         <tr className="bg-slate-100 border-b-2 border-slate-950">
           <th className="p-1 border-e-2 border-slate-950 text-center font-black w-12">#</th>
           <th className={cn("p-1 border-e-2 border-slate-950 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "اسم الفرع" : "Branch Name"}</th>
-          <th className="p-1 border-e-2 border-slate-950 text-center font-black w-32">{isRTL ? "الرمز" : "Code"}</th>
+          <th className="p-1 border-e-2 border-slate-950 text-center font-black w-24">{isRTL ? "الرمز" : "Code"}</th>
+          <th className="p-1 border-e-2 border-slate-950 text-center font-black w-24">{isRTL ? "العدد" : "Students"}</th>
           <th className={cn("p-1 font-black", isRTL ? "text-right" : "text-left")}>{isRTL ? "مستوى التأهيل" : "Qualification Level"}</th>
         </tr>
       </thead>
@@ -127,6 +129,7 @@ const Classes = () => {
             <td className="p-1 border-e border-slate-950 text-center font-bold">{idx + 1}</td>
             <td className="p-1 border-e border-slate-950 font-bold text-slate-900">{cls.name}</td>
             <td className="p-1 border-e border-slate-950 text-center font-medium">{cls.code || "---"}</td>
+            <td className="p-1 border-e border-slate-950 text-center font-medium">{cls.studentCount || "---"}</td>
             <td className="p-1 text-slate-700">{cls.qualificationLevel || "---"}</td>
           </tr>
         ))}
@@ -138,24 +141,24 @@ const Classes = () => {
     <div className="space-y-6">
       <PageHeader
         title={isRTL ? "الفروع والأفواج" : "Branches & Classes"}
-        subtitle={isRTL ? "إدارة الفروع الدراسية ومستويات التأهيل" : "Manage academic branches and qualification levels"}
+        subtitle={isRTL ? "إدارة الفروع الدراسية ومستويات التأهيل مع تعداد الطلبة" : "Manage academic branches, qualifications and student enrollment"}
         icon={GraduationCap}
         isRTL={isRTL}
       >
         {isAdmin && (
           <Button 
             onClick={() => setIsAddDialogOpen(true)} 
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold h-11"
           >
             <Plus size={18} />
             {isRTL ? "إضافة فرع جديد" : "Add New Branch"}
           </Button>
         )}
-        <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white">
+        <Button variant="outline" onClick={() => setIsPreviewOpen(true)} className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white h-11">
           <Eye size={18} />
           {isRTL ? "معاينة الطباعة" : "Print Preview"}
         </Button>
-        <Button onClick={() => window.print()} variant="outline" className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white">
+        <Button onClick={() => window.print()} variant="outline" className="rounded-xl border-slate-200 gap-2 font-bold text-slate-700 bg-white h-11">
           <Printer size={18} />
           {isRTL ? "طباعة القائمة" : "Print List"}
         </Button>
@@ -163,7 +166,7 @@ const Classes = () => {
           <Search className={cn("absolute top-1/2 -translate-y-1/2 text-slate-400", isRTL ? "right-3" : "left-3")} size={16} />
           <Input 
             placeholder={isRTL ? "بحث عن فرع..." : "Search branch..."} 
-            className={cn("rounded-xl border-slate-200 bg-white h-10", isRTL ? "pr-10" : "pl-10")}
+            className={cn("rounded-xl border-slate-200 bg-white h-11", isRTL ? "pr-10" : "pl-10")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -175,26 +178,32 @@ const Classes = () => {
         <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
           <thead>
             <tr className="bg-slate-50">
-              <th className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} onClick={() => handleSort("name")}>
+              <th className={cn("p-4 text-slate-700 font-black text-[10px] uppercase border-b border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} onClick={() => handleSort("name")}>
                 <div className="flex items-center gap-2">
                   {isRTL ? "اسم الفرع" : "Branch Name"}
                   <SortIcon column="name" />
                 </div>
               </th>
-              <th className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center w-32 cursor-pointer" onClick={() => handleSort("code")}>
+              <th className="p-4 text-slate-700 font-black text-[10px] uppercase border-b border-slate-200 text-center w-32 cursor-pointer" onClick={() => handleSort("code")}>
                 <div className="flex items-center justify-center gap-2">
                   {isRTL ? "الرمز" : "Code"}
                   <SortIcon column="code" />
                 </div>
               </th>
-              <th className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} onClick={() => handleSort("qualificationLevel")}>
+              <th className="p-4 text-slate-700 font-black text-[10px] uppercase border-b border-slate-200 text-center w-24 cursor-pointer" onClick={() => handleSort("studentCount")}>
+                <div className="flex items-center justify-center gap-2">
+                  {isRTL ? "العدد" : "Size"}
+                  <SortIcon column="studentCount" />
+                </div>
+              </th>
+              <th className={cn("p-4 text-slate-700 font-black text-[10px] uppercase border-b border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} onClick={() => handleSort("qualificationLevel")}>
                 <div className="flex items-center gap-2">
                   {isRTL ? "مستوى التأهيل" : "Qualification Level"}
                   <SortIcon column="qualificationLevel" />
                 </div>
               </th>
               {isAdmin && (
-                <th className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center w-24">
+                <th className="p-4 text-slate-700 font-black text-[10px] uppercase border-b border-slate-200 text-center w-24">
                   {isRTL ? "إجراءات" : "Actions"}
                 </th>
               )}
@@ -202,42 +211,50 @@ const Classes = () => {
           </thead>
           <tbody>
             {sortedAndFilteredClasses.map((cls) => (
-              <tr key={cls.id} className="hover:bg-emerald-50/30 transition-colors group">
-                <td className="py-0.5 px-1 border border-slate-100">
-                  <div className={cn("flex items-center gap-2 px-1", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
-                    <span className="font-bold text-emerald-900 text-xs">{cls.name}</span>
-                    <GraduationCap size={12} className="text-emerald-500 shrink-0" />
+              <tr key={cls.id} className="hover:bg-emerald-50/30 transition-colors group border-b border-slate-50">
+                <td className="p-4">
+                  <div className={cn("flex items-center gap-3", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                      <GraduationCap size={16} />
+                    </div>
+                    <span className="font-bold text-emerald-950 text-sm">{cls.name}</span>
                   </div>
                 </td>
-                <td className="py-0.5 px-1 border border-slate-100 text-center">
-                  <div className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-0 rounded text-[10px] font-black">
+                <td className="p-4 text-center">
+                  <div className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black">
                     {cls.code || "---"}
                   </div>
                 </td>
-                <td className="py-0.5 px-1 border border-slate-100">
+                <td className="p-4 text-center">
+                  <div className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-lg text-xs font-black">
+                    <Users size={12} />
+                    {cls.studentCount || "---"}
+                  </div>
+                </td>
+                <td className="p-4">
                   <div className={cn("flex items-center gap-2 px-1 text-slate-600 text-xs font-medium", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
                     <span>{cls.qualificationLevel || "---"}</span>
                     <Award size={12} className="text-slate-400 shrink-0" />
                   </div>
                 </td>
                 {isAdmin && (
-                  <td className="py-0.5 px-1 border border-slate-100 text-center">
+                  <td className="p-4 text-center">
                     <div className="flex justify-center gap-1">
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-5 w-5 text-emerald-600 hover:bg-emerald-50 rounded-md"
+                        className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 rounded-xl"
                         onClick={() => handleEditClick(cls)}
                       >
-                        <Edit2 size={10} />
+                        <Edit2 size={14} />
                       </Button>
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="h-5 w-5 text-red-400 hover:bg-red-50 rounded-md"
+                        className="h-8 w-8 text-red-400 hover:bg-red-50 rounded-xl"
                         onClick={() => deleteClass(cls.id)}
                       >
-                        <Trash2 size={10} />
+                        <Trash2 size={14} />
                       </Button>
                     </div>
                   </td>
@@ -270,90 +287,112 @@ const Classes = () => {
 
       {/* Add Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="rounded-3xl">
+        <DialogContent className="rounded-[2rem] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-emerald-950 flex items-center gap-2">
-              <Plus size={20} className="text-emerald-600" />
+            <DialogTitle className="text-xl font-black text-emerald-950 flex items-center gap-2">
+              <Plus size={24} className="text-emerald-600" />
               {isRTL ? "إضافة فرع جديد" : "Add New Branch"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-emerald-800">{isRTL ? "اسم الفرع" : "Branch Name"}</label>
+              <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "اسم الفرع" : "Branch Name"}</label>
               <Input 
                 value={newBranch.name} 
                 onChange={e => setNewBranch({...newBranch, name: e.target.value})}
                 placeholder={isRTL ? "مثلاً: تقني رياضي" : "e.g. Technical Math"}
-                className="rounded-xl"
+                className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-emerald-800">{isRTL ? "الرمز" : "Code"}</label>
-              <Input 
-                value={newBranch.code} 
-                onChange={e => setNewBranch({...newBranch, code: e.target.value})}
-                placeholder={isRTL ? "مثلاً: TM" : "e.g. TM"}
-                className="rounded-xl"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "الرمز" : "Code"}</label>
+                <Input 
+                  value={newBranch.code} 
+                  onChange={e => setNewBranch({...newBranch, code: e.target.value})}
+                  placeholder="e.g. TM"
+                  className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "عدد الطلبة" : "Student Count"}</label>
+                <Input 
+                  type="number"
+                  value={newBranch.studentCount} 
+                  onChange={e => setNewBranch({...newBranch, studentCount: parseInt(e.target.value) || 0})}
+                  className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
+                />
+              </div>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-emerald-800">{isRTL ? "مستوى التأهيل" : "Qualification Level"}</label>
+              <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "مستوى التأهيل" : "Qualification Level"}</label>
               <Input 
                 value={newBranch.qualificationLevel} 
                 onChange={e => setNewBranch({...newBranch, qualificationLevel: e.target.value})}
                 placeholder={isRTL ? "مثلاً: تقني سامي" : "e.g. Senior Tech"}
-                className="rounded-xl"
+                className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
               />
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="rounded-xl">{t.cancel}</Button>
-            <Button onClick={handleAddBranch} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white">{isRTL ? "إضافة" : "Add"}</Button>
+            <Button variant="ghost" onClick={() => setIsAddDialogOpen(false)} className="rounded-xl font-bold">{t.cancel}</Button>
+            <Button onClick={handleAddBranch} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-8 font-black text-white shadow-lg shadow-emerald-100">
+              {isRTL ? "إضافة" : "Add Branch"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="rounded-3xl">
+        <DialogContent className="rounded-[2rem] sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-emerald-950">
+            <DialogTitle className="text-xl font-black text-emerald-950">
               {isRTL ? "تعديل بيانات الفرع" : "Edit Branch Details"}
             </DialogTitle>
           </DialogHeader>
           {editingBranch && (
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-emerald-800">{isRTL ? "اسم الفرع" : "Branch Name"}</label>
+                <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "اسم الفرع" : "Branch Name"}</label>
                 <Input 
                   value={editingBranch.name} 
                   onChange={e => setEditingBranch({...editingBranch, name: e.target.value})}
-                  className="rounded-xl"
+                  className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-emerald-800">{isRTL ? "الرمز" : "Code"}</label>
-                <Input 
-                  value={editingBranch.code} 
-                  onChange={e => setEditingBranch({...editingBranch, code: e.target.value})}
-                  className="rounded-xl"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "الرمز" : "Code"}</label>
+                  <Input 
+                    value={editingBranch.code} 
+                    onChange={e => setEditingBranch({...editingBranch, code: e.target.value})}
+                    className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "عدد الطلبة" : "Student Count"}</label>
+                  <Input 
+                    type="number"
+                    value={editingBranch.studentCount} 
+                    onChange={e => setEditingBranch({...editingBranch, studentCount: parseInt(e.target.value) || 0})}
+                    className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-emerald-800">{isRTL ? "مستوى التأهيل" : "Qualification Level"}</label>
+                <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">{isRTL ? "مستوى التأهيل" : "Qualification Level"}</label>
                 <Input 
                   value={editingBranch.qualificationLevel} 
                   onChange={e => setEditingBranch({...editingBranch, qualificationLevel: e.target.value})}
-                  className="rounded-xl"
+                  className="h-12 rounded-2xl border-emerald-100 bg-emerald-50/30"
                 />
               </div>
             </div>
           )}
           <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl">
-              {t.cancel}
-            </Button>
-            <Button onClick={handleUpdateBranch} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl">
+            <Button variant="ghost" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl font-bold">{t.cancel}</Button>
+            <Button onClick={handleUpdateBranch} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-8 font-black text-white shadow-lg shadow-emerald-100">
               {isRTL ? "حفظ التغييرات" : "Save Changes"}
             </Button>
           </DialogFooter>

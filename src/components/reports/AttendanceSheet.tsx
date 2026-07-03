@@ -45,8 +45,8 @@ const AttendanceSheet = ({
   const [widths, setWidths] = useState({
     number: 50,
     name: 180,
-    signature: 120,
-    notes: 140
+    signature: 80,
+    notes: 100
   });
 
   const updateWidth = (column: keyof typeof widths, newWidth: number) => {
