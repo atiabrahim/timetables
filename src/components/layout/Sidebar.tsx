@@ -6,10 +6,8 @@ import {
   LayoutDashboard, Calendar, Users, Home, BookOpen, 
   MapPin, BarChart3, FileText, Building2, Settings, UserCog,
   ClipboardList, ListChecks, UserCheck, LayoutGrid, Layers, Sparkles, UserX, CalendarX, ShieldAlert,
-  ChevronDown,
-  Database,
-  Briefcase,
-  Grid3X3
+  Grid3X3,
+  Briefcase
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "@/lib/utils";
@@ -27,20 +25,25 @@ const Sidebar = () => {
 
   const groups = [
     {
-      title: isRTL ? "الرئيسية" : "Overview",
+      title: isRTL ? "الرئيسية" : "Main",
       items: [
         { icon: LayoutDashboard, label: t.dashboard, path: "/" },
       ]
     },
     {
-      title: isRTL ? "الجداول الزمنية" : "Scheduling",
+      title: isRTL ? "خرائط الجدولة الكلية" : "Master Views",
       items: [
-        { icon: LayoutGrid, label: isRTL ? "الجدول العام" : "Master Schedule", path: "/master-schedule" },
-        { icon: Calendar, label: t.schedule, path: "/schedule" },
-        { icon: Sparkles, label: isRTL ? "المولد التلقائي" : "Auto Generator", path: "/auto-generator" },
-        { icon: ClipboardList, label: t.weeklyWorkSchedule, path: "/work-schedule" },
+        { icon: LayoutGrid, label: isRTL ? "الجدول العام (يومي)" : "Daily Master", path: "/master-schedule" },
         { icon: Layers, label: t.masterClassesSchedule, path: "/master-classes-schedule" },
-        { icon: Grid3X3, label: isRTL ? "جدول القاعات الكلي" : "Master Rooms Schedule", path: "/master-rooms-schedule" },
+        { icon: ClipboardList, label: t.weeklyWorkSchedule, path: "/work-schedule" },
+        { icon: Grid3X3, label: isRTL ? "جدول القاعات الكلي" : "Master Rooms", path: "/master-rooms-schedule" },
+      ]
+    },
+    {
+      title: isRTL ? "التخطيط الفردي" : "Planning",
+      items: [
+        { icon: Calendar, label: t.schedule, path: "/schedule" },
+        { icon: Sparkles, label: isRTL ? "المولد التلقائي الذكي" : "Smart Generator", path: "/auto-generator" },
       ]
     },
     {
@@ -52,7 +55,7 @@ const Sidebar = () => {
       ]
     },
     {
-      title: isRTL ? "إدارة الموارد" : "Resource Data",
+      title: isRTL ? "قاعدة البيانات" : "Database",
       items: [
         { icon: Briefcase, label: t.employees, path: "/employees" },
         { icon: Home, label: t.classes, path: "/classes" },
@@ -61,12 +64,12 @@ const Sidebar = () => {
       ]
     },
     {
-      title: isRTL ? "القيود والضبط" : "System & Constraints",
+      title: isRTL ? "القيود والضبط" : "System Control",
       items: [
-        { icon: UserX, label: isRTL ? "توافر الأساتذة" : "Constraints", path: "/constraints" },
+        { icon: UserX, label: isRTL ? "توافر الأساتذة" : "Teacher Constraints", path: "/constraints" },
         { icon: CalendarX, label: isRTL ? "قيود الأفواج" : "Class Constraints", path: "/class-constraints" },
         { icon: ShieldAlert, label: isRTL ? "قيود القاعات" : "Room Constraints", path: "/room-constraints" },
-        { icon: BarChart3, label: t.reports, path: "/reports" },
+        { icon: BarChart3, label: isRTL ? "التقارير الإحصائية" : "Statistics", path: "/reports" },
         { icon: Building2, label: t.institution, path: "/institution" },
         { icon: Settings, label: t.settings, path: "/settings" },
         ...(isAdmin ? [{ icon: UserCog, label: t.users, path: "/users" }] : []),
@@ -77,18 +80,23 @@ const Sidebar = () => {
   return (
     <TooltipProvider>
       <aside className={cn(
-        "bg-white hidden md:block shrink-0 transition-all duration-300 overflow-y-auto border-emerald-50",
+        "bg-white hidden md:block shrink-0 transition-all duration-500 ease-in-out overflow-y-auto border-emerald-50",
         isSidebarCollapsed ? "w-20" : "w-72",
         isRTL ? "border-l" : "border-r"
       )}>
-        <div className="p-4 space-y-8">
+        <div className="p-4 space-y-6">
           {groups.map((group, gIdx) => (
             <div key={gIdx} className="space-y-2">
               {!isSidebarCollapsed && (
-                <h4 className="px-4 text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-3">
-                  {group.title}
-                </h4>
+                <div className="flex items-center gap-2 px-4 mb-2">
+                  <div className="h-px flex-1 bg-emerald-50/50" />
+                  <h4 className="text-[9px] font-black text-emerald-900/30 uppercase tracking-[0.2em] whitespace-nowrap">
+                    {group.title}
+                  </h4>
+                  <div className="h-px flex-1 bg-emerald-50/50" />
+                </div>
               )}
+              
               <nav className="space-y-1">
                 {group.items.map((item) => {
                   const isActive = location.pathname === item.path;
@@ -105,12 +113,17 @@ const Sidebar = () => {
                       )}
                     >
                       {!isSidebarCollapsed && (
-                        <span className="font-bold text-xs z-10 truncate">{item.label}</span>
+                        <span className={cn(
+                          "font-bold text-[11px] z-10 truncate transition-colors duration-300",
+                          isActive ? "text-white" : "text-slate-600 group-hover:text-emerald-950"
+                        )}>{item.label}</span>
                       )}
+                      
                       <item.icon size={16} className={cn(
-                        "z-10 transition-transform duration-300 group-hover:scale-110 shrink-0",
-                        isActive ? "text-emerald-400" : "text-slate-400 group-hover:text-emerald-600"
+                        "z-10 transition-all duration-300 shrink-0",
+                        isActive ? "text-emerald-400 scale-110" : "text-slate-400 group-hover:text-emerald-600"
                       )} />
+
                       {isActive && (
                         <div className="absolute inset-0 bg-gradient-to-r from-emerald-900 to-emerald-950 opacity-100" />
                       )}
@@ -123,7 +136,7 @@ const Sidebar = () => {
                         <TooltipTrigger asChild>
                           {linkContent}
                         </TooltipTrigger>
-                        <TooltipContent side={isRTL ? "left" : "right"} className="bg-emerald-950 text-white font-bold text-xs rounded-lg border-none shadow-md">
+                        <TooltipContent side={isRTL ? "left" : "right"} className="bg-emerald-950 text-white font-bold text-[10px] rounded-lg border-none shadow-md">
                           {item.label}
                         </TooltipContent>
                       </Tooltip>
