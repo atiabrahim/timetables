@@ -8,7 +8,8 @@ import {
   ClipboardList, ListChecks, UserCheck, LayoutGrid, Layers, Sparkles, UserX, CalendarX, ShieldAlert,
   ChevronDown,
   Database,
-  Briefcase
+  Briefcase,
+  Grid3X3
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,7 @@ const Sidebar = () => {
         { icon: Sparkles, label: isRTL ? "المولد التلقائي" : "Auto Generator", path: "/auto-generator" },
         { icon: ClipboardList, label: t.weeklyWorkSchedule, path: "/work-schedule" },
         { icon: Layers, label: t.masterClassesSchedule, path: "/master-classes-schedule" },
+        { icon: Grid3X3, label: isRTL ? "جدول القاعات الكلي" : "Master Rooms Schedule", path: "/master-rooms-schedule" },
       ]
     },
     {

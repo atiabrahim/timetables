@@ -21,6 +21,7 @@ import Rooms from "./pages/Rooms";
 import Institution from "./pages/Institution";
 import WeeklyWorkSchedule from "./pages/WeeklyWorkSchedule";
 import MasterClassesSchedule from "./pages/MasterClassesSchedule";
+import MasterRoomsSchedule from "./pages/MasterRoomsSchedule";
 import Assignments from "./pages/Assignments";
 import AutoGenerator from "./pages/AutoGenerator";
 import Constraints from "./pages/Constraints";
@@ -50,6 +51,7 @@ const AppRoutes = () => (
     <Route path="/master-schedule" element={<ProtectedRoute><Layout><MasterSchedule /></Layout></ProtectedRoute>} />
     <Route path="/work-schedule" element={<ProtectedRoute><Layout><WeeklyWorkSchedule /></Layout></ProtectedRoute>} />
     <Route path="/master-classes-schedule" element={<ProtectedRoute><Layout><MasterClassesSchedule /></Layout></ProtectedRoute>} />
+    <Route path="/master-rooms-schedule" element={<ProtectedRoute><Layout><MasterRoomsSchedule /></Layout></ProtectedRoute>} />
     <Route path="/assignments" element={<ProtectedRoute><Layout><Assignments /></Layout></ProtectedRoute>} />
     <Route path="/auto-generator" element={<ProtectedRoute><Layout><AutoGenerator /></Layout></ProtectedRoute>} />
     <Route path="/constraints" element={<ProtectedRoute><Layout><Constraints /></Layout></ProtectedRoute>} />
