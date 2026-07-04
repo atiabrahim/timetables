@@ -45,13 +45,13 @@ const OfficialPrintWrapper = ({
   const finalLeftTitle = leftSignatureTitle || (isRTL ? "المدير" : "Director");
   const finalRightTitle = rightSignatureTitle || (isRTL ? "أستاذ الفرع" : "Branch Teacher");
 
-  // تم تعديل الأبعاد الافتراضية لتصبح بمقاس A5 (148mm x 210mm)
-  // ووضع النسختين ليصبح بمقاس A6 (105mm x 148mm)
+  // إرجاع الأبعاد الافتراضية لتصبح بمقاس A4 (210mm x 297mm)
+  // ووضع النسختين ليصبح بمقاس A5 (148mm x 210mm)
   const dimensions = {
-    portrait: { w: "148mm", h: "210mm" }, // A5 Portrait
-    landscape: { w: "210mm", h: "148mm" }, // A5 Landscape
-    halfPortrait: { w: "148mm", h: "105mm" }, // A6 Portrait (half of A5)
-    halfLandscape: { w: "105mm", h: "148mm" } // A6 Landscape (half of A5)
+    portrait: { w: "210mm", h: "297mm" }, // A4 Portrait
+    landscape: { w: "297mm", h: "210mm" }, // A4 Landscape
+    halfPortrait: { w: "210mm", h: "148mm" }, // A5 Landscape (half of A4)
+    halfLandscape: { w: "148mm", h: "210mm" } // A5 Portrait (half of A4)
   };
 
   const currentDim = doubleMode 

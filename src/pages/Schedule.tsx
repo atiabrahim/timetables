@@ -147,7 +147,7 @@ const Schedule = () => {
 
   return (
     <div className="space-y-6">
-      <style>{`@media print { @page { size: A5 ${orientation}; margin: 0 !important; } }`}</style>
+      <style>{`@media print { @page { size: A4 ${orientation}; margin: 0 !important; } }`}</style>
       <ScheduleHeader isRTL={isRTL} viewMode={viewMode} setViewMode={setViewMode} selectedId={selectedId} setSelectedId={setSelectedId} classes={classes} employees={employees} rooms={rooms} onPreview={() => setIsPreviewOpen(true)} />
       {selectedId ? (
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start">

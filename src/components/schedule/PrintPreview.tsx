@@ -153,7 +153,7 @@ const PrintPreview = ({
           {`
             @media print {
               @page {
-                size: A5 ${orientation};
+                size: A4 ${orientation};
                 margin: 0 !important;
               }
               .print-transform-none {
