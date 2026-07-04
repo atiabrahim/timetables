@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useApp } from "../../context/AppContext";
 
@@ -41,12 +41,14 @@ const OfficialPrintWrapper = ({
   footerSize = 8
 }: OfficialPrintWrapperProps) => {
   const { isRTL, institution } = useApp();
+  const [scale, setScale] = useState(1);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const finalLeftTitle = leftSignatureTitle || (isRTL ? "المدير" : "Director");
   const finalRightTitle = rightSignatureTitle || (isRTL ? "أستاذ الفرع" : "Branch Teacher");
 
-  // إرجاع الأبعاد الافتراضية لتصبح بمقاس A4 (210mm x 297mm)
-  // ووضع النسختين ليصبح بمقاس A5 (148mm x 210mm)
+  // الأبعاد الافتراضية بمقاس A4
   const dimensions = {
     portrait: { w: "210mm", h: "297mm" }, // A4 Portrait
     landscape: { w: "297mm", h: "210mm" }, // A4 Landscape
@@ -57,6 +59,47 @@ const OfficialPrintWrapper = ({
   const currentDim = doubleMode 
     ? (orientation === "portrait" ? dimensions.halfPortrait : dimensions.halfLandscape)
     : (orientation === "portrait" ? dimensions.portrait : dimensions.landscape);
+
+  // تأثير التحجيم الآلي الذكي لحساب الارتفاع المتاح وتطبيق نسبة التصغير المناسبة
+  useEffect(() => {
+    const handleScale = () => {
+      if (!containerRef.current || !contentRef.current) return;
+      
+      const container = containerRef.current;
+      const content = contentRef.current;
+
+      // إعادة التعيين أولاً للحصول على القياسات الحقيقية
+      content.style.transform = "none";
+      content.style.width = "100%";
+
+      const availableHeight = container.clientHeight;
+      const contentHeight = content.scrollHeight;
+
+      if (contentHeight > availableHeight && availableHeight > 0) {
+        // حساب النسبة المطلوبة للاحتواء الكامل
+        const newScale = Math.max(0.4, availableHeight / contentHeight);
+        setScale(newScale);
+        
+        // تطبيق التحجيم مع الحفاظ على الاتجاه (RTL / LTR)
+        content.style.transform = `scale(${newScale})`;
+        content.style.transformOrigin = isRTL ? "top right" : "top left";
+        content.style.width = `${100 / newScale}%`;
+      } else {
+        setScale(1);
+        content.style.transform = "none";
+        content.style.width = "100%";
+      }
+    };
+
+    // تشغيل بعد رندرة الصفحة والتأكد من تحميل الخطوط والصور
+    const timer = setTimeout(handleScale, 150);
+    window.addEventListener("resize", handleScale);
+    
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", handleScale);
+    };
+  }, [children, orientation, doubleMode, isRTL]);
 
   return (
     <div 
@@ -119,9 +162,17 @@ const OfficialPrintWrapper = ({
         </div>
       )}
 
-      {/* Main Content Area */}
-      <div className="w-full flex-1 bg-white mb-2 overflow-hidden px-1">
-        {children}
+      {/* Main Content Area with Auto-Scaling Container */}
+      <div 
+        ref={containerRef}
+        className="w-full flex-1 bg-white mb-2 overflow-hidden px-1 relative"
+      >
+        <div 
+          ref={contentRef} 
+          className="w-full transition-transform duration-200"
+        >
+          {children}
+        </div>
       </div>
 
       {/* Signatures Section */}
