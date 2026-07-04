@@ -2,24 +2,19 @@
 
 import React, { useState, useRef } from "react";
 import { useApp } from "../context/AppContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { 
-  Building2, Save, Mail, Phone, Calendar, FileCode, PenTool, 
-  Plus, Edit2, Trash2, Info, Hash, User, ShieldAlert, Upload, Image as ImageIcon
+  Building2, Save, FileCode
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
-import { cn } from "@/lib/utils";
 import { exportToXml } from "../lib/export-utils";
 import PageHeader from "../components/shared/PageHeader";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import InstitutionInfoCard from "../components/institution/InstitutionInfoCard";
+import DepartmentsTable from "../components/institution/DepartmentsTable";
+import LogoCard from "../components/institution/LogoCard";
+import HeaderPreviewCard from "../components/institution/HeaderPreviewCard";
+import AddDeptDialog from "../components/institution/AddDeptDialog";
+import EditDeptDialog from "../components/institution/EditDeptDialog";
 
 const Institution = () => {
   const { 
@@ -141,401 +136,64 @@ const Institution = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           {/* معلومات المؤسسة */}
-          <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
-            <CardHeader className="bg-[#f9f9f1] border-b border-gray-100">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Building2 size={20} className="text-[#064e3b]" />
-                {isRTL ? "المعلومات الأساسية للمؤسسة" : "Basic Institution Information"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
-                    {t.institution_page.name}
-                  </label>
-                  <div className="relative">
-                    <Building2 className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
-                    <Input 
-                      value={institution.name}
-                      onChange={(e) => setInstitution({...institution, name: e.target.value})}
-                      className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all font-bold", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
-                    {isRTL ? "السنة التكوينية" : "Training Year"}
-                  </label>
-                  <div className="relative">
-                    <Calendar className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
-                    <Input 
-                      value={institution.academicYear || ""}
-                      onChange={(e) => setInstitution({...institution, academicYear: e.target.value})}
-                      placeholder="2023/2024"
-                      className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all font-bold", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
-                    {isRTL ? "مسمى المسؤول البيداغوجي" : "Pedagogical Manager Title"}
-                  </label>
-                  <div className="relative">
-                    <PenTool className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
-                    <Input 
-                      value={institution.pedagogicalManagerTitle || ""}
-                      onChange={(e) => setInstitution({...institution, pedagogicalManagerTitle: e.target.value})}
-                      className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
-                    {isRTL ? "مسمى المدير العام" : "General Manager Title"}
-                  </label>
-                  <div className="relative">
-                    <PenTool className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
-                    <Input 
-                      value={institution.generalManagerTitle || ""}
-                      onChange={(e) => setInstitution({...institution, generalManagerTitle: e.target.value})}
-                      className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
-                    {t.institution_page.phone}
-                  </label>
-                  <div className="relative">
-                    <Phone className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
-                    <Input 
-                      value={institution.phone}
-                      onChange={(e) => setInstitution({...institution, phone: e.target.value})}
-                      className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-xs font-black text-emerald-700 uppercase tracking-widest px-1">
-                    {t.institution_page.email}
-                  </label>
-                  <div className="relative">
-                    <Mail className={cn("absolute top-1/2 -translate-y-1/2 text-gray-400", isRTL ? "right-4" : "left-4")} size={18} />
-                    <Input 
-                      value={institution.email}
-                      onChange={(e) => setInstitution({...institution, email: e.target.value})}
-                      className={cn("h-12 rounded-xl border-gray-100 bg-gray-50/30 focus:bg-white transition-all", isRTL ? "pr-12 text-right" : "pl-12 text-left")}
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <InstitutionInfoCard 
+            institution={institution}
+            setInstitution={setInstitution}
+            isRTL={isRTL}
+            t={t}
+          />
 
           {/* إدارة المصالح */}
-          <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
-            <CardHeader className="bg-[#f9f9f1] border-b border-gray-100 flex flex-row justify-between items-center">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Building2 size={20} className="text-[#064e3b]" />
-                {isRTL ? "إدارة المصالح" : "Departments Management"}
-              </CardTitle>
-              {isAdmin && (
-                <Button 
-                  onClick={() => setIsAddDeptOpen(true)} 
-                  size="sm" 
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-1.5 font-bold"
-                >
-                  <Plus size={16} />
-                  {isRTL ? "إضافة مصلحة" : "Add Department"}
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="overflow-x-auto">
-                <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-100">
-                      <th className="p-3 text-slate-700 font-black text-[10px] uppercase w-16 text-center">{isRTL ? "الرقم" : "No."}</th>
-                      <th className="p-3 text-slate-700 font-black text-[10px] uppercase">{isRTL ? "التسمية" : "Name"}</th>
-                      <th className="p-3 text-slate-700 font-black text-[10px] uppercase">{isRTL ? "الرئيس" : "Head"}</th>
-                      <th className="p-3 text-slate-700 font-black text-[10px] uppercase text-center w-24">{isRTL ? "الرمز" : "Code"}</th>
-                      <th className="p-3 text-slate-700 font-black text-[10px] uppercase">{isRTL ? "ملاحظة" : "Note"}</th>
-                      {isAdmin && <th className="p-3 text-slate-700 font-black text-[10px] uppercase text-center w-24">{isRTL ? "إجراءات" : "Actions"}</th>}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {departments.map((dept) => (
-                      <tr key={dept.id} className="hover:bg-emerald-50/30 transition-colors">
-                        <td className="p-3 text-center font-bold text-xs text-slate-500">{dept.number || "---"}</td>
-                        <td className="p-3 font-bold text-emerald-900 text-xs">{dept.name}</td>
-                        <td className="p-3 text-slate-700 text-xs">{dept.head || "---"}</td>
-                        <td className="p-3 text-center text-xs font-black"><span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded">{dept.code || "---"}</span></td>
-                        <td className="p-3 text-slate-500 text-xs truncate max-w-[150px]">{dept.observation || "---"}</td>
-                        {isAdmin && (
-                          <td className="p-3 text-center">
-                            <div className="flex justify-center gap-1">
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-7 w-7 text-emerald-600 hover:bg-emerald-50 rounded-md"
-                                onClick={() => handleEditClick(dept)}
-                              >
-                                <Edit2 size={12} />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-7 w-7 text-red-400 hover:bg-red-50 rounded-md"
-                                onClick={() => handleDeleteDept(dept.id)}
-                              >
-                                <Trash2 size={12} />
-                              </Button>
-                            </div>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                    {departments.length === 0 && (
-                      <tr>
-                        <td colSpan={isAdmin ? 6 : 5} className="p-8 text-center text-slate-400 font-bold text-xs">
-                          {isRTL ? "لا توجد مصالح مسجلة حالياً" : "No departments registered yet"}
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <DepartmentsTable 
+            departments={departments}
+            isRTL={isRTL}
+            isAdmin={isAdmin}
+            onAddClick={() => setIsAddDeptOpen(true)}
+            onEditClick={handleEditClick}
+            onDeleteClick={handleDeleteDept}
+          />
         </div>
 
         <div className="space-y-6">
           {/* قسم رفع وتعديل الشعار */}
-          <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
-            <CardHeader className="bg-[#f9f9f1] border-b border-gray-100">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <ImageIcon size={20} className="text-[#064e3b]" />
-                {isRTL ? "شعار المؤسسة" : "Institution Logo"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6 flex flex-col items-center space-y-4">
-              <div className="w-32 h-32 border-2 border-dashed border-emerald-100 rounded-2xl flex items-center justify-center bg-emerald-50/10 overflow-hidden relative group">
-                {institution.logo ? (
-                  <>
-                    <img src={institution.logo} alt="Institution Logo" className="w-full h-full object-contain p-2" />
-                    {isAdmin && (
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <Button size="icon" variant="ghost" className="text-white hover:bg-white/20" onClick={() => fileInputRef.current?.click()}>
-                          <Edit2 size={16} />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="text-red-400 hover:bg-red-500/20" onClick={handleRemoveLogo}>
-                          <Trash2 size={16} />
-                        </Button>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center p-4 flex flex-col items-center gap-2 text-slate-400">
-                    <ImageIcon size={32} className="text-slate-300" />
-                    <span className="text-[10px] font-bold">{isRTL ? "لا يوجد شعار" : "No Logo"}</span>
-                  </div>
-                )}
-              </div>
+          <LogoCard 
+            logo={institution.logo}
+            isAdmin={isAdmin}
+            isRTL={isRTL}
+            fileInputRef={fileInputRef}
+            onLogoUpload={handleLogoUpload}
+            onRemoveLogo={handleRemoveLogo}
+          />
 
-              {isAdmin && (
-                <div className="w-full">
-                  <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={handleLogoUpload} 
-                    accept="image/*" 
-                    className="hidden" 
-                  />
-                  <Button 
-                    onClick={() => fileInputRef.current?.click()} 
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold"
-                  >
-                    <Upload size={16} />
-                    {institution.logo ? (isRTL ? "تغيير الشعار" : "Change Logo") : (isRTL ? "رفع شعار جديد" : "Upload Logo")}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
-            <CardHeader className="bg-[#f9f9f1] border-b border-gray-100">
-              <CardTitle className="text-lg font-bold flex items-center gap-2">
-                <Info size={20} className="text-[#064e3b]" />
-                {isRTL ? "معاينة الترويسة" : "Header Preview"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center space-y-2">
-                <div className="w-12 h-12 mx-auto mb-2 border border-black rounded-lg p-1 bg-white overflow-hidden flex items-center justify-center">
-                  {institution.logo ? (
-                    <img src={institution.logo} alt="Logo" className="w-full h-full object-contain" />
-                  ) : (
-                    <span className="text-[6px] font-black">LOGO</span>
-                  )}
-                </div>
-                <h3 className="text-lg font-black text-emerald-900">{institution.name || "---"}</h3>
-                <p className="text-sm font-bold text-emerald-700">{institution.subName || "---"}</p>
-                <div className="flex justify-between mt-4 pt-4 border-t border-gray-100 text-[10px] font-black uppercase text-gray-400">
-                  <span>{institution.pedagogicalManagerTitle}</span>
-                  <span>{institution.generalManagerTitle}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* معاينة الترويسة */}
+          <HeaderPreviewCard 
+            institution={institution}
+            isRTL={isRTL}
+          />
         </div>
       </div>
 
       {/* حوار إضافة مصلحة */}
-      <Dialog open={isAddDeptOpen} onOpenChange={setIsAddDeptOpen}>
-        <DialogContent className="rounded-3xl sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-emerald-950 flex items-center gap-2">
-              <Plus size={20} className="text-emerald-600" />
-              {isRTL ? "إضافة مصلحة جديدة" : "Add New Department"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1.5 col-span-1">
-                <label className="text-xs font-bold text-emerald-800 flex items-center gap-1"><Hash size={12}/> {isRTL ? "الرقم" : "No."}</label>
-                <Input 
-                  value={newDept.number} 
-                  onChange={e => setNewDept({...newDept, number: e.target.value})}
-                  placeholder="1"
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="space-y-1.5 col-span-2">
-                <label className="text-xs font-bold text-emerald-800 flex items-center gap-1"><PenTool size={12}/> {isRTL ? "التسمية" : "Name"}</label>
-                <Input 
-                  value={newDept.name} 
-                  onChange={e => setNewDept({...newDept, name: e.target.value})}
-                  placeholder={isRTL ? "مصلحة التكوين" : "Training Dept"}
-                  className="rounded-xl"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-1.5 col-span-2">
-                <label className="text-xs font-bold text-emerald-800 flex items-center gap-1"><User size={12}/> {isRTL ? "الرئيس" : "Head"}</label>
-                <Input 
-                  value={newDept.head} 
-                  onChange={e => setNewDept({...newDept, head: e.target.value})}
-                  placeholder={isRTL ? "اسم رئيس المصلحة" : "Head Name"}
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="space-y-1.5 col-span-1">
-                <label className="text-xs font-bold text-emerald-800 flex items-center gap-1"><ShieldAlert size={12}/> {isRTL ? "الرمز" : "Code"}</label>
-                <Input 
-                  value={newDept.code} 
-                  onChange={e => setNewDept({...newDept, code: e.target.value})}
-                  placeholder="DEP"
-                  className="rounded-xl"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-emerald-800">{isRTL ? "ملاحظة" : "Observation"}</label>
-              <Input 
-                value={newDept.observation} 
-                onChange={e => setNewDept({...newDept, observation: e.target.value})}
-                placeholder="..."
-                className="rounded-xl"
-              />
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsAddDeptOpen(false)} className="rounded-xl">{t.cancel}</Button>
-            <Button onClick={handleAddDept} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white">{isRTL ? "إضافة" : "Add"}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddDeptDialog 
+        isOpen={isAddDeptOpen}
+        onOpenChange={setIsAddDeptOpen}
+        isRTL={isRTL}
+        newDept={newDept}
+        setNewDept={setNewDept}
+        onAdd={handleAddDept}
+        cancelText={t.cancel}
+      />
 
       {/* حوار تعديل مصلحة */}
-      <Dialog open={isEditDeptOpen} onOpenChange={setIsEditDeptOpen}>
-        <DialogContent className="rounded-3xl sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-emerald-950">
-              {isRTL ? "تعديل بيانات المصلحة" : "Edit Department Details"}
-            </DialogTitle>
-          </DialogHeader>
-          {editingDept && (
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1.5 col-span-1">
-                  <label className="text-xs font-bold text-emerald-800 flex items-center gap-1"><Hash size={12}/> {isRTL ? "الرقم" : "No."}</label>
-                  <Input 
-                    value={editingDept.number} 
-                    onChange={e => setEditingDept({...editingDept, number: e.target.value})}
-                    className="rounded-xl"
-                  />
-                </div>
-                <div className="space-y-1.5 col-span-2">
-                  <label className="text-xs font-bold text-emerald-800 flex items-center gap-1"><PenTool size={12}/> {isRTL ? "التسمية" : "Name"}</label>
-                  <Input 
-                    value={editingDept.name} 
-                    onChange={e => setEditingDept({...editingDept, name: e.target.value})}
-                    className="rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1.5 col-span-2">
-                  <label className="text-xs font-bold text-emerald-800 flex items-center gap-1"><User size={12}/> {isRTL ? "الرئيس" : "Head"}</label>
-                  <Input 
-                    value={editingDept.head} 
-                    onChange={e => setEditingDept({...editingDept, head: e.target.value})}
-                    className="rounded-xl"
-                  />
-                </div>
-                <div className="space-y-1.5 col-span-1">
-                  <label className="text-xs font-bold text-emerald-800 flex items-center gap-1"><ShieldAlert size={12}/> {isRTL ? "الرمز" : "Code"}</label>
-                  <Input 
-                    value={editingDept.code} 
-                    onChange={e => setEditingDept({...editingDept, code: e.target.value})}
-                    className="rounded-xl"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-emerald-800">{isRTL ? "ملاحظة" : "Observation"}</label>
-                <Input 
-                  value={editingDept.observation} 
-                  onChange={e => setEditingDept({...editingDept, observation: e.target.value})}
-                  className="rounded-xl"
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsEditDeptOpen(false)} className="rounded-xl">
-              {t.cancel}
-            </Button>
-            <Button onClick={handleUpdateDept} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl text-white">
-              {isRTL ? "حفظ التغييرات" : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EditDeptDialog 
+        isOpen={isEditDeptOpen}
+        onOpenChange={setIsEditDeptOpen}
+        isRTL={isRTL}
+        editingDept={editingDept}
+        setEditingDept={setEditingDept}
+        onSave={handleUpdateDept}
+        cancelText={t.cancel}
+      />
     </div>
   );
 };
