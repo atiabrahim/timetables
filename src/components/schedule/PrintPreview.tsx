@@ -100,7 +100,7 @@ const PrintPreview = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 flex flex-col rounded-none z-[9999] print:bg-white print:h-auto print:block">
+      <DialogContent className="max-w-[100vw] w-full h-[100vh] p-0 border-none bg-zinc-900/95 border-none rounded-none flex flex-col z-[9999] print:bg-white print:h-auto print:block">
         <div className="h-16 bg-black/40 border-b border-white/10 flex items-center justify-between px-8 shrink-0 print:hidden">
           <div className="flex items-center gap-4 text-white">
             <FileText size={20} />
@@ -153,7 +153,7 @@ const PrintPreview = ({
           {`
             @media print {
               @page {
-                size: A4 ${orientation};
+                size: A5 ${orientation};
                 margin: 0 !important;
               }
               .print-transform-none {

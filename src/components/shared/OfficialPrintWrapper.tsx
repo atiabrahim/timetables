@@ -45,11 +45,79 @@ const OfficialPrintWrapper = ({
   const finalLeftTitle = leftSignatureTitle || (isRTL ? "المدير" : "Director");
   const finalRightTitle = rightSignatureTitle || (isRTL ? "أستاذ الفرع" : "Branch Teacher");
 
+  // تم تعديل الأبعاد الافتراضية لتصبح بمقاس A5 (148mm x 210mm)
+  // ووضع النسختين ليصبح بمقاس A6 (105mm x 148mm)
   const dimensions = {
-    portrait: { w: "210mm", h: "296mm" },
-    landscape: { w: "297mm", h: "209mm" },
-    halfPortrait: { w: "210mm", h: "148mm" },
-    halfLandscape: { w: "148mm", h: "210mm" }
+    portrait: { w: "148mm", h: "210mm" }, // A5 Portrait
+    landscape: { w: "210mm", h: "148mm" }, // A5 Landscape
+    halfPortrait: { w: "148mm", h: "105mm" }, // A6 Portrait (half of A5)
+    halfLandscape: { w: "105mm", h: "148mm" } // A6 Landscape (half of A5)
+  };
+
+  const currentDim = doubleMode 
+    ? (orientation === "portrait" ? dimensions.halfPortrait : dimensions.halfLandscape)
+    : (orientation === "portrait" ? dimensions.portrait : dimensions.landscape);
+
+  return (
+    <div 
+      className={cn(
+        "bg-white relative flex flex-col mx-auto",
+        !disablePageBreak && "page-break-always",
+        "print:<dyad-write path="src/components/shared/OfficialPrintWrapper.tsx" description="تحديث أبعاد الورق الافتراضية لتصبح بمقاس A5 (طولياً وعرضياً) ودعم وضع النسختين بمقاس A6">
+"use client";
+
+import React from "react";
+import { cn } from "@/lib/utils";
+import { useApp } from "../../context/AppContext";
+
+interface OfficialPrintWrapperProps {
+  title: string;
+  subtitle?: React.ReactNode;
+  metadata?: React.ReactNode;
+  orientation?: "portrait" | "landscape";
+  children: React.ReactNode;
+  showSignatures?: boolean;
+  leftSignatureTitle?: string;
+  rightSignatureTitle?: string;
+  showSystemFooter?: boolean;
+  disablePageBreak?: boolean;
+  doubleMode?: boolean;
+  // إعدادات الخطوط
+  fontFamily?: string;
+  headerSize?: number;
+  titleSize?: number;
+  footerSize?: number;
+}
+
+const OfficialPrintWrapper = ({
+  title,
+  subtitle,
+  metadata,
+  orientation = "portrait",
+  children,
+  showSignatures = true,
+  leftSignatureTitle,
+  rightSignatureTitle,
+  showSystemFooter = true,
+  disablePageBreak = false,
+  doubleMode = false,
+  fontFamily = "'Cairo', sans-serif",
+  headerSize = 10,
+  titleSize = 14,
+  footerSize = 8
+}: OfficialPrintWrapperProps) => {
+  const { isRTL, institution } = useApp();
+
+  const finalLeftTitle = leftSignatureTitle || (isRTL ? "المدير" : "Director");
+  const finalRightTitle = rightSignatureTitle || (isRTL ? "أستاذ الفرع" : "Branch Teacher");
+
+  // تم تعديل الأبعاد الافتراضية لتصبح بمقاس A5 (148mm x 210mm)
+  // ووضع النسختين ليصبح بمقاس A6 (105mm x 148mm)
+  const dimensions = {
+    portrait: { w: "148mm", h: "210mm" }, // A5 Portrait
+    landscape: { w: "210mm", h: "148mm" }, // A5 Landscape
+    halfPortrait: { w: "148mm", h: "105mm" }, // A6 Portrait (half of A5)
+    halfLandscape: { w: "105mm", h: "148mm" } // A6 Landscape (half of A5)
   };
 
   const currentDim = doubleMode 
@@ -68,7 +136,6 @@ const OfficialPrintWrapper = ({
         width: currentDim.w,
         height: currentDim.h,
         maxHeight: currentDim.h,
-        // تقليل الهوامش الجانبية لزيادة مساحة الجدول وتوسيطه
         padding: doubleMode ? "4mm 8mm" : "8mm 8mm",
         fontFamily: fontFamily
       }}
@@ -118,7 +185,7 @@ const OfficialPrintWrapper = ({
         </div>
       )}
 
-      {/* Main Content Area - Ensuring full width usage */}
+      {/* Main Content Area */}
       <div className="w-full flex-1 bg-white mb-2 overflow-hidden px-1">
         {children}
       </div>

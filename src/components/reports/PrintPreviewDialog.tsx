@@ -87,7 +87,7 @@ const PrintPreviewDialog = ({
         <style>
           {`
             @page {
-              size: A4 ${orientation};
+              size: A5 ${orientation};
               margin: 0;
             }
           `}
