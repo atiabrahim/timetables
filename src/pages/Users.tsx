@@ -3,31 +3,11 @@
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { Navigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { 
-  Plus, 
-  Trash2, 
-  Users2, 
-  Shield, 
-  User, 
-  Mail, 
-  Info, 
-  Power, 
-  PowerOff,
-  UserCog
-} from "lucide-react";
+import { Users2, UserCog } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import PageHeader from "../components/shared/PageHeader";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import AddUserCard from "../components/users/AddUserCard";
+import UserCard from "../components/users/UserCard";
 
 const Users = () => {
   const { 
@@ -96,67 +76,12 @@ const Users = () => {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Add User Form */}
-        <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden h-fit">
-          <CardHeader className="bg-emerald-50/50 border-b border-emerald-100">
-            <CardTitle className="text-lg font-bold text-emerald-900 flex items-center gap-2">
-              <Plus size={20} />
-              {isRTL ? "إضافة مستخدم جديد" : "Add New User"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-6 space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "اسم المستخدم" : "Username"}</label>
-                <Input 
-                  value={newUser.username} 
-                  onChange={(e) => setNewUser({...newUser, username: e.target.value})}
-                  className="rounded-xl border-emerald-100 h-10"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "الصلاحية" : "Role"}</label>
-                <Select value={newUser.role} onValueChange={(v: any) => setNewUser({...newUser, role: v})}>
-                  <SelectTrigger className="rounded-xl border-emerald-100 h-10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Admin">{isRTL ? "مدير" : "Admin"}</SelectItem>
-                    <SelectItem value="Teacher">{isRTL ? "أستاذ" : "Teacher"}</SelectItem>
-                    <SelectItem value="Student">{isRTL ? "طالب" : "Student"}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "الاسم الكامل" : "Full Name"}</label>
-              <Input 
-                value={newUser.fullName} 
-                onChange={(e) => setNewUser({...newUser, fullName: e.target.value})}
-                className="rounded-xl border-emerald-100 h-10"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "البريد الإلكتروني" : "Email"}</label>
-              <Input 
-                type="email"
-                value={newUser.email} 
-                onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                className="rounded-xl border-emerald-100 h-10"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-emerald-700 uppercase">{isRTL ? "ملاحظة" : "Observation"}</label>
-              <Input 
-                value={newUser.observation} 
-                onChange={(e) => setNewUser({...newUser, observation: e.target.value})}
-                className="rounded-xl border-emerald-100 h-10"
-              />
-            </div>
-            <Button onClick={handleAddUser} className="w-full bg-emerald-600 hover:bg-emerald-700 rounded-xl mt-4 h-11">
-              {isRTL ? "تأكيد الإضافة" : "Confirm Add"}
-            </Button>
-          </CardContent>
-        </Card>
+        <AddUserCard 
+          isRTL={isRTL}
+          newUser={newUser}
+          setNewUser={setNewUser}
+          onAdd={handleAddUser}
+        />
 
         {/* Users List */}
         <div className="xl:col-span-2 space-y-4">
@@ -172,65 +97,14 @@ const Users = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {systemUsers.map(u => (
-              <Card key={u.id} className={cn(
-                "border rounded-3xl transition-all group relative overflow-hidden",
-                u.isActive ? "bg-white border-emerald-100 shadow-sm" : "bg-gray-50 border-gray-200 opacity-70"
-              )}>
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm",
-                        u.role === "Admin" ? "bg-emerald-100 text-emerald-700" : "bg-blue-50 text-blue-600"
-                      )}>
-                        {u.role === "Admin" ? <Shield size={24} /> : <User size={24} />}
-                      </div>
-                      <div>
-                        <p className="font-bold text-emerald-950">{u.fullName}</p>
-                        <p className="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">@{u.username} • {u.role}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className={cn("h-8 w-8 rounded-lg", u.isActive ? "text-emerald-500" : "text-amber-500")}
-                        onClick={() => toggleUserStatus(u.id)}
-                        title={u.isActive ? (isRTL ? "توقيف" : "Deactivate") : (isRTL ? "تنشيط" : "Activate")}
-                      >
-                        {u.isActive ? <Power size={16} /> : <PowerOff size={16} />}
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50"
-                        onClick={() => handleDeleteUser(u.id)}
-                      >
-                        <Trash2 size={16} />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2 border-t border-emerald-50 pt-4">
-                    <div className="flex items-center gap-2 text-xs text-emerald-600/70">
-                      <Mail size={12} />
-                      <span className="truncate">{u.email || "---"}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs text-emerald-600/70">
-                      <Info size={12} />
-                      <span className="truncate italic">{u.observation || "---"}</span>
-                    </div>
-                  </div>
-
-                  {!u.isActive && (
-                    <div className="absolute inset-0 bg-gray-100/20 backdrop-blur-[1px] rounded-3xl pointer-events-none flex items-center justify-center">
-                      <span className="bg-gray-800 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">
-                        {isRTL ? "موقوف" : "Inactive"}
-                      </span>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <UserCard 
+                key={u.id}
+                u={u}
+                isRTL={isRTL}
+                currentUserId={currentUser?.id || ""}
+                onToggleStatus={toggleUserStatus}
+                onDelete={handleDeleteUser}
+              />
             ))}
           </div>
         </div>
