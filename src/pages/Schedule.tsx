@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
 import { Settings2, ArrowLeftRight, Trash2 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
@@ -26,7 +26,7 @@ import {
 
 const Schedule = () => {
   const { 
-    isRTL, t, employees, classes, subjects, rooms, assignments, setAssignments, periodTimings
+    isRTL, t, employees, classes, subjects, rooms, assignments, setAssignments, periodTimings, requirements
   } = useApp();
 
   const [viewMode, setViewMode] = useState<"class" | "teacher" | "room">("class");
@@ -37,18 +37,10 @@ const Schedule = () => {
   const [printScale, setPrintScale] = useState(100);
   const [editingCell, setEditingCell] = useState<{day: number, period: string} | null>(null);
   const [isTransposed, setIsTransposed] = useState(false);
-  const [requirements, setRequirements] = useState<any[]>([]);
   
   const [newAssignment, setNewAssignment] = useState({
     employeeId: "", subjectId: "", classId: "", room: "", department: ""
   });
-
-  useEffect(() => {
-    if (isDialogOpen) {
-      const saved = localStorage.getItem("auto_generator_requirements");
-      if (saved) try { setRequirements(JSON.parse(saved)); } catch (e) {}
-    }
-  }, [isDialogOpen]);
 
   const filteredAssignments = useMemo(() => {
     if (!selectedId) return [];
