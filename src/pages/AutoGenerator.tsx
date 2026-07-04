@@ -149,17 +149,21 @@ const AutoGenerator = () => {
     const targetReqs = requirements.filter(req => rules.selectedClassIds.includes("all") || rules.selectedClassIds.includes(req.classId));
     let bestResult: any = null;
     let maxPlaced = -1;
-    const iterations = 50;
+    const iterations = 30; // Optimized iterations for speed
+    
     for (let iter = 0; iter < iterations; iter++) {
       setProgress(Math.round((iter / iterations) * 100));
       let currentAssignments = rules.respectExistingLessons ? [...assignments] : [];
+      
       const sortedReqs = [...targetReqs].sort((a, b) => {
         const loadA = targetReqs.filter(r => r.employeeId === a.employeeId).reduce((s, r) => s + r.count, 0);
         const loadB = targetReqs.filter(r => r.employeeId === b.employeeId).reduce((s, r) => s + r.count, 0);
         return loadB - loadA;
       });
+      
       let placedCount = 0;
       const unplaced: any[] = [];
+      
       for (const req of sortedReqs) {
         for (let c = 0; c < req.count; c++) {
           let bestDay = -1, bestPeriod = "", highestScore = -Infinity;
@@ -177,10 +181,18 @@ const AutoGenerator = () => {
           } else { unplaced.push(req); }
         }
       }
+      
       if (placedCount > maxPlaced) {
         maxPlaced = placedCount;
-        bestResult = { assignments: currentAssignments, unplaced: Array.from(new Set(unplaced)), successRate: Math.round((placedCount / targetReqs.reduce((s, r) => s + r.count, 0)) * 100), total: targetReqs.reduce((s, r) => s + r.count, 0), placed: placedCount };
+        bestResult = { 
+          assignments: currentAssignments, 
+          unplaced: Array.from(new Set(unplaced)), 
+          successRate: Math.round((placedCount / targetReqs.reduce((s, r) => s + r.count, 0)) * 100), 
+          total: targetReqs.reduce((s, r) => s + r.count, 0), 
+          placed: placedCount 
+        };
       }
+      
       if (bestResult.successRate === 100) break;
       await new Promise(r => setTimeout(r, 10));
     }

@@ -13,6 +13,7 @@ import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
 import PageHeader from "../components/shared/PageHeader";
 import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
+import ResizableHeader from "../components/shared/ResizableHeader";
 import {
   Dialog,
   DialogContent,
@@ -39,6 +40,18 @@ const Employees = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: "asc" });
   
+  // Track column widths
+  const [widths, setWidths] = useState({
+    name: 250,
+    category: 120,
+    contact: 250,
+    actions: 100
+  });
+
+  const updateWidth = (column: keyof typeof widths, newWidth: number) => {
+    setWidths(prev => ({ ...prev, [column]: newWidth }));
+  };
+
   const [newEmployee, setNewEmployee] = useState({ 
     firstName: "", lastName: "", category: "Full-time", email: "", phone: "", observation: "" 
   });
@@ -240,76 +253,103 @@ const Employees = () => {
       </div>
 
       <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm print:hidden">
-        <table className={cn("w-full border-collapse", isRTL ? "text-right" : "text-left")}>
-          <thead>
-            <tr className="bg-slate-50">
-              <th className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} onClick={() => handleSort("lastName")}>
-                <div className="flex items-center gap-2">{isRTL ? "المعلم" : "Teacher"} <SortIcon column="lastName" /></div>
-              </th>
-              <th className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center w-32 cursor-pointer" onClick={() => handleSort("category")}>
-                <div className="flex items-center justify-center gap-2">{isRTL ? "الفئة" : "Category"} <SortIcon column="category" /></div>
-              </th>
-              <th className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200", isRTL ? "text-right" : "text-left")}>
-                {isRTL ? "التواصل" : "Contact"}
-              </th>
-              {isAdmin && (
-                <th className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center w-24">
-                  {isRTL ? "إجراءات" : "Actions"}
-                </th>
-              )}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedAndFilteredEmployees.map((emp) => (
-              <tr key={emp.id} className="hover:bg-emerald-50/30 transition-colors group">
-                <td className="p-1 border border-slate-100">
-                  <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
-                    <div>
-                      <p className="font-bold text-emerald-900 text-xs">{emp.lastName} {emp.firstName}</p>
-                    </div>
-                    <UserIcon size={12} className="text-emerald-500 shrink-0" />
-                  </div>
-                </td>
-                <td className="p-1 border border-slate-100 text-center">
-                  <div className={cn(
-                    "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-black",
-                    emp.category === "Full-time" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"
-                  )}>
-                    {emp.category}
-                  </div>
-                </td>
-                <td className="p-1 border border-slate-100">
-                  <div className={cn("flex flex-col gap-0.5 px-2 text-[10px] font-bold text-slate-600", isRTL ? "items-start" : "items-end")}>
-                    {emp.email && <div className="flex items-center gap-1"><Mail size={10} className="text-slate-400" /> {emp.email}</div>}
-                    {emp.phone && <div className="flex items-center gap-1"><Phone size={10} className="text-slate-400" /> {emp.phone}</div>}
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className={cn("w-full border-collapse table-fixed", isRTL ? "text-right" : "text-left")}>
+            <thead>
+              <tr className="bg-slate-50">
+                <ResizableHeader 
+                  width={widths.name} 
+                  onResize={(w) => updateWidth("name", w)} 
+                  isRTL={isRTL}
+                  className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} 
+                  onClick={() => handleSort("lastName")}
+                >
+                  <div className="flex items-center gap-2">{isRTL ? "المعلم" : "Teacher"} <SortIcon column="lastName" /></div>
+                </ResizableHeader>
+                
+                <ResizableHeader 
+                  width={widths.category} 
+                  onResize={(w) => updateWidth("category", w)} 
+                  isRTL={isRTL}
+                  className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center cursor-pointer" 
+                  onClick={() => handleSort("category")}
+                >
+                  <div className="flex items-center justify-center gap-2">{isRTL ? "الفئة" : "Category"} <SortIcon column="category" /></div>
+                </ResizableHeader>
+                
+                <ResizableHeader 
+                  width={widths.contact} 
+                  onResize={(w) => updateWidth("contact", w)} 
+                  isRTL={isRTL}
+                  className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200", isRTL ? "text-right" : "text-left")}
+                >
+                  {isRTL ? "التواصل" : "Contact"}
+                </ResizableHeader>
+                
                 {isAdmin && (
-                  <td className="p-1 border border-slate-100 text-center">
-                    <div className="flex justify-center gap-1">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 text-emerald-600 hover:bg-emerald-50 rounded-md"
-                        onClick={() => handleEditClick(emp)}
-                      >
-                        <Edit2 size={12} />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-6 w-6 text-red-400 hover:bg-red-50 rounded-md"
-                        onClick={() => deleteEmployee(emp.id)}
-                      >
-                        <Trash2 size={12} />
-                      </Button>
-                    </div>
-                  </td>
+                  <ResizableHeader 
+                    width={widths.actions} 
+                    onResize={(w) => updateWidth("actions", w)} 
+                    isRTL={isRTL}
+                    className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center"
+                  >
+                    {isRTL ? "إجراءات" : "Actions"}
+                  </ResizableHeader>
                 )}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {sortedAndFilteredEmployees.map((emp) => (
+                <tr key={emp.id} className="hover:bg-emerald-50/30 transition-colors group">
+                  <td className="p-1 border border-slate-100 overflow-hidden">
+                    <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
+                      <div>
+                        <p className="font-bold text-emerald-900 text-xs truncate">{emp.lastName} {emp.firstName}</p>
+                      </div>
+                      <UserIcon size={12} className="text-emerald-500 shrink-0" />
+                    </div>
+                  </td>
+                  <td className="p-1 border border-slate-100 text-center overflow-hidden">
+                    <div className={cn(
+                      "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-black",
+                      emp.category === "Full-time" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"
+                    )}>
+                      {emp.category}
+                    </div>
+                  </td>
+                  <td className="p-1 border border-slate-100 overflow-hidden">
+                    <div className={cn("flex flex-col gap-0.5 px-2 text-[10px] font-bold text-slate-600", isRTL ? "items-start" : "items-end")}>
+                      {emp.email && <div className="flex items-center gap-1 truncate w-full"><Mail size={10} className="text-slate-400 shrink-0" /> <span className="truncate">{emp.email}</span></div>}
+                      {emp.phone && <div className="flex items-center gap-1 truncate w-full"><Phone size={10} className="text-slate-400 shrink-0" /> <span className="truncate">{emp.phone}</span></div>}
+                    </div>
+                  </td>
+                  {isAdmin && (
+                    <td className="p-1 border border-slate-100 text-center overflow-hidden">
+                      <div className="flex justify-center gap-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 text-emerald-600 hover:bg-emerald-50 rounded-md"
+                          onClick={() => handleEditClick(emp)}
+                        >
+                          <Edit2 size={12} />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6 text-red-400 hover:bg-red-50 rounded-md"
+                          onClick={() => deleteEmployee(emp.id)}
+                        >
+                          <Trash2 size={12} />
+                        </Button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Print Content Master */}
