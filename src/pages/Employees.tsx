@@ -2,33 +2,20 @@
 
 import React, { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
+import { 
+  Search, Plus, Briefcase, Printer, Eye, X
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-  Search, Plus, Edit2, ArrowUpDown, Trash2, 
-  ChevronUp, ChevronDown, Mail, Phone, Briefcase, Printer, Info,
-  Users, UserCheck, Clock, Award, Eye, X, User as UserIcon
-} from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { cn } from "@/lib/utils";
 import PageHeader from "../components/shared/PageHeader";
 import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
-import ResizableHeader from "../components/shared/ResizableHeader";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
+import EmployeeStats from "../components/employees/EmployeeStats";
+import EmployeeTable from "../components/employees/EmployeeTable";
+import AddEmployeeDialog from "../components/employees/AddEmployeeDialog";
+import EditEmployeeDialog from "../components/employees/EditEmployeeDialog";
+import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 
 type SortConfig = {
   key: "firstName" | "lastName" | "email" | "phone" | "category" | null;
@@ -39,18 +26,6 @@ const Employees = () => {
   const { employees, setEmployees, assignments, isRTL, user, t } = useApp();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: "asc" });
-  
-  // Track column widths
-  const [widths, setWidths] = useState({
-    name: 250,
-    category: 120,
-    contact: 250,
-    actions: 100
-  });
-
-  const updateWidth = (column: keyof typeof widths, newWidth: number) => {
-    setWidths(prev => ({ ...prev, [column]: newWidth }));
-  };
 
   const [newEmployee, setNewEmployee] = useState({ 
     firstName: "", lastName: "", category: "Full-time", email: "", phone: "", observation: "" 
@@ -97,11 +72,6 @@ const Employees = () => {
     }
     return items;
   }, [employees, searchTerm, sortConfig]);
-
-  const SortIcon = ({ column }: { column: SortConfig["key"] }) => {
-    if (sortConfig.key !== column) return <ArrowUpDown size={12} className="text-slate-300" />;
-    return sortConfig.direction === "asc" ? <ChevronUp size={12} className="text-emerald-600" /> : <ChevronDown size={12} className="text-emerald-600" />;
-  };
 
   const handleAddEmployee = () => {
     if (!newEmployee.firstName.trim() || !newEmployee.lastName.trim()) {
@@ -202,155 +172,18 @@ const Employees = () => {
       </PageHeader>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-              <Users size={20} />
-            </div>
-            <div>
-              <p className="text-xl font-black text-slate-900">{employeeStats.total}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isRTL ? "إجمالي الأساتذة" : "Total Teachers"}</p>
-            </div>
-          </CardContent>
-        </Card>
+      <EmployeeStats isRTL={isRTL} stats={employeeStats} />
 
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-              <UserCheck size={20} />
-            </div>
-            <div>
-              <p className="text-xl font-black text-slate-900">{employeeStats.active}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isRTL ? "الأساتذة النشطون" : "Active Teachers"}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-              <Award size={20} />
-            </div>
-            <div>
-              <p className="text-xl font-black text-slate-900">{employeeStats.fullTime}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isRTL ? "دوام كامل" : "Full-time"}</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-none shadow-sm rounded-2xl bg-white">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-              <Clock size={20} />
-            </div>
-            <div>
-              <p className="text-xl font-black text-slate-900">{employeeStats.partTime}</p>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{isRTL ? "دوام جزئي" : "Part-time"}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="bg-white rounded-3xl border border-gray-200 overflow-hidden shadow-sm print:hidden">
-        <div className="overflow-x-auto">
-          <table className={cn("w-full border-collapse table-fixed", isRTL ? "text-right" : "text-left")}>
-            <thead>
-              <tr className="bg-slate-50">
-                <ResizableHeader 
-                  width={widths.name} 
-                  onResize={(w) => updateWidth("name", w)} 
-                  isRTL={isRTL}
-                  className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 cursor-pointer", isRTL ? "text-right" : "text-left")} 
-                  onClick={() => handleSort("lastName")}
-                >
-                  <div className="flex items-center gap-2">{isRTL ? "المعلم" : "Teacher"} <SortIcon column="lastName" /></div>
-                </ResizableHeader>
-                
-                <ResizableHeader 
-                  width={widths.category} 
-                  onResize={(w) => updateWidth("category", w)} 
-                  isRTL={isRTL}
-                  className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center cursor-pointer" 
-                  onClick={() => handleSort("category")}
-                >
-                  <div className="flex items-center justify-center gap-2">{isRTL ? "الفئة" : "Category"} <SortIcon column="category" /></div>
-                </ResizableHeader>
-                
-                <ResizableHeader 
-                  width={widths.contact} 
-                  onResize={(w) => updateWidth("contact", w)} 
-                  isRTL={isRTL}
-                  className={cn("p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200", isRTL ? "text-right" : "text-left")}
-                >
-                  {isRTL ? "التواصل" : "Contact"}
-                </ResizableHeader>
-                
-                {isAdmin && (
-                  <ResizableHeader 
-                    width={widths.actions} 
-                    onResize={(w) => updateWidth("actions", w)} 
-                    isRTL={isRTL}
-                    className="p-2 text-slate-700 font-black text-[10px] uppercase border border-slate-200 text-center"
-                  >
-                    {isRTL ? "إجراءات" : "Actions"}
-                  </ResizableHeader>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {sortedAndFilteredEmployees.map((emp) => (
-                <tr key={emp.id} className="hover:bg-emerald-50/30 transition-colors group">
-                  <td className="p-1 border border-slate-100 overflow-hidden">
-                    <div className={cn("flex items-center gap-2 px-2", isRTL ? "flex-row" : "flex-row-reverse justify-end")}>
-                      <div>
-                        <p className="font-bold text-emerald-900 text-xs truncate">{emp.lastName} {emp.firstName}</p>
-                      </div>
-                      <UserIcon size={12} className="text-emerald-500 shrink-0" />
-                    </div>
-                  </td>
-                  <td className="p-1 border border-slate-100 text-center overflow-hidden">
-                    <div className={cn(
-                      "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-black",
-                      emp.category === "Full-time" ? "bg-blue-50 text-blue-700" : "bg-amber-50 text-amber-700"
-                    )}>
-                      {emp.category}
-                    </div>
-                  </td>
-                  <td className="p-1 border border-slate-100 overflow-hidden">
-                    <div className={cn("flex flex-col gap-0.5 px-2 text-[10px] font-bold text-slate-600", isRTL ? "items-start" : "items-end")}>
-                      {emp.email && <div className="flex items-center gap-1 truncate w-full"><Mail size={10} className="text-slate-400 shrink-0" /> <span className="truncate">{emp.email}</span></div>}
-                      {emp.phone && <div className="flex items-center gap-1 truncate w-full"><Phone size={10} className="text-slate-400 shrink-0" /> <span className="truncate">{emp.phone}</span></div>}
-                    </div>
-                  </td>
-                  {isAdmin && (
-                    <td className="p-1 border border-slate-100 text-center overflow-hidden">
-                      <div className="flex justify-center gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-6 w-6 text-emerald-600 hover:bg-emerald-50 rounded-md"
-                          onClick={() => handleEditClick(emp)}
-                        >
-                          <Edit2 size={12} />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-6 w-6 text-red-400 hover:bg-red-50 rounded-md"
-                          onClick={() => deleteEmployee(emp.id)}
-                        >
-                          <Trash2 size={12} />
-                        </Button>
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* Employee Table */}
+      <EmployeeTable 
+        employees={sortedAndFilteredEmployees}
+        isRTL={isRTL}
+        isAdmin={isAdmin}
+        onEdit={handleEditClick}
+        onDelete={deleteEmployee}
+        sortConfig={sortConfig}
+        onSort={handleSort}
+      />
 
       {/* Print Content Master */}
       <div className="print-content-master hidden print:block">
@@ -367,178 +200,26 @@ const Employees = () => {
       </div>
 
       {/* Add Dialog */}
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="rounded-3xl sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-emerald-950 flex items-center gap-2">
-              <Plus size={20} className="text-emerald-600" />
-              {isRTL ? "إضافة معلم جديد" : "Add New Teacher"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-emerald-800">{isRTL ? "الاسم" : "First Name"}</label>
-                <Input 
-                  value={newEmployee.firstName} 
-                  onChange={e => setNewEmployee({...newEmployee, firstName: e.target.value})} 
-                  className="rounded-xl" 
-                />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-emerald-800">{isRTL ? "اللقب" : "Last Name"}</label>
-                <Input 
-                  value={newEmployee.lastName} 
-                  onChange={e => setNewEmployee({...newEmployee, lastName: e.target.value})} 
-                  className="rounded-xl" 
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-emerald-800">{isRTL ? "الفئة" : "Category"}</label>
-                <Select 
-                  value={newEmployee.category} 
-                  onValueChange={v => setNewEmployee({...newEmployee, category: v})}
-                >
-                  <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Full-time">{isRTL ? "دوام كامل" : "Full-time"}</SelectItem>
-                    <SelectItem value="Part-time">{isRTL ? "دوام جزئي" : "Part-time"}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-emerald-800">{isRTL ? "رقم الهاتف" : "Phone Number"}</label>
-                <Input 
-                  value={newEmployee.phone} 
-                  onChange={e => setNewEmployee({...newEmployee, phone: e.target.value})} 
-                  className="rounded-xl" 
-                  placeholder="0555xxxxxx"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-emerald-800">{isRTL ? "البريد الإلكتروني" : "Email"}</label>
-              <Input 
-                type="email"
-                value={newEmployee.email} 
-                onChange={e => setNewEmployee({...newEmployee, email: e.target.value})} 
-                className="rounded-xl" 
-                placeholder="teacher@edu.com"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-emerald-800">{isRTL ? "ملاحظات" : "Observation"}</label>
-              <Input 
-                value={newEmployee.observation} 
-                onChange={e => setNewEmployee({...newEmployee, observation: e.target.value})} 
-                className="rounded-xl" 
-                placeholder="..."
-              />
-            </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)} className="rounded-xl">
-              {t.cancel}
-            </Button>
-            <Button onClick={handleAddEmployee} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-8 text-white">
-              {isRTL ? "إضافة" : "Add"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AddEmployeeDialog 
+        isOpen={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        isRTL={isRTL}
+        newEmployee={newEmployee}
+        setNewEmployee={setNewEmployee}
+        onAdd={handleAddEmployee}
+        cancelText={t.cancel}
+      />
       
       {/* Edit Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="rounded-3xl sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-emerald-950 flex items-center gap-2">
-              <Edit2 size={20} className="text-emerald-600" />
-              {isRTL ? "تعديل بيانات المعلم" : "Edit Teacher Details"}
-            </DialogTitle>
-          </DialogHeader>
-          {editingEmployee && (
-            <div className="py-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-emerald-800">{isRTL ? "الاسم" : "First Name"}</label>
-                  <Input 
-                    value={editingEmployee.firstName} 
-                    onChange={e => setEditingEmployee({...editingEmployee, firstName: e.target.value})} 
-                    className="rounded-xl" 
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-emerald-800">{isRTL ? "اللقب" : "Last Name"}</label>
-                  <Input 
-                    value={editingEmployee.lastName} 
-                    onChange={e => setEditingEmployee({...editingEmployee, lastName: e.target.value})} 
-                    className="rounded-xl" 
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-emerald-800">{isRTL ? "الفئة" : "Category"}</label>
-                  <Select 
-                    value={editingEmployee.category} 
-                    onValueChange={v => setEditingEmployee({...editingEmployee, category: v})}
-                  >
-                    <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Full-time">{isRTL ? "دوام كامل" : "Full-time"}</SelectItem>
-                      <SelectItem value="Part-time">{isRTL ? "دوام جزئي" : "Part-time"}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-emerald-800">{isRTL ? "رقم الهاتف" : "Phone Number"}</label>
-                  <Input 
-                    value={editingEmployee.phone} 
-                    onChange={e => setEditingEmployee({...editingEmployee, phone: e.target.value})} 
-                    className="rounded-xl" 
-                    placeholder="0555xxxxxx"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-emerald-800">{isRTL ? "البريد الإلكتروني" : "Email"}</label>
-                <Input 
-                  type="email"
-                  value={editingEmployee.email} 
-                  onChange={e => setEditingEmployee({...editingEmployee, email: e.target.value})} 
-                  className="rounded-xl" 
-                  placeholder="teacher@edu.com"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-emerald-800">{isRTL ? "ملاحظات" : "Observation"}</label>
-                <Input 
-                  value={editingEmployee.observation} 
-                  onChange={e => setEditingEmployee({...editingEmployee, observation: e.target.value})} 
-                  className="rounded-xl" 
-                  placeholder="..."
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="rounded-xl">
-              {t.cancel}
-            </Button>
-            <Button onClick={handleUpdateEmployee} className="bg-emerald-600 hover:bg-emerald-700 rounded-xl px-8 text-white">
-              {isRTL ? "حفظ التغييرات" : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <EditEmployeeDialog 
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        isRTL={isRTL}
+        editingEmployee={editingEmployee}
+        setEditingEmployee={setEditingEmployee}
+        onSave={handleUpdateEmployee}
+        cancelText={t.cancel}
+      />
 
       {/* Print Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
