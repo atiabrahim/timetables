@@ -19,11 +19,9 @@ export const PERIOD_MAP: Record<string, PeriodPart> = {
   "8": "Evening",
   "9": "Evening",
   "10": "Evening",
-  "11": "Evening",
-  "12": "Evening",
 };
 
-export const PERIODS = Array.from({ length: 12 }, (_, i) => (i + 1).toString());
+export const PERIODS = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
 
 export const REPORT_STYLES_DEFAULT = {
   fontFamily: "'Cairo', sans-serif",
