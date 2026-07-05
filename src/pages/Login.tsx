@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Calendar, Shield, User, GraduationCap, Lock } from "lucide-react";
+import { Calendar, Shield, User, GraduationCap, Sparkles } from "lucide-react";
 import { showError, showSuccess } from "../utils/toast";
 
 const Login = () => {
@@ -28,6 +28,24 @@ const Login = () => {
       navigate("/");
     } else {
       showError(isRTL ? "اسم المستخدم غير صحيح أو الحساب معطل" : "Invalid username or account inactive");
+    }
+  };
+
+  const handleQuickLogin = (roleName: string) => {
+    // البحث عن أول مستخدم نشط يطابق الدور المختار
+    const foundUser = systemUsers.find(u => 
+      u.role.toLowerCase() === roleName.toLowerCase() && u.isActive
+    );
+
+    if (foundUser) {
+      setUsername(foundUser.username);
+      login(foundUser.username, foundUser.role);
+      showSuccess(isRTL ? `تم الدخول السريع بحساب: ${foundUser.fullName}` : `Quick logged in as: ${foundUser.fullName}`);
+      navigate("/");
+    } else {
+      // إذا لم يتم العثور على مستخدم مخصص، نقوم بتعبئة اسم افتراضي للمحاولة
+      setUsername(roleName);
+      showSuccess(isRTL ? "تم تعبئة اسم المستخدم، اضغط دخول" : "Username filled, click login");
     }
   };
 
@@ -67,22 +85,35 @@ const Login = () => {
             </Button>
 
             <div className="pt-6 border-t border-emerald-50">
-              <p className="text-center text-[10px] text-emerald-600/50 font-bold uppercase tracking-widest">
-                {isRTL ? "صلاحيات الوصول المتاحة" : "Available Access Roles"}
+              <p className="text-center text-[10px] text-emerald-600/50 font-bold uppercase tracking-widest flex items-center justify-center gap-1">
+                <Sparkles size={10} className="text-emerald-500" />
+                {isRTL ? "انقر للدخول السريع كـ" : "Click for Quick Login as"}
               </p>
               <div className="flex justify-center gap-6 mt-4">
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center"><Shield size={16} /></div>
-                  <span className="text-[9px] font-bold text-emerald-800">{isRTL ? "مدير" : "Admin"}</span>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center"><User size={16} /></div>
-                  <span className="text-[9px] font-bold text-emerald-800">{isRTL ? "أستاذ" : "Teacher"}</span>
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-8 h-8 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center"><GraduationCap size={16} /></div>
-                  <span className="text-[9px] font-bold text-emerald-800">{isRTL ? "طالب" : "Student"}</span>
-                </div>
+                <button 
+                  type="button"
+                  onClick={() => handleQuickLogin("Admin")}
+                  className="flex flex-col items-center gap-1 group hover:scale-105 transition-transform"
+                >
+                  <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors shadow-sm"><Shield size={18} /></div>
+                  <span className="text-[10px] font-bold text-emerald-800">{isRTL ? "مدير" : "Admin"}</span>
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => handleQuickLogin("Teacher")}
+                  className="flex flex-col items-center gap-1 group hover:scale-105 transition-transform"
+                >
+                  <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-sm"><User size={18} /></div>
+                  <span className="text-[10px] font-bold text-emerald-800">{isRTL ? "أستاذ" : "Teacher"}</span>
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => handleQuickLogin("Student")}
+                  className="flex flex-col items-center gap-1 group hover:scale-105 transition-transform"
+                >
+                  <div className="w-10 h-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition-colors shadow-sm"><GraduationCap size={18} /></div>
+                  <span className="text-[10px] font-bold text-emerald-800">{isRTL ? "طالب" : "Student"}</span>
+                </button>
               </div>
             </div>
           </form>
