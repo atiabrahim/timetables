@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useApp } from "../context/AppContext";
+import { useSearchParams } from "react-router-dom";
 import { Settings2, ArrowLeftRight, Trash2 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import ScheduleHeader from "../components/schedule/ScheduleHeader";
@@ -29,6 +30,10 @@ const Schedule = () => {
     isRTL, t, employees, classes, subjects, rooms, assignments, setAssignments, periodTimings, requirements
   } = useApp();
 
+  const [searchParams] = useSearchParams();
+  const queryView = searchParams.get("view") as "class" | "teacher" | "room" | null;
+  const queryId = searchParams.get("id");
+
   const [viewMode, setViewMode] = useState<"class" | "teacher" | "room">("class");
   const [selectedId, setSelectedId] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -41,6 +46,16 @@ const Schedule = () => {
   const [newAssignment, setNewAssignment] = useState({
     employeeId: "", subjectId: "", classId: "", room: "", department: ""
   });
+
+  // مزامنة معلمات البحث عند تحميل الصفحة
+  useEffect(() => {
+    if (queryView) {
+      setViewMode(queryView);
+    }
+    if (queryId) {
+      setSelectedId(queryId);
+    }
+  }, [queryView, queryId]);
 
   const filteredAssignments = useMemo(() => {
     if (!selectedId) return [];

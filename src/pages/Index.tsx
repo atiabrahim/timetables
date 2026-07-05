@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -22,10 +22,13 @@ import {
   TrendingUp,
   Database,
   LayoutGrid,
-  CircleDot
+  CircleDot,
+  Search,
+  ArrowLeftRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { format, parse, isWithinInterval } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
@@ -38,14 +41,48 @@ const Index = () => {
   const navigate = useNavigate();
 
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000); // update every minute
     return () => clearInterval(timer);
   }, []);
 
+  // إغلاق قائمة البحث عند النقر خارجها
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const todayIdx = currentTime.getDay();
   const timeStr = format(currentTime, "HH:mm");
+
+  // نتائج البحث السريع الذكي
+  const searchResults = useMemo(() => {
+    if (!globalSearch.trim()) return [];
+    const query = globalSearch.toLowerCase();
+
+    const matchedTeachers = employees
+      .filter(e => `${e.firstName} ${e.lastName}`.toLowerCase().includes(query))
+      .map(e => ({ id: e.id, name: `${e.lastName} ${e.firstName}`, type: "teacher" as const, sub: e.category }));
+
+    const matchedClasses = classes
+      .filter(c => c.name.toLowerCase().includes(query) || (c.code || "").toLowerCase().includes(query))
+      .map(c => ({ id: c.id, name: c.name, type: "class" as const, sub: c.code || "" }));
+
+    const matchedRooms = rooms
+      .filter(r => r.toLowerCase().includes(query))
+      .map(r => ({ id: r, name: r, type: "room" as const, sub: isRTL ? "قاعة دراسية" : "Classroom" }));
+
+    return [...matchedTeachers, ...matchedClasses, ...matchedRooms].slice(0, 6);
+  }, [globalSearch, employees, classes, rooms, isRTL]);
 
   // Determine current and next periods based on time
   const liveContext = useMemo(() => {
@@ -170,6 +207,65 @@ const Index = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Smart Schedule Finder Section */}
+      <div ref={searchRef} className="relative max-w-2xl mx-auto z-40">
+        <div className={cn(
+          "flex items-center bg-white rounded-3xl border-2 transition-all duration-300 shadow-lg px-4 h-14",
+          isSearchFocused ? "border-emerald-500 ring-4 ring-emerald-50" : "border-slate-100"
+        )}>
+          <Search className="text-slate-400 shrink-0" size={20} />
+          <Input 
+            value={globalSearch}
+            onChange={(e) => setGlobalSearch(e.target.value)}
+            onFocus={() => setIsSearchFocused(true)}
+            placeholder={isRTL ? "الباحث السريع: ابحث عن أستاذ، فوج، أو قاعة لعرض جدولهم فوراً..." : "Quick Finder: Search teacher, class, or room to view schedule..."}
+            className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 h-full text-sm font-bold flex-1"
+          />
+          {globalSearch && (
+            <Button variant="ghost" size="icon" onClick={() => setGlobalSearch("")} className="h-8 w-8 rounded-full text-slate-400 hover:text-slate-600">
+              ✕
+            </Button>
+          )}
+        </div>
+
+        {/* Autocomplete Dropdown */}
+        {isSearchFocused && searchResults.length > 0 && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-3xl shadow-2xl overflow-hidden p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
+            {searchResults.map((res) => (
+              <button
+                key={`${res.type}-${res.id}`}
+                onClick={() => {
+                  setIsSearchFocused(false);
+                  setGlobalSearch("");
+                  navigate(`/schedule?view=${res.type}&id=${res.id}`);
+                }}
+                className="w-full flex items-center justify-between p-3 hover:bg-emerald-50/50 rounded-2xl transition-colors text-start"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
+                    res.type === "teacher" && "bg-emerald-50 text-emerald-600",
+                    res.type === "class" && "bg-blue-50 text-blue-600",
+                    res.type === "room" && "bg-rose-50 text-rose-600"
+                  )}>
+                    {res.type === "teacher" && <Users size={16} />}
+                    {res.type === "class" && <GraduationCap size={16} />}
+                    {res.type === "room" && <MapPin size={16} />}
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-slate-800">{res.name}</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{res.sub}</p>
+                  </div>
+                </div>
+                <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full uppercase tracking-widest">
+                  {res.type === "teacher" ? (isRTL ? "أستاذ" : "Teacher") : res.type === "class" ? (isRTL ? "فوج" : "Class") : (isRTL ? "قاعة" : "Room")}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* Live Status Banner */}
       <Card className="border-none shadow-xl bg-white overflow-hidden rounded-[2.5rem]">
