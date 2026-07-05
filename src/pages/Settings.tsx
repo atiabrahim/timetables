@@ -18,7 +18,6 @@ import {
   Upload,
   Plus,
   Trash2,
-  FileXml,
   HelpCircle,
   CheckCircle2
 } from "lucide-react";
@@ -189,7 +188,7 @@ const Settings = () => {
           <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden bg-white">
             <CardHeader className="bg-emerald-50/30 border-b border-emerald-100">
               <CardTitle className="text-lg font-bold flex items-center gap-2 text-emerald-900">
-                <FileXml size={20} className="text-emerald-600" />
+                <FileCode size={20} className="text-emerald-600" />
                 {isRTL ? "استيراد جداول من برنامج aSc Timetables" : "Import from aSc Timetables"}
               </CardTitle>
             </CardHeader>
