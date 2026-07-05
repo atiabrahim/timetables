@@ -9,33 +9,28 @@ import {
   Calendar, 
   MapPin,
   ListChecks,
-  Clock,
   GraduationCap,
   FileText,
-  Activity,
   UserCheck,
-  Zap,
-  ShieldCheck,
-  BarChart3,
   Sparkles,
-  AlertTriangle,
-  TrendingUp,
-  Database,
-  LayoutGrid,
-  CircleDot,
-  Search,
-  ArrowLeftRight
+  LayoutGrid
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 import { format, parse, isWithinInterval } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 
+// استيراد المكونات الفرعية الجديدة
+import DemoDataBanner from "../components/dashboard/DemoDataBanner";
+import QuickFinder from "../components/dashboard/QuickFinder";
+import LiveStatusBanner from "../components/dashboard/LiveStatusBanner";
+import ConflictsAlert from "../components/dashboard/ConflictsAlert";
+import QuickActions from "../components/dashboard/QuickActions";
+import StatsGrid from "../components/dashboard/StatsGrid";
+import LiveOperations from "../components/dashboard/LiveOperations";
+import PedagogicalStats from "../components/dashboard/PedagogicalStats";
+
 const Index = () => {
   const { 
-    employees, classes, subjects, assignments, requirements, rooms, isRTL, t, user, 
+    employees, classes, subjects, assignments, requirements, rooms, isRTL, t, 
     getEffectiveAssignment, language, loadDemoData, periodTimings 
   } = useApp();
   const navigate = useNavigate();
@@ -46,11 +41,10 @@ const Index = () => {
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000); // update every minute
+    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
 
-  // إغلاق قائمة البحث عند النقر خارجها
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -62,7 +56,6 @@ const Index = () => {
   }, []);
 
   const todayIdx = currentTime.getDay();
-  const timeStr = format(currentTime, "HH:mm");
 
   // نتائج البحث السريع الذكي
   const searchResults = useMemo(() => {
@@ -84,7 +77,7 @@ const Index = () => {
     return [...matchedTeachers, ...matchedClasses, ...matchedRooms].slice(0, 6);
   }, [globalSearch, employees, classes, rooms, isRTL]);
 
-  // Determine current and next periods based on time
+  // حساب الحالة المباشرة للحصص
   const liveContext = useMemo(() => {
     let currentP = null;
     let nextP = null;
@@ -119,6 +112,7 @@ const Index = () => {
     return format(new Date(), "EEEE, d MMMM yyyy", { locale });
   }, [language]);
 
+  // حساب التعارضات
   const conflictsCount = useMemo(() => {
     const teacherSlots: Record<string, string[]> = {};
     const roomSlots: Record<string, string[]> = {};
@@ -141,6 +135,7 @@ const Index = () => {
     return conflicts;
   }, [assignments]);
 
+  // حساب التكليفات اليومية
   const todayDuties = useMemo(() => {
     const periods: ("Morning" | "Afternoon" | "Evening")[] = ["Morning", "Afternoon", "Evening"];
     return periods.map(period => {
@@ -155,6 +150,7 @@ const Index = () => {
     });
   }, [todayDateStr, employees, getEffectiveAssignment, t]);
 
+  // إحصائيات عامة
   const stats = useMemo(() => [
     { label: t.stats.teachers, value: employees.length, icon: Users, color: "text-emerald-600", bg: "bg-emerald-50", path: "/employees" },
     { label: t.stats.classes, value: classes.length, icon: GraduationCap, color: "text-blue-600", bg: "bg-blue-50", path: "/classes" },
@@ -162,6 +158,7 @@ const Index = () => {
     { label: t.stats.rooms, value: rooms.length, icon: MapPin, color: "text-rose-600", bg: "bg-rose-50", path: "/rooms" },
   ], [employees, classes, subjects, rooms, t]);
 
+  // الإجراءات السريعة
   const quickActions = [
     { label: isRTL ? "إضافة حصة" : "Add Lesson", icon: Calendar, path: "/schedule", color: "bg-emerald-100 text-emerald-700" },
     { label: isRTL ? "الجدول العام" : "Master Schedule", icon: LayoutGrid, path: "/master-schedule", color: "bg-rose-100 text-rose-700" },
@@ -170,6 +167,7 @@ const Index = () => {
     { label: isRTL ? "تقرير الحضور" : "Attendance", icon: FileText, path: "/reports-new", color: "bg-amber-100 text-amber-700" },
   ];
 
+  // نسبة جاهزية الجداول
   const completionPercentage = useMemo(() => {
     if (requirements.length === 0) {
       if (classes.length === 0) return 0;
@@ -185,317 +183,82 @@ const Index = () => {
   }, [assignments, requirements, classes]);
 
   const isSystemEmpty = useMemo(() => employees.length === 0 && classes.length === 0, [employees, classes]);
+  const occupiedRoomsCount = useMemo(() => rooms.filter(r => assignments.some(a => a.room === r)).length, [rooms, assignments]);
 
   return (
     <div className="space-y-10 pb-20">
       {isSystemEmpty && (
-        <Card className="border-none shadow-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-[2.5rem] overflow-hidden relative group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-          <CardContent className="p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-            <div className="space-y-2 text-center md:text-start">
-              <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-1.5 rounded-full border border-white/10 mb-2">
-                <Sparkles size={14} className="text-emerald-200 fill-white" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-100">{isRTL ? "نظام جديد" : "New System"}</span>
-              </div>
-              <h3 className="text-2xl md:text-3xl font-black tracking-tight">{isRTL ? "هل ترغب في تجربة النظام ببيانات جاهزة؟" : "Want to try the system with demo data?"}</h3>
-              <p className="text-sm font-bold text-emerald-100/80 max-w-xl leading-relaxed">{isRTL ? "يبدو أنك تفتح النظام لأول مرة! يمكنك بنقرة واحدة تحميل بيانات تجريبية لتجربة كافة ميزات النظام والتقارير فوراً." : "It looks like you are opening the system for the first time! Load demo data in one click to try all features."}</p>
-            </div>
-            <Button onClick={loadDemoData} className="h-14 px-8 bg-white text-emerald-950 hover:bg-emerald-50 rounded-2xl font-black text-base shadow-xl transition-all hover:scale-105 shrink-0 gap-2">
-              <Database size={18} />
-              {isRTL ? "تحميل البيانات التجريبية" : "Load Demo Data"}
-            </Button>
-          </CardContent>
-        </Card>
+        <DemoDataBanner isRTL={isRTL} loadDemoData={loadDemoData} />
       )}
 
-      {/* Smart Schedule Finder Section */}
-      <div ref={searchRef} className="relative max-w-2xl mx-auto z-40">
-        <div className={cn(
-          "flex items-center bg-white rounded-3xl border-2 transition-all duration-300 shadow-lg px-4 h-14",
-          isSearchFocused ? "border-emerald-500 ring-4 ring-emerald-50" : "border-slate-100"
-        )}>
-          <Search className="text-slate-400 shrink-0" size={20} />
-          <Input 
-            value={globalSearch}
-            onChange={(e) => setGlobalSearch(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
-            placeholder={isRTL ? "الباحث السريع: ابحث عن أستاذ، فوج، أو قاعة لعرض جدولهم فوراً..." : "Quick Finder: Search teacher, class, or room to view schedule..."}
-            className="border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 h-full text-sm font-bold flex-1"
-          />
-          {globalSearch && (
-            <Button variant="ghost" size="icon" onClick={() => setGlobalSearch("")} className="h-8 w-8 rounded-full text-slate-400 hover:text-slate-600">
-              ✕
-            </Button>
-          )}
-        </div>
-
-        {/* Autocomplete Dropdown */}
-        {isSearchFocused && searchResults.length > 0 && (
-          <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-100 rounded-3xl shadow-2xl overflow-hidden p-2 space-y-1 animate-in fade-in slide-in-from-top-2 duration-200">
-            {searchResults.map((res) => (
-              <button
-                key={`${res.type}-${res.id}`}
-                onClick={() => {
-                  setIsSearchFocused(false);
-                  setGlobalSearch("");
-                  navigate(`/schedule?view=${res.type}&id=${res.id}`);
-                }}
-                className="w-full flex items-center justify-between p-3 hover:bg-emerald-50/50 rounded-2xl transition-colors text-start"
-              >
-                <div className="flex items-center gap-3">
-                  <div className={cn(
-                    "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
-                    res.type === "teacher" && "bg-emerald-50 text-emerald-600",
-                    res.type === "class" && "bg-blue-50 text-blue-600",
-                    res.type === "room" && "bg-rose-50 text-rose-600"
-                  )}>
-                    {res.type === "teacher" && <Users size={16} />}
-                    {res.type === "class" && <GraduationCap size={16} />}
-                    {res.type === "room" && <MapPin size={16} />}
-                  </div>
-                  <div>
-                    <p className="text-xs font-black text-slate-800">{res.name}</p>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{res.sub}</p>
-                  </div>
-                </div>
-                <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full uppercase tracking-widest">
-                  {res.type === "teacher" ? (isRTL ? "أستاذ" : "Teacher") : res.type === "class" ? (isRTL ? "فوج" : "Class") : (isRTL ? "قاعة" : "Room")}
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
+      {/* Smart Schedule Finder */}
+      <div ref={searchRef}>
+        <QuickFinder 
+          globalSearch={globalSearch}
+          setGlobalSearch={setGlobalSearch}
+          isSearchFocused={isSearchFocused}
+          setIsSearchFocused={setIsSearchFocused}
+          searchResults={searchResults}
+          isRTL={isRTL}
+          onSelectResult={(type, id) => {
+            setIsSearchFocused(false);
+            setGlobalSearch("");
+            navigate(`/schedule?view=${type}&id=${id}`);
+          }}
+        />
       </div>
 
       {/* Live Status Banner */}
-      <Card className="border-none shadow-xl bg-white overflow-hidden rounded-[2.5rem]">
-        <div className="flex flex-col md:flex-row">
-          <div className="bg-emerald-950 text-white p-8 md:w-1/3 flex flex-col justify-between border-b md:border-b-0 md:border-e border-emerald-900/50">
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full mb-4">
-                <CircleDot size={12} className="animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-widest">{t.liveStatus}</span>
-              </div>
-              <h3 className="text-4xl font-black tracking-tighter">
-                {format(currentTime, "HH:mm")}
-              </h3>
-              <p className="text-emerald-100/50 font-bold text-xs uppercase tracking-widest">{format(currentTime, "EEEE, d MMM")}</p>
-            </div>
+      <LiveStatusBanner 
+        currentTime={currentTime}
+        liveContext={liveContext}
+        isRTL={isRTL}
+        t={t}
+        employees={employees}
+      />
 
-            <div className="mt-8 space-y-4">
-              <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10">
-                <span className="text-[10px] font-black text-emerald-400/60 uppercase">{t.currentPeriod}</span>
-                <span className="text-sm font-black">{liveContext.currentP ? (isRTL ? `حصة ${liveContext.currentP}` : `Period ${liveContext.currentP}`) : (isRTL ? "---" : "---")}</span>
-              </div>
-              {liveContext.nextP && (
-                <div className="flex items-center justify-between p-3 bg-white/5 rounded-xl">
-                  <span className="text-[10px] font-black text-white/30 uppercase">{t.nextPeriod}</span>
-                  <span className="text-sm font-black text-white/50">{isRTL ? `حصة ${liveContext.nextP}` : `Period ${liveContext.nextP}`}</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="p-8 md:w-2/3 bg-slate-50/30">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="space-y-4">
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                  <LayoutGrid size={12} /> {t.inClass}
-                </h4>
-                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                  {liveContext.activeLessons.length > 0 ? liveContext.activeLessons.map((l, i) => {
-                    const emp = employees.find(e => e.id === l.employeeId);
-                    return (
-                      <div key={i} className="p-3 bg-white border border-slate-100 rounded-xl flex items-center gap-2 shadow-sm">
-                        <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-black text-[10px]">{emp?.lastName[0]}</div>
-                        <div className="min-w-0">
-                          <p className="text-[11px] font-black text-slate-800 truncate">{emp?.lastName}</p>
-                          <p className="text-[9px] font-bold text-slate-400 truncate">{l.room || "---"}</p>
-                        </div>
-                      </div>
-                    );
-                  }) : <p className="text-[10px] font-bold text-slate-300 italic">{t.noLessonsNow}</p>}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest flex items-center gap-1.5">
-                  <UserCheck size={12} /> {t.freeStaff}
-                </h4>
-                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                  {liveContext.freeStaff.length > 0 ? liveContext.freeStaff.map((e, i) => (
-                    <div key={i} className="p-3 bg-emerald-50/50 border border-emerald-100 rounded-xl flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center font-black text-[10px]">{e.lastName[0]}</div>
-                      <p className="text-[11px] font-black text-emerald-900 truncate">{e.lastName}</p>
-                    </div>
-                  )) : <p className="text-[10px] font-bold text-slate-300 italic">None</p>}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="text-[10px] font-black text-rose-600 uppercase tracking-widest flex items-center gap-1.5">
-                  <MapPin size={12} /> {t.vacantRooms}
-                </h4>
-                <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                  {liveContext.vacantRooms.length > 0 ? liveContext.vacantRooms.map((r, i) => (
-                    <div key={i} className="p-3 bg-rose-50/50 border border-rose-100 rounded-xl flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-rose-500 text-white flex items-center justify-center font-black text-[10px] truncate px-0.5">{r}</div>
-                      <p className="text-[11px] font-black text-rose-900 truncate">{r}</p>
-                    </div>
-                  )) : <p className="text-[10px] font-bold text-slate-300 italic">None</p>}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </Card>
-
+      {/* Conflicts Alert */}
       {conflictsCount > 0 && (
-        <Card className="border-none shadow-lg bg-amber-50 border border-amber-200 rounded-[2rem] overflow-hidden cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => navigate("/schedule")}>
-          <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-200">
-                <AlertTriangle size={24} />
-              </div>
-              <div>
-                <h4 className="font-black text-amber-900">{isRTL ? "تم اكتشاف تعارضات!" : "Conflicts Detected!"}</h4>
-                <p className="text-xs font-bold text-amber-700">{isRTL ? `هناك ${conflictsCount} تداخلات في المهام أو القاعات.` : `There are ${conflictsCount} resource overlaps.`}</p>
-              </div>
-            </div>
-            <Button variant="ghost" className="text-amber-900 font-bold">{isRTL ? "حل التعارضات" : "Resolve Now"}</Button>
-          </CardContent>
-        </Card>
+        <ConflictsAlert 
+          conflictsCount={conflictsCount}
+          isRTL={isRTL}
+          onResolveClick={() => navigate("/schedule")}
+        />
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div className="xl:col-span-2 space-y-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {quickActions.map((action, idx) => (
-              <Button key={idx} variant="ghost" onClick={() => navigate(action.path)} className="h-auto flex flex-col items-center gap-3 p-6 rounded-[2.5rem] border border-slate-100 bg-white hover:bg-emerald-50 transition-all shadow-sm">
-                <div className={cn("p-4 rounded-2xl", action.color)}>
-                  <action.icon size={24} />
-                </div>
-                <span className="font-black text-xs text-slate-700">{action.label}</span>
-              </Button>
-            ))}
-          </div>
+          {/* Quick Actions */}
+          <QuickActions 
+            actions={quickActions}
+            onActionClick={(path) => navigate(path)}
+          />
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {stats.map((stat, idx) => (
-              <Card key={idx} onClick={() => navigate(stat.path)} className="group border-none shadow-xl shadow-slate-200/40 rounded-[2.5rem] overflow-hidden hover:shadow-2xl transition-all cursor-pointer bg-white">
-                <CardContent className="p-8 flex flex-col items-center text-center">
-                  <div className={cn("w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-6 shadow-lg", stat.bg, stat.color)}>
-                    <stat.icon size={32} />
-                  </div>
-                  <p className="text-3xl font-black text-slate-900 tracking-tighter">{stat.value}</p>
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">{stat.label}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {/* Stats Grid */}
+          <StatsGrid 
+            stats={stats}
+            onStatClick={(path) => navigate(path)}
+          />
 
-          <Card className="border-none shadow-2xl shadow-emerald-900/5 rounded-[3rem] bg-white overflow-hidden">
-            <CardHeader className="bg-slate-50/50 p-10 border-b border-slate-100">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                      <UserCheck size={20} />
-                    </div>
-                    <CardTitle className="text-2xl font-black text-slate-900">
-                      {isRTL ? "عمليات اليوم الجارية" : "Live Operations"}
-                    </CardTitle>
-                  </div>
-                  <p className="text-sm font-bold text-slate-400 px-1">{todayFriendlyName}</p>
-                </div>
-                <Button onClick={() => navigate("/assignments")} className="rounded-2xl h-12 px-8 bg-slate-900 hover:bg-black font-black text-xs text-white">
-                  {isRTL ? "تخصيص المهام" : "Assign Duties"}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-10">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {todayDuties.map((duty, idx) => (
-                  <div key={idx} className="group relative">
-                    <div className="absolute -inset-2 bg-emerald-50 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-all"></div>
-                    <div className="relative space-y-6">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[11px] font-black text-emerald-700 bg-emerald-50 px-4 py-1.5 rounded-full uppercase tracking-widest">{duty.label}</span>
-                        <span className="text-[10px] font-black text-slate-300">{duty.count} Active</span>
-                      </div>
-                      <div className="space-y-3">
-                        {duty.employees.length > 0 ? duty.employees.map((emp: any) => (
-                            <div key={emp.id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
-                              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center font-black text-emerald-700 text-xs">
-                                {emp.lastName[0]}{emp.firstName[0]}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-black text-slate-800 truncate">{emp.lastName} {emp.firstName}</p>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase mt-0.5">{emp.category}</p>
-                              </div>
-                            </div>
-                        )) : (
-                          <div className="py-12 flex flex-col items-center justify-center text-slate-300 gap-2 border-2 border-dashed border-slate-100 rounded-[3rem]">
-                            <Clock size={24} className="opacity-20" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Idle State</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Live Operations */}
+          <LiveOperations 
+            todayFriendlyName={todayFriendlyName}
+            todayDuties={todayDuties}
+            isRTL={isRTL}
+            onAssignClick={() => navigate("/assignments")}
+          />
         </div>
 
         <div className="space-y-8">
-          <Card className="border-none shadow-2xl shadow-emerald-900/5 rounded-[3rem] bg-emerald-950 text-white h-full overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent"></div>
-            <CardHeader className="p-10 border-b border-white/5">
-              <CardTitle className="text-xl font-black flex items-center gap-3">
-                <Activity size={22} className="text-emerald-400" />
-                {isRTL ? "مؤشرات بيداغوجية" : "Pedagogical Stats"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-10 space-y-10">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between px-1">
-                  <span className="text-[11px] font-black text-emerald-400 uppercase tracking-[0.2em]">{isRTL ? "جاهزية الجداول" : "Readiness"}</span>
-                  <span className="text-2xl font-black">{completionPercentage}%</span>
-                </div>
-                <div className="h-4 bg-white/5 rounded-full overflow-hidden p-1 border border-white/5">
-                  <div 
-                    className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full shadow-[0_0_20px_rgba(52,211,153,0.4)] transition-all duration-1000" 
-                    style={{ width: `${completionPercentage}%` }}
-                  ></div>
-                </div>
-              </div>
-              <div className="space-y-4">
-                {[
-                  { label: isRTL ? "نسبة إشغال القاعات" : "Room Occupancy", value: `${Math.round((rooms.filter(r => assignments.some(a => a.room === r)).length / (rooms.length || 1)) * 100)}%`, icon: TrendingUp, color: "text-blue-400" },
-                  { label: isRTL ? "حالة التعارضات" : "Conflicts", value: conflictsCount === 0 ? "Perfect" : `${conflictsCount}`, icon: AlertTriangle, color: conflictsCount === 0 ? "text-emerald-400" : "text-amber-400" },
-                  { label: isRTL ? "استقرار النظام" : "Stability", value: "99.9%", icon: ShieldCheck, color: "text-teal-400" }
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-5 bg-white/5 rounded-[1.5rem] border border-white/5 group hover:bg-white/10 transition-all">
-                    <div className="flex items-center gap-4">
-                      <div className={cn("p-2 rounded-xl bg-white/5", item.color)}>
-                        <item.icon size={18} />
-                      </div>
-                      <span className="text-[10px] font-black text-white/60 uppercase">{item.label}</span>
-                    </div>
-                    <span className="text-xs font-black text-white">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="pt-6">
-                <Button onClick={() => navigate("/reports")} className="w-full h-16 bg-white text-emerald-950 hover:bg-emerald-50 rounded-2xl font-black text-sm shadow-xl transition-all">
-                  <TrendingUp className="mr-2 h-5 w-5" />
-                  {isRTL ? "عرض التحليلات الكاملة" : "Full Analytics"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Pedagogical Stats */}
+          <PedagogicalStats 
+            completionPercentage={completionPercentage}
+            roomsCount={rooms.length}
+            occupiedRoomsCount={occupiedRoomsCount}
+            conflictsCount={conflictsCount}
+            isRTL={isRTL}
+            onAnalyticsClick={() => navigate("/reports")}
+          />
         </div>
       </div>
     </div>
