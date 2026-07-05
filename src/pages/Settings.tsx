@@ -15,12 +15,14 @@ import {
   CloudDownload,
   Timer,
   Download,
-  Upload
+  Upload,
+  Plus,
+  Trash2
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { parseXml } from "../lib/export-utils";
 import PageHeader from "../components/shared/PageHeader";
-import { DAYS, PERIODS } from "../constants/schedule";
+import { DAYS } from "../constants/schedule";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +50,29 @@ const Settings = () => {
   
   const xmlInputRef = useRef<HTMLInputElement>(null);
   const jsonInputRef = useRef<HTMLInputElement>(null);
+
+  // ترتيب الحصص تصاعدياً بناءً على مفاتيح التواقيت
+  const sortedPeriods = React.useMemo(() => {
+    return Object.keys(periodTimings).sort((a, b) => parseInt(a) - parseInt(b));
+  }, [periodTimings]);
+
+  const handleAddPeriod = () => {
+    const numericPeriods = Object.keys(periodTimings).map(Number).sort((a, b) => a - b);
+    const nextPeriod = numericPeriods.length > 0 ? numericPeriods[numericPeriods.length - 1] + 1 : 1;
+    
+    setPeriodTimings({
+      ...periodTimings,
+      [nextPeriod.toString()]: "00:00 - 00:00"
+    });
+    showSuccess(isRTL ? `تم إضافة الحصة ${nextPeriod} بنجاح` : `Added period ${nextPeriod} successfully`);
+  };
+
+  const handleDeletePeriod = (p: string) => {
+    const updatedTimings = { ...periodTimings };
+    delete updatedTimings[p];
+    setPeriodTimings(updatedTimings);
+    showSuccess(isRTL ? `تم حذف الحصة ${p} بنجاح` : `Deleted period ${p} successfully`);
+  };
 
   const handleExportJson = () => {
     const data = {
@@ -141,7 +166,7 @@ const Settings = () => {
                   <div key={day.id} className="p-3 bg-gray-50 rounded-2xl border border-gray-100">
                     <p className="font-bold text-gray-900 text-xs mb-3 text-center">{isRTL ? day.name : day.en}</p>
                     <div className="grid grid-cols-2 gap-2">
-                      {PERIODS.map(p => (
+                      {sortedPeriods.map(p => (
                         <div key={p} className="flex flex-col items-center gap-1 p-1.5 bg-white rounded-lg border border-gray-100">
                           <span className="text-[9px] font-bold text-gray-500">{p}</span>
                           <Switch scale={0.7} checked={isPeriodActive(day.id, p)} onCheckedChange={() => togglePeriod(day.id, p)} />
@@ -155,39 +180,91 @@ const Settings = () => {
           </Card>
 
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
-            <CardHeader className="bg-blue-50/50 border-b border-blue-100"><CardTitle className="text-lg font-bold flex items-center gap-2 text-blue-900"><Download size={20} className="text-blue-600" /> {isRTL ? "النسخ الاحتياطي والأرشفة" : "Backup & Archive"}</CardTitle></CardHeader>
-            <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 border-2 border-dashed border-blue-100 rounded-2xl space-y-4">
-                <div className="space-y-1"><h4 className="font-bold text-blue-900 text-sm">{isRTL ? "تصدير النظام كاملاً" : "Export Full System"}</h4><p className="text-[10px] text-slate-500">{isRTL ? "تنزيل ملف JSON يحتوي على كافة المستخدمين والجداول والقيود والمواد." : "Download a JSON file containing all users, schedules, constraints, and data."}</p></div>
-                <Button onClick={handleExportJson} className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl gap-2 font-bold"><Download size={16} /> {isRTL ? "تصدير نسخة احتياطية" : "Export Backup"}</Button>
-              </div>
-              <div className="p-4 border-2 border-dashed border-slate-100 rounded-2xl space-y-4">
-                <div className="space-y-1"><h4 className="font-bold text-slate-900 text-sm">{isRTL ? "استعادة من ملف" : "Restore from File"}</h4><p className="text-[10px] text-slate-500">{isRTL ? "استبدال البيانات الحالية ببيانات ملف النسخة الاحتياطية." : "Replace current data with backup file content."}</p></div>
-                <input type="file" ref={jsonInputRef} onChange={handleImportJson} accept=".json" className="hidden" />
-                <Button variant="outline" onClick={() => jsonInputRef.current?.click()} className="w-full border-slate-200 rounded-xl gap-2 font-bold"><Upload size={16} /> {isRTL ? "استعادة نسخة JSON" : "Restore Backup"}</Button>
-              </div>
-              <div className="md:col-span-2 p-4 bg-emerald-50/30 rounded-2xl border border-emerald-100 flex items-center justify-between">
-                <div className="space-y-1"><h4 className="font-bold text-emerald-900 text-sm">{isRTL ? "استيراد من aSc Timetables" : "Import from aSc Timetables"}</h4><p className="text-[10px] text-emerald-700/60">{isRTL ? "استيراد المعلمين والمواد والجدول من ملف MyTable.xml" : "Import teachers, subjects, and schedules from XML."}</p></div>
-                <input type="file" ref={xmlInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
-                <Button onClick={() => xmlInputRef.current?.click()} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold px-8"><FileCode size={16} /> {isRTL ? "اختر XML" : "Choose XML"}</Button>
-              </div>
+            <CardHeader className="bg-blue-50/50 border-b border-blue-100">
+              <CardTitle className="text-lg font-bold flex items-center gap-2 text-blue-900">
+                <FileCode size={20} /> {isRTL ? "النسخ الاحتياطي والاستيراد" : "Backup & Import"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 flex flex-wrap gap-4">
+              <input type="file" ref={jsonInputRef} onChange={handleImportJson} accept=".json" className="hidden" />
+              <input type="file" ref={xmlInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
+              
+              <Button onClick={() => jsonInputRef.current?.click()} variant="outline" className="rounded-xl border-slate-200 gap-2 font-bold">
+                <Upload size={16} /> {isRTL ? "استيراد نسخة احتياطية (JSON)" : "Import JSON Backup"}
+              </Button>
+              <Button onClick={handleExportJson} variant="outline" className="rounded-xl border-slate-200 gap-2 font-bold">
+                <Download size={16} /> {isRTL ? "تصدير نسخة احتياطية (JSON)" : "Export JSON Backup"}
+              </Button>
             </CardContent>
           </Card>
         </div>
 
         <div className="space-y-8">
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
-            <CardHeader className="bg-blue-50/50 border-b border-blue-100"><CardTitle className="text-lg font-bold flex items-center gap-2 text-blue-900"><Timer size={20} className="text-blue-600" /> {isRTL ? "توقيت الحصص" : "Period Timings"}</CardTitle></CardHeader>
+            <CardHeader className="bg-blue-50/50 border-b border-blue-100 flex flex-row justify-between items-center">
+              <CardTitle className="text-lg font-bold flex items-center gap-2 text-blue-900">
+                <Timer size={20} className="text-blue-600" /> {isRTL ? "توقيت الحصص" : "Period Timings"}
+              </CardTitle>
+              <Button onClick={handleAddPeriod} size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-1 font-bold">
+                <Plus size={14} /> {isRTL ? "إضافة" : "Add"}
+              </Button>
+            </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
-                {PERIODS.map(p => (
-                  <div key={p} className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100"><div className="w-8 h-8 bg-white rounded-lg border border-slate-200 flex items-center justify-center font-black text-slate-500 text-xs shadow-sm">{p}</div><Input value={periodTimings[p] || ""} onChange={(e) => setPeriodTimings({...periodTimings, [p]: e.target.value})} placeholder="08:00 - 09:00" className="h-9 rounded-lg bg-white border-slate-200 font-bold text-xs" /></div>
+                {sortedPeriods.map(p => (
+                  <div key={p} className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <div className="w-8 h-8 bg-white rounded-lg border border-slate-200 flex items-center justify-center font-black text-slate-500 text-xs shadow-sm">
+                      {p}
+                    </div>
+                    <Input 
+                      value={periodTimings[p] || ""} 
+                      onChange={(e) => setPeriodTimings({...periodTimings, [p]: e.target.value})} 
+                      placeholder="08:00 - 09:00" 
+                      className="h-9 rounded-lg bg-white border-slate-200 font-bold text-xs flex-1" 
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => handleDeletePeriod(p)} 
+                      className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
                 ))}
               </div>
             </CardContent>
           </Card>
-          <Card className="border-red-100 bg-red-50/30 rounded-3xl overflow-hidden"><CardHeader><CardTitle className="text-red-800 flex items-center gap-2"><AlertTriangle size={20} /> {isRTL ? "منطقة الخطر" : "Danger Zone"}</CardTitle></CardHeader>
-            <CardContent><AlertDialog><AlertDialogTrigger asChild><Button variant="destructive" className="w-full rounded-xl h-11 font-bold shadow-lg shadow-red-100">{isRTL ? "مسح كافة البيانات" : "Clear All Data"}</Button></AlertDialogTrigger><AlertDialogContent className="rounded-3xl"><AlertDialogHeader><AlertDialogTitle>{isRTL ? "تأكيد المسح؟" : "Confirm Clear?"}</AlertDialogTitle><AlertDialogDescription>{isRTL ? "سيتم حذف كافة البيانات بشكل نهائي." : "All data will be permanently deleted."}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel><AlertDialogAction onClick={handleClearAll} className="bg-red-600 hover:bg-red-700 rounded-xl text-white">{isRTL ? "نعم، امسح" : "Yes, Clear"}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog></CardContent>
+          
+          <Card className="border-red-100 bg-red-50/30 rounded-3xl overflow-hidden">
+            <CardHeader>
+              <CardTitle className="text-red-800 flex items-center gap-2">
+                <AlertTriangle size={20} /> {isRTL ? "منطقة الخطر" : "Danger Zone"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" className="w-full rounded-xl h-11 font-bold shadow-lg shadow-red-100">
+                    {isRTL ? "مسح كافة البيانات" : "Clear All Data"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="rounded-3xl">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{isRTL ? "تأكيد المسح؟" : "Confirm Clear?"}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {isRTL ? "سيتم حذف كافة البيانات بشكل نهائي." : "All data will be permanently deleted."}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="rounded-xl">{t.cancel}</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearAll} className="bg-red-600 hover:bg-red-700 rounded-xl text-white">
+                      {isRTL ? "نعم، امسح" : "Yes, Clear"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </CardContent>
           </Card>
         </div>
       </div>
