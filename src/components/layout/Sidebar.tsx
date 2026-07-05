@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, Calendar, Users, Home, BookOpen, 
   MapPin, BarChart3, FileText, Building2, Settings, UserCog,
@@ -11,12 +11,8 @@ import {
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import SidebarGroup from "./SidebarGroup";
 
 const Sidebar = () => {
   const { t, isRTL, user, isSidebarCollapsed } = useApp();
@@ -86,67 +82,13 @@ const Sidebar = () => {
       )}>
         <div className="p-4 space-y-6">
           {groups.map((group, gIdx) => (
-            <div key={gIdx} className="space-y-2">
-              {!isSidebarCollapsed && (
-                <div className="flex items-center gap-2 px-4 mb-2">
-                  <div className="h-px flex-1 bg-emerald-50/50" />
-                  <h4 className="text-[9px] font-black text-emerald-900/30 uppercase tracking-[0.2em] whitespace-nowrap">
-                    {group.title}
-                  </h4>
-                  <div className="h-px flex-1 bg-emerald-50/50" />
-                </div>
-              )}
-              
-              <nav className="space-y-1">
-                {group.items.map((item) => {
-                  const isActive = location.pathname === item.path;
-                  
-                  const linkContent = (
-                    <Link
-                      to={item.path}
-                      className={cn(
-                        "flex items-center rounded-2xl transition-all duration-300 group relative overflow-hidden",
-                        isSidebarCollapsed ? "justify-center h-12 w-12 mx-auto" : "justify-between px-4 py-2.5",
-                        isActive 
-                          ? "bg-emerald-950 text-white shadow-lg shadow-emerald-900/20" 
-                          : "hover:bg-emerald-50 text-slate-500 hover:text-emerald-900"
-                      )}
-                    >
-                      {!isSidebarCollapsed && (
-                        <span className={cn(
-                          "font-bold text-[11px] z-10 truncate transition-colors duration-300",
-                          isActive ? "text-white" : "text-slate-600 group-hover:text-emerald-950"
-                        )}>{item.label}</span>
-                      )}
-                      
-                      <item.icon size={16} className={cn(
-                        "z-10 transition-all duration-300 shrink-0",
-                        isActive ? "text-emerald-400 scale-110" : "text-slate-400 group-hover:text-emerald-600"
-                      )} />
-
-                      {isActive && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900 to-emerald-950 opacity-100" />
-                      )}
-                    </Link>
-                  );
-
-                  if (isSidebarCollapsed) {
-                    return (
-                      <Tooltip key={item.path} delayDuration={100}>
-                        <TooltipTrigger asChild>
-                          {linkContent}
-                        </TooltipTrigger>
-                        <TooltipContent side={isRTL ? "left" : "right"} className="bg-emerald-950 text-white font-bold text-[10px] rounded-lg border-none shadow-md">
-                          {item.label}
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  }
-
-                  return <React.Fragment key={item.path}>{linkContent}</React.Fragment>;
-                })}
-              </nav>
-            </div>
+            <SidebarGroup
+              key={gIdx}
+              group={group}
+              isSidebarCollapsed={isSidebarCollapsed}
+              isRTL={isRTL}
+              locationPathname={location.pathname}
+            />
           ))}
         </div>
       </aside>
