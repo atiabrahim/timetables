@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { 
   Download, 
   FilterX,
-  ListChecks
+  ListChecks,
+  Plus
 } from "lucide-react";
-import { showSuccess } from "../utils/toast";
+import { showSuccess, showError } from "../utils/toast";
 import LessonFilters from "../components/lessons/LessonFilters";
 import LessonTable from "../components/lessons/LessonTable";
 import EditLessonDialog from "../components/lessons/EditLessonDialog";
+import AddLessonDialog from "../components/lessons/AddLessonDialog";
 import PageHeader from "../components/shared/PageHeader";
 import { DAYS, PERIODS } from "../constants/schedule";
 
@@ -29,6 +31,17 @@ const Lessons = () => {
 
   const [editingLesson, setEditingLesson] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newLesson, setNewLesson] = useState<any>({
+    subjectId: "",
+    employeeId: "",
+    classId: "",
+    department: "",
+    day: 0,
+    period: "1",
+    room: ""
+  });
 
   const isAdmin = user?.role === "Admin";
 
@@ -76,6 +89,27 @@ const Lessons = () => {
     setAssignments(assignments.map(a => a.id === editingLesson.id ? editingLesson : a));
     setIsEditDialogOpen(false);
     showSuccess(isRTL ? "تم تحديث بيانات الحصة" : "Lesson updated successfully");
+  };
+
+  const handleAddLesson = () => {
+    if (!newLesson.subjectId || !newLesson.employeeId || !newLesson.classId) {
+      showError(isRTL ? "يرجى ملء جميع الحقول الإلزامية" : "Please fill all required fields");
+      return;
+    }
+
+    const id = Math.random().toString(36).substr(2, 9);
+    setAssignments([...assignments, { id, ...newLesson }]);
+    setIsAddDialogOpen(false);
+    setNewLesson({
+      subjectId: "",
+      employeeId: "",
+      classId: "",
+      department: "",
+      day: 0,
+      period: "1",
+      room: ""
+    });
+    showSuccess(isRTL ? "تم إضافة الحصة الدراسية بنجاح" : "Lesson added successfully");
   };
 
   const handleExportCSV = () => {
@@ -126,6 +160,15 @@ const Lessons = () => {
         icon={ListChecks}
         isRTL={isRTL}
       >
+        {isAdmin && (
+          <Button 
+            onClick={() => setIsAddDialogOpen(true)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-bold h-11"
+          >
+            <Plus size={18} />
+            {isRTL ? "إضافة حصة جديدة" : "Add New Lesson"}
+          </Button>
+        )}
         <Button 
           variant="outline" 
           onClick={handleExportCSV}
@@ -170,6 +213,21 @@ const Lessons = () => {
         onEdit={handleEditClick}
         onDelete={handleDelete}
         onReset={resetFilters}
+      />
+
+      <AddLessonDialog 
+        isOpen={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
+        isRTL={isRTL}
+        newLesson={newLesson}
+        setNewLesson={setNewLesson}
+        subjects={subjects}
+        employees={employees}
+        classes={classes}
+        DAYS={DAYS}
+        PERIODS={PERIODS}
+        onSave={handleAddLesson}
+        cancelText={t.cancel}
       />
 
       <EditLessonDialog 
