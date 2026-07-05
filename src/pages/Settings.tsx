@@ -17,7 +17,10 @@ import {
   Download,
   Upload,
   Plus,
-  Trash2
+  Trash2,
+  FileXml,
+  HelpCircle,
+  CheckCircle2
 } from "lucide-react";
 import { showSuccess, showError } from "../utils/toast";
 import { parseXml } from "../lib/export-utils";
@@ -123,8 +126,10 @@ const Settings = () => {
         }
         const data = parseXml(xmlText);
         importAllData(data);
-        showSuccess(isRTL ? "تم استيراد البيانات بنجاح" : "Data imported successfully");
-      } catch (err) { showError(isRTL ? "فشل استيراد الملف" : "Failed to import file"); }
+        showSuccess(isRTL ? "تم استيراد جدول aSc Timetables بنجاح!" : "aSc Timetables imported successfully!");
+      } catch (err) { 
+        showError(isRTL ? "فشل استيراد ملف XML، يرجى التأكد من توافق التنسيق" : "Failed to import XML file, please check format compatibility"); 
+      }
     };
     reader.readAsArrayBuffer(file);
   };
@@ -158,6 +163,7 @@ const Settings = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
+          {/* تفعيل الحصص الأسبوعية */}
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
             <CardHeader className="bg-[#f9f9f1] border-b border-gray-100"><CardTitle className="text-lg font-bold flex items-center gap-2"><Clock size={20} className="text-[#064e3b]" /> {isRTL ? "تفعيل الحصص الأسبوعية" : "Weekly Periods"}</CardTitle></CardHeader>
             <CardContent className="p-6">
@@ -179,15 +185,52 @@ const Settings = () => {
             </CardContent>
           </Card>
 
+          {/* استيراد جداول aSc Timetables XML */}
+          <Card className="border-none shadow-xl shadow-emerald-100/20 rounded-3xl overflow-hidden bg-white">
+            <CardHeader className="bg-emerald-50/30 border-b border-emerald-100">
+              <CardTitle className="text-lg font-bold flex items-center gap-2 text-emerald-900">
+                <FileXml size={20} className="text-emerald-600" />
+                {isRTL ? "استيراد جداول من برنامج aSc Timetables" : "Import from aSc Timetables"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 flex items-start gap-3">
+                <HelpCircle size={20} className="text-emerald-600 shrink-0 mt-0.5" />
+                <div className="space-y-1 text-xs font-bold text-emerald-800 leading-relaxed">
+                  <p>{isRTL ? "خطوات الاستيراد الصحيحة:" : "Import Steps:"}</p>
+                  <ul className="list-decimal list-inside space-y-1 font-medium text-emerald-700/90">
+                    <li>{isRTL ? "افتح جدولك في برنامج aSc Timetables على الكمبيوتر." : "Open your schedule in aSc Timetables."}</li>
+                    <li>{isRTL ? "اذهب إلى ملف -> تصدير -> تصدير إلى aSc XML." : "Go to File -> Export -> Export to aSc XML."}</li>
+                    <li>{isRTL ? "قم برفع الملف الناتج هنا ليتم بناء قاعدة البيانات والجدول تلقائياً." : "Upload the exported XML file here to build your database."}</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <input type="file" ref={xmlInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
+                <Button 
+                  onClick={() => xmlInputRef.current?.click()} 
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl gap-2 font-black h-12 px-6 shadow-lg shadow-emerald-100"
+                >
+                  <Upload size={18} />
+                  {isRTL ? "اختر ملف XML واستورد الآن" : "Choose XML File & Import"}
+                </Button>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  {isRTL ? "يدعم ملفات XML القياسية" : "Supports standard XML exports"}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* النسخ الاحتياطي والاستيراد JSON */}
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
             <CardHeader className="bg-blue-50/50 border-b border-blue-100">
               <CardTitle className="text-lg font-bold flex items-center gap-2 text-blue-900">
-                <FileCode size={20} /> {isRTL ? "النسخ الاحتياطي والاستيراد" : "Backup & Import"}
+                <FileCode size={20} /> {isRTL ? "النسخ الاحتياطي والاستيراد (JSON)" : "Backup & Import (JSON)"}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6 flex flex-wrap gap-4">
               <input type="file" ref={jsonInputRef} onChange={handleImportJson} accept=".json" className="hidden" />
-              <input type="file" ref={xmlInputRef} onChange={handleImportXml} accept=".xml" className="hidden" />
               
               <Button onClick={() => jsonInputRef.current?.click()} variant="outline" className="rounded-xl border-slate-200 gap-2 font-bold">
                 <Upload size={16} /> {isRTL ? "استيراد نسخة احتياطية (JSON)" : "Import JSON Backup"}
@@ -200,6 +243,7 @@ const Settings = () => {
         </div>
 
         <div className="space-y-8">
+          {/* توقيت الحصص */}
           <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-white">
             <CardHeader className="bg-blue-50/50 border-b border-blue-100 flex flex-row justify-between items-center">
               <CardTitle className="text-lg font-bold flex items-center gap-2 text-blue-900">
@@ -236,6 +280,7 @@ const Settings = () => {
             </CardContent>
           </Card>
           
+          {/* منطقة الخطر */}
           <Card className="border-red-100 bg-red-50/30 rounded-3xl overflow-hidden">
             <CardHeader>
               <CardTitle className="text-red-800 flex items-center gap-2">
