@@ -12,9 +12,8 @@ import {
 import { ar, enUS } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer, Calendar, FileText, Eye, BarChart2, Info } from "lucide-react";
+import { Printer, Calendar, FileText, Eye, BarChart2, Info, UserCheck } from "lucide-react";
 import { 
   Table, 
   TableBody, 
@@ -30,12 +29,16 @@ import ReportControls from "@/components/reports/ReportControls";
 import PrintPreviewDialog from "@/components/reports/PrintPreviewDialog";
 import PageHeader from "../components/shared/PageHeader";
 import OfficialPrintWrapper from "../components/shared/OfficialPrintWrapper";
+import TeacherLoadReportTable from "@/components/reports/TeacherLoadReportTable";
 
 const ReportsNew = () => {
   const { 
     employees, 
     periodConfigs, 
     getEffectiveAssignment,
+    assignments,
+    subjects,
+    classes,
     teacherConstraints = [],
     departments,
     isRTL,
@@ -256,9 +259,43 @@ const ReportsNew = () => {
     );
   };
 
+  const renderWorkloadReport = () => {
+    const subtitle = (
+      <div className="inline-flex items-center gap-1.5 text-emerald-700 font-bold text-xs">
+        <UserCheck size={14} />
+        {isRTL ? "تحليل النصاب الساعي الأسبوعي لكافة الأساتذة" : "Weekly workload analysis for all teachers"}
+      </div>
+    );
+
+    return (
+      <OfficialPrintWrapper
+        title={t.workloadReport}
+        subtitle={subtitle}
+        orientation={reportStyles.orientation}
+        leftSignatureTitle={isRTL ? "المسؤول البيداغوجي" : "Pedagogical Supervisor"}
+        rightSignatureTitle={isRTL ? "ختم وتوقيع المدير" : "Director Signature"}
+        fontFamily={reportStyles.fontFamily}
+        headerSize={reportStyles.headerSize}
+        titleSize={reportStyles.titleSize}
+        footerSize={reportStyles.footerSize}
+      >
+        <TeacherLoadReportTable 
+          isRTL={isRTL}
+          employees={employees}
+          assignments={assignments}
+          subjects={subjects}
+          classes={classes}
+          t={t}
+          reportStyles={reportStyles}
+        />
+      </OfficialPrintWrapper>
+    );
+  };
+
   const currentContent = () => {
     if (activeTab === "daily") return renderDailyReport();
     if (activeTab === "monthly") return renderMonthlyReport();
+    if (activeTab === "workload") return renderWorkloadReport();
     return renderStatsReport();
   };
 
@@ -299,12 +336,15 @@ const ReportsNew = () => {
       />
 
       <Tabs defaultValue="daily" onValueChange={setActiveTab} className="w-full print:hidden">
-        <TabsList className="grid w-full grid-cols-3 mb-4 h-12 bg-white border border-slate-200 p-1.5 rounded-xl shadow-sm">
+        <TabsList className="grid w-full grid-cols-4 mb-4 h-12 bg-white border border-slate-200 p-1.5 rounded-xl shadow-sm">
           <TabsTrigger value="daily" className="flex items-center gap-2 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
             <Calendar className="h-4 w-4" /> {t.dailyReport}
           </TabsTrigger>
           <TabsTrigger value="monthly" className="flex items-center gap-2 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
             <FileText className="h-4 w-4" /> {t.monthlyReport}
+          </TabsTrigger>
+          <TabsTrigger value="workload" className="flex items-center gap-2 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
+            <UserCheck className="h-4 w-4" /> {t.workloadReport}
           </TabsTrigger>
           <TabsTrigger value="stats" className="flex items-center gap-2 font-black rounded-lg data-[state=active]:bg-emerald-600 data-[state=active]:text-white">
             <BarChart2 className="h-4 w-4" /> {t.monthlyStats}
@@ -321,6 +361,11 @@ const ReportsNew = () => {
           <Input type="month" value={monthlyDate} onChange={(e) => setMonthlyDate(e.target.value)} className="max-w-xs h-11 rounded-xl" />
           <div className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100 flex flex-col items-center gap-8">
             {renderMonthlyReport()}
+          </div>
+        </TabsContent>
+        <TabsContent value="workload" className="space-y-4">
+          <div className="bg-slate-50/50 p-8 rounded-3xl border border-slate-100 flex flex-col items-center gap-8">
+            {renderWorkloadReport()}
           </div>
         </TabsContent>
         <TabsContent value="stats" className="space-y-4">
