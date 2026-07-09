@@ -18,7 +18,7 @@ import {
 import { format, parse, isWithinInterval } from "date-fns";
 import { ar, enUS } from "date-fns/locale";
 
-// استيراد المكونات الفرعية الجديدة
+// Sub-components
 import DemoDataBanner from "../components/dashboard/DemoDataBanner";
 import QuickFinder from "../components/dashboard/QuickFinder";
 import LiveStatusBanner from "../components/dashboard/LiveStatusBanner";
@@ -27,6 +27,7 @@ import QuickActions from "../components/dashboard/QuickActions";
 import StatsGrid from "../components/dashboard/StatsGrid";
 import LiveOperations from "../components/dashboard/LiveOperations";
 import PedagogicalStats from "../components/dashboard/PedagogicalStats";
+import ReadinessBreakdown from "../components/dashboard/ReadinessBreakdown";
 
 const Index = () => {
   const { 
@@ -57,7 +58,6 @@ const Index = () => {
 
   const todayIdx = currentTime.getDay();
 
-  // نتائج البحث السريع الذكي
   const searchResults = useMemo(() => {
     if (!globalSearch.trim()) return [];
     const query = globalSearch.toLowerCase();
@@ -77,7 +77,6 @@ const Index = () => {
     return [...matchedTeachers, ...matchedClasses, ...matchedRooms].slice(0, 6);
   }, [globalSearch, employees, classes, rooms, isRTL]);
 
-  // حساب الحالة المباشرة للحصص
   const liveContext = useMemo(() => {
     let currentP = null;
     let nextP = null;
@@ -85,10 +84,8 @@ const Index = () => {
     Object.entries(periodTimings).forEach(([p, range]) => {
       const [start, end] = range.split("-");
       if (!start || !end) return;
-
       const startTime = parse(start.trim(), "HH:mm", new Date());
       const endTime = parse(end.trim(), "HH:mm", new Date());
-
       if (isWithinInterval(currentTime, { start: startTime, end: endTime })) {
         currentP = p;
       } else if (startTime > currentTime && (!nextP || startTime < parse(periodTimings[nextP].split("-")[0].trim(), "HH:mm", new Date()))) {
@@ -99,7 +96,6 @@ const Index = () => {
     const activeLessons = currentP ? assignments.filter(a => a.day === todayIdx && a.period === currentP) : [];
     const busyTeacherIds = activeLessons.map(a => a.employeeId);
     const busyRooms = activeLessons.map(a => a.room).filter(Boolean);
-
     const freeStaff = employees.filter(e => !busyTeacherIds.includes(e.id));
     const vacantRooms = rooms.filter(r => !busyRooms.includes(r));
 
@@ -112,45 +108,32 @@ const Index = () => {
     return format(new Date(), "EEEE, d MMMM yyyy", { locale });
   }, [language]);
 
-  // حساب التعارضات
   const conflictsCount = useMemo(() => {
     const teacherSlots: Record<string, string[]> = {};
     const roomSlots: Record<string, string[]> = {};
     let conflicts = 0;
     assignments.forEach(a => {
       const tKey = `${a.day}-${a.period}-${a.employeeId}`;
-      if (teacherSlots[tKey]) { 
-        if (!teacherSlots[tKey].includes(a.id)) { conflicts++; teacherSlots[tKey].push(a.id); } 
-      } 
+      if (teacherSlots[tKey]) { if (!teacherSlots[tKey].includes(a.id)) { conflicts++; teacherSlots[tKey].push(a.id); } } 
       else { teacherSlots[tKey] = [a.id]; }
-      
       if (a.room) {
         const rKey = `${a.day}-${a.period}-${a.room}`;
-        if (roomSlots[rKey]) { 
-          if (!roomSlots[rKey].includes(a.id)) { conflicts++; roomSlots[rKey].push(a.id); } 
-        } 
+        if (roomSlots[rKey]) { if (!roomSlots[rKey].includes(a.id)) { conflicts++; roomSlots[rKey].push(a.id); } } 
         else { roomSlots[rKey] = [a.id]; }
       }
     });
     return conflicts;
   }, [assignments]);
 
-  // حساب التكليفات اليومية
   const todayDuties = useMemo(() => {
     const periods: ("Morning" | "Afternoon" | "Evening")[] = ["Morning", "Afternoon", "Evening"];
     return periods.map(period => {
       const ids = getEffectiveAssignment(todayDateStr, period);
       const assignedEmployees = ids.map(id => employees.find(e => e.id === id)).filter(Boolean);
-      return { 
-        period, 
-        label: period === "Morning" ? t.morning : period === "Afternoon" ? t.afternoon : t.evening, 
-        employees: assignedEmployees, 
-        count: assignedEmployees.length 
-      };
+      return { period, label: period === "Morning" ? t.morning : period === "Afternoon" ? t.afternoon : t.evening, employees: assignedEmployees, count: assignedEmployees.length };
     });
   }, [todayDateStr, employees, getEffectiveAssignment, t]);
 
-  // إحصائيات عامة
   const stats = useMemo(() => [
     { label: t.stats.teachers, value: employees.length, icon: Users, color: "text-emerald-600", bg: "bg-emerald-50", path: "/employees" },
     { label: t.stats.classes, value: classes.length, icon: GraduationCap, color: "text-blue-600", bg: "bg-blue-50", path: "/classes" },
@@ -158,7 +141,6 @@ const Index = () => {
     { label: t.stats.rooms, value: rooms.length, icon: MapPin, color: "text-rose-600", bg: "bg-rose-50", path: "/rooms" },
   ], [employees, classes, subjects, rooms, t]);
 
-  // الإجراءات السريعة
   const quickActions = [
     { label: isRTL ? "إضافة حصة" : "Add Lesson", icon: Calendar, path: "/schedule", color: "bg-emerald-100 text-emerald-700" },
     { label: isRTL ? "الجدول العام" : "Master Schedule", icon: LayoutGrid, path: "/master-schedule", color: "bg-rose-100 text-rose-700" },
@@ -167,7 +149,7 @@ const Index = () => {
     { label: isRTL ? "تقرير الحضور" : "Attendance", icon: FileText, path: "/reports-new", color: "bg-amber-100 text-amber-700" },
   ];
 
-  // نسبة جاهزية الجداول
+  // Calculation for Overall readiness
   const completionPercentage = useMemo(() => {
     if (requirements.length === 0) {
       if (classes.length === 0) return 0;
@@ -182,6 +164,26 @@ const Index = () => {
     return Math.round((totalPlaced / totalRequired) * 100);
   }, [assignments, requirements, classes]);
 
+  // Breakdown for the new component
+  const classReadinessData = useMemo(() => {
+    return classes.map(cls => {
+      const clsReqs = requirements.filter(r => r.classId === cls.id);
+      let percentage = 0;
+      if (clsReqs.length === 0) {
+        const count = assignments.filter(a => a.classId === cls.id).length;
+        percentage = Math.min(Math.round((count / 30) * 100), 100);
+      } else {
+        const totalReq = clsReqs.reduce((s, r) => s + r.count, 0);
+        const placed = clsReqs.reduce((s, r) => {
+          const count = assignments.filter(a => a.classId === r.classId && a.subjectId === r.subjectId && a.employeeId === r.employeeId).length;
+          return s + Math.min(count, r.count);
+        }, 0);
+        percentage = Math.round((placed / totalReq) * 100);
+      }
+      return { id: cls.id, name: cls.name, percentage, isComplete: percentage === 100 };
+    }).sort((a, b) => a.percentage - b.percentage);
+  }, [classes, requirements, assignments]);
+
   const isSystemEmpty = useMemo(() => employees.length === 0 && classes.length === 0, [employees, classes]);
   const occupiedRoomsCount = useMemo(() => rooms.filter(r => assignments.some(a => a.room === r)).length, [rooms, assignments]);
 
@@ -191,7 +193,6 @@ const Index = () => {
         <DemoDataBanner isRTL={isRTL} loadDemoData={loadDemoData} />
       )}
 
-      {/* Smart Schedule Finder */}
       <div ref={searchRef}>
         <QuickFinder 
           globalSearch={globalSearch}
@@ -208,57 +209,22 @@ const Index = () => {
         />
       </div>
 
-      {/* Live Status Banner */}
-      <LiveStatusBanner 
-        currentTime={currentTime}
-        liveContext={liveContext}
-        isRTL={isRTL}
-        t={t}
-        employees={employees}
-      />
+      <LiveStatusBanner currentTime={currentTime} liveContext={liveContext} isRTL={isRTL} t={t} employees={employees} />
 
-      {/* Conflicts Alert */}
       {conflictsCount > 0 && (
-        <ConflictsAlert 
-          conflictsCount={conflictsCount}
-          isRTL={isRTL}
-          onResolveClick={() => navigate("/schedule")}
-        />
+        <ConflictsAlert conflictsCount={conflictsCount} isRTL={isRTL} onResolveClick={() => navigate("/schedule")} />
       )}
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div className="xl:col-span-2 space-y-8">
-          {/* Quick Actions */}
-          <QuickActions 
-            actions={quickActions}
-            onActionClick={(path) => navigate(path)}
-          />
-
-          {/* Stats Grid */}
-          <StatsGrid 
-            stats={stats}
-            onStatClick={(path) => navigate(path)}
-          />
-
-          {/* Live Operations */}
-          <LiveOperations 
-            todayFriendlyName={todayFriendlyName}
-            todayDuties={todayDuties}
-            isRTL={isRTL}
-            onAssignClick={() => navigate("/assignments")}
-          />
+          <QuickActions actions={quickActions} onActionClick={(path) => navigate(path)} />
+          <StatsGrid stats={stats} onStatClick={(path) => navigate(path)} />
+          <LiveOperations todayFriendlyName={todayFriendlyName} todayDuties={todayDuties} isRTL={isRTL} onAssignClick={() => navigate("/assignments")} />
         </div>
 
         <div className="space-y-8">
-          {/* Pedagogical Stats */}
-          <PedagogicalStats 
-            completionPercentage={completionPercentage}
-            roomsCount={rooms.length}
-            occupiedRoomsCount={occupiedRoomsCount}
-            conflictsCount={conflictsCount}
-            isRTL={isRTL}
-            onAnalyticsClick={() => navigate("/reports")}
-          />
+          <PedagogicalStats completionPercentage={completionPercentage} roomsCount={rooms.length} occupiedRoomsCount={occupiedRoomsCount} conflictsCount={conflictsCount} isRTL={isRTL} onAnalyticsClick={() => navigate("/reports")} />
+          <ReadinessBreakdown data={classReadinessData} isRTL={isRTL} />
         </div>
       </div>
     </div>

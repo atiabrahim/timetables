@@ -120,7 +120,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [roomConstraints, setRoomConstraints] = useState<RoomConstraint[]>([]);
   const [periodTimings, setPeriodTimings] = useState<Record<string, string>>(DEFAULT_PERIOD_TIMINGS);
   const [reportStyles, setReportStyles] = useState<ReportStyles>(DEFAULT_REPORT_STYLES);
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
+  // Persist sidebar state
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    return localStorage.getItem("sidebar_collapsed") === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("sidebar_collapsed", isSidebarCollapsed.toString());
+  }, [isSidebarCollapsed]);
 
   const rooms = roomsDetailed.map(r => r.name);
   const setRooms = (names: string[]) => {
