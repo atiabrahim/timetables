@@ -16,7 +16,7 @@ interface OfficialPrintWrapperProps {
   showSystemFooter?: boolean;
   disablePageBreak?: boolean;
   doubleMode?: boolean;
-  // إعدادات الخطوط
+  // إعدادات الخطوط الاختيارية (إذا لم تمرر ستستخدم الإعدادات العامة)
   fontFamily?: string;
   headerSize?: number;
   titleSize?: number;
@@ -35,32 +35,36 @@ const OfficialPrintWrapper = ({
   showSystemFooter = true,
   disablePageBreak = false,
   doubleMode = false,
-  fontFamily = "'Cairo', sans-serif",
-  headerSize = 10,
-  titleSize = 14,
-  footerSize = 8
+  fontFamily,
+  headerSize,
+  titleSize,
+  footerSize
 }: OfficialPrintWrapperProps) => {
-  const { isRTL, institution } = useApp();
+  const { isRTL, institution, reportStyles } = useApp();
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // استخدام القيم الممرة أو العودة للإعدادات العامة المحفوظة
+  const finalFontFamily = fontFamily || reportStyles?.fontFamily || "'Cairo', sans-serif";
+  const finalHeaderSize = headerSize || reportStyles?.headerSize || 10;
+  const finalTitleSize = titleSize || reportStyles?.titleSize || 14;
+  const finalFooterSize = footerSize || reportStyles?.footerSize || 8;
+
   const finalLeftTitle = leftSignatureTitle || (isRTL ? "المدير" : "Director");
   const finalRightTitle = rightSignatureTitle || (isRTL ? "أستاذ الفرع" : "Branch Teacher");
 
-  // الأبعاد الافتراضية بمقاس A4
   const dimensions = {
-    portrait: { w: "210mm", h: "297mm" }, // A4 Portrait
-    landscape: { w: "297mm", h: "210mm" }, // A4 Landscape
-    halfPortrait: { w: "210mm", h: "148mm" }, // A5 Landscape (half of A4)
-    halfLandscape: { w: "148mm", h: "210mm" } // A5 Portrait (half of A4)
+    portrait: { w: "210mm", h: "297mm" },
+    landscape: { w: "297mm", h: "210mm" },
+    halfPortrait: { w: "210mm", h: "148mm" },
+    halfLandscape: { w: "148mm", h: "210mm" }
   };
 
   const currentDim = doubleMode 
     ? (orientation === "portrait" ? dimensions.halfPortrait : dimensions.halfLandscape)
     : (orientation === "portrait" ? dimensions.portrait : dimensions.landscape);
 
-  // تأثير التحجيم الآلي الذكي لحساب الارتفاع المتاح وتطبيق نسبة التصغير المناسبة
   useEffect(() => {
     const handleScale = () => {
       if (!containerRef.current || !contentRef.current) return;
@@ -68,7 +72,6 @@ const OfficialPrintWrapper = ({
       const container = containerRef.current;
       const content = contentRef.current;
 
-      // إعادة التعيين أولاً للحصول على القياسات الحقيقية
       content.style.transform = "none";
       content.style.width = "100%";
 
@@ -76,11 +79,8 @@ const OfficialPrintWrapper = ({
       const contentHeight = content.scrollHeight;
 
       if (contentHeight > availableHeight && availableHeight > 0) {
-        // حساب النسبة المطلوبة للاحتواء الكامل
         const newScale = Math.max(0.4, availableHeight / contentHeight);
         setScale(newScale);
-        
-        // تطبيق التحجيم مع الحفاظ على الاتجاه (RTL / LTR)
         content.style.transform = `scale(${newScale})`;
         content.style.transformOrigin = isRTL ? "top right" : "top left";
         content.style.width = `${100 / newScale}%`;
@@ -91,7 +91,6 @@ const OfficialPrintWrapper = ({
       }
     };
 
-    // تشغيل بعد رندرة الصفحة والتأكد من تحميل الخطوط والصور
     const timer = setTimeout(handleScale, 150);
     window.addEventListener("resize", handleScale);
     
@@ -107,14 +106,14 @@ const OfficialPrintWrapper = ({
         "bg-white relative flex flex-col mx-auto",
         !disablePageBreak && "page-break-always",
         "print:shadow-none print:border-none print:m-0",
-        "overflow-hidden box-border break-inside-avoid"
+        "overflow-hidden box-border break-inside-avoid shadow-xl"
       )}
       style={{
         width: currentDim.w,
         height: currentDim.h,
         maxHeight: currentDim.h,
         padding: doubleMode ? "4mm 8mm" : "8mm 8mm",
-        fontFamily: fontFamily
+        fontFamily: finalFontFamily
       }}
       dir={isRTL ? "rtl" : "ltr"}
     >
@@ -131,20 +130,20 @@ const OfficialPrintWrapper = ({
         <div className="flex-1 text-center space-y-1 px-4">
           <h2 
             className="font-black text-black leading-tight uppercase"
-            style={{ fontSize: `${headerSize + 2}px` }}
+            style={{ fontSize: `${finalHeaderSize + 2}px` }}
           >
             {institution.name}
           </h2>
           <h3 
             className="font-black text-black underline underline-offset-4 decoration-2"
-            style={{ fontSize: `${titleSize + 2}px` }}
+            style={{ fontSize: `${finalTitleSize + 2}px` }}
           >
             {title}
           </h3>
           {subtitle && (
             <div 
               className="text-black font-bold mt-1"
-              style={{ fontSize: `${headerSize}px` }}
+              style={{ fontSize: `${finalHeaderSize}px` }}
             >
               {subtitle}
             </div>
@@ -157,12 +156,11 @@ const OfficialPrintWrapper = ({
       </div>
 
       {metadata && (
-        <div className="border-y-2 border-black py-1 mb-4 flex justify-between items-center font-black text-black shrink-0 px-2" style={{ fontSize: `${headerSize}px` }}>
+        <div className="border-y-2 border-black py-1 mb-4 flex justify-between items-center font-black text-black shrink-0 px-2" style={{ fontSize: `${finalHeaderSize}px` }}>
           {metadata}
         </div>
       )}
 
-      {/* Main Content Area with Auto-Scaling Container */}
       <div 
         ref={containerRef}
         className="w-full flex-1 bg-white mb-2 overflow-hidden px-1 relative"
@@ -175,15 +173,14 @@ const OfficialPrintWrapper = ({
         </div>
       </div>
 
-      {/* Signatures Section */}
       {showSignatures && (
         <div className="grid grid-cols-2 gap-12 pt-2 border-t-2 border-black shrink-0 px-4 mt-auto mb-2">
           <div className="text-center">
-            <p className="font-black text-black mb-1" style={{ fontSize: `${footerSize + 1}px` }}>{finalRightTitle}</p>
+            <p className="font-black text-black mb-1" style={{ fontSize: `${finalFooterSize + 1}px` }}>{finalRightTitle}</p>
             <div className="h-16 border border-dashed border-black/20 rounded-lg bg-slate-50/5"></div>
           </div>
           <div className="text-center">
-            <p className="font-black text-black mb-1" style={{ fontSize: `${footerSize + 1}px` }}>{finalLeftTitle}</p>
+            <p className="font-black text-black mb-1" style={{ fontSize: `${finalFooterSize + 1}px` }}>{finalLeftTitle}</p>
             <div className="h-16 border border-dashed border-black/20 rounded-lg bg-slate-50/5"></div>
           </div>
         </div>

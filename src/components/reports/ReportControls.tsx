@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import { 
   Layout as LayoutIcon, 
   Clock, 
@@ -14,9 +15,11 @@ import {
   Rows, 
   Settings2,
   CalendarX,
-  TextQuote
+  TextQuote,
+  Pencil
 } from "lucide-react";
 import { PeriodPart, Department } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface ReportControlsProps {
   t: any;
@@ -53,6 +56,30 @@ const ReportControls = ({
   isOutOfSchedule,
   onOutOfScheduleChange
 }: ReportControlsProps) => {
+  const [showCustomFont, setShowCustomFont] = useState(false);
+
+  const systemFonts = [
+    { value: "'Cairo', sans-serif", label: "Cairo (خط افتراضي)" },
+    { value: "Tahoma, sans-serif", label: "Tahoma" },
+    { value: "Arial, sans-serif", label: "Arial" },
+    { value: "'Times New Roman', serif", label: "Times New Roman" },
+    { value: "'Segoe UI', sans-serif", label: "Segoe UI" },
+    { value: "Calibri, sans-serif", label: "Calibri" },
+    { value: "'Traditional Arabic', serif", label: "Traditional Arabic" },
+    { value: "'Simplified Arabic', sans-serif", label: "Simplified Arabic" },
+    { value: "system-ui", label: "System Default" },
+    { value: "custom", label: "--- إدخال اسم خط مخصص ---" }
+  ];
+
+  const handleFontChange = (val: string) => {
+    if (val === "custom") {
+      setShowCustomFont(true);
+    } else {
+      setShowCustomFont(false);
+      setReportStyles({...reportStyles, fontFamily: val});
+    }
+  };
+
   return (
     <div className="space-y-4 print:hidden">
       <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
@@ -174,23 +201,41 @@ const ReportControls = ({
           <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">{isRTL ? "تنسيق متقدم للطباعة" : "Advanced Print Styling"}</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-start">
           {/* Font Family Selector */}
-          <div className="space-y-2">
+          <div className="space-y-2 md:col-span-1">
             <Label className="text-[9px] font-bold text-slate-500 flex items-center gap-1">
               <TextQuote size={12} /> {isRTL ? "نوع الخط" : "Font Family"}
             </Label>
-            <Select value={reportStyles.fontFamily} onValueChange={(v) => setReportStyles({...reportStyles, fontFamily: v})}>
-              <SelectTrigger className="h-8 rounded-lg bg-white border-emerald-100 text-[10px] font-bold">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="'Cairo', sans-serif">Cairo (رسمي)</SelectItem>
-                <SelectItem value="'Arial', sans-serif">Arial (كلاسيكي)</SelectItem>
-                <SelectItem value="'Times New Roman', serif">Times (سيريف)</SelectItem>
-                <SelectItem value="system-ui">System Default</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Select 
+                value={systemFonts.find(f => f.value === reportStyles.fontFamily) ? reportStyles.fontFamily : (showCustomFont ? "custom" : "Cairo")} 
+                onValueChange={handleFontChange}
+              >
+                <SelectTrigger className="h-9 rounded-lg bg-white border-emerald-100 text-[10px] font-bold">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {systemFonts.map(font => (
+                    <SelectItem key={font.value} value={font.value} style={{ fontFamily: font.value !== 'custom' ? font.value : 'inherit' }}>
+                      {font.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {(showCustomFont || !systemFonts.find(f => f.value === reportStyles.fontFamily)) && (
+                <div className="relative animate-in fade-in slide-in-from-top-1">
+                  <Pencil className={cn("absolute top-1/2 -translate-y-1/2 text-slate-400", isRTL ? "right-2" : "left-2")} size={10} />
+                  <Input 
+                    placeholder={isRTL ? "اسم الخط (مثلاً: Tahoma)..." : "Font name (e.g. Arial)..."}
+                    value={reportStyles.fontFamily}
+                    onChange={(e) => setReportStyles({...reportStyles, fontFamily: e.target.value})}
+                    className={cn("h-8 text-[10px] rounded-lg border-emerald-200", isRTL ? "pr-7" : "pl-7")}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Table Font Size */}
@@ -246,7 +291,7 @@ const ReportControls = ({
           </div>
         </div>
 
-        {/* Row Padding (Legacy but kept) */}
+        {/* Row Padding */}
         <div className="pt-2 border-t border-emerald-100/50">
           <div className="flex items-center gap-4 max-w-xs">
             <Label className="text-[9px] font-bold text-slate-500 shrink-0">{isRTL ? "كثافة الأسطر" : "Row Density"}</Label>
