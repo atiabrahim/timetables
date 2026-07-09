@@ -102,8 +102,7 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
     <Card className="border-none shadow-lg shadow-emerald-100/10 rounded-2xl overflow-hidden bg-white">
       <CardHeader className={cn(
         "border-b p-4",
-        conflicts.total > 0 ? "bg-amber-50/40 border-amber-100" : "bg-emerald-50/20 border-emerald-100"
-      )}>
+        conflicts.total > 0 ? "bg-amber-50/40 border-amber-100" : "bg-emerald-50/20 border-emerald-100")}>
         <CardTitle className="text-xs font-black flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             {conflicts.total > 0 ? <AlertTriangle className="text-amber-500 animate-pulse" size={16} /> : <CheckCircle2 className="text-emerald-500" size={16} />}
@@ -135,6 +134,7 @@ const ConflictPanel = ({ assignments, employees, classes, subjects, isRTL }: Con
               </div>
             ))}
 
+            {/* Existing conflict types ... */}
             {conflicts.teacherConflicts.map((conf, idx) => (
               <div key={`t-${idx}`} className="p-2.5 bg-amber-50/20 border border-amber-100/70 rounded-xl space-y-1.5">
                 <div className="flex items-center justify-between border-b border-amber-100/30 pb-1">
