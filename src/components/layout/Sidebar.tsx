@@ -7,7 +7,8 @@ import {
   MapPin, BarChart3, FileText, Building2, Settings, UserCog,
   ClipboardList, ListChecks, UserCheck, LayoutGrid, Layers, Sparkles, UserX, CalendarX, ShieldAlert,
   Grid3X3,
-  Briefcase
+  Briefcase,
+  UserPlus
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,7 @@ const Sidebar = () => {
     {
       title: isRTL ? "العمليات اليومية" : "Operations",
       items: [
+        { icon: UserPlus, label: t.substitutions, path: "/substitutions" },
         { icon: UserCheck, label: t.assignments, path: "/assignments" },
         { icon: FileText, label: t.attendanceReports, path: "/reports-new" },
         { icon: ListChecks, label: t.lessons, path: "/lessons" },
