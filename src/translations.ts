@@ -75,6 +75,8 @@ export const translations = {
     noSubstituteFound: "لم يتم العثور على بديل متاح لهذا الوقت",
     bestMatch: "أفضل تطابق",
     availableAndQualified: "أساتذة متاحون ومؤهلون",
+    printingCenter: "مركز الطباعة المكثفة",
+    orientation: "اتجاه الصفحة",
     stats: {
       teachers: "الأساتذة",
       classes: "الأفواج",
@@ -177,6 +179,8 @@ export const translations = {
     noSubstituteFound: "No available substitute found for this slot",
     bestMatch: "Best Match",
     availableAndQualified: "Available & Qualified Staff",
+    printingCenter: "Batch Printing Center",
+    orientation: "Orientation",
     stats: {
       teachers: "Teachers",
       classes: "Classes",

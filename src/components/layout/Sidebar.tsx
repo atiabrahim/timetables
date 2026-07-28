@@ -8,7 +8,8 @@ import {
   ClipboardList, ListChecks, UserCheck, LayoutGrid, Layers, Sparkles, UserX, CalendarX, ShieldAlert,
   Grid3X3,
   Briefcase,
-  UserPlus
+  UserPlus,
+  Printer
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { cn } from "@/lib/utils";
@@ -64,6 +65,7 @@ const Sidebar = () => {
     {
       title: isRTL ? "القيود والضبط" : "System Control",
       items: [
+        { icon: Printer, label: t.printingCenter, path: "/printing-center" },
         { icon: UserX, label: isRTL ? "توافر الأساتذة" : "Teacher Constraints", path: "/constraints" },
         { icon: CalendarX, label: isRTL ? "قيود الأفواج" : "Class Constraints", path: "/class-constraints" },
         { icon: ShieldAlert, label: isRTL ? "قيود القاعات" : "Room Constraints", path: "/room-constraints" },
