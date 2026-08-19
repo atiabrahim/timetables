@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Trash2, AlertTriangle, UserCheck, MapPin, Zap, Copy } from "lucide-react";
+import { Trash2, UserCheck, MapPin, Zap, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useApp } from "../../context/AppContext";
 import {
@@ -46,7 +46,7 @@ const LessonCard = ({
   assignment, day, period, isHovered, isPrint, isAdmin, isRTL, viewMode,
   subjects, employees, classes, allAssignments, onDeleteClick, onUpdateAssignment, setDraggedAssignmentId
 }: LessonCardProps) => {
-  const { teacherConstraints = [], roomConstraints = [] } = useApp();
+  const { teacherConstraints = [], roomConstraints = [], assignments, setAssignments } = useApp();
   
   const subjectIndex = subjects.findIndex(s => s.id === assignment.subjectId);
   const colorClass = getSubjectColor(subjectIndex);
@@ -86,13 +86,17 @@ const LessonCard = ({
   const teacher = employees.find(emp => emp.id === assignment.employeeId);
   const cls = classes.find(c => c.id === assignment.classId);
 
-  const handleDuplicate = () => {
-    if (onUpdateAssignment) {
-      const newId = Math.random().toString(36).substr(2, 9);
-      // Adding a duplicate is essentially adding to the context's assignments array
-      // In this app structure, we should really call an 'add' function, but for now we'll assume the parent handles it if we emit an event
-      // However, the simplest is to just expose the setAssignments if needed, but we rely on props.
-    }
+  const handleDuplicateToNextPeriod = () => {
+    const nextPeriodNum = parseInt(period) + 1;
+    if (nextPeriodNum > 12) return;
+    const nextPeriodStr = nextPeriodNum.toString();
+    const newLesson = {
+      ...assignment,
+      id: Math.random().toString(36).substr(2, 9),
+      day,
+      period: nextPeriodStr
+    };
+    setAssignments([...assignments, newLesson]);
   };
 
   const cardContent = (
@@ -136,9 +140,19 @@ const LessonCard = ({
       <ContextMenuContent className="w-64 rounded-2xl p-2 bg-white border border-slate-200 shadow-2xl z-[9999]">
         <ContextMenuLabel className="text-[10px] font-black uppercase text-slate-400 px-3 py-2 flex items-center gap-2">
           <Zap size={14} className="text-emerald-500" />
-          {isRTL ? "حلول مقترحة للتعارض" : "Conflict Solutions"}
+          {isRTL ? "إجراءات وحلول التعارض" : "Actions & Conflict Solutions"}
         </ContextMenuLabel>
+
+        <ContextMenuItem 
+          onClick={handleDuplicateToNextPeriod}
+          className="rounded-xl px-3 py-2 text-xs font-bold gap-2 focus:bg-emerald-50 focus:text-emerald-900 cursor-pointer"
+        >
+          <Copy size={14} className="text-blue-500" />
+          {isRTL ? "تكرار للحصة التالية" : "Duplicate to Next Period"}
+        </ContextMenuItem>
+
         <ContextMenuSeparator className="bg-slate-100" />
+
         <ContextMenuSub>
           <ContextMenuSubTrigger className="rounded-xl px-3 py-2 text-xs font-bold gap-2 focus:bg-emerald-50 focus:text-emerald-900">
             <UserCheck size={14} />

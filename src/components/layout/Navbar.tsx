@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Languages, LogOut, Palette, Check, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp, ThemeType } from "../../context/AppContext";
@@ -11,9 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { MobileNavSheet } from "./MobileNavSheet";
 
 const Navbar = () => {
   const { t, language, setLanguage, logout, user, theme, setTheme, isRTL, isSidebarCollapsed, setIsSidebarCollapsed } = useApp();
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const themesList: { id: ThemeType; nameAr: string; nameEn: string; colorClass: string }[] = [
     { id: "emerald", nameAr: "زمردي", nameEn: "Emerald", colorClass: "bg-emerald-600" },
@@ -23,37 +25,45 @@ const Navbar = () => {
     { id: "rose", nameAr: "وردي", nameEn: "Rose", colorClass: "bg-rose-600" }
   ];
 
+  const handleMenuClick = () => {
+    if (window.innerWidth < 768) {
+      setIsMobileNavOpen(true);
+    } else {
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+    }
+  };
+
   return (
-    <header className="h-20 border-b bg-white/80 backdrop-blur-md flex items-center justify-between px-8 sticky top-0 z-50">
-      <div className="flex items-center gap-4">
+    <header className="h-20 border-b bg-white/80 backdrop-blur-md flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50">
+      <div className="flex items-center gap-3 sm:gap-4">
         <Button 
           variant="ghost" 
           size="icon" 
-          onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="text-slate-600 hover:bg-emerald-50 rounded-xl h-10 w-10"
+          onClick={handleMenuClick}
+          className="text-slate-600 hover:bg-emerald-50 rounded-xl h-10 w-10 shrink-0"
         >
           <Menu size={20} />
         </Button>
         <div className="flex flex-col text-start">
-          <h1 className="text-xl font-black text-emerald-900 leading-none">{t.appTitle}</h1>
+          <h1 className="text-lg sm:text-xl font-black text-emerald-900 leading-none">{t.appTitle}</h1>
           <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mt-1">{t.appSubtitle}</p>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         {/* Theme Switcher Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button 
               variant="ghost" 
               size="sm" 
-              className="text-slate-600 font-bold gap-2 hover:bg-emerald-50 rounded-xl h-10 px-3"
+              className="text-slate-600 font-bold gap-2 hover:bg-emerald-50 rounded-xl h-10 px-2 sm:px-3"
             >
               <Palette size={18} className="text-emerald-600" />
               <span className="hidden sm:inline">{isRTL ? "المظهر" : "Theme"}</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="rounded-2xl p-2 min-w-[150px] bg-white border border-slate-100 shadow-xl">
+          <DropdownMenuContent align="end" className="rounded-2xl p-2 min-w-[150px] bg-white border border-slate-100 shadow-xl z-[9999]">
             {themesList.map((tItem) => {
               const isSelected = theme === tItem.id;
               return (
@@ -80,13 +90,13 @@ const Navbar = () => {
           variant="ghost" 
           size="sm" 
           onClick={() => setLanguage(language === "ar" ? "en" : "ar")}
-          className="text-slate-600 font-bold gap-2 hover:bg-emerald-50 rounded-xl h-10 px-3"
+          className="text-slate-600 font-bold gap-2 hover:bg-emerald-50 rounded-xl h-10 px-2 sm:px-3"
         >
           <Languages size={18} className="text-emerald-600" />
           <span>{language === "ar" ? "EN" : "AR"}</span>
         </Button>
 
-        <div className="h-8 w-px bg-slate-100 mx-1" />
+        <div className="h-8 w-px bg-slate-100 mx-1 hidden sm:block" />
 
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end hidden sm:flex">
@@ -99,12 +109,14 @@ const Navbar = () => {
             variant="outline" 
             size="icon"
             onClick={logout}
-            className="rounded-xl border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 hover:border-red-100"
+            className="rounded-xl border-slate-200 text-slate-500 hover:text-red-600 hover:bg-red-50 hover:border-red-100 h-10 w-10"
           >
             <LogOut size={18} />
           </Button>
         </div>
       </div>
+
+      <MobileNavSheet open={isMobileNavOpen} onOpenChange={setIsMobileNavOpen} />
     </header>
   );
 };

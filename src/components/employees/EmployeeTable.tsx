@@ -153,7 +153,7 @@ const EmployeeTable = ({
 
       {employees.length === 0 && (
         <div className="text-center py-24 bg-slate-50/30">
-          <p className="text-slate-400 font-bold">{isRTL ? "لا توجد قاعات مطابقة" : "No matching rooms found"}</p>
+          <p className="text-slate-400 font-bold">{isRTL ? "لا يوجد معلمون مطابقون" : "No matching teachers found"}</p>
         </div>
       )}
     </div>
