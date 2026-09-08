@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from "react";
 import { useApp } from "../context/AppContext";
-import { 
-  format, 
-  parseISO, 
-  startOfMonth, 
-  endOfMonth, 
-  eachDayOfInterval, 
+import {
+  format,
+  parseISO,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
   getDay,
   isValid
 } from "date-fns";
@@ -13,14 +13,14 @@ import { ar, enUS } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer, Calendar, FileText, Eye, BarChart2, Info, UserCheck } from "lucide-react";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import { Printer, Calendar, FileText, Eye, BarChart2, Info, UserCheck, Download } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { PeriodPart } from "@/types";
@@ -293,29 +293,48 @@ const ReportsNew = () => {
   };
 
   const currentContent = () => {
-    if (activeTab === "daily") return renderDailyReport();
-    if (activeTab === "monthly") return renderMonthlyReport();
-    if (activeTab === "workload") return renderWorkloadReport();
-    return renderStatsReport();
-  };
+      if (activeTab === "daily") return renderDailyReport();
+      if (activeTab === "monthly") return renderMonthlyReport();
+      if (activeTab === "workload") return renderWorkloadReport();
+      return renderStatsReport();
+    };
+  
+    // دالة طباعة مخصصة لأوراق الحضور
+    const printAttendance = () => {
+      // إضافة كلاس خاص للطباعة
+      document.body.classList.add('printing-attendance');
+      window.print();
+      document.body.classList.remove('printing-attendance');
+    };
 
   return (
     <div className="space-y-4 pb-20">
       <PageHeader
-        title={t.reports}
-        subtitle="إصدار أوراق حضور وجداول إحصائية رسمية"
-        icon={FileText}
-        isRTL={isRTL}
-      >
-        <Button variant="outline" size="sm" className="rounded-xl border-slate-200 font-bold gap-1.5 h-10 px-4 bg-white text-xs" onClick={() => setIsPreviewOpen(true)}>
-          <Eye className="h-4 w-4 text-emerald-600" />
-          {t.preview}
-        </Button>
-        <Button size="sm" onClick={() => window.print()} className="bg-emerald-600 text-white rounded-xl font-black gap-1.5 h-10 px-5 shadow-md shadow-emerald-100 text-xs">
-          <Printer className="h-4 w-4" />
-          {t.print}
-        </Button>
-      </PageHeader>
+              title={t.reports}
+              subtitle="إصدار أوراق حضور وجداول إحصائية رسمية"
+              icon={FileText}
+              isRTL={isRTL}
+            >
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="rounded-xl border-slate-200 font-bold gap-1.5 h-10 px-4 bg-white text-xs" onClick={() => setIsPreviewOpen(true)}>
+                  <Eye className="h-4 w-4 text-emerald-600" />
+                  {t.preview}
+                </Button>
+                <Button size="sm" onClick={() => window.print()} className="bg-emerald-600 text-white rounded-xl font-black gap-1.5 h-10 px-5 shadow-md shadow-emerald-100 text-xs">
+                  <Printer className="h-4 w-4" />
+                  {t.print}
+                </Button>
+                <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-xl border-slate-200 font-bold gap-1.5 h-10 px-4 bg-white text-xs"
+                            onClick={printAttendance}
+                          >
+                            <Download className="h-4 w-4 text-emerald-600" />
+                            {isRTL ? "طباعة الحضور" : "Print Attendance"}
+                          </Button>
+              </div>
+            </PageHeader>
       
       <ReportControls
         t={t}

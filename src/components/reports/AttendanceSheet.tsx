@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { format } from "date-fns";
-import { Clock, Calendar } from "lucide-react";
+import { Clock, Calendar, Printer } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -11,10 +11,11 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PeriodPart } from "@/types";
-import OfficialPrintWrapper from "../shared/OfficialPrintWrapper";
-import ResizableHeader from "../shared/ResizableHeader";
+import OfficialPrintWrapper from "@/components/shared/OfficialPrintWrapper";
+import ResizableHeader from "@/components/shared/ResizableHeader";
 
 interface AttendanceSheetProps {
   date: Date;
@@ -53,8 +54,13 @@ const AttendanceSheet = ({
     setWidths(prev => ({ ...prev, [column]: newWidth }));
   };
 
+  // دالة طباعة مخصصة لهذه الورقة
+  const printSheet = () => {
+    window.print();
+  };
+
   // عدد الأسطر الأقصى لملء الصفحة بشكل متناسق
-  const maxRows = doubleMode ? 10 : 18; 
+  const maxRows = doubleMode ? 10 : 18;
   const emptyRowsCount = Math.max(0, maxRows - assignedEmployees.length);
 
   // تنسيق الخلايا العادية (محتوى الجدول)
@@ -72,106 +78,136 @@ const AttendanceSheet = ({
   };
 
   return (
-    <OfficialPrintWrapper
-      title={t.attendanceSheet}
-      metadata={
-        <>
-          <div className="flex items-center gap-2">
-            <span className="opacity-70">{isRTL ? "المصلحة:" : "Department:"}</span>
-            <span className="font-black">{selectedDepartment}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar size={11} className="opacity-50" />
-            <span className="font-black">{format(date, "EEEE, d MMMM yyyy", { locale: currentLocale })}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Clock size={11} className="opacity-50" />
-            <span className="font-black">{period === "Morning" ? t.morning : period === "Afternoon" ? t.afternoon : t.evening}</span>
-          </div>
-        </>
-      }
-      orientation={reportStyles.orientation}
-      doubleMode={doubleMode}
-      showSignatures={true}
-      rightSignatureTitle={isRTL ? "رئيس المصلحة" : "Head of Dept"}
-      leftSignatureTitle={isRTL ? "المدير" : "Director"}
-      fontFamily={reportStyles.fontFamily}
-      headerSize={reportStyles.headerSize}
-      titleSize={reportStyles.titleSize}
-      footerSize={reportStyles.footerSize}
-    >
-      <div className="w-full">
-        <Table className="w-full border-collapse border border-black">
-          <TableHeader>
-            <TableRow className="bg-slate-100/80 hover:bg-slate-100/80 border-b border-black h-10">
-              <ResizableHeader 
-                width={widths.number} 
-                onResize={(w) => updateWidth("number", w)} 
-                isRTL={isRTL}
-                className="font-black text-black border-e border-black p-1 text-center"
-                style={headerCellStyle}
-              >
-                {t.number}
-              </ResizableHeader>
-              
-              <ResizableHeader 
-                width={widths.name} 
-                onResize={(w) => updateWidth("name", w)} 
-                isRTL={isRTL}
-                className="font-black text-black border-e border-black p-1"
-                style={headerCellStyle}
-              >
-                {t.employeeName}
-              </ResizableHeader>
-              
-              <ResizableHeader 
-                width={widths.signature} 
-                onResize={(w) => updateWidth("signature", w)} 
-                isRTL={isRTL}
-                className="font-black text-black border-e border-black p-1 text-center"
-                style={headerCellStyle}
-              >
-                {t.signature}
-              </ResizableHeader>
-              
-              <ResizableHeader 
-                width={widths.notes} 
-                onResize={(w) => updateWidth("notes", w)} 
-                isRTL={isRTL}
-                className="font-black text-black p-1 text-center"
-                style={headerCellStyle}
-              >
-                {t.notes}
-              </ResizableHeader>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {assignedEmployees.map((emp, idx) => (
-              <TableRow key={emp?.id} className="hover:bg-transparent border-b border-black h-10">
-                <TableCell style={cellStyle} className="text-center font-black border-e border-black bg-slate-50/30 p-1">
-                  {idx + 1}
-                </TableCell>
-                <TableCell style={cellStyle} className={cn("font-black border-e border-black text-black whitespace-nowrap overflow-hidden p-1", isRTL ? "text-right pr-4" : "text-left pl-4")}>
-                  {emp?.lastName} {emp?.firstName}
-                </TableCell>
-                <TableCell style={cellStyle} className="border-e border-black p-1"></TableCell>
-                <TableCell style={cellStyle} className="p-1"></TableCell>
+    <div className="print-wrapper relative">
+      <OfficialPrintWrapper
+        title={t.attendanceSheet}
+        metadata={
+          <>
+            <div className="flex items-center gap-2">
+              <span className="opacity-70">
+                {isRTL ? "المصلحة:" : "Department:"}
+              </span>
+              <span className="font-black">{selectedDepartment}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar size={11} className="opacity-50" />
+              <span className="font-black">
+                {format(date, "EEEE, d MMMM yyyy", { locale: currentLocale })}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock size={11} className="opacity-50" />
+              <span className="font-black">
+                {period === "Morning"
+                  ? t.morning
+                  : period === "Afternoon"
+                  ? t.afternoon
+                  : t.evening}
+              </span>
+            </div>
+          </>
+        }
+        orientation={reportStyles.orientation}
+        doubleMode={doubleMode}
+        showSignatures={true}
+        rightSignatureTitle={isRTL ? "رئيس المصلحة" : "Head of Dept"}
+        leftSignatureTitle={isRTL ? "المدير" : "Director"}
+        fontFamily={reportStyles.fontFamily}
+        headerSize={reportStyles.headerSize}
+        titleSize={reportStyles.titleSize}
+        footerSize={reportStyles.footerSize}
+      >
+        <div className="w-full">
+          <Table className="w-full border-collapse border border-black print:font-cairo attendance-sheet-print">
+            <TableHeader>
+              <TableRow className="bg-slate-100/80 hover:bg-slate-100/80 border-b border-black h-10">
+                <ResizableHeader
+                  width={widths.number}
+                  onResize={(w) => updateWidth("number", w)}
+                  isRTL={isRTL}
+                  className="font-black text-black border-e border-black p-1 text-center"
+                  style={headerCellStyle}
+                >
+                  {t.number}
+                </ResizableHeader>
+                <ResizableHeader
+                  width={widths.name}
+                  onResize={(w) => updateWidth("name", w)}
+                  isRTL={isRTL}
+                  className="font-black text-black border-e border-black p-1"
+                  style={headerCellStyle}
+                >
+                  {t.employeeName}
+                </ResizableHeader>
+                <ResizableHeader
+                  width={widths.signature}
+                  onResize={(w) => updateWidth("signature", w)}
+                  isRTL={isRTL}
+                  className="font-black text-black border-e border-black p-1 text-center"
+                  style={headerCellStyle}
+                >
+                  {t.signature}
+                </ResizableHeader>
+                <ResizableHeader
+                  width={widths.notes}
+                  onResize={(w) => updateWidth("notes", w)}
+                  isRTL={isRTL}
+                  className="font-black text-black p-1 text-center"
+                  style={headerCellStyle}
+                >
+                  {t.notes}
+                </ResizableHeader>
               </TableRow>
-            ))}
-            {Array.from({ length: emptyRowsCount }).map((_, i) => (
-              <TableRow key={`empty-${i}`} className="hover:bg-transparent border-b border-black h-10">
-                <TableCell style={cellStyle} className="text-center border-e border-black font-bold text-slate-400 bg-slate-50/10 p-1">
-                  {assignedEmployees.length + i + 1}
-                </TableCell>
-                <TableCell style={cellStyle} className="border-e border-black p-1"></TableCell>
-                <TableCell style={cellStyle} className="border-e border-black p-1"></TableCell>
-                <TableCell style={cellStyle} className="p-1"></TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </OfficialPrintWrapper>
+            </TableHeader>
+            <TableBody>
+              {assignedEmployees.map((emp, idx) => (
+                <TableRow key={emp?.id} className="hover:bg-transparent border-b border-black h-10">
+                  <TableCell style={cellStyle} className="text-center font-black border-e border-black bg-slate-50/30 p-1">
+                    {idx + 1}
+                  </TableCell>
+                  <TableCell
+                    style={cellStyle}
+                    className={cn(
+                      "font-black border-e border-black text-black whitespace-nowrap overflow-hidden p-1",
+                      isRTL ? "text-right pr-4" : "text-left pl-4"
+                    )}
+                  >
+                    {emp?.lastName} {emp?.firstName}
+                  </TableCell>
+                  <TableCell style={cellStyle} className="border-e border-black p-1"></TableCell>
+                  <TableCell style={cellStyle} className="p-1"></TableCell>
+                </TableRow>
+              ))}
+              {Array.from({ length: emptyRowsCount }).map((_, i) => (
+                <TableRow key={`empty-${i}`} className="hover:bg-transparent border-b border-black h-10">
+                  <TableCell
+                    style={cellStyle}
+                    className="text-center border-e border-black font-bold text-slate-400 bg-slate-50/10 p-1"
+                  >
+                    {assignedEmployees.length + i + 1}
+                  </TableCell>
+                  <TableCell style={cellStyle} className="border-e border-black p-1"></TableCell>
+                  <TableCell style={cellStyle} className="border-e border-black p-1"></TableCell>
+                  <TableCell style={cellStyle} className="p-1"></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {/* Print button inside the sheet for individual printing */}
+          <div className="print-button-container mt-4 flex justify-center print:hidden">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-emerald-600 font-bold gap-1.5 h-10 px-4 border border-emerald-600 rounded-xl hover:bg-emerald-50 text-xs"
+              onClick={printSheet}
+            >
+              <Printer className="h-4 w-4" />
+              {isRTL ? "طباعة هذه الورقة" : "Print Sheet"}
+            </Button>
+          </div>
+        </div>
+      </OfficialPrintWrapper>
+    </div>
   );
 };
 

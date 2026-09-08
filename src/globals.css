@@ -140,4 +140,81 @@
     align-items: center !important;
     box-sizing: border-box !important;
   }
+
+  /* 7. تحسينات خاصة بأوراق الحضور */
+  .attendance-sheet-print {
+    font-family: 'Cairo', sans-serif !important;
+  }
+  
+  .attendance-sheet-print table {
+    border: 2px solid #000 !important;
+  }
+  
+  .attendance-sheet-print th,
+  .attendance-sheet-print td {
+    border: 1px solid #000 !important;
+    padding: 4px 6px !important;
+  }
+  
+  .attendance-sheet-print th {
+    background-color: #f3f4f6 !important;
+    font-weight: 900 !important;
+  }
+  
+  .attendance-sheet-print .signature-cell {
+    min-width: 60px !important;
+    height: 30px !important;
+  }
+  
+  .attendance-sheet-print .notes-cell {
+    min-width: 80px !important;
+  }
+  
+  /* 8. ضمان ظهور الحدود في الطباعة */
+  .print-border {
+    border: 1px solid #000 !important;
+  }
+  
+  /* 9. تحسين التوقيعات */
+  .signature-area {
+    border-top: 2px solid #000 !important;
+    padding-top: 8px !important;
+    margin-top: 16px !important;
+  }
+  
+  /* 10. إخفاء عناصر التحكم في الطباعة */
+  .print-controls,
+  .report-controls,
+  .tabs-list,
+  .page-header-actions {
+    display: none !important;
+  }
+}
+
+/* تحسينات للعرض على الشاشة */
+.attendance-sheet-screen {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.attendance-sheet-screen table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.attendance-sheet-screen th,
+.attendance-sheet-screen td {
+  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
+}
+
+.attendance-sheet-screen th {
+  background-color: #f9fafb;
+  font-weight: 700;
+  text-align: center;
+}
+
+.attendance-sheet-screen tbody tr:hover {
+  background-color: #f0fdf4;
 }
