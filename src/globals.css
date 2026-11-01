@@ -25,7 +25,6 @@
     --input: oklch(0.92 0.02 150);
     --ring: oklch(0.5 0.09 160);
 
-    /* Emerald Shades (Default) */
     --primary-50: oklch(0.979 0.021 166.113);
     --primary-100: oklch(0.937 0.051 165.539);
     --primary-200: oklch(0.881 0.093 164.15);
@@ -52,7 +51,6 @@
     --accent-foreground: oklch(0.22 0.04 250);
     --ring: oklch(0.5 0.09 250);
 
-    /* Blue Shades */
     --primary-50: oklch(0.97 0.015 250);
     --primary-100: oklch(0.93 0.035 250);
     --primary-200: oklch(0.87 0.065 250);
@@ -99,6 +97,7 @@
 
   @page {
     margin: 0 !important;
+    size: A4 portrait;
   }
 
   /* 3. التحكم في كسر الصفحات */
@@ -188,6 +187,35 @@
   .tabs-list,
   .page-header-actions {
     display: none !important;
+  }
+
+  /* 11. إزالة الارتفاعات الثابتة للطباعة */
+  .print-wrapper {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* 12. ضمان ظهور المحتوى بالكامل */
+  .print-wrapper > div {
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  /* 13. إزالة الظلال والتأثيرات */
+  .shadow-xl, .shadow-md, .shadow-lg {
+    box-shadow: none !important;
+  }
+
+  /* 14. ضبط حجم الصفحة */
+  .print-wrapper {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  /* 15. ضمان ظهور التوقيعات */
+  .print-wrapper .grid.grid-cols-2 {
+    display: grid !important;
   }
 }
 

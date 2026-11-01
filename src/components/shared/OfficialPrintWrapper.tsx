@@ -16,7 +16,6 @@ interface OfficialPrintWrapperProps {
   showSystemFooter?: boolean;
   disablePageBreak?: boolean;
   doubleMode?: boolean;
-  // إعدادات الخطوط الاختيارية (إذا لم تمرر ستستخدم الإعدادات العامة)
   fontFamily?: string;
   headerSize?: number;
   titleSize?: number;
@@ -45,7 +44,6 @@ const OfficialPrintWrapper = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // استخدام القيم الممرة أو العودة للإعدادات العامة المحفوظة
   const finalFontFamily = fontFamily || reportStyles?.fontFamily || "'Cairo', sans-serif";
   const finalHeaderSize = headerSize || reportStyles?.headerSize || 10;
   const finalTitleSize = titleSize || reportStyles?.titleSize || 14;
@@ -67,6 +65,16 @@ const OfficialPrintWrapper = ({
 
   useEffect(() => {
     const handleScale = () => {
+      // Don't apply scaling for print
+      if (window.matchMedia('print').matches) {
+        setScale(1);
+        if (contentRef.current) {
+          contentRef.current.style.transform = "none";
+          contentRef.current.style.width = "100%";
+        }
+        return;
+      }
+      
       if (!containerRef.current || !contentRef.current) return;
       
       const container = containerRef.current;
@@ -94,9 +102,25 @@ const OfficialPrintWrapper = ({
     const timer = setTimeout(handleScale, 150);
     window.addEventListener("resize", handleScale);
     
+    const mediaQueryList = window.matchMedia('print');
+    const handlePrintChange = (e: MediaQueryListEvent) => {
+      if (e.matches) {
+        setScale(1);
+        if (contentRef.current) {
+          contentRef.current.style.transform = "none";
+          contentRef.current.style.width = "100%";
+        }
+      } else {
+        handleScale();
+      }
+    };
+    
+    mediaQueryList.addEventListener('change', handlePrintChange);
+    
     return () => {
       clearTimeout(timer);
       window.removeEventListener("resize", handleScale);
+      mediaQueryList.removeEventListener('change', handlePrintChange);
     };
   }, [children, orientation, doubleMode, isRTL]);
 
@@ -163,11 +187,17 @@ const OfficialPrintWrapper = ({
 
       <div 
         ref={containerRef}
-        className="w-full flex-1 bg-white mb-2 overflow-hidden px-1 relative"
+        className={cn(
+          "w-full flex-1 bg-white mb-2 overflow-hidden px-1 relative",
+          "print:h-auto print:overflow-visible"
+        )}
       >
         <div 
           ref={contentRef} 
-          className="w-full transition-transform duration-200"
+          className={cn(
+            "w-full transition-transform duration-200",
+            "print:transform-none print:scale-100"
+          )}
         >
           {children}
         </div>
